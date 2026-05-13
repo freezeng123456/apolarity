@@ -50,10 +50,26 @@ def active_exponents(alpha: tuple[int, ...]) -> tuple[int, ...]:
     return tuple(sorted(Counter(alpha).values(), reverse=True))
 
 
-def build_mlp(d_in: int, hidden: int, depth: int, dtype: torch.dtype, device: torch.device) -> nn.Module:
-    layers: list[nn.Module] = [nn.Linear(d_in, hidden), nn.Tanh()]
+class Sin(nn.Module):
+    def forward(self, x: Tensor) -> Tensor:
+        return torch.sin(x)
+
+
+def activation_module(name: str) -> nn.Module:
+    name = name.lower()
+    if name == "tanh":
+        return nn.Tanh()
+    if name == "sigmoid":
+        return nn.Sigmoid()
+    if name in {"sin", "sine"}:
+        return Sin()
+    raise ValueError(f"unknown activation: {name}")
+
+
+def build_mlp(d_in: int, hidden: int, depth: int, dtype: torch.dtype, device: torch.device, activation: str) -> nn.Module:
+    layers: list[nn.Module] = [nn.Linear(d_in, hidden), activation_module(activation)]
     for _ in range(depth - 1):
-        layers += [nn.Linear(hidden, hidden), nn.Tanh()]
+        layers += [nn.Linear(hidden, hidden), activation_module(activation)]
     layers.append(nn.Linear(hidden, 1))
     net = nn.Sequential(*layers)
     for m in net.modules():
@@ -159,6 +175,7 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--hidden", type=int, default=64)
     parser.add_argument("--depth", type=int, default=3)
+    parser.add_argument("--activation", default="tanh", choices=["tanh", "sigmoid", "sin"])
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=2)
     parser.add_argument("--seed", type=int, default=0)
@@ -176,12 +193,12 @@ def main() -> None:
     methods = [m for m in args.methods.split(",") if m]
 
     torch.manual_seed(args.seed)
-    model = build_mlp(args.d, args.hidden, args.depth, dtype, device)
+    model = build_mlp(args.d, args.hidden, args.depth, dtype, device, args.activation)
     x = torch.randn(args.batch, args.d, device=device, dtype=dtype) * 0.5
     complex_dtype = torch.complex128 if dtype == torch.float64 else torch.complex64
 
     rows: list[dict[str, Any]] = []
-    print(f"device={device} dtype={dtype} d={args.d} B={args.batch} hidden={args.hidden} depth={args.depth} measure={args.measure}")
+    print(f"device={device} dtype={dtype} d={args.d} B={args.batch} hidden={args.hidden} depth={args.depth} activation={args.activation} measure={args.measure}")
     print("alpha\tpattern\tmethod\tdirs\trel_err\tmedian_ms\tpeak_mb\tstatus")
 
     for alpha in alphas:
@@ -200,6 +217,7 @@ def main() -> None:
                 "batch": args.batch,
                 "hidden": args.hidden,
                 "depth": args.depth,
+                "activation": args.activation,
                 "dtype": args.dtype,
                 "measure": args.measure,
             }

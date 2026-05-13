@@ -180,6 +180,11 @@ def _linear_params_for_term(weight: Tensor, bias: Tensor | None, term: Tensor) -
     return weight, bias
 
 
+
+
+def _is_sin_module(m: nn.Module) -> bool:
+    return m.__class__.__name__.lower() in {"sin", "sine", "sinactivation"}
+
 def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet:
     """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term."""
     out: List[Tensor] = []
@@ -225,12 +230,52 @@ def jet_tanh(jet: TaylorJet) -> TaylorJet:
     return TaylorJet(y)
 
 
+
+
+def jet_sin(jet: TaylorJet) -> TaylorJet:
+    """Pointwise sin on a jet using coupled recurrences for sin(x) and cos(x)."""
+    p = jet.order
+    x = jet.terms
+    y: List[Tensor] = [torch.sin(x[0])]
+    c: List[Tensor] = [torch.cos(x[0])]
+    for k in range(1, p + 1):
+        acc_y = (k - 0) * c[0] * x[k]
+        acc_c = -(k - 0) * y[0] * x[k]
+        for j in range(1, k):
+            acc_y = acc_y + (k - j) * c[j] * x[k - j]
+            acc_c = acc_c - (k - j) * y[j] * x[k - j]
+        y.append(acc_y / float(k))
+        c.append(acc_c / float(k))
+    return TaylorJet(y)
+
+
+def jet_sigmoid(jet: TaylorJet) -> TaylorJet:
+    """Pointwise sigmoid on a jet.
+
+    Uses y'=z*x', z=y*(1-y)=y-y^2.
+    """
+    p = jet.order
+    x = jet.terms
+    y: List[Tensor] = [torch.sigmoid(x[0])]
+    z: List[Tensor] = [y[0] - y[0] * y[0]]
+    for k in range(1, p + 1):
+        acc = (k - 0) * z[0] * x[k]
+        for j in range(1, k):
+            acc = acc + (k - j) * z[j] * x[k - j]
+        y_k = acc / float(k)
+        y.append(y_k)
+        yy = y[0] * y[k]
+        for j in range(1, k + 1):
+            yy = yy + y[j] * y[k - j]
+        z.append(y[k] - yy)
+    return TaylorJet(y)
+
 # ============================================================================
 # MLP-level driver
 # ============================================================================
 
 def _is_supported_module(m: nn.Module) -> bool:
-    return isinstance(m, (nn.Linear, nn.Tanh))
+    return isinstance(m, (nn.Linear, nn.Tanh, nn.Sigmoid)) or _is_sin_module(m)
 
 
 # Tensor-only inner driver: takes a list of tensors (the input jet terms)
@@ -257,20 +302,11 @@ def _jet_forward_tensors(
                 new_out.append(yk)
             out = new_out
         elif isinstance(layer, nn.Tanh):
-            x = out
-            y: List[Tensor] = [torch.tanh(x[0])]
-            z: List[Tensor] = [1.0 - y[0] * y[0]]
-            for k in range(1, p + 1):
-                acc = (k - 0) * z[0] * x[k]
-                for j in range(1, k):
-                    acc = acc + (k - j) * z[j] * x[k - j]
-                y_k = acc / float(k)
-                y.append(y_k)
-                zk = -y[0] * y[k]
-                for j in range(1, k + 1):
-                    zk = zk - y[j] * y[k - j]
-                z.append(zk)
-            out = y
+            out = jet_tanh(TaylorJet(out)).terms
+        elif isinstance(layer, nn.Sigmoid):
+            out = jet_sigmoid(TaylorJet(out)).terms
+        elif _is_sin_module(layer):
+            out = jet_sin(TaylorJet(out)).terms
         else:
             raise NotImplementedError(
                 f"taylor_jet does not support layer type {type(layer).__name__}"
@@ -280,7 +316,7 @@ def _jet_forward_tensors(
 
 def jet_forward_sequential(net: nn.Sequential, jet: TaylorJet) -> TaylorJet:
     """Run ``jet`` through the layers of ``nn.Sequential`` net.  Only
-    supports Linear + Tanh stacks (the architecture used by KdV / CH6 /
+    supports Linear + Tanh/Sigmoid/Sin stacks (the architecture used by KdV / CH6 /
     HardBC models in this project).  Raises if any other layer is found.
 
     When ``TAYLOR_JET_COMPILE=1`` is set in the environment (or
@@ -337,7 +373,7 @@ def tp_directional_via_jet(
     any further division by ``p!``.
 
     Caveat: this routine ASSUMES ``model`` (or ``model.net``) is a single
-    ``nn.Sequential`` of ``nn.Linear`` and ``nn.Tanh`` layers.  Networks
+    ``nn.Sequential`` of ``nn.Linear`` and smooth activation layers (Tanh/Sigmoid/Sin).  Networks
     wrapped in HardBC factors (e.g. ``CH6HardBCModel``) need to be unwrapped
     by the caller first; see
     ``ch6_ball.estimators._SpatialNWrapper`` etc. for the existing pattern.
@@ -388,6 +424,8 @@ __all__ = [
     "TaylorJet",
     "jet_linear",
     "jet_tanh",
+    "jet_sin",
+    "jet_sigmoid",
     "jet_forward_sequential",
     "tp_directional_via_jet",
     "tp_directional_all_via_jet",
