@@ -200,78 +200,112 @@ def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet
     return TaylorJet(out)
 
 
-def jet_tanh(jet: TaylorJet) -> TaylorJet:
-    """Pointwise tanh on a jet.  Implements the recurrence
 
-        y_0 = tanh(x_0)
-        z_0 = 1 - y_0 * y_0
-        y_k = (1/k) sum_{j=0}^{k-1} (k - j) * z_j * x_{k-j}        for k >= 1
-        z_k = -sum_{j=0}^{k} y_j * y_{k-j}
+def _activation_vjp(q_terms: tuple[Tensor, ...], grad_outputs: tuple[Tensor | None, ...]) -> tuple[Tensor, ...]:
+    """VJP for y(t)=phi(x(t)) with q(t)=phi'(x(t)).
 
-    where ``z(tau) = 1 - y(tau)^2 = tanh'(x(tau))``.  Cost is O(p^2) ops
-    over hidden-dim tensors per call.
+    If y_k = sum_{j=0}^k q_j x_{k-j}, then the adjoint is
+    grad_x_m = sum_{j=0}^{p-m} conj(q_j) * grad_y_{m+j}.
     """
-    p = jet.order
-    x = jet.terms
-
-    y: List[Tensor] = [torch.tanh(x[0])]
-    z: List[Tensor] = [1.0 - y[0] * y[0]]
-
-    for k in range(1, p + 1):
-        # y_k = (1/k) * sum_{j=0..k-1} (k - j) * z_j * x_{k-j}
-        acc = (k - 0) * z[0] * x[k]
-        for j in range(1, k):
-            acc = acc + (k - j) * z[j] * x[k - j]
-        y_k = acc / float(k)
-        y.append(y_k)
-        # z_k = -sum_{j=0..k} y_j * y_{k-j}
-        zk = -y[0] * y[k]
-        for j in range(1, k + 1):
-            zk = zk - y[j] * y[k - j]
-        z.append(zk)
-
-    return TaylorJet(y)
+    p = len(q_terms) - 1
+    gy: list[Tensor] = []
+    for g in grad_outputs:
+        gy.append(torch.zeros_like(q_terms[0]) if g is None else g)
+    gx: list[Tensor] = []
+    for m in range(p + 1):
+        acc = gy[m] * q_terms[0].conj()
+        for j in range(1, p - m + 1):
+            acc = acc + gy[m + j] * q_terms[j].conj()
+        gx.append(acc)
+    return tuple(gx)
 
 
+class _TanhJetFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, *terms: Tensor):
+        p = len(terms) - 1
+        x = list(terms)
+        y: List[Tensor] = [torch.tanh(x[0])]
+        z: List[Tensor] = [1.0 - y[0] * y[0]]
+        for k in range(1, p + 1):
+            acc = k * z[0] * x[k]
+            for j in range(1, k):
+                acc = acc + (k - j) * z[j] * x[k - j]
+            y_k = acc / float(k)
+            y.append(y_k)
+            zk = -y[0] * y[k]
+            for j in range(1, k + 1):
+                zk = zk - y[j] * y[k - j]
+            z.append(zk)
+        ctx.save_for_backward(*z)
+        return tuple(y)
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        return _activation_vjp(ctx.saved_tensors, grad_outputs)
+
+
+class _SigmoidJetFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, *terms: Tensor):
+        p = len(terms) - 1
+        x = list(terms)
+        y: List[Tensor] = [torch.sigmoid(x[0])]
+        z: List[Tensor] = [y[0] - y[0] * y[0]]
+        for k in range(1, p + 1):
+            acc = k * z[0] * x[k]
+            for j in range(1, k):
+                acc = acc + (k - j) * z[j] * x[k - j]
+            y_k = acc / float(k)
+            y.append(y_k)
+            yy = y[0] * y[k]
+            for j in range(1, k + 1):
+                yy = yy + y[j] * y[k - j]
+            z.append(y[k] - yy)
+        ctx.save_for_backward(*z)
+        return tuple(y)
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        return _activation_vjp(ctx.saved_tensors, grad_outputs)
+
+
+class _SinJetFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, *terms: Tensor):
+        p = len(terms) - 1
+        x = list(terms)
+        y: List[Tensor] = [torch.sin(x[0])]
+        c: List[Tensor] = [torch.cos(x[0])]
+        for k in range(1, p + 1):
+            acc_y = k * c[0] * x[k]
+            acc_c = -k * y[0] * x[k]
+            for j in range(1, k):
+                acc_y = acc_y + (k - j) * c[j] * x[k - j]
+                acc_c = acc_c - (k - j) * y[j] * x[k - j]
+            y.append(acc_y / float(k))
+            c.append(acc_c / float(k))
+        ctx.save_for_backward(*c)
+        return tuple(y)
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        return _activation_vjp(ctx.saved_tensors, grad_outputs)
+
+
+def jet_tanh(jet: TaylorJet) -> TaylorJet:
+    """Pointwise tanh on a jet using a custom VJP to reduce autograd graph size."""
+    return TaylorJet(list(_TanhJetFunction.apply(*jet.terms)))
 
 
 def jet_sin(jet: TaylorJet) -> TaylorJet:
-    """Pointwise sin on a jet using coupled recurrences for sin(x) and cos(x)."""
-    p = jet.order
-    x = jet.terms
-    y: List[Tensor] = [torch.sin(x[0])]
-    c: List[Tensor] = [torch.cos(x[0])]
-    for k in range(1, p + 1):
-        acc_y = (k - 0) * c[0] * x[k]
-        acc_c = -(k - 0) * y[0] * x[k]
-        for j in range(1, k):
-            acc_y = acc_y + (k - j) * c[j] * x[k - j]
-            acc_c = acc_c - (k - j) * y[j] * x[k - j]
-        y.append(acc_y / float(k))
-        c.append(acc_c / float(k))
-    return TaylorJet(y)
+    """Pointwise sin on a jet using coupled sin/cos recurrences."""
+    return TaylorJet(list(_SinJetFunction.apply(*jet.terms)))
 
 
 def jet_sigmoid(jet: TaylorJet) -> TaylorJet:
-    """Pointwise sigmoid on a jet.
-
-    Uses y'=z*x', z=y*(1-y)=y-y^2.
-    """
-    p = jet.order
-    x = jet.terms
-    y: List[Tensor] = [torch.sigmoid(x[0])]
-    z: List[Tensor] = [y[0] - y[0] * y[0]]
-    for k in range(1, p + 1):
-        acc = (k - 0) * z[0] * x[k]
-        for j in range(1, k):
-            acc = acc + (k - j) * z[j] * x[k - j]
-        y_k = acc / float(k)
-        y.append(y_k)
-        yy = y[0] * y[k]
-        for j in range(1, k + 1):
-            yy = yy + y[j] * y[k - j]
-        z.append(y[k] - yy)
-    return TaylorJet(y)
+    """Pointwise sigmoid on a jet using a custom VJP."""
+    return TaylorJet(list(_SigmoidJetFunction.apply(*jet.terms)))
 
 # ============================================================================
 # MLP-level driver
