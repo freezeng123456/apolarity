@@ -1,6 +1,6 @@
-# aploarity
+# apolarity
 
-`aploarity` studies exact deterministic computation of a **single monomial partial derivative**
+`apolarity` studies exact deterministic computation of a **single monomial partial derivative**
 
 \[
 \partial^\alpha u(x)
@@ -29,12 +29,12 @@ A monomial Waring decomposition gives directions and weights such that
 \partial^\alpha u(x)=\sum_r c_r T_p(x;v_r).
 \]
 
-`aploarity` computes the directional Taylor coefficients with a Taylor-jet forward pass for `Linear/Tanh` MLPs.
+`apolarity` computes the directional Taylor coefficients with a Taylor-jet forward pass for `Linear/Tanh` MLPs.
 
 ## Repository layout
 
 ```text
-src/aploarity/
+src/apolarity/
   waring.py          # complex monomial Waring directions
   real_waring.py     # real-direction fallback/generators
   taylor_jet.py      # Taylor-mode AD for Linear/Tanh MLPs

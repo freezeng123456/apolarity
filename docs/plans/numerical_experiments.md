@@ -1,104 +1,46 @@
 # Numerical experiment plan
 
-This plan is limited to **single monomial partial derivatives** and PDE/PINN examples whose residual contains such terms.
+All experiments serve one goal: evaluate exact deterministic computation of **one single monomial partial derivative** and its use in PINN residuals.
 
 ---
 
-## 1. Experiment goals
+## 1. Baselines
 
-1. Test whether Waring directional schedules compute single high-order mixed partials faster than nested coordinate AD.
-2. Compare deterministic exact computation against stochastic baselines such as STDE-style estimators.
-3. Test whether exact derivative computation improves PINN training accuracy or accuracy-cost tradeoffs for PDEs with single monomial derivative terms.
-4. Identify regimes where the method should not be used, especially square-free high-order patterns.
+### Exact deterministic baselines
 
----
+1. `direct_autodiff`  
+   Nested coordinate automatic differentiation.  This is the exact reference.
 
-## 2. Baselines
+2. `polarization_jet`  
+   Real polarization directions evaluated by Taylor jets.  This is the exact real directional baseline.
 
-### 2.1 Exact deterministic baselines
+3. `waring_complex_jet`  
+   Complex monomial Waring directions evaluated by Taylor jets.  This is the proposed rank-aware exact method.
 
-#### Direct nested coordinate AD
+4. `auto`  
+   Pattern-based selection between `waring_complex_jet` and `polarization_jet`.
 
-Reference method.  Computes \(\partial^\alpha u\) by repeated coordinate `autograd.grad`.
+### Approximate deterministic baseline
 
-Use for:
+5. `finite_difference_directional`  
+   Central finite-difference stencils along directional schedules.  Optional speed/accuracy baseline.
 
-- exact value reference;
-- exact gradient reference;
-- runtime/memory baseline.
+### Monte Carlo baseline
 
-#### Real polarization + Taylor jet
-
-Exact real-direction baseline.  Uses polarization identity and Taylor-mode AD.
-
-Use for:
-
-- fair deterministic directional baseline;
-- square-free patterns where complex Waring has no rank advantage.
-
-#### Nested scalar reverse / JVP
-
-Optional low-level baseline for \(T_p(x;v)\), not necessary for every main table.
-
----
-
-### 2.2 Approximate deterministic baselines
-
-#### Finite difference directional derivative
-
-Use central finite-difference stencils along polarization/Waring directions.
-
-Purpose:
-
-- speed/accuracy tradeoff baseline;
-- show exact methods avoid truncation error.
-
-Not a primary method.
-
----
-
-### 2.3 Stochastic baselines
-
-#### STDE-style single-monomial estimator
-
-For one multi-index \(\alpha\), use the Gaussian Stein/Hermite identity:
+6. `gaussian_hermite_mc`  
+   A direct Gaussian-Hermite estimator for one multi-index:
 
 \[
-\partial^\alpha u(x)
-=\sigma^{-p}\mathbb E\left[H_\alpha(Z)u(x+\sigma Z)\right]
+\partial^\alpha u(x)\approx \sigma^{-p}\frac1K\sum_{k=1}^K H_\alpha(Z_k)u(x+\sigma Z_k).
 \]
 
-or its centered/symmetric/Taylor-corrected variants when applicable.
-
-This provides a stochastic single-term analogue of STDE/randomized derivative estimation.
-
-Compare against Waring/Taylor exact methods in terms of:
-
-- bias vs \(\sigma\);
-- variance vs sample count \(K\);
-- wall-clock time;
-- peak memory;
-- value relative error;
-- gradient noise.
-
-#### Official STDE baseline where feasible
-
-If the official STDE implementation can express the desired single monomial operator as a contraction, include it as a baseline.
-
-Important distinction:
-
-- STDE is designed for arbitrary differential-operator contractions and stochastic amortization.
-- Our method targets exact deterministic computation of one single monomial partial.
-
-Therefore comparisons should be framed as accuracy-cost tradeoffs, not as identical problem classes.
+This baseline is included to compare exact deterministic schedules against a simple randomized derivative estimator in accuracy-cost terms.
 
 ---
 
-## 3. Direct derivative benchmark suite
+## 2. Direct derivative benchmark suite
 
-### 3.1 Pattern grid
-
-Use expanded one-based alpha strings.
+### Pattern grid
 
 Order 3:
 
@@ -124,16 +66,7 @@ Order 8:
 11111111, 11111122, 11112222, 11223344, 12345678
 ```
 
-### 3.2 Methods
-
-- `direct_autodiff`
-- `polarization_jet`
-- `waring_complex_jet`
-- `auto`
-- `finite_difference_directional` optional
-- `stde_single_monomial` stochastic baseline
-
-### 3.3 Metrics
+### Metrics
 
 Value mode:
 
@@ -141,137 +74,115 @@ Value mode:
 - median evaluation time;
 - peak memory;
 - direction count;
-- stochastic estimator mean/std if applicable.
+- Monte Carlo mean/std across repeated samples when applicable.
 
 Backward mode:
 
-- relative error of parameter gradients against direct AD;
-- median time for `loss = partial.square().mean(); loss.backward()`;
+- parameter-gradient relative error against direct AD;
+- median time for `loss = partial.real.square().mean(); loss.backward()`;
 - peak memory;
-- gradient variance for stochastic baselines.
+- gradient variance for Monte Carlo baseline.
 
-### 3.4 Scaling axes
+### Scaling axes
 
 - derivative order \(p\);
-- active exponent pattern;
+- exponent pattern;
 - input dimension \(d\);
 - batch size;
 - network width/depth;
 - dtype fp64/fp32;
-- STDE sample count \(K\);
-- smoothing radius \(\sigma\) for stochastic estimators.
+- Monte Carlo sample count \(K\);
+- smoothing radius \(\sigma\).
 
 ---
 
-## 4. STDE-style single-monomial derivative experiments
+## 3. Monte Carlo Hermite accuracy-cost experiments
 
-### 4.1 Test cases
-
-Use patterns where exact direct AD is still available as reference:
+### Test patterns
 
 ```text
 112, 1122, 112233, 123456, 11112222, 11223344
 ```
 
-### 4.2 STDE estimator variants
+### Sweep variables
 
-1. Raw Hermite/Stein estimator.
-2. Symmetric centered estimator for even order.
-3. Taylor-corrected estimator if implementation time permits.
-4. Official STDE implementation if it supports the operator cleanly.
+- \(K\in\{16,64,256,1024,4096\}\);
+- \(\sigma\in\{0.02,0.05,0.1,0.2\}\);
+- dtype fp32/fp64;
+- value and backward mode.
 
-### 4.3 Expected comparison
+### Expected plots
 
-Waring/Taylor exact methods should have:
-
-- no sampling variance;
-- no \(\sigma\)-bias;
-- stable gradients;
-- possibly higher per-sample deterministic cost than one stochastic sample, but better accuracy-cost at target tolerances.
-
-STDE-style methods may win when:
-
-- dimension is extremely high;
-- approximate derivative is sufficient;
-- one evaluates broad operator contractions rather than one coordinate partial.
+- error vs wall-clock time;
+- error vs sample count;
+- gradient variance vs sample count;
+- bias vs \(\sigma\).
 
 ---
 
-## 5. PINN case studies
+## 4. PINN case studies
 
-We should include PINN experiments only after direct derivative benchmarks are stable.
+PINN experiments should be added after direct derivative benchmarks are stable.
 
-### 5.1 PDE design principles
+### PDE design principle
 
-Use manufactured solutions and residuals with a single dominant high-order monomial derivative term:
+Use manufactured PDEs of the form
 
 \[
-\partial^\alpha u + \text{lower-order terms} = f.
+\partial^\alpha u + \text{lower-order terms}=f
 \]
 
-The residual should isolate the derivative-computation method rather than introduce unrelated PDE complications.
+where the residual contains one dominant high-order monomial partial.
 
-### 5.2 Candidate PDE families
+### Candidate PDE families
 
-#### High-order 1D/low-support equation
-
-Example residual contains:
+1. Pure-power derivative:
 
 ```text
-u_xxxxxx or u_xxxxxxxx
+u_xxxxxx, u_xxxxxxxx
 ```
 
-Good for pure-power patterns.
-
-#### Mixed derivative PDE
-
-Example residual contains:
+2. Repeated mixed derivative:
 
 ```text
 u_xxyy, u_xxyyzz, u_xxxxyy
 ```
 
-Good for repeated-index mixed patterns.
-
-#### Square-free stress test
-
-Example residual contains:
+3. Square-free stress test:
 
 ```text
-u_xyztuv or u_abcdefgh
+u_xyztuv, u_abcdefgh
 ```
 
-Used to demonstrate limitation and backend selection.
+### PINN methods
 
-### 5.3 PINN methods to compare
-
-- exact residual with direct AD;
-- exact residual with Waring/Taylor backend;
-- exact residual with polarization/Taylor backend;
-- stochastic residual with STDE-style estimator;
+- residual with direct AD;
+- residual with Waring/Taylor backend;
+- residual with polarization/Taylor backend;
+- residual with Gaussian-Hermite Monte Carlo estimator;
 - optional finite-difference residual.
 
-### 5.4 PINN metrics
+### Metrics
 
 - relative solution error;
 - residual loss;
 - wall-clock to target error;
-- final error under fixed time budget;
+- fixed-time final error;
 - training stability across seeds;
 - GPU peak memory;
-- gradient variance for stochastic methods.
+- gradient variance for randomized residuals.
 
 ---
 
-## 6. Reporting plan
+## 5. Reporting plan
 
-Main paper should include only compact tables and figures:
+Main paper should report compact tables/figures:
 
 1. Direction-count table by pattern.
 2. Value-mode runtime/error table.
 3. Backward-mode runtime/error table.
-4. STDE accuracy-cost curves for selected single monomial patterns.
+4. Monte Carlo Hermite accuracy-cost curves.
 5. PINN error-vs-wall-clock curves.
 6. Backend-selection success/failure table.
 
-Extended raw grids should go to appendix and CSV files in the repository.
+Full raw grids should be kept as CSV/JSON in the repository.

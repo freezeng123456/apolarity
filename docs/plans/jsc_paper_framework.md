@@ -2,9 +2,7 @@
 
 Target journal: **Journal of Scientific Computing**.
 
-This is an outline plan only.  It fixes the paper-level section titles and the role of each section before writing details.
-
-The structure follows typical JSC numerical-method papers: a short introduction, mathematical formulation, numerical method/algorithm, numerical experiments, discussion, conclusion.  Related work is folded into the Introduction unless it becomes too long.
+This document fixes the paper-level section titles before writing details.  The structure follows a typical JSC numerical-method article: introduction, mathematical formulation, numerical method, numerical experiments, discussion, conclusion.
 
 ---
 
@@ -14,143 +12,131 @@ The structure follows typical JSC numerical-method papers: a short introduction,
 
 ---
 
-## Proposed main section titles
+## Main section titles
 
 ### 1. Introduction
 
-Purpose:
+Role:
 
-- motivate high-order single mixed partial derivatives in scientific ML/PINNs;
-- distinguish single monomial partials from contractable differential-operator sums;
-- summarize limitations of nested AD, polarization, stochastic estimators, and operator-level methods;
+- motivate exact high-order single mixed partials in scientific computing and PINNs;
+- explain why a single monomial partial is different from a contractable operator sum;
+- position the work relative to nested AD, Taylor-mode AD, polarization, Monte Carlo Hermite estimators, and operator-level acceleration;
 - state contributions.
 
-The related-work discussion should be placed here in compact paragraphs:
+### 2. Single-Monomial Partials as Coefficient Extraction
 
-- higher-order AD and Taylor-mode AD;
-- PINN derivative bottlenecks;
-- STDE and stochastic contraction estimators;
-- DOF/forward differential-operator methods;
-- monomial Waring rank theory.
+Role:
 
-### 2. Single-Monomial Partials as Directional Coefficient Extraction
+- define directional Taylor coefficients
 
-Purpose:
+\[
+T_p(x;v)=\frac{1}{p!}D^pu(x)[v,\ldots,v];
+\]
 
-- define \(T_p(x;v)=p!^{-1}D^p u(x)[v,\ldots,v]\);
-- show \(\partial^\alpha u\) is a coefficient of the homogeneous polynomial \(T_p(x;\sum z_i e_i)\);
+- show that \(\partial^\alpha u\) is a coefficient of the homogeneous polynomial \(T_p(x;\sum_i z_i e_i)\);
 - define a directional schedule for one multi-index;
-- introduce polarization as the basic real schedule.
+- introduce real polarization as the basic exact directional schedule.
 
 ### 3. Waring Directional Schedules
 
-Purpose:
+Role:
 
-- present the roots-of-unity construction for one multi-index;
+- present the roots-of-unity Waring schedule for one multi-index;
 - prove coefficient filtering in derivative language;
-- state complex-rank optimality via monomial Waring rank/apolarity;
-- give the pattern taxonomy: pure, repeated binary, repeated multi-support, square-free.
+- state complex-rank optimality through monomial Waring rank / apolarity;
+- classify exponent patterns: pure, repeated binary, repeated multi-support, square-free.
 
-### 4. Taylor-Mode Evaluation and Backend Selection
+### 4. Taylor-Mode Evaluation
 
-Purpose:
+Role:
 
-- describe Taylor-jet evaluation for directional probes;
-- describe complex-valued directions and real final outputs;
-- explain value and parameter-gradient computation;
-- define the practical backends:
-  - `direct_autodiff`,
-  - `polarization_jet`,
-  - `waring_complex_jet`,
-  - `auto`;
-- give the rank-threshold selection rule.
+- describe Taylor-jet evaluation of \(T_p(x;v)\);
+- explain complex directions and real-valued final outputs;
+- explain parameter-gradient computation;
+- define practical backends:
+  - direct coordinate AD;
+  - real polarization + Taylor jet;
+  - complex Waring + Taylor jet;
+  - automatic pattern selection.
 
 ### 5. Numerical Experiments
 
-Purpose:
+Role:
 
-- verify value and gradient accuracy;
-- compare runtime and memory in value mode;
-- compare runtime and memory in backward/training mode;
-- compare against STDE-style baselines where applicable;
-- include a small PINN case study for PDEs whose residual contains single monomial partials.
-
-Subsections should be limited to:
+All numerical results should be in this one section.  Subsections:
 
 #### 5.1 Experimental Setup
 
-Hardware, implementation, architecture, dtype, timing, memory measurement.
+Hardware, software, network architecture, dtype, timing protocol, memory measurement, random seeds.
 
 #### 5.2 Direct Derivative Benchmarks
 
-Single-monomial derivative value/backward benchmarks against exact and stochastic baselines.
+Value and backward-mode benchmarks for single monomial partials.  Compare exact deterministic methods and Monte Carlo Hermite baselines.
 
 #### 5.3 PINN Case Studies
 
-Training comparisons on PDE examples containing high-order single monomial partials.
+Manufactured PDEs whose residuals contain one dominant high-order monomial partial.  Compare training accuracy, wall-clock time, and memory.
 
 #### 5.4 Ablation and Scaling
 
-Rank, order, batch, network size, dtype, and backend-selection threshold.
+Derivative order, exponent pattern, Waring rank, polarization direction count, batch size, width/depth, dtype, and automatic selection threshold.
 
 ### 6. Discussion and Limitations
 
-Purpose:
+Role:
 
-- summarize when Waring schedules win;
+- summarize regimes where Waring schedules win;
 - explain square-free limitations;
 - discuss complex arithmetic overhead;
-- discuss relation to STDE and why exact single partials are a different target;
-- discuss future real Waring schedules and broader primitive support.
+- discuss Monte Carlo Hermite baselines as accuracy-cost competitors, not as identical methods;
+- discuss future real Waring schedules and broader activation support.
 
 ### 7. Conclusion
 
-Purpose:
+Role:
 
-- concise restatement of the method and empirical conclusion;
-- no new experiments or new theory.
+- concise restatement of the method and empirical findings;
+- no new theory or experiments.
 
 ---
 
 ## Appendix titles
 
-Appendices should hold technical material, not main narrative.
-
 ### Appendix A. Proofs of Directional Schedule Identities
 
-Coefficient extraction, roots-of-unity filtering, relation to monomial Waring rank.
+Coefficient extraction, roots-of-unity filtering, monomial Waring rank connection.
 
 ### Appendix B. Taylor-Jet Recurrences
 
 Primitive rules and implementation notes.
 
-### Appendix C. Extended Experimental Tables
+### Appendix C. Extended Numerical Results
 
 Full pattern grids, value/backward, fp32/fp64, memory.
 
-### Appendix D. Additional Baseline Details
+### Appendix D. Baseline and Hyperparameter Details
 
-STDE estimator setup, finite-difference settings, random seeds, hyperparameters.
+Monte Carlo Hermite estimator settings, finite-difference settings, seeds, hardware.
 
 ---
 
-## Preferred final table/figure list
+## Planned main tables and figures
 
-1. Table: pattern taxonomy and direction counts.
-2. Table: direct derivative benchmark, value mode.
-3. Table: direct derivative benchmark, backward mode.
-4. Figure: speedup vs order/pattern.
-5. Figure: runtime vs direction count/rank.
-6. Table/Figure: STDE accuracy-cost tradeoff on single monomial derivatives.
-7. Table/Figure: PINN case-study error vs wall-clock time.
+1. Pattern taxonomy and direction counts.
+2. Direct derivative benchmark, value mode.
+3. Direct derivative benchmark, backward mode.
+4. Speedup vs derivative order and exponent pattern.
+5. Runtime vs Waring rank / direction count.
+6. Monte Carlo Hermite accuracy-cost curves for selected single monomial partials.
+7. PINN error vs wall-clock time.
 
 ---
 
 ## Boundary of the paper
 
-Keep the paper focused.  Do not expand into:
+Do not expand into:
 
 - Laplacian powers;
 - trace contractions;
-- general differential-operator compression;
-- general real Waring rank theory beyond what is needed for context.
+- general operator compression;
+- general real Waring rank theory beyond necessary context.

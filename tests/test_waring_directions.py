@@ -6,7 +6,7 @@ from collections import Counter
 
 import torch
 
-from aploarity.waring import monomial_waring_directions
+from apolarity.waring import monomial_waring_directions
 
 
 def _basis(d: int, p: int):

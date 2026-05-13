@@ -1,4 +1,4 @@
-"""Aploarity: exact single-monomial partial derivatives via Waring directions and Taylor jets."""
+"""Apolarity: exact single-monomial partial derivatives via Waring directions and Taylor jets."""
 
 from .waring import WaringInfo, alpha_factorial_from_counts, monomial_waring_directions
 from .real_waring import RealWaringInfo, monomial_real_waring_directions

@@ -1,4 +1,4 @@
-"""Forward-mode Taylor jet propagation for Linear+Tanh MLPs (STDE-style).
+"""Forward-mode Taylor jet propagation for Linear+Tanh MLPs (Gaussian-Hermite randomized).
 
 Mathematical setting
 ====================

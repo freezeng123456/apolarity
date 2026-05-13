@@ -26,9 +26,9 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from aploarity.operators import direct_monomial_autodiff, single_monomial_partial
-from aploarity.real_waring import monomial_real_waring_directions
-from aploarity.waring import monomial_waring_directions
+from apolarity.operators import direct_monomial_autodiff, single_monomial_partial
+from apolarity.real_waring import monomial_real_waring_directions
+from apolarity.waring import monomial_waring_directions
 
 
 def parse_alpha_token(token: str) -> tuple[int, ...]:
@@ -123,6 +123,35 @@ def rel_error(ref: Tensor, y: Tensor) -> tuple[float, float]:
     return abs_err, abs_err / (rr.abs().max().item() + 1e-30)
 
 
+def probabilists_hermite(z: Tensor, n: int) -> Tensor:
+    if n == 0:
+        return torch.ones_like(z)
+    if n == 1:
+        return z
+    hm2 = torch.ones_like(z)
+    hm1 = z
+    for k in range(1, n):
+        h = z * hm1 - float(k) * hm2
+        hm2, hm1 = hm1, h
+    return hm1
+
+
+def hermite_weight(Z: Tensor, alpha: tuple[int, ...]) -> Tensor:
+    counts = Counter(alpha)
+    w = torch.ones(Z.shape[:-1] + (1,), device=Z.device, dtype=Z.dtype)
+    for idx, count in counts.items():
+        w = w * probabilists_hermite(Z[..., idx:idx + 1], count)
+    return w
+
+
+def gaussian_hermite_mc(model: nn.Module, x: Tensor, alpha: tuple[int, ...], Z: Tensor, sigma: float) -> Tensor:
+    B, K, d = Z.shape
+    flat = (x.unsqueeze(1) + sigma * Z).reshape(B * K, d)
+    u = model(flat).reshape(B, K, 1)
+    w = hermite_weight(Z, alpha)
+    return (w * u).mean(dim=1) / (sigma ** len(alpha))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
@@ -137,6 +166,8 @@ def main() -> None:
     parser.add_argument("--measure", default="value", choices=["value", "backward"])
     parser.add_argument("--alphas", default="111111;111122;112233;123456;11111111;11112222;11223344;12345678")
     parser.add_argument("--methods", default="direct_autodiff,polarization_jet,waring_complex_jet,auto")
+    parser.add_argument("--mc_K", type=int, default=256)
+    parser.add_argument("--mc_sigma", type=float, default=0.1)
     parser.add_argument("--out", default="results/single_monomial_benchmark.csv")
     args = parser.parse_args()
 
@@ -193,6 +224,13 @@ def main() -> None:
                     grad_model = complex_model if selected == "waring_complex_jet" else model
                     dirs = cinfo.rank if selected == "waring_complex_jet" else rinfo.rank
                     row["selected_backend"] = selected
+                elif method == "gaussian_hermite_mc":
+                    Z_mc = torch.randn(args.batch, args.mc_K, args.d, device=device, dtype=dtype)
+                    fn = lambda alpha=alpha, Z_mc=Z_mc: gaussian_hermite_mc(model, x, alpha, Z_mc, args.mc_sigma)
+                    grad_model = model
+                    dirs = args.mc_K
+                    row["mc_K"] = args.mc_K
+                    row["mc_sigma"] = args.mc_sigma
                 else:
                     raise ValueError(f"unknown method: {method}")
                 y, ms, mem = run_timed(fn, grad_model, device, args.repeats, args.warmup, args.measure)

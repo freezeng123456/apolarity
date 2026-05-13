@@ -7,7 +7,7 @@
 > \partial^\alpha u(x),\qquad |\alpha|=p.
 > \]
 >
-> 明确不讨论 \(\Delta^k\)、trace contraction、operator sum compression、Hermite/Wick contract、STDE-style collected estimator 等“可做 contract 的算子求和”。如果出现多个单项求和，只作为现有脚本 sanity case，不作为本文方向。
+> 明确不讨论 \(\Delta^k\)、trace contraction、operator sum compression、Hermite/Wick contract、Gaussian-Hermite randomized collected estimator 等“可做 contract 的算子求和”。如果出现多个单项求和，只作为现有脚本 sanity case，不作为本文方向。
 
 ---
 
