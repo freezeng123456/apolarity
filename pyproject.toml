@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aploarity"
+version = "0.1.0"
+description = "Exact single-monomial partial derivatives via Waring directions and Taylor-mode AD"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Aploarity contributors" }]
+dependencies = [
+  "torch>=2.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
