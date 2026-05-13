@@ -1,95 +1,371 @@
-# JSC paper framework plan
+# JSC paper design plan
 
-Working target: Journal of Scientific Computing.
+Target journal: **Journal of Scientific Computing**.
 
-This is a framework only; not a draft.
+This document is a paper-design blueprint, not a manuscript draft.  It follows the structure commonly used in JSC numerical-method papers: motivation, related work, mathematical formulation, algorithm, analysis/properties, implementation, numerical experiments, and discussion.
 
-## Tentative title
+---
 
-Exact Single-Monomial High-Order Partial Derivatives via Waring Directional Schedules and Taylor-Mode Automatic Differentiation
+## 0. Working title and thesis
 
-## Core claim
+### Working title
 
-We repurpose monomial Waring decompositions as deterministic directional-derivative schedules for exact computation of single mixed partial derivatives of neural networks.
+**Exact Single-Monomial High-Order Partial Derivatives via Waring Directional Schedules and Taylor-Mode Automatic Differentiation**
 
-The method targets one multi-index derivative \(\partial^\alpha u\) at a time, not contractable differential-operator sums.
+### One-sentence thesis
 
-## Proposed structure
+For a single multi-index derivative \(\partial^\alpha u_\theta(x)\), monomial Waring decompositions provide rank-optimal complex directional schedules, and Taylor-mode automatic differentiation evaluates these directional probes exactly and efficiently for neural-network parametrizations.
 
-### 1. Introduction
+### Scope statement
 
-- High-order mixed partials in PINNs and scientific ML
-- Cost of nested coordinate autodiff
-- Distinction between single monomial partials and differential-operator contractions
-- Summary of Waring directional schedule + Taylor-mode implementation
+The paper is about **one single monomial partial derivative at a time**.  It is not about Laplacian powers, trace contractions, or general differential-operator sums.
 
-### 2. Background
+---
 
-- Symmetric tensors and high-order directional derivatives
-- Taylor-mode AD / jets
-- Monomial Waring rank over complex and real fields
-- Polarization as a real baseline
+## 1. Abstract plan
 
-### 3. Single-monomial derivative as coefficient extraction
+The abstract should contain exactly these elements:
 
-- Define \(T_p(x;v)\)
-- Show \(\partial^\alpha u = \alpha![z^\alpha]T_p(x;\sum z_i e_i)\)
-- Explain direction schedules as linear coefficient extraction formulas
+1. Problem: high-order mixed partial derivatives in scientific ML are expensive with nested automatic differentiation.
+2. Gap: existing efficient methods mostly target full operators, contractions, stochastic estimators, or low-order operators; single monomial partials lack a rank-aware deterministic backend.
+3. Method: reinterpret monomial Waring decompositions as directional-derivative schedules and evaluate the probes by Taylor-mode AD.
+4. Theory: prove the coefficient-extraction identity and complex rank optimality via monomial Waring rank/apolarity.
+5. Experiments: compare against nested coordinate AD and polarization on value and backward computations.
+6. Result: large speedups for repeated-index high-order derivatives, with square-free limitations clearly characterized.
 
-### 4. Complex Waring directional schedules
+No detailed numerical claims should be inserted until the final benchmark grid is complete.
 
-- Roots-of-unity construction
-- Minimality over complex directions via monomial Waring rank / apolarity
-- Direction count formula and pattern examples
-- Numerical conditioning notes
+---
 
-### 5. Taylor-jet implementation
+## 2. Introduction
 
-- Jet rules for `Linear/Tanh`
-- Complex-valued directions and real-valued final output
-- Value and parameter-gradient computation
-- Backend selection and caching
+### 2.1 Opening problem
 
-### 6. Backend selection
+Scientific computing and scientific machine learning often require derivatives such as
 
-- Direct autodiff reference
-- Real polarization
-- Complex Waring
-- Optional real Waring / realification future work
-- Proposed rank-threshold selection rule
+\[
+\partial_{i_1}\cdots\partial_{i_p}u_\theta(x)
+\]
 
-### 7. Numerical experiments
+for neural-network functions.  Standard nested AD is exact but costly for high order.
 
-- Accuracy vs direct autodiff
-- Value runtime and memory
-- Backward runtime and memory
-- Pattern sweep by active exponent structure
-- Scaling in order, batch, depth, width, dtype
+### 2.2 Why single monomial partials deserve separate treatment
 
-### 8. Discussion
+Many works focus on differential operators, contractions, Laplacians, or stochastic estimators.  A single mixed partial has a different algebraic structure: it is a single coefficient of a symmetric high-order derivative tensor.  This coefficient-extraction viewpoint suggests a rank-structured directional-probe strategy.
 
-- When Waring schedules win
-- Square-free limitations
-- Complex arithmetic overhead
-- Relation to STDE, DOF, Taylor-mode neural operators, hyper-dual methods
+### 2.3 Main idea
 
-### 9. Conclusion
+Define
 
-- Exact deterministic single-monomial backend
-- Future: real Waring formulas, broader primitive support, integration into PINN pipelines
+\[
+T_p(x;v)=\frac{1}{p!}D^p u_\theta(x)[v,\ldots,v].
+\]
 
-## Differentiation from existing work
+Find directions and weights such that
 
-- Waring theory exists, but is not originally a derivative-computation method.
-- Taylor-mode AD exists, but does not choose monomial-rank-optimal directions.
-- STDE handles stochastic contractions, not exact single partials.
-- DOF focuses on differential operators, mainly second-order/forward propagation.
+\[
+\partial^\alpha u_\theta(x)=\sum_r c_rT_p(x;v_r).
+\]
 
-## Key tables/figures
+Use monomial Waring decompositions to choose the smallest possible number of complex directions, then evaluate all \(T_p\) by Taylor-mode AD.
 
-1. Pattern table: alpha pattern, complex rank, polarization count, auto choice
-2. Runtime vs derivative order
-3. Runtime vs rank/direction count
-4. Backward memory vs method
-5. Square-free failure/limitation plot
-6. Accuracy histogram across patterns
+### 2.4 Contributions
+
+The contributions should be stated as follows:
+
+1. **Derivative interpretation of monomial Waring decompositions.**  We formulate single mixed partial computation as coefficient extraction from directional Taylor coefficients.
+2. **Rank-optimal complex directional schedules.**  We derive a roots-of-unity schedule with \(R_\mathbb C(\alpha)=\prod_{j=1}^n(a_j+1)\) directions and connect its minimality to monomial Waring rank.
+3. **Taylor-mode implementation for neural networks.**  We implement the directional probes with Taylor jets, supporting exact value and parameter-gradient computation.
+4. **Backend selection and benchmarking.**  We compare nested AD, real polarization, complex Waring schedules, and automatic pattern selection across order, exponent pattern, network size, dtype, and value/backward modes.
+5. **Characterization of when the method wins.**  We show that repeated-index high-order derivatives benefit most, while square-free high-order derivatives have no rank advantage over polarization.
+
+---
+
+## 3. Related work
+
+This section should be organized by method class, not chronologically.
+
+### 3.1 Higher-order automatic differentiation
+
+Discuss nested reverse AD, forward-mode/JVP, Taylor-mode AD, JAX jet, TaylorDiff.jl, TorchJet-like systems.  Emphasize that Taylor-mode computes directional high-order derivatives but does not by itself choose optimal directions for a target multi-index.
+
+### 3.2 High-order derivatives in scientific ML and PINNs
+
+Discuss expensive high-order PDE residuals, PINN derivative bottlenecks, and methods that accelerate operator computation.
+
+### 3.3 Differential-operator acceleration
+
+Discuss DOF/Forward-Laplacian-like approaches and related forward-propagation methods.  Distinguish them from single monomial partials.
+
+### 3.4 Stochastic derivative estimators
+
+Discuss STDE and randomized contraction estimators.  Distinguish stochastic contraction from deterministic exact single partial computation.
+
+### 3.5 Waring decompositions and symmetric tensor rank
+
+Introduce monomial Waring rank literature: Carlini--Catalisano--Geramita, Buczyńska--Buczyński--Teitler, Carlini--Kummer--Oneto--Ventura, Han--Moon.  State clearly that this literature was not originally about numerical differentiation.
+
+---
+
+## 4. Mathematical formulation
+
+### 4.1 Single monomial partial as a tensor coordinate
+
+Let \(A=D^p u(x)\) be a symmetric \(p\)-linear form.  A single mixed partial \(\partial^\alpha u(x)\) is a coordinate of \(A\).
+
+### 4.2 Directional Taylor coefficients
+
+Define \(T_p(x;v)\) and show its expansion:
+
+\[
+T_p\left(x;\sum_j z_je_{i_j}\right)
+=\sum_{|\beta|=p}\frac{\partial^\beta u(x)}{\beta!}z^\beta.
+\]
+
+Therefore
+
+\[
+\partial^\alpha u(x)=\alpha![z^\alpha]T_p\left(x;\sum_j z_je_{i_j}\right).
+\]
+
+### 4.3 Directional schedules
+
+Define a directional schedule as a formula
+
+\[
+\partial^\alpha u(x)=\sum_{r=1}^R c_rT_p(x;v_r)
+\]
+
+valid for all sufficiently smooth \(u\).
+
+Explain that such schedules are coefficient-extraction formulas for homogeneous polynomials.
+
+---
+
+## 5. Waring directional schedules
+
+### 5.1 Roots-of-unity construction
+
+Let active exponents be
+
+\[
+1\le a_0\le a_1\le\cdots\le a_n.
+\]
+
+Choose the minimum-exponent variable as the base and define
+
+\[
+v_\zeta=e_{i_0}+\sum_{j=1}^n\zeta_je_{i_j},
+\qquad \zeta_j^{a_j+1}=1.
+\]
+
+Then
+
+\[
+\partial^\alpha u(x)=
+\frac{\alpha!}{\prod_{j=1}^n(a_j+1)}
+\sum_\zeta \left(\prod_{j=1}^n\zeta_j\right)T_p(x;v_\zeta).
+\]
+
+### 5.2 Proof as coefficient filtering
+
+Show roots-of-unity orthogonality kills all non-target monomials in the directional Taylor polynomial.
+
+### 5.3 Minimality over complex schedules
+
+State theorem:
+
+\[
+R_\mathbb C(\alpha)=\prod_{j=1}^n(a_j+1).
+\]
+
+Explain proof path through monomial Waring rank / apolarity.  Avoid overclaiming original algebraic geometry results.
+
+### 5.4 Pattern taxonomy
+
+Include a table:
+
+| pattern | example | complex rank | polarization count | expected behavior |
+|---|---|---:|---:|---|
+| pure | 11111111 | 1 | small | strongest win |
+| repeated binary | 11112222 | 5 | 12 | strong win |
+| repeated multi-support | 11223344 | 27 | 40 | moderate win |
+| square-free | 12345678 | 128 | 128 | no rank advantage |
+
+---
+
+## 6. Taylor-mode implementation
+
+### 6.1 Jet representation
+
+Represent every intermediate value as
+
+\[
+y(t)=y_0+y_1t+\cdots+y_pt^p.
+\]
+
+### 6.2 Primitive rules
+
+State rules for `Linear` and `Tanh`.  Keep formulas concise; full implementation details can go to appendix.
+
+### 6.3 Complex-valued directions
+
+Explain why complex directions are valid for analytic activations such as `tanh`, and why the final result is real up to round-off for real-valued networks.
+
+### 6.4 Parameter gradients
+
+The schedule is built from differentiable tensor operations; therefore losses involving \(\partial^\alpha u_\theta\) can be backpropagated to \(\theta\).  Experiments must test both value and backward modes.
+
+### 6.5 Backend selection
+
+Define candidate backends:
+
+- direct coordinate autodiff
+- real polarization + jet
+- complex Waring + jet
+- automatic selection
+
+Initial auto rule:
+
+\[
+\text{use complex Waring if }R_\mathbb C(\alpha)\le \tau R_{pol}(\alpha),
+\]
+
+with \(\tau\) tuned empirically, initially around 0.7 for backward workloads.
+
+---
+
+## 7. Numerical experiments
+
+This section should be designed as a JSC numerical study, not a software demo.
+
+### 7.1 Experimental setup
+
+Report:
+
+- hardware and GPU
+- PyTorch version
+- dtype
+- network architecture
+- batch size
+- derivative order
+- random seeds
+- timing methodology
+- memory measurement method
+
+### 7.2 Accuracy verification
+
+Compare every method against direct coordinate autodiff.
+
+Metrics:
+
+\[
+\frac{\|y-y_{ref}\|_\infty}{\|y_{ref}\|_\infty+\epsilon}
+\]
+
+for both fp64 and fp32.
+
+### 7.3 Value-mode runtime and memory
+
+Benchmark value computation only.  Pattern grid:
+
+- order 3: 111, 112, 123
+- order 4: 1111, 1112, 1122, 1123, 1234
+- order 6: 111111, 111122, 112233, 123456
+- order 8: 11111111, 11111122, 11112222, 11223344, 12345678
+
+### 7.4 Backward-mode runtime and memory
+
+Benchmark
+
+\[
+L=\|\partial^\alpha u_\theta(x)\|_2^2
+\]
+
+and run `backward()`.  This is the training-relevant experiment.
+
+### 7.5 Scaling studies
+
+Vary:
+
+- derivative order \(p\)
+- rank/direction count
+- batch size
+- network width/depth
+- dtype
+
+### 7.6 Ablation studies
+
+Required ablations:
+
+1. direct Waring directions vs old Python merge path
+2. complex Waring vs real polarization for same rank patterns
+3. auto selection threshold \(\tau\)
+4. square-free failure case
+
+### 7.7 Summary tables
+
+Main paper should include compact tables only.  Full CSV-style results go to appendix or repository.
+
+---
+
+## 8. Discussion
+
+### 8.1 When the method is preferable
+
+Repeated-index high-order derivatives where complex rank is significantly below polarization count.
+
+### 8.2 When it is not preferable
+
+Square-free patterns and workloads where complex arithmetic overhead dominates direction-count savings.
+
+### 8.3 Limitations
+
+- current Taylor rules support `Linear/Tanh` only
+- complex activations require analytic primitives
+- real Waring formulas are future work
+- not intended for differential-operator contractions
+
+### 8.4 Broader relevance
+
+Potential use in PINNs, neural PDE solvers, derivative-regularized models, sensitivity analysis, and verification of high-order derivative code.
+
+---
+
+## 9. Conclusion
+
+Restate:
+
+1. single mixed partials can be computed as coefficient extraction from directional Taylor coefficients;
+2. monomial Waring rank yields rank-optimal complex schedules;
+3. Taylor-mode AD turns these schedules into efficient exact neural-network derivatives;
+4. experiments characterize both wins and limitations.
+
+---
+
+## Appendix plan
+
+### Appendix A: Algebraic proofs
+
+- coefficient extraction identity
+- roots-of-unity filtering proof
+- relation to monomial Waring rank and apolarity
+
+### Appendix B: Taylor jet rules
+
+- Linear
+- Tanh
+- discussion of analytic activations
+
+### Appendix C: Implementation details
+
+- caching
+- complex dtype handling
+- timing methodology
+
+### Appendix D: Extended numerical tables
+
+- full pattern sweep
+- fp32/fp64
+- value/backward
+- memory
