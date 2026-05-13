@@ -1,4 +1,4 @@
-"""Forward-mode Taylor jet propagation for Linear+Tanh MLPs (Gaussian-Hermite randomized).
+"""Forward-mode Taylor jet propagation for Linear+Tanh MLPs.
 
 Mathematical setting
 ====================
@@ -166,13 +166,28 @@ class TaylorJet:
 # Jet rules for primitives appearing in our MLPs
 # ============================================================================
 
+def _linear_params_for_term(weight: Tensor, bias: Tensor | None, term: Tensor) -> tuple[Tensor, Tensor | None]:
+    """Cast real parameters to a complex term dtype when needed.
+
+    This keeps complex-direction Taylor jets usable with real-valued models:
+    gradients through ``weight.to(complex*)`` flow back to the original real
+    parameters via PyTorch's cast backward.
+    """
+    if term.dtype.is_complex and not weight.dtype.is_complex:
+        w = weight.to(dtype=term.dtype)
+        b = None if bias is None else bias.to(dtype=term.dtype)
+        return w, b
+    return weight, bias
+
+
 def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet:
     """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term."""
     out: List[Tensor] = []
     for k, xk in enumerate(jet.terms):
-        yk = xk @ weight.T
-        if k == 0 and bias is not None:
-            yk = yk + bias
+        w, b = _linear_params_for_term(weight, bias, xk)
+        yk = xk @ w.T
+        if k == 0 and b is not None:
+            yk = yk + b
         out.append(yk)
     return TaylorJet(out)
 
@@ -235,9 +250,10 @@ def _jet_forward_tensors(
             b = layer.bias
             new_out: List[Tensor] = []
             for k, xk in enumerate(out):
-                yk = xk @ W.T
-                if k == 0 and b is not None:
-                    yk = yk + b
+                w, bb = _linear_params_for_term(W, b, xk)
+                yk = xk @ w.T
+                if k == 0 and bb is not None:
+                    yk = yk + bb
                 new_out.append(yk)
             out = new_out
         elif isinstance(layer, nn.Tanh):

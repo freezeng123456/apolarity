@@ -6,7 +6,6 @@ This benchmark intentionally evaluates one expanded multi-index at a time.
 from __future__ import annotations
 
 import argparse
-import copy
 import csv
 import gc
 import json
@@ -180,7 +179,6 @@ def main() -> None:
     model = build_mlp(args.d, args.hidden, args.depth, dtype, device)
     x = torch.randn(args.batch, args.d, device=device, dtype=dtype) * 0.5
     complex_dtype = torch.complex128 if dtype == torch.float64 else torch.complex64
-    complex_model = copy.deepcopy(model).to(dtype=complex_dtype)
 
     rows: list[dict[str, Any]] = []
     print(f"device={device} dtype={dtype} d={args.d} B={args.batch} hidden={args.hidden} depth={args.depth} measure={args.measure}")
@@ -211,8 +209,8 @@ def main() -> None:
                     grad_model = model
                     dirs = None
                 elif method == "waring_complex_jet":
-                    fn = lambda alpha=alpha: single_monomial_partial(model, x, alpha, backend="waring_complex_jet", complex_model=complex_model)
-                    grad_model = complex_model
+                    fn = lambda alpha=alpha: single_monomial_partial(model, x, alpha, backend="waring_complex_jet")
+                    grad_model = model
                     dirs = cinfo.rank
                 elif method == "polarization_jet":
                     fn = lambda alpha=alpha: single_monomial_partial(model, x, alpha, backend="polarization_jet")
@@ -220,8 +218,8 @@ def main() -> None:
                     dirs = rinfo.rank
                 elif method == "auto":
                     selected = "waring_complex_jet" if cinfo.rank <= 0.7 * rinfo.rank else "polarization_jet"
-                    fn = lambda alpha=alpha, selected=selected: single_monomial_partial(model, x, alpha, backend=selected, complex_model=complex_model)
-                    grad_model = complex_model if selected == "waring_complex_jet" else model
+                    fn = lambda alpha=alpha, selected=selected: single_monomial_partial(model, x, alpha, backend=selected)
+                    grad_model = model
                     dirs = cinfo.rank if selected == "waring_complex_jet" else rinfo.rank
                     row["selected_backend"] = selected
                 elif method == "gaussian_hermite_mc":

@@ -123,7 +123,10 @@ def single_monomial_partial(
 
     if backend == "waring_complex_jet":
         complex_dtype = torch.complex128 if x.dtype == torch.float64 else torch.complex64
-        cm = complex_model if complex_model is not None else _complex_model(model, x.dtype)
+        # If no complex copy is provided, evaluate complex directions through the
+        # original real model.  Linear weights are cast inside the Taylor-jet
+        # rules, so gradients flow back to the real parameters.
+        cm = complex_model if complex_model is not None else model
         cx = x.to(dtype=complex_dtype)
         V, coeff, _info = monomial_waring_directions(alpha_t, d, device=x.device, dtype=complex_dtype)
         return _evaluate_direction_formula(cm, cx, V, coeff, p)
