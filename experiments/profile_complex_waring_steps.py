@@ -93,13 +93,13 @@ def cast_linear(weight: Tensor, bias: Tensor | None, dtype: torch.dtype) -> tupl
 
 
 def linear_jet_terms(terms: list[Tensor], layer: nn.Linear) -> list[Tensor]:
-    out: list[Tensor] = []
     w, b = cast_linear(layer.weight, layer.bias, terms[0].dtype)
-    for k, xk in enumerate(terms):
-        yk = xk @ w.T
-        if k == 0 and b is not None:
-            yk = yk + b
-        out.append(yk)
+    n = terms[0].shape[0]
+    flat = torch.cat(terms, dim=0)
+    yflat = flat @ w.T
+    out = list(yflat.split(n, dim=0))
+    if b is not None:
+        out[0] = out[0] + b
     return out
 
 

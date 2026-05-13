@@ -186,17 +186,20 @@ def _is_sin_module(m: nn.Module) -> bool:
     return m.__class__.__name__.lower() in {"sin", "sine", "sinactivation"}
 
 def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet:
-    """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term."""
-    out: List[Tensor] = []
-    # All jet terms share dtype/device, so cast real parameters to complex once
-    # per layer instead of once per order.  This reduces repeated ToCopyBackward
-    # nodes in complex-direction backward graphs.
+    """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term.
+
+    All Taylor coefficients share the same shape, so we concatenate the order
+    dimension into the batch dimension and use a single GEMM per Linear layer.
+    This reduces the number of forward/backward matmul nodes from ``p+1`` to
+    one per layer.
+    """
     w, b = _linear_params_for_term(weight, bias, jet.terms[0])
-    for k, xk in enumerate(jet.terms):
-        yk = xk @ w.T
-        if k == 0 and b is not None:
-            yk = yk + b
-        out.append(yk)
+    n = jet.terms[0].shape[0]
+    flat = torch.cat(jet.terms, dim=0)
+    yflat = flat @ w.T
+    out = list(yflat.split(n, dim=0))
+    if b is not None:
+        out[0] = out[0] + b
     return TaylorJet(out)
 
 
@@ -331,12 +334,12 @@ def _jet_forward_tensors(
             W = layer.weight
             b = layer.bias
             w, bb = _linear_params_for_term(W, b, out[0])
-            new_out: List[Tensor] = []
-            for k, xk in enumerate(out):
-                yk = xk @ w.T
-                if k == 0 and bb is not None:
-                    yk = yk + bb
-                new_out.append(yk)
+            n = out[0].shape[0]
+            flat = torch.cat(out, dim=0)
+            yflat = flat @ w.T
+            new_out = list(yflat.split(n, dim=0))
+            if bb is not None:
+                new_out[0] = new_out[0] + bb
             out = new_out
         elif isinstance(layer, nn.Tanh):
             out = jet_tanh(TaylorJet(out)).terms
