@@ -188,8 +188,11 @@ def _is_sin_module(m: nn.Module) -> bool:
 def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet:
     """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term."""
     out: List[Tensor] = []
+    # All jet terms share dtype/device, so cast real parameters to complex once
+    # per layer instead of once per order.  This reduces repeated ToCopyBackward
+    # nodes in complex-direction backward graphs.
+    w, b = _linear_params_for_term(weight, bias, jet.terms[0])
     for k, xk in enumerate(jet.terms):
-        w, b = _linear_params_for_term(weight, bias, xk)
         yk = xk @ w.T
         if k == 0 and b is not None:
             yk = yk + b
@@ -293,9 +296,9 @@ def _jet_forward_tensors(
         if isinstance(layer, nn.Linear):
             W = layer.weight
             b = layer.bias
+            w, bb = _linear_params_for_term(W, b, out[0])
             new_out: List[Tensor] = []
             for k, xk in enumerate(out):
-                w, bb = _linear_params_for_term(W, b, xk)
                 yk = xk @ w.T
                 if k == 0 and bb is not None:
                     yk = yk + bb
