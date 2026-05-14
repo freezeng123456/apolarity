@@ -235,7 +235,9 @@ def main() -> None:
                     grad_model = model
                     dirs = rinfo.rank
                 elif method == "auto":
-                    selected = "waring_complex_jet" if cinfo.rank <= 0.7 * rinfo.rank else "polarization_jet"
+                    selected = "polarization_jet" if args.measure == "backward" else (
+                        "waring_complex_jet" if cinfo.rank <= 0.8 * rinfo.rank else "polarization_jet"
+                    )
                     fn = lambda alpha=alpha, selected=selected: single_monomial_partial(model, x, alpha, backend=selected)
                     grad_model = model
                     dirs = cinfo.rank if selected == "waring_complex_jet" else rinfo.rank

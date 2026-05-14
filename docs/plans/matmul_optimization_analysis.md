@@ -8,9 +8,31 @@ After custom activation VJP, should we optimize matrix multiplication in Taylor-
 
 ## Idea
 
-A Linear layer on a Taylor jet originally computed one matrix multiplication per Taylor coefficient: `y_k = W x_k`, for `k=0,...,p`.  This creates `p+1` GEMM nodes per Linear layer.
+A Linear layer on a Taylor jet originally computed one matrix multiplication per Taylor coefficient:
 
-Since all Taylor coefficients have the same shape, we concatenate the Taylor-order dimension into the batch dimension and use one larger GEMM per Linear layer:
+\[
+y_k = W x_k,\qquad k=0,\ldots,p.
+\]
+
+This creates \(p+1\) GEMM nodes per Linear layer.  Since all Taylor coefficients have the same shape, we can concatenate the Taylor-order dimension into the batch dimension:
+
+\[
+\begin{bmatrix}x_0\\x_1\\\vdots\\x_p\end{bmatrix}W^T
+=
+\begin{bmatrix}y_0\\y_1\\\vdots\\y_p\end{bmatrix}.
+\]
+
+Thus each Linear layer uses one larger GEMM instead of \(p+1\) smaller GEMMs.
+
+## Implemented
+
+File:
+
+```text
+src/apolarity/taylor_jet.py
+```
+
+Implementation sketch:
 
 ```python
 flat = torch.cat(jet.terms, dim=0)
@@ -18,14 +40,9 @@ yflat = flat @ W.T
 out = yflat.split(n, dim=0)
 ```
 
-## Implemented
+The diagnostic profiler script was updated to use the same Linear implementation.
 
-Files:
-
-```text
-src/apolarity/taylor_jet.py
-experiments/profile_complex_waring_steps.py
-```
+## Correctness
 
 All tests pass:
 

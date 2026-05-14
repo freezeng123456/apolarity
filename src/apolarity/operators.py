@@ -18,6 +18,7 @@ from .taylor_jet import tp_directional_via_jet
 from .waring import monomial_waring_directions
 
 Backend = Literal["auto", "direct_autodiff", "polarization_jet", "waring_complex_jet", "waring_real_jet"]
+AutoMode = Literal["value", "backward"]
 
 
 def _alpha_tuple(alpha: Iterable[int]) -> tuple[int, ...]:
@@ -79,6 +80,7 @@ def single_monomial_partial(
     backend: Backend = "auto",
     complex_model: nn.Module | None = None,
     create_graph: bool = True,
+    auto_mode: AutoMode = "value",
 ) -> Tensor:
     """Compute one single-monomial partial derivative.
 
@@ -95,6 +97,8 @@ def single_monomial_partial(
               otherwise use polarization.
         complex_model: Optional pre-cast complex copy of `model` for repeated complex calls.
         create_graph: Used only by `direct_autodiff`.
+        auto_mode: `value` selects complex Waring when it reduces direction count;
+            `backward` currently prefers real polarization to avoid complex-autograd overhead.
     """
     alpha_t = _alpha_tuple(alpha)
     p = len(alpha_t)
@@ -111,7 +115,10 @@ def single_monomial_partial(
             dtype=torch.complex128 if x.dtype == torch.float64 else torch.complex64,
         )
         Vr, _cr, _ri = monomial_real_waring_directions(alpha_t, d, device=x.device, dtype=x.dtype, strategy="polarization")
-        backend = "waring_complex_jet" if info.rank <= 0.7 * Vr.shape[0] else "polarization_jet"
+        if auto_mode == "backward":
+            backend = "polarization_jet"
+        else:
+            backend = "waring_complex_jet" if info.rank <= 0.8 * Vr.shape[0] else "polarization_jet"
 
     if backend == "polarization_jet":
         V, coeff = polarization_directions(alpha_t, d, device=x.device, dtype=x.dtype, antipodal=True)
