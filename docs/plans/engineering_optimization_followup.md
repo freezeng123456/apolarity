@@ -43,3 +43,24 @@ Direction generation and weighted summation are negligible.
 2. real Waring formulas for repeated exponent patterns;
 3. better cost model for mode-aware backend selection;
 4. optional `torch.compile` experiments for value-mode fixed shapes.
+
+## Additional test: real-GEMM decomposition for complex inputs
+
+We also tested a specialized Linear-jet kernel for the common case where the network weights are real but the Waring directions are complex.  Instead of using complex GEMM on
+
+```text
+(x_real + i x_imag) @ W.T
+```
+
+with real `W` cast to complex, the experimental kernel used real GEMMs:
+
+```text
+forward:  y_real = x_real @ W.T,  y_imag = x_imag @ W.T
+backward: grad_x_real = grad_y_real @ W
+          grad_x_imag = grad_y_imag @ W
+          grad_W = grad_y_real.T @ x_real + grad_y_imag.T @ x_imag
+```
+
+The gradients matched PyTorch's native complex autograd, but runtime did not improve.  For representative backward workloads, it was slightly slower or neutral compared with the merged-GEMM native PyTorch path.  The experiment was reverted.
+
+Conclusion: decomposing complex GEMM into explicit real GEMMs is not a useful optimization at this level.  cuBLAS/PyTorch native complex GEMM plus merged jet-order batching is currently the better Linear-layer implementation.
