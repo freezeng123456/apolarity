@@ -137,7 +137,7 @@ def main() -> None:
         u_data = exact_u(x_data)
 
         opt.zero_grad(set_to_none=True)
-        deriv = single_monomial_partial(model, x_res, alpha, backend=args.method, auto_mode="backward").real
+        deriv = single_monomial_partial(model, x_res, alpha, backend=args.method).real
         residual_loss = (deriv - f_res).square().mean()
         data_loss = (model(x_data) - u_data).square().mean()
         loss = residual_loss + args.data_weight * data_loss

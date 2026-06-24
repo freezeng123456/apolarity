@@ -185,6 +185,10 @@ def _linear_params_for_term(weight: Tensor, bias: Tensor | None, term: Tensor) -
 def _is_sin_module(m: nn.Module) -> bool:
     return m.__class__.__name__.lower() in {"sin", "sine", "sinactivation"}
 
+
+def _is_sinh_module(m: nn.Module) -> bool:
+    return m.__class__.__name__.lower() in {"sinh", "sinhactivation"}
+
 def jet_linear(jet: TaylorJet, weight: Tensor, bias: Tensor | None) -> TaylorJet:
     """Apply  y = x @ W^T + b  to a jet.  Bias adds only to the order-0 term.
 
@@ -296,6 +300,39 @@ class _SinJetFunction(torch.autograd.Function):
         return _activation_vjp(ctx.saved_tensors, grad_outputs)
 
 
+class _SinhJetFunction(torch.autograd.Function):
+    """Jet rule for sinh, the entire analytic activation used in §5 PINN experiments.
+
+    Coupled recurrence (probabilist convention y_k = (1/k!) d^k y / dt^k):
+        y = sinh(x),  z = cosh(x);  y' = z*x',  z' = y*x'.
+        y_0 = sinh(x_0),  z_0 = cosh(x_0)
+        y_k = (1/k) sum_{j=0}^{k-1} (k-j) * z_j * x_{k-j}
+        z_k = (1/k) sum_{j=0}^{k-1} (k-j) * y_j * x_{k-j}      (no sign flip, contrast with sin)
+
+    VJP uses derivative q = cosh = z, identical pattern to sin/tanh.
+    """
+    @staticmethod
+    def forward(ctx, *terms: Tensor):
+        p = len(terms) - 1
+        x = list(terms)
+        y: List[Tensor] = [torch.sinh(x[0])]
+        z: List[Tensor] = [torch.cosh(x[0])]
+        for k in range(1, p + 1):
+            acc_y = k * z[0] * x[k]
+            acc_z = k * y[0] * x[k]
+            for j in range(1, k):
+                acc_y = acc_y + (k - j) * z[j] * x[k - j]
+                acc_z = acc_z + (k - j) * y[j] * x[k - j]
+            y.append(acc_y / float(k))
+            z.append(acc_z / float(k))
+        ctx.save_for_backward(*z)
+        return tuple(y)
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        return _activation_vjp(ctx.saved_tensors, grad_outputs)
+
+
 def jet_tanh(jet: TaylorJet) -> TaylorJet:
     """Pointwise tanh on a jet using a custom VJP to reduce autograd graph size."""
     return TaylorJet(list(_TanhJetFunction.apply(*jet.terms)))
@@ -304,6 +341,11 @@ def jet_tanh(jet: TaylorJet) -> TaylorJet:
 def jet_sin(jet: TaylorJet) -> TaylorJet:
     """Pointwise sin on a jet using coupled sin/cos recurrences."""
     return TaylorJet(list(_SinJetFunction.apply(*jet.terms)))
+
+
+def jet_sinh(jet: TaylorJet) -> TaylorJet:
+    """Pointwise sinh on a jet using coupled sinh/cosh recurrences."""
+    return TaylorJet(list(_SinhJetFunction.apply(*jet.terms)))
 
 
 def jet_sigmoid(jet: TaylorJet) -> TaylorJet:
@@ -315,7 +357,7 @@ def jet_sigmoid(jet: TaylorJet) -> TaylorJet:
 # ============================================================================
 
 def _is_supported_module(m: nn.Module) -> bool:
-    return isinstance(m, (nn.Linear, nn.Tanh, nn.Sigmoid)) or _is_sin_module(m)
+    return isinstance(m, (nn.Linear, nn.Tanh, nn.Sigmoid)) or _is_sin_module(m) or _is_sinh_module(m)
 
 
 # Tensor-only inner driver: takes a list of tensors (the input jet terms)
@@ -347,6 +389,8 @@ def _jet_forward_tensors(
             out = jet_sigmoid(TaylorJet(out)).terms
         elif _is_sin_module(layer):
             out = jet_sin(TaylorJet(out)).terms
+        elif _is_sinh_module(layer):
+            out = jet_sinh(TaylorJet(out)).terms
         else:
             raise NotImplementedError(
                 f"taylor_jet does not support layer type {type(layer).__name__}"
@@ -465,6 +509,7 @@ __all__ = [
     "jet_linear",
     "jet_tanh",
     "jet_sin",
+    "jet_sinh",
     "jet_sigmoid",
     "jet_forward_sequential",
     "tp_directional_via_jet",

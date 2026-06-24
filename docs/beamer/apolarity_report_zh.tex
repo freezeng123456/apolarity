@@ -1,0 +1,463 @@
+% !TEX program = xelatex
+% Apolarity 论文汇报版 beamer（中文）
+% 主题: default + seahorse + 顶部 miniframes 导航
+% 4 大节：问题与对偶 → 等价性与构造 → 实现与工程 → 结论
+
+\documentclass[10pt,aspectratio=169]{beamer}
+
+\usepackage{fontspec}
+\setmainfont{Droid Sans Fallback}
+\setsansfont{Droid Sans Fallback}
+\setmonofont{DejaVu Sans Mono}
+
+\usepackage{amsmath,amssymb,amsthm,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{xcolor}
+
+\usetheme{default}
+\usecolortheme{seahorse}
+\useoutertheme[subsection=false,footline=empty]{miniframes}
+\useinnertheme{circles}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{section in head/foot}{bg=blue!18,fg=black}
+\setbeamercolor{block title}{bg=blue!12,fg=black}
+\setbeamerfont{block title}{series=\bfseries}
+\setbeamerfont{frametitle}{series=\bfseries}
+
+% 数学符号宏
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Tp}{T_p}
+\newcommand{\dal}{\partial^{\alpha}}
+\newcommand{\Qu}{Q_{u}}
+
+\title{基于 Waring 理论与 Taylor 方向导数的\\单项高阶偏导精确算法}
+\subtitle{论文汇报}
+\author{\vspace{-1em}}
+\institute{}
+\date{\today}
+
+\begin{document}
+
+% ---------------------------------------------------------------- %
+\begin{frame}[plain]
+  \titlepage
+  \vspace{-0.5em}
+  \begin{center}
+    \small\itshape \today
+  \end{center}
+\end{frame}
+
+% ---------------------------------------------------------------- %
+\begin{frame}{汇报提纲}
+  \small
+  \tableofcontents
+\end{frame}
+
+% ================================================================ %
+\section{问题与对偶}
+% ================================================================ %
+
+\begin{frame}{研究背景与动机}
+  在 PINN、神经网络变分蒙特卡洛、随机最优控制等问题中，
+  需要反复计算神经网络 $u$ 的某一固定的高阶混合偏导
+  \[
+    \dal u(x) \;=\; \partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}\,u(x),
+    \qquad |\alpha|=p\ge 2.
+  \]
+  典型场景包括 Cahn--Hilliard 的 $\partial_x^2\partial_y^2$、KdV 的 $\partial_x^3$、
+  双调和及高阶 polyharmonic、梁与薄板方程的 $\partial_x^4$ 等。
+
+  \medskip
+  \textbf{现有路径的瓶颈.}\;
+  最直接的方案是嵌套调用 $p$ 次 \texttt{torch.autograd.grad}（开启 \texttt{create\_graph=True}）。
+  自动求导图深度为 $\Theta(pL)$，激活内存为 $\Theta((p+1)L)$，
+  并随 $p$ 平方级地累积图重建与算子派发开销。
+  在 $p=6$ 的中等规模网络上，单次 $\dal u$ 调用已进入数十毫秒量级，是 PINN 训练的主要瓶颈。
+
+  \medskip
+  \textbf{本工作目标.}\;
+  对每一个给定的多重指标 $\alpha$，提供一种确定性、精度达机器精度、并可端到端反传的高阶偏导计算后端，
+  在含重复指标的中高阶情形下显著快于嵌套自动求导。
+\end{frame}
+
+\begin{frame}{活动子空间与符号约定}
+  \textbf{活动指标与指数.}\;
+  设 $\alpha$ 中实际出现的坐标下标为 $i_0,\dots,i_n$（共 $n+1$ 个），
+  对应重数 $1\le a_0\le a_1\le\cdots\le a_n$。约定
+  \[
+    |\alpha| \;=\; \sum_{j=0}^{n} a_j \;=\; p,
+    \qquad
+    \alpha! \;=\; \prod_{j=0}^{n} a_j!.
+  \]
+  下文一律将方向取值限制在 $(n+1)$ 维空间 $\R^{n+1}=\{(v_0,\dots,v_n)\}$，
+  其中第 $j$ 个分量 $v_j$ 对应坐标方向 $e_{i_j}$。
+
+  \medskip
+  \textbf{两个不同角色的对象.}\;
+  \emph{方向 $v\in\R^{n+1}$} 是求方向 Taylor 系数时代入的具体向量；
+  \emph{对偶变量 $z=(z_0,\dots,z_n)$} 是 $\R[z]_p$ 中作为不定元的符号变量。
+  线性形式 $v\!\cdot\!z\in\R[z]_1$ 由方向 $v$ 的分量唯一决定：
+  $\displaystyle v\cdot z = \sum_{j=0}^{n} v_j\,z_j$.
+
+  \medskip
+  \textbf{方向 Taylor 系数.}\;
+  对方向 $v\in\R^{n+1}$，
+  \[
+    \Tp(x;v) \;:=\; \tfrac{1}{p!}\,\tfrac{d^p}{d\tau^p}\,u(x+\tau v)\big|_{\tau=0}
+                \;=\; \tfrac{1}{p!}\,D^p u(x)[v,\dots,v].
+  \]
+\end{frame}
+
+\begin{frame}{两个最优化问题}
+  \begin{block}{问题 \textbf{(P)}：方向导数的最小个数}
+  寻找最小的 $R\in\mathbb{N}$ 与 $c_r\in\R$、$v_r\in\R^{n+1}$，使得
+  \[
+    \boxed{\;\dal u(x)
+       \;=\; \sum_{r=1}^{R}\,c_r\,\Tp(x;v_r)
+       \quad\text{对任意光滑 }u\text{ 都成立}.\;}
+    \qquad (\ast)
+  \]
+  \end{block}
+
+  \begin{block}{问题 \textbf{(Q)}：单项 $z^\alpha$ 的 Waring 秩}
+  寻找最小的 $R\in\mathbb{N}$ 与 $c_r\in\R$、$v_r\in\R^{n+1}$，使得作为 $\R[z]_p$ 中的多项式恒等式，
+  \[
+    \boxed{\;p!\,z^{\alpha} \;=\; \sum_{r=1}^{R}\,c_r\,(v_r\!\cdot\! z)^{p}\;}
+    \qquad (\diamond)
+  \]
+  最小的 $R$ 称为单项 $z^\alpha$ 在 $\R$ 上的 \emph{实 Waring 秩}，记 $R_\R(z^\alpha)$。
+  \end{block}
+\end{frame}
+
+% ================================================================ %
+\section{等价性与显式构造}
+% ================================================================ %
+
+\begin{frame}{Carlini--Catalisano--Geramita 的闭式秩公式}
+  \textbf{从 $\R$ 扩展到 $\C$.}\;
+  问题 (P)、(Q) 默认在 $\R$ 上提出，但若允许 $c_r\in\C$、$v_r\in\C^{n+1}$
+  （即把 $\R$ 替换为 $\C$），最优值会变小，记为 $R_\C(z^\alpha)$。
+  实方向只是复方向的一个特例，因此 $R_\C(z^\alpha)\le R_\R(z^\alpha)$。
+  下面的定理给出 $R_\C$ 的闭式。
+
+  \medskip
+  \begin{theorem}[Carlini--Catalisano--Geramita, 2012]
+  对 $z^\alpha = z_0^{a_0}z_1^{a_1}\cdots z_n^{a_n}$，$1\le a_0\le\cdots\le a_n$，有
+  \[
+    \boxed{\;R_{\C}(z^\alpha) \;=\; \prod_{j=1}^{n}(a_j+1)
+                              \;=\; \frac{\prod_{j=0}^{n}(a_j+1)}{a_0+1}.\;}
+  \]
+  上界由单位根构造给出（见后页）；
+  下界基于 apolar 理想 $(\partial_0^{a_0+1},\dots,\partial_n^{a_n+1})$
+  为 complete intersection 这一事实，由 Hilbert 函数推得。
+  \end{theorem}
+\end{frame}
+
+\begin{frame}{桥定理：(P) 与 (Q) 严格等价}
+  \begin{theorem}[apolarity 桥定理]
+  对任意 $R\in\mathbb{N}$、$c_r\in\R$、$v_r\in\R^{n+1}$，下述两命题相互充要：
+
+  \medskip
+  \emph{(1)}\;\; 等式 $\dal u(x)=\sum_{r=1}^{R}c_r\,\Tp(x;v_r)$ 对任意 $u\in C^p_x$ 成立；\\[2pt]
+  \emph{(2)}\;\; 多项式 $p!\,z^{\alpha}$ 与 $\sum_{r=1}^{R}c_r\,(v_r\!\cdot\!z)^p$ 在 $\R[z]_p$ 中相等。
+  \end{theorem}
+
+  \medskip
+  \begin{block}{推论：(P) 与 (Q) 同解}
+  方向导数的最小个数 $R^{\ast}_\R(\alpha)$ 等于 $R_\R(z^\alpha)$；
+  且 $(c_r,v_r)$ 是 (P) 的最优解当且仅当其同时是 (Q) 的最优解。
+  \end{block}
+
+  \medskip
+  桥定理把 (P) 的"对任意光滑 $u$ 都成立"等价转化为 $\R[z]_p$ 中的一个有限维多项式恒等。
+  对 $\C$ 上的版本，证明完全平行（用 $\C[z]_p$ 替换 $\R[z]_p$），故复方向也由对应的复 Waring 分解给出。
+\end{frame}
+
+\begin{frame}{桥定理的证明}
+  把 (P) 与 (Q) 各自展开后，两者都化简为同一组有限维线性方程
+  \[
+     \sum_{r=1}^{R} c_r\, v_r^{\beta} \;=\; \alpha!\,\delta_{\alpha\beta},
+     \qquad \forall\,|\beta|=p.
+     \tag{$\star$}
+  \]
+
+  \medskip
+  \textbf{(P) $\Leftrightarrow$ ($\star$).}\;
+  代入 $\Tp(x;v_r)=\sum_{|\beta|=p}\partial^{\beta}u(x)\,v_r^{\beta}/\beta!$ 并交换求和：
+  \[
+     (\text{P}) \;\Longleftrightarrow\;
+     \sum_{|\beta|=p}\Big[\sum_{r=1}^{R}c_r\, v_r^{\beta}\Big]
+        \frac{\partial^{\beta}u(x)}{\beta!}
+        \;=\; \dal u(x), \quad \forall u,
+  \]
+  令 $u$ 跑遍 $p$ 次单项以单项基测试上式，即得 $(\star)$。
+
+  \medskip
+  \textbf{(Q) $\Leftrightarrow$ ($\star$).}\;
+  代入 $(v_r\!\cdot\!z)^p=\sum_{|\beta|=p}\binom{p}{\beta}v_r^{\beta}z^{\beta}$ 并比较 $z^{\beta}$ 系数：
+  \[
+     (\text{Q}) \;\Longleftrightarrow\;
+     \binom{p}{\beta}\sum_{r=1}^{R}c_r\, v_r^{\beta} \;=\; p!\,\delta_{\alpha\beta}
+     \;\Longleftrightarrow\; (\star),
+  \]
+  最后一步利用 $p!/\binom{p}{\beta}=\beta!$ 与 $\delta_{\alpha\beta}\cdot\beta!=\alpha!\,\delta_{\alpha\beta}$。\hfill$\square$
+\end{frame}
+
+\begin{frame}{达到下界的单位根构造}
+  由桥定理，求解 (P) 等价于在 $\C[z]_p$ 中给出长度为 $R_\C(z^\alpha)$ 的 Waring 分解。
+  CCG 给出如下闭式构造：
+
+  \medskip
+  以最小指数变量 $z_0$ 作为基方向。记 $m_j:=a_j+1$，
+  并记 $m_j$ 次单位根集合 $U_{m_j}:=\{\zeta\in\C : \zeta^{m_j}=1\}$。
+  对每一个 $\zeta=(\zeta_1,\dots,\zeta_n)\in U_{m_1}\times\cdots\times U_{m_n}$，令
+  \[
+    v_{\zeta} \;=\; e_{i_0} + \sum_{j=1}^{n}\zeta_j\,e_{i_j},
+    \qquad
+    c_{\zeta} \;=\; \frac{\alpha!}{\prod_{j=1}^{n}m_j}\prod_{j=1}^{n}\zeta_j.
+  \]
+  则
+  \[
+    \dal u(x)
+    \;=\; \sum_{\zeta\,\in\, U_{m_1}\!\times\cdots\times\, U_{m_n}}\!\!
+          c_{\zeta}\,\Tp(x;v_{\zeta}),
+  \]
+  方向数恰为 $\prod_{j=1}^{n}m_j = \prod_{j=1}^{n}(a_j+1) = R_\C(z^\alpha)$。
+
+  \medskip
+  \textbf{为何使用单位根.}\;
+  对每个 $j$ 单独求和后，单位根求和恒等式
+  $\displaystyle\sum_{\zeta\,\in\, U_m}\zeta^{k}\;=\;m\cdot\mathbf{1}_{\{m\,\mid\, k\}}$
+  起到 $\delta$ 滤波的作用：在所有 $z^\beta$ 系数中仅 $\beta=\alpha$ 一项保留，
+  其余系数自动相消。
+\end{frame}
+
+\begin{frame}{重复指标举例与方向数对比}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.50\textwidth}
+    \footnotesize
+    记 $U_m=\{\zeta\in\C:\zeta^m=1\}$。
+
+    \medskip
+    \textbf{$u_{12}$} ($\alpha=(1,1)$, $R=2$):
+    \[
+      u_{12}(x)\;=\;\tfrac12\!\sum_{\zeta\,\in\, U_2}\!\zeta\,\Tp(x;e_1{+}\zeta\,e_2).
+    \]
+    展开即 $\tfrac12\Tp(x;e_1{+}e_2)-\tfrac12\Tp(x;e_1{-}e_2)$。
+
+    \medskip
+    \textbf{$u_{1122}$} ($\alpha=(2,2)$, $R_\C=3$, $R_\R=4$):
+    \[
+      u_{1122}(x)\;=\;\tfrac{4}{3}\!\sum_{\zeta\,\in\, U_3}\!\zeta\,\Tp(x;e_1{+}\zeta\,e_2).
+    \]
+    其中 $U_3=\{1,\omega,\omega^2\}$，$\omega=e^{2\pi i/3}$。
+
+    \medskip
+    \textbf{$u_{112233}$} ($\alpha=(2,2,2)$, $R_\C=9$, $R_\R\le 13$):
+    \[
+      u_{112233}(x)\;=\;\tfrac{8}{9}\!\!
+       \sum_{\substack{\zeta_1\,\in\, U_3\\ \zeta_2\,\in\, U_3}}\!\!
+        \zeta_1\zeta_2\,\Tp\!\big(x;\,e_1{+}\zeta_1 e_2{+}\zeta_2 e_3\big).
+    \]
+    共 $9$ 对 $(\zeta_1,\zeta_2)$。
+
+    \column{0.46\textwidth}
+    \footnotesize
+    \begin{tabular}{lccc}
+      \toprule
+      pattern & $R_{\C}$ & $R_{\R}$ & polariz. \\
+      \midrule
+      $(p)$        & $1$  & $1$  & $\le 2^{p-1}$ \\
+      $(2,1)$      & $3$  & $3$  & $3$ \\
+      $(1,1,1)$    & $4$  & $4$  & $4$ \\
+      $(3,1)$      & $4$  & $4$  & --- \\
+      $(2,2)$      & \alert{$3$} & $4$ & $4$ \\
+      $(2,1,1)$    & $6$  & $6$  & $6$ \\
+      $(1,1,1,1)$  & $8$  & $8$  & $8$ \\
+      $(4,2)$      & \alert{$5$} & $\le 7$ & $7$ \\
+      $(2,2,2)$    & \alert{$9$} & $\le 13$ & $13$ \\
+      $(1^6)$      & $32$ & $32$ & $32$ \\
+      \bottomrule
+    \end{tabular}
+
+    \medskip
+    红色行：复方向严格少于实方向方案，均出现于 $a_0\ge 2$、支撑数 $\ge 2$ 时。
+    $a_0=1$ 时由 CKOV (2017) 有 $R_\R=R_\C$；
+    square-free 在 $\R$ 与 $\C$ 上均达到 $2^{p-1}$。
+  \end{columns}
+\end{frame}
+
+% ================================================================ %
+\section{实现与工程}
+% ================================================================ %
+
+\begin{frame}{方向 $\Tp(x;v)$ 的高效评估：Taylor 前向 AD}
+  对每个方向 $v_r$ 各计算一次 $\Tp(x;v_r)$。
+  将每层中间张量 $y$ 扩展为长度 $p+1$ 的元组 $(y_0,y_1,\dots,y_p)$，
+  其中 $y_k=\tfrac{1}{k!}\,d^k y/d\tau^k|_{\tau=0}$。各算子的 jet 规则：
+
+  \medskip
+  \textbf{线性层} $y=Wx+b$：\;
+  $y_0=Wx_0+b$，\;$y_k=Wx_k\;(k\ge 1)$。
+  实现上将 $p+1$ 个阶沿 batch 轴拼接，整层只执行一次 GEMM。
+
+  \medskip
+  \textbf{$\sinh$ 激活}（取辅助 jet $z=\cosh(x)$）：对 $k\ge 1$
+  \[
+    y_k = \tfrac1k\sum_{j=0}^{k-1}(k-j)\,z_j\,x_{k-j},
+    \qquad
+    z_k = \tfrac1k\sum_{j=0}^{k-1}(k-j)\,y_j\,x_{k-j}.
+  \]
+  $\tanh,\sigma,\sin$ 的耦合递推具有相同形式。
+  $\sinh,\cosh$ 在 $\C$ 上是整函数，可直接用于复方向。
+
+  \medskip
+  每个激活 jet 实现为 \texttt{torch.autograd.Function}，并提供闭式 VJP
+  $g_x^{(m)}=\sum_{j=0}^{p-m}\overline{q_j}\,g_y^{(m+j)}$，
+  反向阶段无需对 jet 内部递推单独建图。
+\end{frame}
+
+\begin{frame}{加速来源分析}
+  记单次普通前向开销 $C_{\mathrm{fwd}}=O(L B H^2)$（$L$ 层、batch $B$、宽度 $H$），
+  自动求导每个算子的派发常数为 $\kappa$。$O(\cdot)$ 表示渐近运行时（略去常数因子）。
+
+  \medskip
+  \begin{tabular}{p{0.27\linewidth}p{0.30\linewidth}p{0.32\linewidth}}
+    \toprule
+    & \textbf{嵌套自动求导} & \textbf{Waring + Taylor jet} \\
+    \midrule
+    渐近时间 &
+    $O\!\big(p^2\,C_{\mathrm{fwd}} + p L\kappa\big)$ &
+    $O\!\big(R\cdot(p\,C_{\mathrm{fwd}} + L B H p^2)\big)$ \\[2pt]
+    自动求导图 & 深度 $O(pL)$；每次 \texttt{grad} 重放 & 不依赖图链 \\[2pt]
+    每方向常数 & 每阶单独构图与派发 & 一次 GEMM 同时处理 $p+1$ 阶 \\[2pt]
+    与指数模式关系 & 与 $\alpha$ 形式无关 & 通过 $R_{\C}(\alpha)$ 利用模式信息 \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \textbf{Waring + Taylor jet 时间的来源（每方向）.}\;
+  Linear 层把 $p+1$ 阶沿 batch 维拼成一次 GEMM，全网共 $O(p\,C_{\mathrm{fwd}})$；
+  激活层耦合递推 $y_k=\frac{1}{k}\sum_{j<k}(k-j)z_j x_{k-j}$ 中 $k$ 跑到 $p$，
+  全网共 $O(L B H p^2)$。再乘 $R$ 个方向。
+
+  \medskip
+  \textbf{加速来源（四个相互独立的因素）.}\;
+  (i) 前向模式更适合标量输出 + 少量方向的高阶导数；
+  (ii) 消除嵌套求导的 $O(p^2)$ 图重放与每算子派发常数 $\kappa$；
+  (iii) 合并矩阵乘，把 $p+1$ 阶沿 batch 维拼接到一次 GEMM；
+  (iv) 方向数代数最优，含重复指标时 $R\le R_{\R}\le 2^{p-1}$ 严格更小。
+\end{frame}
+
+\begin{frame}{方法定位及与已有工作的关系}
+  \begin{tabular}{p{0.18\linewidth}p{0.30\linewidth}p{0.42\linewidth}}
+    \toprule
+    \textbf{方法} & \textbf{定位} & \textbf{与本方法的关系} \\
+    \midrule
+    嵌套自动求导 & 任意 $\alpha$，精确，慢 & 本方法的精度对照与基线 \\[2pt]
+    real polarization & 任意 $\alpha$，精确，实方向 & 本方法的兜底回退；$a_0=1$ 与 square-free 时与之相当 \\[2pt]
+    Taylor 前向 AD\,(JAX/Julia) & 任意单方向 $\Tp$，精确 & 作为本方法的底层求值原语 \\[2pt]
+    Forward Laplacian & 仅针对 $\Delta$ 等迹型算子 & 适用范围正交；本方法只处理单一 $\alpha$ \\[2pt]
+    STDE\,(NeurIPS 2024) & 任意算子；随机 + 分区 jet & 互补：本方法对单 $\alpha$ 给出确定性精确解，STDE 提供任意算子的无偏估计 \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \textbf{本方法不涉及.}\;
+  $\Delta^k$、迹收缩 $\mathrm{tr}(\sigma\sigma^{\top}\partial^2)$ 以及一般可 contract 的算子求和；
+  这一类问题更适合 trace-collapsing 类方法。
+
+  \medskip
+  \textbf{适用场景.}\;
+  PDE 残差中存在单一占主导地位、含重复指标的中高阶单项（如 $\partial_x^4\partial_y^2$、$\partial_x^2\partial_y^2$）的 PINN 训练。
+\end{frame}
+
+% ================================================================ %
+\section{数值算例}
+% ================================================================ %
+
+\begin{frame}{PINN 实验：四维六阶 Cahn--Hilliard 类方程}
+  \textbf{方程与精确解.}\;
+  在 $\Omega=(-1,1)^4$ 上求解
+  \[
+    \partial_{x_1}^{4}\partial_{x_2}^{2}\,u(x) \;=\; f(x),
+    \qquad
+    u_{\mathrm{exact}}(x)=\sinh(x_1)\cos(x_2)\,e^{-(x_3^2+x_4^2)/4}.
+  \]
+  由 $\sinh^{(4)}=\sinh$、$\cos^{(2)}=-\cos$，源项闭式为 $f=-u_{\mathrm{exact}}$。
+  活动指数模式 $(4,2)$，故 $R_\C=5$、$R_\R\le 7$（实极化方向数）。
+
+  \medskip
+  \textbf{网络与损失.}\;
+  $4$ 层 Linear--$\sinh$ 多层感知机，宽度 $64$，参数取值于 $\C^{\,\cdot}$（\texttt{torch.complex128}）。
+  以 $\Re u$ 为物理解，损失项为
+  \[
+    \|\Re\,\partial^{(4,2)} u - f\|_{\Omega}^{2}
+    + 100\,\|\Re u - u_{\mathrm{exact}}\|_{\partial\Omega}^{2}
+    + 10^{-6}\sum_{W}\|\Im W\|^{2}.
+  \]
+
+  \medskip
+  \textbf{对照设置.}\;
+  Tesla T4，每个 backend 给定相同的 wall-clock 预算 $60$ 秒，
+  内点采样 $128$、边界采样 $64$，Adam（学习率 $10^{-3}$）。
+  三个 backend 在同一损失、同一初始化、同一采样下做对照。
+\end{frame}
+
+\begin{frame}{PINN 实验结果}
+  \footnotesize
+  \begin{tabular}{lrrrrr}
+    \toprule
+    \textbf{backend} & \textbf{steps} & \textbf{ms/step} & \textbf{显存峰值 (MB)} & \textbf{最终 $L_{\mathrm{int}}$} & \textbf{相对 $L^2$ 误差} \\
+    \midrule
+    waring complex jet  & $4248$ & \alert{$14.1$} & \alert{$40$}  & \alert{$1.74\!\times\!10^{-3}$} & \alert{$8.50\!\times\!10^{-3}$} \\
+    polarization jet    & $4192$ & $14.3$         & $49$          & $6.32\!\times\!10^{-3}$ & $4.43\!\times\!10^{-2}$ \\
+    嵌套自动求导        & $211$  & $285.6$        & $103$         & $2.82\!\times\!10^{-1}$ & $2.49\!\times\!10^{-1}$ \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \textbf{观察.}
+  \begin{itemize}\setlength\itemsep{1pt}
+    \item 两条 jet 路径单步耗时为嵌套自动求导的约 $1/20$，显存约 $1/2.5$；
+        $60$ 秒预算下嵌套自动求导仅完成 $211$ 步，$L^2$ 误差停在 $0.25$ 量级；
+    \item 复 Waring 路径达到 $R_\C=5$，比实极化方向 $7$ 严格少 $2$ 个方向，
+        相同时间内的最终 $L^2$ 误差领先约 $5$ 倍（$8.5\!\times\!10^{-3}$ 对 $4.4\!\times\!10^{-2}$）；
+    \item $\sinh$ 在 $\C$ 上为整函数，复方向 jet 与复参数模型可直接耦合，无需逐步类型转换。
+  \end{itemize}
+\end{frame}
+
+% ================================================================ %
+\section{结论与下阶段}
+% ================================================================ %
+
+\begin{frame}{结论与下阶段工作}
+  \textbf{结论.}
+  \begin{itemize}
+    \item 给定 $\alpha$ 的方向调度问题 (P) 与单项 $z^\alpha$ 的 Waring 分解问题 (Q) 严格等价；
+    \item 基于 Carlini--Catalisano--Geramita 的闭式秩公式与单位根构造，方向数达到复数域上的信息论下界 $\prod_{j\ge1}(a_j+1)$；
+    \item 与 Taylor 前向 jet 配合后，整套方法在 fp64 下达到机器精度，且支持参数反传；
+    \item 在含重复指标的中高阶情形下，相比嵌套自动求导有显著加速。
+  \end{itemize}
+
+  \medskip
+  \textbf{下阶段工作.}
+  \begin{itemize}
+    \item 扩展至更高阶、更高维以及多分量耦合的复杂 PDE 算例
+        （如 KdV 高阶变体、薄板与梁方程、Schrödinger 类方程），
+        系统检验复参数 + $\sinh$ PINN 在不同方程类型上的稳定性；
+    \item 在统一架构下与 STDE 进行精度--运行时间的系统比较，
+        给出确定性精确路径相对于随机无偏估计在不同 $\alpha$ 上的优劣边界。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \vspace{1.5em}
+    {\Large 谢谢聆听}\\[1em]
+    \large 欢迎讨论与建议
+  \end{center}
+\end{frame}
+
+\end{document}

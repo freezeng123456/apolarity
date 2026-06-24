@@ -6,19 +6,17 @@ sums.
 """
 from __future__ import annotations
 
-from collections import defaultdict
 from typing import Iterable, Literal
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
-from .real_waring import monomial_real_waring_directions
+from .polarization import polarization_directions as _polarization_directions
 from .taylor_jet import tp_directional_via_jet
 from .waring import monomial_waring_directions
 
-Backend = Literal["auto", "direct_autodiff", "polarization_jet", "waring_complex_jet", "waring_real_jet"]
-AutoMode = Literal["value", "backward"]
+Backend = Literal["auto", "direct_autodiff", "polarization_jet", "waring_complex_jet"]
 
 
 def _alpha_tuple(alpha: Iterable[int]) -> tuple[int, ...]:
@@ -26,6 +24,15 @@ def _alpha_tuple(alpha: Iterable[int]) -> tuple[int, ...]:
     if len(out) < 1:
         raise ValueError("alpha must have positive order")
     return out
+
+
+def _real_of(dtype: torch.dtype) -> torch.dtype:
+    """Return the underlying real dtype (e.g. complex128 -> float64)."""
+    if dtype == torch.complex128:
+        return torch.float64
+    if dtype == torch.complex64:
+        return torch.float32
+    return dtype
 
 
 def direct_monomial_autodiff(model: nn.Module, x: Tensor, alpha: Iterable[int], *, create_graph: bool = True) -> Tensor:
@@ -36,7 +43,12 @@ def direct_monomial_autodiff(model: nn.Module, x: Tensor, alpha: Iterable[int], 
     deriv = y
     for k, idx in enumerate(alpha_t):
         cg = create_graph or (k < len(alpha_t) - 1)
-        grad = torch.autograd.grad(deriv.sum(), x_req, create_graph=cg, retain_graph=True)[0]
+        s = deriv.sum()
+        # Explicit grad_outputs so this works for both real and complex outputs.
+        grad = torch.autograd.grad(
+            s, x_req, grad_outputs=torch.ones_like(s),
+            create_graph=cg, retain_graph=True,
+        )[0]
         deriv = grad[:, idx:idx + 1]
     return deriv
 
@@ -50,8 +62,8 @@ def polarization_directions(
     antipodal: bool = True,
 ) -> tuple[Tensor, Tensor]:
     """Real polarization directions for one expanded multi-index."""
-    V, coeff, _info = monomial_real_waring_directions(
-        alpha, d, device=device, dtype=dtype, strategy="polarization", antipodal=antipodal
+    V, coeff, _info = _polarization_directions(
+        alpha, d, device=device, dtype=dtype, antipodal=antipodal
     )
     return V, coeff
 
@@ -63,15 +75,6 @@ def _evaluate_direction_formula(model: nn.Module, x: Tensor, V: Tensor, coeff: T
     return (Tp * coeff.view(1, -1, 1)).sum(dim=1)
 
 
-def _complex_model(model: nn.Module, dtype: torch.dtype) -> nn.Module:
-    # Caller usually passes a freshly copied model for repeated use.  This helper
-    # is deliberately simple for one-off API calls.
-    import copy
-
-    complex_dtype = torch.complex128 if dtype == torch.float64 else torch.complex64
-    return copy.deepcopy(model).to(dtype=complex_dtype)
-
-
 def single_monomial_partial(
     model: nn.Module,
     x: Tensor,
@@ -80,25 +83,23 @@ def single_monomial_partial(
     backend: Backend = "auto",
     complex_model: nn.Module | None = None,
     create_graph: bool = True,
-    auto_mode: AutoMode = "value",
 ) -> Tensor:
     """Compute one single-monomial partial derivative.
 
     Args:
-        model: `Linear/Tanh` MLP or wrapper supported by `taylor_jet` for jet backends.
+        model: `Linear/Tanh/sinh` MLP supported by `taylor_jet` for jet backends.
         x: Input tensor `(B, d)`.
         alpha: Expanded zero-based multi-index, e.g. `(0, 0, 1)` for `u112`.
         backend:
-            - `direct_autodiff`: nested coordinate autodiff.
+            - `direct_autodiff`: nested coordinate autodiff (reference).
             - `polarization_jet`: real polarization + Taylor jet.
             - `waring_complex_jet`: complex Waring directions + Taylor jet.
-            - `waring_real_jet`: current real generator + Taylor jet.
-            - `auto`: choose complex Waring when it has a clear direction-count advantage,
+            - `auto`: choose complex Waring when its rank is at least
+              20% smaller than the polarization direction count;
               otherwise use polarization.
-        complex_model: Optional pre-cast complex copy of `model` for repeated complex calls.
+        complex_model: Optional pre-cast complex copy of `model` for
+            repeated complex calls.
         create_graph: Used only by `direct_autodiff`.
-        auto_mode: `value` selects complex Waring when it reduces direction count;
-            `backward` currently prefers real polarization to avoid complex-autograd overhead.
     """
     alpha_t = _alpha_tuple(alpha)
     p = len(alpha_t)
@@ -108,28 +109,35 @@ def single_monomial_partial(
         return direct_monomial_autodiff(model, x, alpha_t, create_graph=create_graph)
 
     if backend == "auto":
-        Vc, _cc, info = monomial_waring_directions(
-            alpha_t,
-            d,
-            device=x.device,
-            dtype=torch.complex128 if x.dtype == torch.float64 else torch.complex64,
+        complex_dtype = torch.complex128 if x.dtype == torch.float64 else torch.complex64
+        _Vc, _cc, info = monomial_waring_directions(
+            alpha_t, d, device=x.device, dtype=complex_dtype,
         )
-        Vr, _cr, _ri = monomial_real_waring_directions(alpha_t, d, device=x.device, dtype=x.dtype, strategy="polarization")
-        if auto_mode == "backward":
-            backend = "polarization_jet"
-        else:
-            backend = "waring_complex_jet" if info.rank <= 0.8 * Vr.shape[0] else "polarization_jet"
+        Vp, _cp, _ip = _polarization_directions(
+            alpha_t, d, device=x.device, dtype=_real_of(x.dtype),
+        )
+        backend = "waring_complex_jet" if info.rank <= 0.8 * Vp.shape[0] else "polarization_jet"
 
     if backend == "polarization_jet":
-        V, coeff = polarization_directions(alpha_t, d, device=x.device, dtype=x.dtype, antipodal=True)
-        return _evaluate_direction_formula(model, x, V, coeff, p)
-
-    if backend == "waring_real_jet":
-        V, coeff, _info = monomial_real_waring_directions(alpha_t, d, device=x.device, dtype=x.dtype)
+        # Polarization yields real directions; if x is complex, generate the
+        # directions in the corresponding real dtype and cast to x.dtype so
+        # they pass through complex-parameter models cleanly.
+        real_dtype = _real_of(x.dtype)
+        V, coeff = polarization_directions(alpha_t, d, device=x.device, dtype=real_dtype, antipodal=True)
+        if x.dtype.is_complex:
+            V = V.to(dtype=x.dtype)
+            coeff = coeff.to(dtype=x.dtype)
         return _evaluate_direction_formula(model, x, V, coeff, p)
 
     if backend == "waring_complex_jet":
-        complex_dtype = torch.complex128 if x.dtype == torch.float64 else torch.complex64
+        # Pick a complex dtype consistent with the input precision and any
+        # complex parameters already present in the model.
+        if x.dtype.is_complex:
+            complex_dtype = x.dtype
+        elif x.dtype == torch.float64:
+            complex_dtype = torch.complex128
+        else:
+            complex_dtype = torch.complex64
         # If no complex copy is provided, evaluate complex directions through the
         # original real model.  Linear weights are cast inside the Taylor-jet
         # rules, so gradients flow back to the real parameters.

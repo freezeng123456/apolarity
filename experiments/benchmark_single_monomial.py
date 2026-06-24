@@ -26,7 +26,7 @@ import torch.nn as nn
 from torch import Tensor
 
 from apolarity.operators import direct_monomial_autodiff, single_monomial_partial
-from apolarity.real_waring import monomial_real_waring_directions
+from apolarity.polarization import polarization_directions as _polarization_directions
 from apolarity.waring import monomial_waring_directions
 
 
@@ -55,6 +55,11 @@ class Sin(nn.Module):
         return torch.sin(x)
 
 
+class Sinh(nn.Module):
+    def forward(self, x: Tensor) -> Tensor:
+        return torch.sinh(x)
+
+
 def activation_module(name: str) -> nn.Module:
     name = name.lower()
     if name == "tanh":
@@ -63,6 +68,8 @@ def activation_module(name: str) -> nn.Module:
         return nn.Sigmoid()
     if name in {"sin", "sine"}:
         return Sin()
+    if name == "sinh":
+        return Sinh()
     raise ValueError(f"unknown activation: {name}")
 
 
@@ -175,7 +182,7 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--hidden", type=int, default=64)
     parser.add_argument("--depth", type=int, default=3)
-    parser.add_argument("--activation", default="tanh", choices=["tanh", "sigmoid", "sin"])
+    parser.add_argument("--activation", default="sinh", choices=["tanh", "sigmoid", "sin", "sinh"])
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=2)
     parser.add_argument("--seed", type=int, default=0)
@@ -204,7 +211,7 @@ def main() -> None:
     for alpha in alphas:
         ref = direct_monomial_autodiff(model, x, alpha, create_graph=False).detach()
         _, _, cinfo = monomial_waring_directions(alpha, args.d, device=device, dtype=complex_dtype)
-        _, _, rinfo = monomial_real_waring_directions(alpha, args.d, device=device, dtype=dtype, strategy="polarization")
+        _, _, rinfo = _polarization_directions(alpha, args.d, device=device, dtype=dtype)
         for method in methods:
             row = {
                 "alpha": alpha_label(alpha),
