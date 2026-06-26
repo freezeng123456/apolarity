@@ -12,11 +12,14 @@
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{graphicx}
+\usepackage{placeins}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{hyperref}
+\graphicspath{{figures/}}
 \hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black,
   pdfborder={0 0 0}}
 
@@ -177,7 +180,7 @@ best result in the single tested PDE run; we report this as fixed-budget
 evidence rather than a statistical superiority claim.
 
 \item \textbf{Oscillatory expressivity study
-(Sections~\ref{sec:benchmarks}--\ref{sec:osc-results}).} The entirety of
+(Section~\ref{sec:osc}).} The entirety of
 \(\sinh\) on \(\C\) lets the same backend differentiate
 \emph{complex-parameter} \(\sinh\) networks to arbitrary order with no
 dtype casting in the inner loop. We treat such a network as a PINN ansatz
@@ -204,7 +207,7 @@ the residual is their sum -- but for such sums the Waring rank offers no
 shortening, and dedicated trace-collapsing techniques
 \cite{Li2024forwardLaplacian,Gao2023folx} can be more efficient when only
 a Laplacian is needed. The oscillatory study of
-Sections~\ref{sec:benchmarks}--\ref{sec:osc-results} uses the backend in
+Section~\ref{sec:osc} uses the backend in
 this summed, exact-but-not-shortened mode wherever the operator is a sum,
 and exploits the genuine rank advantage on the mixed high-order terms. We
 also do not pursue stochastic estimation; its accuracy-cost tradeoffs are
@@ -961,47 +964,11 @@ conversion in the inner loop. These results support C3 for this
 single-seed manufactured problem.
 
 % =========================================================
-\input{benchmarks}
+% Oscillatory / high-order PINN suite: each family states its problem and is
+% IMMEDIATELY followed by its own table, convergence figure, and discussion
+% (JCP style), rather than a single results dump.
+\input{osc_experiments}
 % =========================================================
-
-% =========================================================
-\section{Complex versus real networks on the oscillatory suite}
-\label{sec:osc-results}
-% =========================================================
-
-Section~\ref{sec:benchmarks} fixed the problems and the protocol. We now
-report the outcome of the contest between the complex-parameter \(\sinh\)
-network and the real high-frequency baselines. The question is deliberately
-narrow: \emph{at a matched real-parameter budget and a shared training
-protocol, does carrying the network's value field in \(\C\) buy accuracy on
-oscillatory and high-order PDEs?}
-
-\paragraph{Reading the tables.}
-Every entry is the relative \(L^{2}\) error \eqref{eq:relL2} on the held-out
-grid, averaged over the random seeds; the best (smallest) entry in each row
-is set in bold. For each problem family we also report the
-\emph{advantage factor}
-\begin{equation}\label{eq:adv}
-  \mathrm{adv}
-  \;=\;
-  \frac{\min_{\text{real baselines}} \mathcal{E}_{L^2}}
-       {\mathcal{E}_{L^2}(\text{complex }\sinh)} ,
-\end{equation}
-so that \(\mathrm{adv}>1\) means the complex network beats the best real
-contender on that instance, and the win count over the family quantifies how
-often this happens.
-
-\paragraph{Hardware and budget.}
-All runs in this section are measured on a single NVIDIA H20 GPU
-(\(97\)~GB, CUDA 12.1, PyTorch 2.5) in \texttt{float64}/\texttt{complex128}.
-Each (problem, variant, seed) receives the same wall-clock budget
-(\(60\)--\(85\)~s depending on family) and the cosine schedule of
-Section~\ref{sec:bm:protocol}; reported errors are means over two to three
-seeds. The complete raw logs and per-seed CSV files are in
-\path{results/}.
-
-% --- tables and per-family discussion filled from results/*_v3.csv ---
-\input{osc_results}
 
 % =========================================================
 \section{Discussion and Limitations}
@@ -1038,7 +1005,7 @@ validated with multiple seeds, fixed evaluation grids, and structured
 CSV/JSON result files before being used as a statistical comparison.
 
 \paragraph{Complex value fields on oscillatory PDEs.}
-The oscillatory study (Sections~\ref{sec:benchmarks}--\ref{sec:osc-results})
+The oscillatory study (Section~\ref{sec:osc})
 gives a second, independent reason to value the entire-on-\(\C\) backend: it
 makes complex-parameter \(\sinh\) networks usable as a PINN ansatz, and that
 ansatz is empirically more expressive than strong real high-frequency baselines

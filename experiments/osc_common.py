@@ -183,21 +183,19 @@ class CauchyNet(nn.Module):
         return self.net(x)
 
 
-JET_VARIANTS = {"complex_sinh", "complex_sinh_noinit", "real_sinh", "tanh",
+JET_VARIANTS = {"complex_sinh", "complex_sinh_noinit", "tanh",
                 "siren", "fourier", "mscale"}
 COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit"}
 
 
-def variant_width(variant: str, H: int, mult: float = math.sqrt(2.0)) -> int:
-    """Real baselines are parameter-matched to the complex net.  A complex net of
-    width H has ~2 H^2 real DOF, so a single real net uses width sqrt(2) H
-    (mult=sqrt(2)).  For the NLS split-real (two real nets), pass mult=1 so the
-    PAIR matches the complex net."""
-    if variant in COMPLEX_VARIANTS:
-        return H
-    if variant == "mscale":               # 3 internal subnets: 3 * (H')^2
-        return max(8, int(round(H * mult / math.sqrt(3.0))))
-    return max(4, int(round(H * mult)))   # real plain nets
+def variant_width(variant: str, H: int, mult: float = 1.0) -> int:
+    """Every architecture uses the LITERAL hidden width H -- depth and width are
+    matched across methods (no parameter-count rescaling).  The complex net's
+    comparability (its complex weights carry ~2x the real DOF) is handled by
+    EVALUATING IT AT TWO WIDTHS that bracket the real baselines, e.g. complex at
+    64 and 128 against the real baselines at 128.  The `mult` argument is kept for
+    call-site compatibility but ignored."""
+    return H
 
 
 def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
@@ -213,8 +211,6 @@ def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
         return net, torch.complex128
     if variant == "complex_sinh_noinit":
         return build_plain(d, H, depth, torch.complex128, "sinh", out=out), torch.complex128
-    if variant == "real_sinh":
-        return build_plain(d, He, depth, torch.float64, "sinh", out=out), torch.float64
     if variant == "tanh":
         return build_plain(d, He, depth, torch.float64, "tanh", out=out), torch.float64
     if variant == "siren":
@@ -331,12 +327,18 @@ def laplacian_power_terms(d: int, j: int) -> list[tuple[float, tuple[int, ...]]]
 # Generic train / eval (fixed dense collocation, equal wall-clock budget)
 # ---------------------------------------------------------------------------
 def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
-               lr_schedule="constant", lr_final=None):
+               lr_schedule="constant", lr_final=None, record_history=False,
+               history_n=40):
     """loss_fn() -> (loss_tensor, L_int_float).  eval_fn() -> float (rel L2).
 
     lr_schedule: "constant" or "cosine".  Cosine uses a TIME fraction (elapsed /
     seconds) since the loop is wall-clock bounded, decaying lr -> lr_final.  The
     same schedule is applied to every architecture, so the comparison stays fair.
+
+    record_history: if True, sample (training-elapsed, rel L2, interior loss)
+    ~history_n times across the run for convergence figures.  The periodic eval
+    cost is excluded from the wall-clock budget so the step count stays
+    comparable to a non-history run.
     """
     if lr_final is None:
         lr_final = lr * 0.1  # gentle floor: cosine helps high-order but a too-low
@@ -358,8 +360,11 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
         torch.cuda.synchronize()
     t0 = time.perf_counter()
     steps, losses, nan_hit = 0, [], False
+    history, eval_accum = [], 0.0
+    hist_dt = seconds / max(1, history_n)
+    next_hist = 0.0
     while True:
-        elapsed = time.perf_counter() - t0
+        elapsed = time.perf_counter() - t0 - eval_accum
         if elapsed >= seconds:
             break
         if lr_schedule == "cosine":
@@ -376,15 +381,27 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
         if not math.isfinite(L_int):
             nan_hit = True
             break
+        if record_history and elapsed >= next_hist:
+            te = time.perf_counter()
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            history.append([round(elapsed, 3), float(eval_fn()), float(L_int)])
+            next_hist += hist_dt
+            eval_accum += time.perf_counter() - te
     if device.type == "cuda":
         torch.cuda.synchronize()
-    elapsed = time.perf_counter() - t0
+    elapsed = time.perf_counter() - t0 - eval_accum
     err = eval_fn()
     peak = torch.cuda.max_memory_allocated(device) / 2 ** 20 if device.type == "cuda" else float("nan")
-    return {"steps": steps, "ms_per_step": 1000.0 * elapsed / max(1, steps),
-            "peak_mb": peak,
-            "L_int_last": sum(losses[-20:]) / max(1, min(20, len(losses))) if losses else float("nan"),
-            "L2_err": err, "nan": nan_hit}
+    out = {"steps": steps, "ms_per_step": 1000.0 * elapsed / max(1, steps),
+           "peak_mb": peak,
+           "L_int_last": sum(losses[-20:]) / max(1, min(20, len(losses))) if losses else float("nan"),
+           "L2_err": err, "nan": nan_hit}
+    if record_history:
+        history.append([round(elapsed, 3), float(err),
+                        losses[-1] if losses else float("nan")])
+        out["history"] = history
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -502,6 +519,18 @@ def write_rows(rows, out_csv: str):
         return
     out = Path(out_csv)
     out.parent.mkdir(parents=True, exist_ok=True)
+    # Per-step convergence traces are lists; split them into a sidecar JSON so the
+    # CSV/JSON result rows stay flat and human-readable.
+    histories, clean = [], []
+    id_keys = ("problem", "order", "sweep", "variant", "seed", "rep")
+    for r in rows:
+        if "history" in r:
+            r = dict(r)
+            h = r.pop("history")
+            histories.append({**{k: r.get(k) for k in id_keys if k in r},
+                              "history": h})
+        clean.append(r)
+    rows = clean
     keys = sorted({k for r in rows for k in r})
     with out.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=keys)
@@ -509,6 +538,11 @@ def write_rows(rows, out_csv: str):
         w.writerows(rows)
     with out.with_suffix(".json").open("w") as f:
         json.dump(rows, f, indent=2)
+    if histories:
+        hpath = out.with_name(out.stem + "_history.json")
+        with hpath.open("w") as f:
+            json.dump(histories, f)
+        print(f"[ok] wrote {hpath}  ({len(histories)} traces)", flush=True)
     print(f"\n[ok] wrote {out}", flush=True)
 
 
@@ -523,13 +557,16 @@ def default_argparser(seconds=80.0, n_int=4096, n_bc=512):
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--lr-schedule", default="cosine", choices=["constant", "cosine"])
     ap.add_argument("--lr-final", type=float, default=None)
+    ap.add_argument("--history", action="store_true",
+                    help="record rel-L2 & loss vs time traces for convergence figures")
     ap.add_argument("--seeds", type=int, default=2)
     ap.add_argument("--variants",
-                    default="complex_sinh,fourier,siren,mscale,tanh,real_sinh")
+                    default="complex_sinh,fourier,siren,mscale")
     ap.add_argument("--out", default="")
     return ap
 
 
 def sched_kwargs(args) -> dict:
     return {"lr_schedule": getattr(args, "lr_schedule", "constant"),
-            "lr_final": getattr(args, "lr_final", None)}
+            "lr_final": getattr(args, "lr_final", None),
+            "record_history": getattr(args, "history", False)}
