@@ -1,0 +1,36 @@
+===== schedule=constant =====
+device=cuda hidden=32 depth=4 budget=90.0s/run seeds=1 lr_schedule=constant
+
+=== kdv_k3  (d=2, order=3, sweep=3.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    3690    24.39     180   6.01e-04   1.872e-01  (seed 0)
+fourier                  8281      jet    2321    38.80     228   3.73e-03   4.180e-01  (seed 0)
+
+=== kdv_k4  (d=2, order=3, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    3877    23.22     180   4.95e-03   5.448e-01  (seed 0)
+fourier                  8281      jet    3349    26.88     228   4.65e-03   5.425e-01  (seed 0)
+
+[ok] wrote results/diag/kdv_constant.csv
+===== schedule=cosine =====
+device=cuda hidden=32 depth=4 budget=90.0s/run seeds=1 lr_schedule=cosine
+
+=== kdv_k3  (d=2, order=3, sweep=3.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    5491    16.39     180   4.86e-04   1.931e-01  (seed 0)
+fourier                  8281      jet    5132    17.54     228   1.94e-03   4.156e-01  (seed 0)
+
+=== kdv_k4  (d=2, order=3, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    9357     9.62     180   1.23e-03   6.020e-01  (seed 0)
+fourier                  8281      jet    5131    17.54     228   3.26e-03   5.532e-01  (seed 0)
+
+[ok] wrote results/diag/kdv_cosine.csv

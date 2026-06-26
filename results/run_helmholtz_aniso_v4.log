@@ -1,0 +1,18 @@
+device=cuda hidden=32 depth=4 budget=60.0s/run seeds=2 lr_schedule=cosine
+
+=== helm_aniso_1_4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    2742    21.88     183   3.70e-03   3.398e-01  (seed 0)
+fourier                  8281      jet    1560    38.48     222   1.58e-02   7.064e-01  (seed 0)
+siren                    6391      jet    1730    34.71     223   1.74e-03   2.369e-01  (seed 0)
+mscale                   6633      jet    1048    57.30     330   2.49e-01   9.998e-01  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    2542    23.61     183   1.70e-03   4.380e-01  (seed 1)
+fourier                  8281      jet    1628    36.87     222   1.85e-02   8.511e-01  (seed 1)
+siren                    6391      jet    1621    37.04     223   1.33e-03   2.052e-01  (seed 1)
+mscale                   6633      jet    1287    46.63     330   2.57e-01   1.000e+00  (seed 1)
+
+[ok] wrote results/helmholtz_aniso_v3.csv

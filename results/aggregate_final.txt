@@ -1,0 +1,202 @@
+
+==============================================================================
+# poly1d_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale    real_sinh
+polyharm1d_o2        2    2.0      4.151e-05    2.330e-04    2.131e-04    3.092e-04    1.446e-01
+polyharm1d_o4        4    4.0      2.028e-03    1.204e-02    3.154e-02    6.828e-02    8.785e-01
+polyharm1d_o6        6    6.0      1.417e-01    6.900e-01    9.662e-01    1.253e-01    9.968e-01
+polyharm1d_o8        8    8.0      2.140e-01    1.001e+00    1.002e+00    4.078e-01    1.000e+00
+polyharm1d_o10      10   10.0      9.950e-01    1.003e+00    1.005e+00    9.977e-01    9.963e-01
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  polyharm1d      2.0     2    4.151e-05   2.131e-04     5.13
+  polyharm1d      4.0     4    2.028e-03   1.204e-02     5.94
+  polyharm1d      6.0     6    1.417e-01   1.253e-01     0.88
+  polyharm1d      8.0     8    2.140e-01   4.078e-01     1.91
+  polyharm1d     10.0    10    9.950e-01   9.963e-01     1.00
+  -> polyharm1d wins 4/5  monotone+:False  adv 0.88->5.94
+
+
+==============================================================================
+# poly2d_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale    real_sinh
+polyharm2d_o2        2    2.0      4.229e-04    6.663e-04    7.829e-04    1.093e-02    9.899e-01
+polyharm2d_o4        4    4.0      3.963e-02    3.168e-02    9.833e-01    8.987e-01    1.000e+00
+polyharm2d_o6        6    6.0      7.668e-02    9.987e-01    9.936e-01    9.963e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  polyharm2d      2.0     2    4.229e-04   6.663e-04     1.58
+  polyharm2d      4.0     4    3.963e-02   3.168e-02     0.80
+  polyharm2d      6.0     6    7.668e-02   9.936e-01    12.96
+  -> polyharm2d wins 2/3  monotone+:False  adv 0.80->12.96
+
+
+==============================================================================
+# helmholtz_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+helmholtz_a2         2    2.0      5.217e-02    1.524e-01    8.086e-02    6.994e-01
+helmholtz_a4         2    4.0      3.221e-01    4.322e-01    3.460e-01    1.000e+00
+helmholtz_a6         2    6.0      5.707e-01    8.511e-01    8.187e-01    1.001e+00
+helmholtz_a8         2    8.0      6.292e-01    9.315e-01    9.268e-01    1.000e+00
+helmholtz_a10        2   10.0      7.710e-01    9.861e-01    9.826e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  helmholtz       2.0     2    5.217e-02   8.086e-02     1.55
+  helmholtz       4.0     2    3.221e-01   3.460e-01     1.07
+  helmholtz       6.0     2    5.707e-01   8.187e-01     1.43
+  helmholtz       8.0     2    6.292e-01   9.268e-01     1.47
+  helmholtz      10.0     2    7.710e-01   9.826e-01     1.27
+  -> helmholtz wins 5/5  monotone+:False  adv 1.07->1.55
+
+
+==============================================================================
+# helmholtz_aniso_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+helm_aniso_1_4       2    4.0      3.889e-01    7.788e-01    2.211e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  helm_aniso_1    4.0     2    3.889e-01   2.211e-01     0.57
+  -> helm_aniso_1 wins 0/1  monotone+:None  adv 0.57->0.57
+
+
+==============================================================================
+# helmvc_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+helmvc_a2            2    2.0      3.587e-01    2.106e-01    3.148e-01    9.995e-01
+helmvc_a4            2    4.0      4.637e-01    5.453e-01    4.372e-01    1.000e+00
+helmvc_a6            2    6.0      7.116e-01    8.719e-01    8.074e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  helmvc          2.0     2    3.587e-01   2.106e-01     0.59
+  helmvc          4.0     2    4.637e-01   4.372e-01     0.94
+  helmvc          6.0     2    7.116e-01   8.074e-01     1.13
+  -> helmvc    wins 1/3  monotone+:True  adv 0.59->1.13
+
+
+==============================================================================
+# chirp_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+chirp_a2             2    2.0      3.759e-01    7.073e-01    8.738e-01    7.929e-01
+chirp_a4             2    4.0      4.522e-01    9.185e-01    7.157e-01    1.602e+00
+chirp_a6             2    6.0      8.472e-01    1.177e+00    9.762e-01    1.890e+00
+chirp_a8             2    8.0      8.296e-01    1.242e+00    9.641e-01    2.391e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  chirp           2.0     2    3.759e-01   7.073e-01     1.88
+  chirp           4.0     2    4.522e-01   7.157e-01     1.58
+  chirp           6.0     2    8.472e-01   9.762e-01     1.15
+  chirp           8.0     2    8.296e-01   9.641e-01     1.16
+  -> chirp     wins 4/4  monotone+:False  adv 1.15->1.88
+
+
+==============================================================================
+# plate_beam_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+plate_m1             4    1.0      4.615e-02    4.235e-02    9.878e-01    9.802e-01
+beam_m1              4    1.0      4.362e-02    1.346e-02    1.005e+00    9.775e-02
+plate_m2             4    2.0      2.473e-01    2.760e-01    5.347e-01    9.999e-01
+beam_m2              4    2.0      1.288e-01    1.571e-01    6.106e-01    5.486e-01
+beam_m3              4    3.0      2.215e-01    1.157e-01    8.056e-01    1.680e+00
+plate_m3             4    3.0      3.626e-01    6.721e-01    9.243e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  beam            1.0     4    4.362e-02   1.346e-02     0.31
+  beam            2.0     4    1.288e-01   1.571e-01     1.22
+  beam            3.0     4    2.215e-01   1.157e-01     0.52
+  -> beam      wins 1/3  monotone+:False  adv 0.31->1.22
+
+  plate           1.0     4    4.615e-02   4.235e-02     0.92
+  plate           2.0     4    2.473e-01   2.760e-01     1.12
+  plate           3.0     4    3.626e-01   6.721e-01     1.85
+  -> plate     wins 2/3  monotone+:True  adv 0.92->1.85
+
+
+==============================================================================
+# platemix_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+platemix_m2          4    3.0      6.594e-01    9.781e-01    9.389e-01    1.000e+00
+platemix_m3          4    4.0      5.542e-01    9.928e-01    9.808e-01    1.000e+00
+platemix_m4          4    5.0      6.896e-01    9.966e-01    9.878e-01    1.000e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  platemix        3.0     4    6.594e-01   9.389e-01     1.42
+  platemix        4.0     4    5.542e-01   9.808e-01     1.77
+  platemix        5.0     4    6.896e-01   9.878e-01     1.43
+  -> platemix  wins 3/3  monotone+:False  adv 1.42->1.77
+
+
+==============================================================================
+# kdv_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+kdv_k2               3    2.0      3.652e-01    2.888e-01    4.544e-01    1.285e+00
+kdv_k3               3    3.0      5.681e-01    6.385e-01    6.054e-01    2.619e+00
+kdv_k4               3    4.0      8.700e-01    7.224e-01    6.547e-01    2.512e+00
+kdv_k5               3    5.0      9.476e-01    1.056e+00    6.821e-01    4.026e+00
+kdv_k6               3    6.0      8.034e-01    1.098e+00    7.365e-01    3.121e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  kdv             2.0     3    3.652e-01   2.888e-01     0.79
+  kdv             3.0     3    5.681e-01   6.054e-01     1.07
+  kdv             4.0     3    8.700e-01   6.547e-01     0.75
+  kdv             5.0     3    9.476e-01   6.821e-01     0.72
+  kdv             6.0     3    8.034e-01   7.365e-01     0.92
+  -> kdv       wins 1/5  monotone+:False  adv 0.72->1.07
+
+
+==============================================================================
+# cahn_hilliard_v3
+==============================================================================
+instance         order  sweep   complex_sinh      fourier        siren       mscale
+ch4_a2               4    2.0      4.448e-01    3.651e-01    5.549e-01    1.295e+00
+ch4_a3               4    3.0      4.099e-01    5.899e-01    7.680e-01    1.506e+00
+ch6_a2               6    2.0      5.601e-01    8.022e-01    9.742e-01    1.329e+00
+ch6_a3               6    3.0      8.342e-01    9.106e-01    9.994e-01    1.570e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  ch4             2.0     4    4.448e-01   3.651e-01     0.82
+  ch4             3.0     4    4.099e-01   5.899e-01     1.44
+  -> ch4       wins 1/2  monotone+:True  adv 0.82->1.44
+
+  ch6             2.0     6    5.601e-01   8.022e-01     1.43
+  ch6             3.0     6    8.342e-01   9.106e-01     1.09
+  -> ch6       wins 2/2  monotone+:False  adv 1.09->1.43
+
+
+==============================================================================
+# nls_v3
+==============================================================================
+instance         order  sweep   complex_sinh        siren      fourier         tanh
+nls_k1               2    1.0      7.560e-03    1.203e-02    1.818e-02    2.759e-01
+nls_k2               2    2.0      3.263e-02    7.057e-02    7.900e-02    3.843e-01
+nls_k4               2    4.0      4.131e-02    8.817e-02    8.945e-02    3.945e-01
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  nls             1.0     2    7.560e-03   1.203e-02     1.59
+  nls             2.0     2    3.263e-02   7.057e-02     2.16
+  nls             4.0     2    4.131e-02   8.817e-02     2.13
+  -> nls       wins 3/3  monotone+:False  adv 1.59->2.16
+
+
+==============================================================================
+# maxwell_v3
+==============================================================================
+instance         order  sweep   complex_sinh        siren      fourier         tanh
+maxwell_a2           2    2.0      2.306e-01    3.628e-01    3.942e-01    1.760e+00
+maxwell_a4           2    4.0      4.841e-01    7.617e-01    8.288e-01    1.817e+00
+maxwell_a6           2    6.0      6.216e-01    9.379e-01    1.020e+00    1.553e+00
+
+  family        sweep order   complex_L2   best_real   adv(x)
+  maxwell         2.0     2    2.306e-01   3.628e-01     1.57
+  maxwell         4.0     2    4.841e-01   7.617e-01     1.57
+  maxwell         6.0     2    6.216e-01   9.379e-01     1.51
+  -> maxwell   wins 3/3  monotone+:False  adv 1.51->1.57
+

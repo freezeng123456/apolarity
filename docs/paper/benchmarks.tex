@@ -1,0 +1,471 @@
+% ===========================================================================
+%  benchmarks.tex
+%
+%  Literature-grounded benchmark suite for the complex-sinh Taylor-jet PINN.
+%  Self-contained \section; class-agnostic (amsmath + booktabs only; uses
+%  \eqref / \ref, no cleveref).  \input this into the main paper and add the
+%  keys from benchmarks.bib.
+%
+%  Style follows the JCP/SIAM template in /root/paper/main.tex:
+%    * governing equation, domain, and exact solution each in a display block;
+%    * derivations (source terms) in align;
+%    * prose kept separate from formulas;
+%    * one compact "Setting" + "Provenance" note per family;
+%    * booktabs tables.
+% ===========================================================================
+
+\section{Benchmark problems}\label{sec:benchmarks}
+
+We evaluate the complex-parameter hyperbolic-sine network (``complex sinh''),
+paired with the complex-Waring Taylor-jet residual backend of
+Section~\ref{sec:impl}, on a suite of oscillatory and high-order partial
+differential equations. Every problem is a benchmark drawn from, or directly
+comparable to, the physics-informed neural network (PINN) literature; the exact
+manufactured solutions and parameters used in our runs are stated in full below,
+together with the source of each benchmark.
+
+The suite is organized into three groups. The first probes \emph{high-frequency
+second-order} problems, where spectral bias is the dominant difficulty
+(Sections~\ref{sec:bm:helmholtz}--\ref{sec:bm:chirp}). The second probes
+\emph{high-order real} operators, where the derivative order is the dominant
+difficulty (Sections~\ref{sec:bm:poly}--\ref{sec:bm:ch}). The third probes
+\emph{genuinely complex-valued} fields, where the unknown is naturally
+\(\mathbb{C}\)-valued (Sections~\ref{sec:bm:nls}--\ref{sec:bm:maxwell}).
+Table~\ref{tab:suite} summarizes the suite.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Benchmark suite at a glance. Coordinates of a space--time problem are
+written \((x,t)\); \(\Delta\) is the spatial Laplacian; \(a,k,m\) are the swept
+parameters (wavenumber, mode, or temporal frequency). ``Source'' lists the
+benchmark from which the setting is taken or to which it is matched.}
+\label{tab:suite}
+\begin{tabular}{@{}l l c l l@{}}
+\toprule
+family & operator & order & exact solution & source \\
+\midrule
+Helmholtz (high \(k\)) & \(\Delta u + \kappa^2 u\) & 2 & \(\sin(a\pi x)\sin(a\pi y)\) & \cite{Wang2021Pathologies} \\
+Helmholtz (variable \(\kappa\)) & \(\Delta u + \kappa^2(x)u\) & 2 & \(\sin(a\pi x)\sin(a\pi y)\) & \cite{Hao2024PINNacle} \\
+radial chirp & \(-\Delta u + u\) & 2 & \(\sin\!\big(\tfrac{a\pi}{2}r^2\big)\) & \cite{Tancik2020Fourier,Liu2020MscaleDNN} \\
+polyharmonic & \(\Delta^m u\) & \(2m\) & \(\sin(\pi x)\,[\sin(\pi y)]\) & \cite{Vahab2022Biharmonic} \\
+plate / beam & \(\Delta^2 w\) & 4 & \(\sin(m\pi x)\sin(n\pi y)\) & \cite{Vahab2022Biharmonic} \\
+linearized KdV & \(u_t + \delta\,u_{xxx}\) & 3 & \(\sin(k\pi x)\cos(k\pi t)\) & \cite{Raissi2019} \\
+Cahn--Hilliard & \(u_t - M\Delta(u^3-u-\gamma\Delta u\,[+\kappa\Delta^2 u])\) & 4/6 & \(\sin(a\pi x)\cos(a\pi t)\) & \cite{Raissi2019,Hao2024PINNacle} \\
+cubic NLS & \(\mathrm{i}u_t + \tfrac12 u_{xx} + |u|^2 u\) & 2 & \(\operatorname{sech}(x)\,\mathrm{e}^{\mathrm{i}kt}\) & \cite{Raissi2019} \\
+Maxwell (lossy) & \(\Delta E + \kappa^2 E\), \(\kappa^2\in\mathbb{C}\) & 2 & \(\mathrm{e}^{\mathrm{i}a\pi(x+y)}\) & \cite{Jiang2024Maxwell} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------------
+\subsection{Shared protocol}\label{sec:bm:protocol}
+
+All architectures and training choices are held fixed across the suite so that
+the comparison isolates the effect of the network's value field
+(\(\mathbb{C}\) versus \(\mathbb{R}\)) rather than incidental tuning.
+
+\paragraph{Architectures.}
+The complex-sinh network is a multilayer perceptron with \texttt{complex128}
+parameters and the entire activation \(\sinh\). It is compared against four real
+``high-frequency'' baselines that are standard remedies for spectral bias:
+a random Fourier-feature network~\cite{Tancik2020Fourier}, a sinusoidal
+representation network (SIREN)~\cite{Sitzmann2020SIREN}, a multi-scale deep
+network (MscaleDNN)~\cite{Liu2020MscaleDNN}, and plain real \(\tanh\) and
+\(\sinh\) baselines. For genuinely complex-valued targets
+(Sections~\ref{sec:bm:nls}--\ref{sec:bm:maxwell}) each real baseline carries the
+field as a split real--imaginary pair (an \(\mathbb{R}\)-valued PINN, RVPINN),
+as in the original complex-valued PINN formulation~\cite{Raissi2019}.
+
+\paragraph{Parameter matching.}
+A width-\(H\) complex network has \(\approx 2H^2\) real degrees of freedom per
+layer. To make the contest an equal-parameter one, every single real baseline is
+widened to \(H_{\mathbb{R}} = \lceil \sqrt{2}\,H \rceil\) (so it has at least the
+real parameter count of the complex network); for the split-real pairs each
+component uses width \(H\) so that the \emph{pair} matches the complex network.
+
+\paragraph{Frequency matching.}
+Frequency-aware architectures are initialized at the problem's characteristic
+wavenumber, so each method receives its best starting point at every swept
+frequency: the SIREN / complex-sinh first-layer scale \(\omega_0\) and the
+Fourier-feature bandwidth \(\sigma\) are set proportional to the target spatial
+frequency of each case (specified per family below). For the high-order families
+the initialization scale is held \emph{at} the target frequency rather than
+above it, because an order-\(m\) operator amplifies an initialization frequency
+\(\omega\) like \(\omega^{m}\); an over-large \(\omega_0\) is amplified by
+\(\omega_0^{m}\) and buries the learning signal.
+
+\paragraph{Derivative backend.}
+All jet-compatible architectures (complex sinh, real \(\sinh/\tanh\), SIREN,
+Fourier, MscaleDNN) evaluate every residual derivative with the \emph{same}
+complex-Waring Taylor-jet operator of Section~\ref{sec:impl}, so the derivative
+machinery does not bias the comparison. Nonlinear fluxes are written purely from
+single-monomial partials of the network: for example the Cahn--Hilliard term
+\begin{equation}\label{eq:lap_u3}
+  \Delta(u^3) \;=\; 3u^2\,u_{xx} + 6u\,(u_x)^2
+\end{equation}
+uses only \(u\), \(u_x\), \(u_{xx}\), each a single Taylor-jet evaluation.
+
+\paragraph{Optimization and metric.}
+Training uses Adam with a wall-clock budget shared across all methods, a
+time-based cosine learning-rate schedule decaying from \(10^{-3}\) to a floor of
+\(10^{-4}\), and a fixed dense collocation set. The reported accuracy is the
+relative \(L^2\) error of \(\operatorname{Re} u\) (or of \(u\) for complex-valued
+targets) against the exact solution on a held-out grid of \(8192\) points,
+\begin{equation}\label{eq:relL2}
+  \mathcal{E}_{L^2}
+  \;=\;
+  \frac{\big\|\,u_\theta - u_\star\,\big\|_{L^2(\Omega)}}
+       {\big\|\,u_\star\,\big\|_{L^2(\Omega)}} ,
+\end{equation}
+averaged over independent random seeds. Boundary and initial data are imposed by
+a penalty term with weight \(100\); for the polyharmonic and plate families the
+simply-supported (Navier) conditions are enforced on the lower even derivatives
+(see Sections~\ref{sec:bm:poly}--\ref{sec:bm:plate}).
+
+% ===========================================================================
+\subsection{High-wavenumber Helmholtz}\label{sec:bm:helmholtz}
+
+The first benchmark is the constant-coefficient Helmholtz equation on the unit
+square,
+\begin{equation}\label{eq:helm_pde}
+  \Delta u + \kappa^2 u = f
+  \qquad \text{in } \Omega = (-1,1)^2,
+  \qquad \kappa = a\pi,
+\end{equation}
+with homogeneous Dirichlet data \(u = 0\) on \(\partial\Omega\). The exact
+solution is the separable eigenmode
+\begin{equation}\label{eq:helm_sol}
+  u_\star(x,y) = \sin(a\pi x)\,\sin(a\pi y),
+\end{equation}
+and the source follows in closed form,
+\begin{align}\label{eq:helm_source}
+  f
+  &= \Delta u_\star + \kappa^2 u_\star \notag\\
+  &= \big(-2(a\pi)^2 + (a\pi)^2\big)\,u_\star
+   = -(a\pi)^2\,u_\star .
+\end{align}
+The wavenumber is swept over \(a \in \{2,4,6,8,10\}\), so the number of
+half-periods across the domain grows while the operator order stays fixed at
+two; this isolates the effect of frequency on each architecture.
+
+\paragraph{Provenance and comparability.}
+This is the Helmholtz benchmark of Wang, Teng and
+Perdikaris~\cite{Wang2021Pathologies}, who use
+\(\Delta u + k^2 u = q\) on \((-1,1)^2\) with
+\(u = \sin(a_1\pi x)\sin(a_2\pi y)\) and the matching source
+\(q = (k^2 - (a_1\pi)^2 - (a_2\pi)^2)\,u\); the same family is the
+Poisson--Boltzmann/Helmholtz task in the PINNacle suite~\cite{Hao2024PINNacle}.
+We take the isotropic case \(a_1 = a_2 = a\) with \(k = a\pi\), and additionally
+report the anisotropic case \((a_1,a_2) = (1,4)\) of~\cite{Wang2021Pathologies}
+verbatim (with \(k=1\), \(q = (k^2 - (a_1\pi)^2 - (a_2\pi)^2)u_\star\)) as a
+one-to-one numerical comparison.
+
+\paragraph{Setting.}
+\(\Omega=(-1,1)^2\); Dirichlet \(u=0\); isotropic sweep \(a\in\{2,4,6,8,10\}\)
+plus the anisotropic \((1,4)\) case; \(\omega_0 = \max(10,\,2\pi a)\),
+\(\sigma = \max(2,\,\pi a)\); residual scale \((a\pi)^2\).
+
+% ===========================================================================
+\subsection{Variable-coefficient (scattering) Helmholtz}\label{sec:bm:helmvc}
+
+To move from a single clean eigenmode to a heterogeneous medium, we let the
+zeroth-order coefficient vary in space,
+\begin{equation}\label{eq:helmvc_pde}
+  \Delta u + \kappa^2(x)\,u = f
+  \qquad \text{in } \Omega = (-1,1)^2,
+\end{equation}
+with a smooth lens-like contrast
+\begin{equation}\label{eq:helmvc_kappa}
+  \kappa^2(x,y) = (a\pi)^2\big(1 + C\,\sin(\pi x)\sin(\pi y)\big),
+  \qquad C = 0.5 .
+\end{equation}
+The manufactured solution and Dirichlet data are again
+\eqref{eq:helm_sol} with \(u=0\) on \(\partial\Omega\), and the source is
+\begin{equation}\label{eq:helmvc_source}
+  f = -2(a\pi)^2\,u_\star + \kappa^2(x)\,u_\star .
+\end{equation}
+The background wavenumber is swept over \(a \in \{2,4,6\}\).
+
+\paragraph{Provenance and comparability.}
+Variable-coefficient (scattering) Helmholtz problems in a heterogeneous medium
+are the realistic electromagnetics/acoustics regime represented in the PINNacle
+Poisson--Boltzmann/Helmholtz tasks~\cite{Hao2024PINNacle}; the \(\pm 50\%\)
+smooth contrast here is a controlled, exactly-known-solution instance of that
+regime. It also exercises the variable-coefficient path of the residual
+assembly, in which \(\kappa^2(x)\) is precomputed once on the collocation set.
+
+\paragraph{Setting.}
+\(\Omega=(-1,1)^2\); Dirichlet \(u=0\); contrast \(C=0.5\);
+sweep \(a\in\{2,4,6\}\); \(\omega_0,\sigma\) as in
+Section~\ref{sec:bm:helmholtz}.
+
+% ===========================================================================
+\subsection{Non-separable radial chirp}\label{sec:bm:chirp}
+
+The eigenmode benchmarks above are separable products of sines, which
+sine-based real baselines can represent almost natively and which may therefore
+mask any expressivity gap. To remove this confound we use a non-separable target
+with a space-varying local frequency,
+\begin{equation}\label{eq:chirp_pde}
+  -\Delta u + u = f
+  \qquad \text{in } \Omega = (-1,1)^2,
+\end{equation}
+\begin{equation}\label{eq:chirp_sol}
+  u_\star(x,y) = \sin\!\big(\phi(x,y)\big),
+  \qquad
+  \phi(x,y) = \tfrac{a\pi}{2}\,(x^2 + y^2),
+\end{equation}
+a radial chirp whose instantaneous frequency grows with radius,
+\begin{align}\label{eq:chirp_freq}
+  |\nabla\phi| = a\pi\,r, \qquad r = \sqrt{x^2+y^2}.
+\end{align}
+The source is assembled from
+\begin{align}\label{eq:chirp_source}
+  \Delta u_\star
+  &= -(a\pi)^2\,r^2 \sin\phi + 2a\pi\,\cos\phi, \notag\\
+  f &= -\Delta u_\star + u_\star,
+\end{align}
+with Dirichlet data \(u = u_\star\) on \(\partial\Omega\) and the sweep
+\(a \in \{2,4,6,8\}\).
+
+\paragraph{Provenance and comparability.}
+Space-varying-frequency (chirp) targets are the standard stress test for
+high-frequency representation methods such as Fourier
+features~\cite{Tancik2020Fourier} and multi-scale
+networks~\cite{Liu2020MscaleDNN}, which are tuned for stationary spectra. This
+benchmark is the fairness control of the suite: every architecture must
+\emph{construct} the varying oscillation rather than read it off a fixed
+frequency basis.
+
+\paragraph{Setting.}
+\(\Omega=(-1,1)^2\); Dirichlet \(u=u_\star\); sweep \(a\in\{2,4,6,8\}\);
+\(\omega_0,\sigma\) as in Section~\ref{sec:bm:helmholtz}.
+
+% ===========================================================================
+\subsection{Polyharmonic order sweep}\label{sec:bm:poly}
+
+To isolate the effect of the differential \emph{order} from that of frequency,
+we fix the solution and frequency and vary only the order of a polyharmonic
+operator. The eigenmode identity \(\Delta^m u = (-S)^m u\) holds for the
+sinusoidal eigenfunctions below, giving
+\begin{equation}\label{eq:poly_pde}
+  \Delta^m u = (-S)^m\,u,
+  \qquad
+  \begin{cases}
+    u_\star = \sin(\pi x)\sin(\pi y), & S = 2\pi^2 \ (\text{2D}),\\[2pt]
+    u_\star = \sin(\pi x),            & S = \pi^2 \ (\text{1D}).
+  \end{cases}
+\end{equation}
+Simply-supported (Navier) boundary conditions are imposed exactly through the
+lower even derivatives,
+\begin{equation}\label{eq:poly_bc}
+  \Delta^j u = 0 \quad \text{on } \partial\Omega,
+  \qquad j = 0,1,\dots,m-1 .
+\end{equation}
+The order is swept over \(2m \in \{2,4,6\}\) in two dimensions and
+\(2m \in \{2,4,6,8,10\}\) in one dimension. In one dimension the operator is a
+single monomial partial \(\partial_x^{2m}\), which is cheap enough to reach order
+ten; in two dimensions \(\Delta^m\) expands into \(m+1\) high-order terms.
+
+\paragraph{Provenance and comparability.}
+Biharmonic and polyharmonic operators are the canonical high-order PINN
+testbed~\cite{Vahab2022Biharmonic}; the biharmonic (\(m=2\)) and triharmonic
+(\(m=3\)) cases coincide with the polyharmonic family used in
+randomized-smoothing PINNs. Holding \(u_\star\), the frequency and the domain
+fixed while varying only \(m\) is our isolation design for the order axis.
+
+\paragraph{Setting.}
+\(\Omega=(-1,1)^d\), \(d\in\{1,2\}\); Navier BC \eqref{eq:poly_bc};
+1D \(\omega_0=\sigma=\pi\), 2D \(\omega_0=2\pi\), \(\sigma=\pi\);
+residual scale \(S^m\).
+
+% ===========================================================================
+\subsection{Kirchhoff plate and Euler--Bernoulli beam}\label{sec:bm:plate}
+
+The fourth-order vibration eigenproblems of structural mechanics give two
+oscillatory biharmonic benchmarks. For the Kirchhoff plate,
+\begin{equation}\label{eq:plate_pde}
+  \Delta^2 w = S^2\,w
+  \qquad \text{in } \Omega = (-1,1)^2,
+  \qquad S = (m^2 + n^2)\pi^2,
+\end{equation}
+with simply-supported edges \(w = 0\) and \(\Delta w = 0\) on \(\partial\Omega\)
+and the mode shape
+\begin{equation}\label{eq:plate_sol}
+  w_\star(x,y) = \sin(m\pi x)\,\sin(n\pi y).
+\end{equation}
+For the Euler--Bernoulli beam in one dimension,
+\begin{equation}\label{eq:beam_pde}
+  w'''' = (m\pi)^4\,w
+  \qquad \text{in } (-1,1),
+  \qquad w_\star = \sin(m\pi x),
+\end{equation}
+with simply-supported ends \(w = 0\) and \(w'' = 0\). We sweep the mode number,
+using the isotropic plate modes \((m,m)\) with \(m\in\{1,2,3\}\), the anisotropic
+mixed modes \((m,m+1)\) with \(m\in\{2,3,4\}\), and the beam modes
+\(m\in\{1,2,3\}\). The order is fixed at four; the sweep raises the oscillation
+only.
+
+\paragraph{Provenance and comparability.}
+The biharmonic plate and beam are standard PINN structural benchmarks: Vahab et
+al.~\cite{Vahab2022Biharmonic} solve the simply-supported Kirchhoff plate
+(\(D\,\Delta^2 w = q\)), and the simply-supported Euler--Bernoulli beam with
+mode shape \(\sin(m\pi x)\) is the textbook 1D specialization. We use the
+free-vibration eigenmode form \(\Delta^2 w = S^2 w\) with the corresponding
+manufactured right-hand side, so the exact solution is known in closed form.
+
+\paragraph{Setting.}
+Plate \(\Omega=(-1,1)^2\), Navier BC \(w=\Delta w=0\); beam \((-1,1)\), Navier
+BC \(w=w''=0\); modes \((m,m)\), \((m,m{+}1)\), and beam \(m\);
+\(\omega_0=\max(10,2\pi f)\), \(\sigma=\max(2,\pi f)\) with
+\(f=\max(m,n)\); residual scale \(S^2\).
+
+% ===========================================================================
+\subsection{Linearized Korteweg--de Vries / dispersive wave}\label{sec:bm:kdv}
+
+The third-order dispersive operator is exercised by a linearized KdV (Airy)
+equation in space--time,
+\begin{equation}\label{eq:kdv_pde}
+  u_t + \delta\,u_{xxx} = f
+  \qquad \text{in } (x,t) \in (-1,1)^2,
+  \qquad \delta = 1,
+\end{equation}
+with the oscillatory travelling profile
+\begin{equation}\label{eq:kdv_sol}
+  u_\star(x,t) = \sin(k\pi x)\,\cos(k\pi t)
+\end{equation}
+and Dirichlet data \(u = u_\star\) on the space--time boundary. The source is
+\begin{align}\label{eq:kdv_source}
+  f
+  &= u_{\star,t} + \delta\,u_{\star,xxx} \notag\\
+  &= -k\pi\,\sin(k\pi x)\sin(k\pi t)
+     - (k\pi)^3\,\cos(k\pi x)\cos(k\pi t),
+\end{align}
+and the wavenumber is swept over \(k \in \{2,3,4,5,6\}\).
+
+\paragraph{Provenance and comparability.}
+KdV is a canonical PINN benchmark; Raissi et al.~\cite{Raissi2019} use the
+nonlinear form \(u_t + \lambda_1 u u_x + \lambda_2 u_{xxx} = 0\) with
+\(\lambda_2 = 0.0025\). We use the linear dispersive (Airy) operator with a
+manufactured oscillatory solution in order to isolate the odd third-order term
+\(u_{xxx}\) from the convective nonlinearity; the canonical nonlinear KdV can be
+added as a separate case for a direct comparison.
+
+\paragraph{Setting.}
+\((x,t)\in(-1,1)^2\); Dirichlet \(u=u_\star\); \(\delta=1\); sweep
+\(k\in\{2,3,4,5,6\}\); \(\omega_0=\max(10,2\pi k)\), \(\sigma=\max(2,\pi k)\).
+
+% ===========================================================================
+\subsection{Cahn--Hilliard}\label{sec:bm:ch}
+
+The phase-field Cahn--Hilliard equation combines a high-order linear operator
+with a cubic nonlinearity. In one space dimension plus time,
+\begin{align}\label{eq:ch_pde}
+  u_t &= M\big[\Delta(u^3) - \Delta u - \gamma\,\Delta^2 u\big] && (\text{4th order}),\\
+  u_t &= M\big[\Delta(u^3) - \Delta u - \gamma\,\Delta^2 u + \kappa\,\Delta^3 u\big] && (\text{6th order}),
+  \label{eq:ch_pde6}
+\end{align}
+with \(M = \gamma = \kappa = 1\), \(\Delta = \partial_x^2\), and
+\((x,t) \in (-1,1)^2\). The manufactured solution is
+\begin{equation}\label{eq:ch_sol}
+  u_\star(x,t) = \sin(a\pi x)\,\cos(a\pi t),
+\end{equation}
+the nonlinear flux is expanded as in \eqref{eq:lap_u3}, and the source term and
+the boundary targets (on \(u\), \(u_{xx}\), and additionally \(u_{xxxx}\) for the
+sixth-order case) are obtained from the analytic solution. We use
+\(a \in \{2,3\}\) at orders \(4\) and \(6\).
+
+\paragraph{Provenance and comparability.}
+Cahn--Hilliard is a standard fourth-order phase-field PINN benchmark, and a
+sixth-order variant is used in randomized-smoothing PINNs; chaotic/high-order
+space--time PDEs of this type (Kuramoto--Sivashinsky, Gray--Scott) form the
+nonlinear high-order tier of PINNacle~\cite{Hao2024PINNacle}. The manufactured
+solution \eqref{eq:ch_sol} gives an exactly known reference while retaining the
+cubic nonlinearity and the genuine fourth/sixth-order operator.
+
+\paragraph{Setting.}
+\((x,t)\in(-1,1)^2\); \(M=\gamma=\kappa=1\); orders \(\{4,6\}\); sweep
+\(a\in\{2,3\}\); \(\omega_0=\max(10,2\pi a)\), \(\sigma=\max(2,\pi a)\).
+
+% ===========================================================================
+\subsection{Cubic nonlinear Schr\"odinger}\label{sec:bm:nls}
+
+The first genuinely complex-valued benchmark is the cubic nonlinear
+Schr\"odinger (NLS) equation,
+\begin{equation}\label{eq:nls_pde}
+  \mathrm{i}\,u_t + \tfrac12\,u_{xx} + |u|^2 u = f,
+  \qquad u:\ \Omega \to \mathbb{C}.
+\end{equation}
+We use the standing bright-soliton family as the manufactured solution,
+\begin{equation}\label{eq:nls_sol}
+  u_\star(x,t) = \operatorname{sech}(x)\,\mathrm{e}^{\mathrm{i}kt},
+\end{equation}
+for which a direct computation gives the source
+\begin{align}\label{eq:nls_source}
+  \mathrm{i}\,u_{\star,t} + \tfrac12\,u_{\star,xx} + |u_\star|^2 u_\star
+  &= \Big(\!-k + \tfrac12 - \operatorname{sech}^2 x + \operatorname{sech}^2 x\Big) u_\star
+   = \big(\tfrac12 - k\big)\,u_\star ,
+\end{align}
+so \(f = (\tfrac12 - k)\,u_\star\), and at \(k = \tfrac12\) the source vanishes
+and \(u_\star\) is the exact bright soliton. The temporal frequency is swept over
+\(k \in \{1,2,4\}\). A single complex-sinh network carries \(u\) in
+\(\mathbb{C}\) natively; the real baselines carry \(u\) as a split real/imaginary
+pair, parameter-matched as a pair.
+
+\paragraph{Provenance and comparability.}
+This is the complex-valued benchmark introduced by Raissi et
+al.~\cite{Raissi2019}, whose canonical setting is
+\begin{equation}\label{eq:nls_raissi}
+  \mathrm{i}\,h_t + \tfrac12 h_{xx} + |h|^2 h = 0,
+  \quad x\in[-5,5],\ t\in[0,\pi/2],\quad
+  h(0,x) = 2\operatorname{sech}(x),
+\end{equation}
+with periodic boundary conditions. We use the same domain window
+\(x\in[-5,5]\), \(t\in[0,\pi/2]\), with the manufactured standing soliton
+\eqref{eq:nls_sol} in place of the free amplitude-\(2\) evolution, so the
+reference solution is known in closed form while the equation, the cubic
+nonlinearity, and the complex-valued field are identical to the canonical
+setting.
+
+\paragraph{Setting.}
+\(x\in[-5,5]\), \(t\in[0,\pi/2]\) (inputs normalized to \([-1,1]^2\); chain-rule
+factors \(1/L_x\), \(1/L_t\)); Dirichlet/initial penalty; sweep \(k\in\{1,2,4\}\);
+complex vs.\ split-real representation.
+
+% ===========================================================================
+\subsection{Time-harmonic Maxwell (lossy medium)}\label{sec:bm:maxwell}
+
+The second complex-valued benchmark is the time-harmonic transverse-magnetic
+(TM\(_z\)) Maxwell system, which for the out-of-plane field reduces to a complex
+Helmholtz equation,
+\begin{equation}\label{eq:maxwell_pde}
+  \Delta E + \kappa^2 E = f
+  \qquad \text{in } \Omega = (-1,1)^2,
+  \qquad \kappa^2 = (a\pi)^2\,(1 + \mathrm{i}\beta),
+\end{equation}
+with loss tangent \(\beta = 0.2\). The complex permittivity makes the field
+genuinely complex-valued, and the manufactured solution is a traveling plane
+wave,
+\begin{equation}\label{eq:maxwell_sol}
+  E_\star(x,y) = \mathrm{e}^{\mathrm{i}a\pi(x+y)},
+\end{equation}
+with Dirichlet data \(E = E_\star\) on \(\partial\Omega\) and source
+\begin{equation}\label{eq:maxwell_source}
+  f = \big(-2(a\pi)^2 + \kappa^2\big)\,E_\star .
+\end{equation}
+The wavenumber is swept over \(a \in \{2,4,6\}\). As in the NLS case, the complex
+network carries \(E\) natively while the real baselines use a split-real pair.
+
+\paragraph{Provenance and comparability.}
+Time-harmonic Maxwell / frequency-domain electromagnetic scattering is an
+inherently complex-valued PDE family for which complex-valued surrogates have
+shown clear advantages over real-valued ones~\cite{Jiang2024Maxwell}. The lossy
+(\(\mathrm{i}\beta\)) term is the linear complex-valued companion to the cubic
+NLS test: it forces a genuinely complex field through a linear second-order
+operator.
+
+\paragraph{Setting.}
+\(\Omega=(-1,1)^2\); Dirichlet \(E=E_\star\); loss tangent \(\beta=0.2\); sweep
+\(a\in\{2,4,6\}\); \(\omega_0=\max(10,2\pi a)\), \(\sigma=\max(2,\pi a)\);
+complex vs.\ split-real representation.

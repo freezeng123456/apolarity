@@ -1,0 +1,73 @@
+device=cuda hidden=32 depth=4 budget=70.0s/run seeds=2 lr_schedule=cosine
+
+=== plate_m1  (d=2, order=4, sweep=1.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    2010    34.83     490   9.52e-05   5.825e-02  (seed 0)
+fourier                  8281      jet     994    70.51     661   7.87e-04   5.818e-02  (seed 0)
+siren                    6391      jet     956    73.28     665   2.25e-01   9.855e-01  (seed 0)
+mscale                   6633      jet     730    96.06    1098   2.39e-01   9.824e-01  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    2022    34.63     490   4.28e-05   3.405e-02  (seed 1)
+fourier                  8281      jet    1000    70.05     662   1.07e-03   2.651e-02  (seed 1)
+siren                    6391      jet     955    73.37     667   2.32e-01   9.900e-01  (seed 1)
+mscale                   6633      jet     730    96.05    1098   2.39e-01   9.781e-01  (seed 1)
+
+=== beam_m1  (d=1, order=4, sweep=1.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6530      jet    6995    10.01     167   2.69e-05   2.242e-02  (seed 0)
+fourier                  8281      jet    4241    16.51     208   1.52e-05   1.371e-02  (seed 0)
+siren                    6346      jet    4179    16.75     209   4.85e-01   9.830e-01  (seed 0)
+mscale                   6555      jet    2750    25.46     283   1.53e-05   7.901e-03  (seed 0)
+complex_sinh             6530      jet    7026     9.96     167   2.47e-05   6.483e-02  (seed 1)
+fourier                  8281      jet    4248    16.48     208   2.13e-05   1.321e-02  (seed 1)
+siren                    6346      jet    4182    16.74     209   5.52e-01   1.027e+00  (seed 1)
+mscale                   6555      jet    2706    25.87     283   1.71e-04   1.876e-01  (seed 1)
+
+=== plate_m2  (d=2, order=4, sweep=2.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    1983    35.32     490   9.15e-04   2.206e-01  (seed 0)
+fourier                  8281      jet     993    70.57     662   7.30e-03   2.939e-01  (seed 0)
+siren                    6391      jet     949    73.80     667   5.39e-02   5.832e-01  (seed 0)
+mscale                   6633      jet     726    96.52    1098   2.50e-01   9.999e-01  (seed 0)
+complex_sinh             6594      jet    1983    35.32     490   8.19e-04   2.741e-01  (seed 1)
+fourier                  8281      jet     993    70.57     662   8.54e-03   2.581e-01  (seed 1)
+siren                    6391      jet     949    73.80     667   3.84e-02   4.861e-01  (seed 1)
+mscale                   6633      jet     726    96.47    1098   2.47e-01   9.998e-01  (seed 1)
+
+=== beam_m2  (d=1, order=4, sweep=2.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6530      jet    6992    10.01     167   1.26e-05   2.114e-01  (seed 0)
+fourier                  8281      jet    4242    16.50     208   1.10e-04   1.985e-01  (seed 0)
+siren                    6346      jet    4095    17.10     209   1.96e-01   6.389e-01  (seed 0)
+mscale                   6555      jet    2664    26.28     283   3.46e-04   6.537e-01  (seed 0)
+complex_sinh             6530      jet    6651    10.53     167   9.17e-06   4.619e-02  (seed 1)
+fourier                  8281      jet    4151    16.87     208   4.03e-05   1.157e-01  (seed 1)
+siren                    6346      jet    4078    17.17     209   1.72e-01   5.823e-01  (seed 1)
+mscale                   6555      jet    2671    26.22     283   6.17e-04   4.435e-01  (seed 1)
+
+=== plate_m3  (d=2, order=4, sweep=3.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    1979    35.38     490   1.87e-03   2.903e-01  (seed 0)
+fourier                  8281      jet     991    70.72     662   2.66e-02   5.040e-01  (seed 0)
+siren                    6391      jet     947    73.99     667   1.20e-01   9.104e-01  (seed 0)
+mscale                   6633      jet     724    96.83    1098   2.52e-01   1.000e+00  (seed 0)
+complex_sinh             6594      jet    1980    35.37     490   3.57e-03   4.348e-01  (seed 1)
+fourier                  8281      jet     992    70.66     662   6.07e-02   8.401e-01  (seed 1)
+siren                    6391      jet     947    73.97     667   1.19e-01   9.382e-01  (seed 1)
+mscale                   6633      jet     722    97.00    1098   2.45e-01   1.000e+00  (seed 1)
+
+=== beam_m3  (d=1, order=4, sweep=3.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6530      jet    6641    10.54     167   1.04e-05   3.898e-01  (seed 0)
+fourier                  8281      jet    4156    16.85     208   6.14e-05   9.880e-02  (seed 0)
+siren                    6346      jet    4078    17.17     209   3.38e-01   8.458e-01  (seed 0)
+mscale                   6555      jet    2668    26.24     283   4.40e-03   1.200e+00  (seed 0)
+complex_sinh             6530      jet    6657    10.52     167   4.10e-06   5.311e-02  (seed 1)
+fourier                  8281      jet    4216    16.61     208   1.64e-04   1.326e-01  (seed 1)
+siren                    6346      jet    4161    16.83     209   2.79e-01   7.653e-01  (seed 1)
+mscale                   6555      jet    2710    25.84     283   4.89e-03   2.160e+00  (seed 1)
+
+[ok] wrote results/plate_beam_v3.csv

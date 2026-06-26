@@ -1,0 +1,66 @@
+### poly1d ###
+device=cuda hidden=16 depth=4 budget=5.0s/run seeds=1 lr_schedule=cosine
+
+=== polyharm1d_o2  (d=1, order=2, sweep=2.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1730      jet     454    11.03      96   4.27e-03   2.300e-01  (seed 0)
+fourier                  2209      jet     476    10.51     109   5.14e-04   9.144e-02  (seed 0)
+
+=== polyharm1d_o4  (d=1, order=4, sweep=4.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1730      jet     244    20.53     116   4.26e-01   9.433e-01  (seed 0)
+fourier                  2209      jet     369    13.57     138   3.41e-01   8.272e-01  (seed 0)
+
+=== polyharm1d_o8  (d=1, order=8, sweep=8.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1730      jet     135    37.25     157   4.98e-01   1.010e+00  (seed 0)
+fourier                  2209      jet     121    41.53     196   5.42e+02   9.923e-01  (seed 0)
+
+[ok] wrote results/diag/smoke_poly1d.csv
+### helmvc ###
+device=cuda hidden=16 depth=4 budget=5.0s/run seeds=1 lr_schedule=cosine
+
+=== helmvc_a2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1762      jet     261    19.20     124   6.60e-02   9.999e-01  (seed 0)
+fourier                  2209      jet     317    15.83     144   6.53e-02   9.951e-01  (seed 0)
+
+=== helmvc_a4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1762      jet     263    19.09     124   6.57e-02   9.999e-01  (seed 0)
+fourier                  2209      jet     317    15.83     144   6.50e-02   9.981e-01  (seed 0)
+
+[ok] wrote results/diag/smoke_helmvc.csv
+### maxwell ###
+device=cuda hidden=16 depth=4 budget=5.0s seeds=1 lr_schedule=cosine
+
+=== maxwell_a2 (a=2, |kappa^2|=40.3) ===
+variant             rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    1762    260    19.33   4.67e-01   1.706e+00  (seed 0)
+tanh             split2    1762    168    29.88   2.65e-01   1.007e+00  (seed 0)
+
+[ok] wrote results/diag/smoke_maxwell.csv
+### platemix ###
+device=cuda hidden=16 depth=4 budget=5.0s/run seeds=1 lr_schedule=cosine
+
+=== platemix_m2  (d=2, order=4, sweep=3.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1762      jet      98    51.23     286   2.51e-01   9.985e-01  (seed 0)
+fourier                  2209      jet      80    63.24     372   2.68e-01   9.994e-01  (seed 0)
+
+=== platemix_m3  (d=2, order=4, sweep=4.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             1762      jet      98    51.45     286   2.47e-01   9.968e-01  (seed 0)
+fourier                  2209      jet      80    63.10     372   2.58e-01   9.997e-01  (seed 0)
+
+[ok] wrote results/diag/smoke_platemix.csv
+### nls refactor ###
+device=cuda hidden=16 depth=4 budget=5.0s seeds=1 lr_schedule=cosine
+
+=== nls_k1 (k=1) ===
+variant            rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    1762    264    19.03   1.34e-01   8.313e-01  (seed 0)
+tanh            split2    1762    178    28.15   4.58e-02   8.517e-01  (seed 0)
+
+[ok] wrote results/diag/smoke_nls.csv
+### ALL SMOKE DONE ###

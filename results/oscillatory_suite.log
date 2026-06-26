@@ -1,0 +1,83 @@
+device=cuda hidden=32 depth=4 budget=100.0s/run seeds=2
+
+=== helmholtz_hf  (d=2, order=2, terms=2) ===
+variant         params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh      6594      jet    9368    10.68     183   8.95e-04   1.601e-01  (seed 0)
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_noinit     6594      jet    9415    10.62     183   2.52e-01   1.000e+00  (seed 0)
+real_sinh         3297      jet   11295     8.85     176   2.52e-01   1.000e+00  (seed 0)
+tanh              3297      jet   11374     8.79     176   2.52e-01   1.000e+00  (seed 0)
+siren             3297      jet   11359     8.80     176   2.55e-04   1.981e-01  (seed 0)
+fourier           4225      jet   11437     8.74     175   6.78e-03   3.737e-01  (seed 0)
+mscale            3297      jet    4293    23.30     253   2.52e-01   1.001e+00  (seed 0)
+cauchy            3681 autograd    6626    15.09     331   2.52e-01   1.000e+00  (seed 0)
+complex_sinh      6594      jet    9388    10.65     183   6.78e-04   2.162e-01  (seed 1)
+complex_sinh_noinit     6594      jet    9421    10.62     183   2.45e-01   1.000e+00  (seed 1)
+real_sinh         3297      jet   11288     8.86     176   2.45e-01   1.000e+00  (seed 1)
+tanh              3297      jet   11453     8.73     176   2.45e-01   1.000e+00  (seed 1)
+siren             3297      jet   11373     8.79     176   3.50e-04   1.077e-01  (seed 1)
+fourier           4225      jet   11317     8.84     175   5.58e-03   8.638e-01  (seed 1)
+mscale            3297      jet    4272    23.41     253   1.80e-01   1.059e+00  (seed 1)
+cauchy            3681 autograd    6578    15.20     331   2.45e-01   1.000e+00  (seed 1)
+
+=== kdv  (d=2, order=3, terms=3) ===
+variant         params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh      6594      jet    8028    12.46     204   1.90e-05   1.594e-01  (seed 0)
+complex_sinh_noinit     6594      jet    7825    12.78     204   2.91e-01   1.247e+00  (seed 0)
+real_sinh         3297      jet    8214    12.18     204   2.88e-01   1.240e+00  (seed 0)
+tanh              3297      jet    8357    11.97     206   8.56e-04   4.145e-02  (seed 0)
+siren             3297      jet    8357    11.97     204   1.02e-04   1.841e-01  (seed 0)
+fourier           4225      jet    8869    11.28     205   6.50e-05   4.491e-02  (seed 0)
+mscale            3297      jet    3143    31.82     299   2.16e-03   1.912e-01  (seed 0)
+cauchy            3681 autograd    3722    26.87     551   3.96e-03   1.507e-01  (seed 0)
+complex_sinh      6594      jet    7962    12.56     204   6.64e-05   7.704e-02  (seed 1)
+complex_sinh_noinit     6594      jet    7873    12.70     204   3.49e-01   1.078e+00  (seed 1)
+real_sinh         3297      jet    8294    12.06     204   3.44e-01   1.064e+00  (seed 1)
+tanh              3297      jet    8380    11.93     206   6.62e-03   8.887e-02  (seed 1)
+siren             3297      jet    8471    11.81     204   3.90e-05   1.810e-01  (seed 1)
+fourier           4225      jet    8984    11.13     205   1.05e-04   9.367e-02  (seed 1)
+mscale            3297      jet    3164    31.61     299   2.64e-03   6.911e-02  (seed 1)
+cauchy            3681 autograd    3906    25.60     551   1.72e-03   1.148e-01  (seed 1)
+
+=== biharmonic  (d=2, order=4, terms=3) ===
+variant         params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh      6594      jet    2887    34.65     490   4.28e-05   4.316e-02  (seed 0)
+complex_sinh_noinit     6594      jet    2872    34.82     490   2.47e-01   1.000e+00  (seed 0)
+real_sinh         3297      jet    2916    34.30     490   2.47e-01   1.000e+00  (seed 0)
+tanh              3297      jet    2930    34.14     490   2.36e-01   9.751e-01  (seed 0)
+siren             3297      jet    2931    34.13     490   2.15e-01   9.900e-01  (seed 0)
+fourier           4225      jet    2986    33.50     487   2.29e-04   1.131e-01  (seed 0)
+mscale            3297      jet    1100    91.01     790   2.40e-01   9.853e-01  (seed 0)
+cauchy            3681 autograd     435   230.13    4290   2.47e-01   9.994e-01  (seed 0)
+complex_sinh      6594      jet    2883    34.69     490   2.09e-05   2.209e-02  (seed 1)
+complex_sinh_noinit     6594      jet    2872    34.83     490   2.49e-01   1.000e+00  (seed 1)
+real_sinh         3297      jet    2920    34.26     490   2.49e-01   1.000e+00  (seed 1)
+tanh              3297      jet    2936    34.07     490   2.22e-01   9.364e-01  (seed 1)
+siren             3297      jet    2922    34.23     490   7.29e-04   6.944e-02  (seed 1)
+fourier           4225      jet    2978    33.59     487   7.22e-04   4.330e-01  (seed 1)
+mscale            3297      jet    1096    91.29     790   4.48e-03   5.512e-01  (seed 1)
+cauchy            3681 autograd     440   227.74    4290   2.48e-01   9.950e-01  (seed 1)
+
+=== triharmonic  (d=2, order=6, terms=4) ===
+variant         params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh      6594      jet     912   109.76    1493   5.57e-04   4.443e-02  (seed 0)
+complex_sinh_noinit     6594      jet     910   109.95    1493   2.47e-01   1.000e+00  (seed 0)
+real_sinh         3297      jet     911   109.88    1492   2.47e-01   9.997e-01  (seed 0)
+tanh              3297      jet     921   108.74    1491   2.47e-01   9.997e-01  (seed 0)
+siren             3297      jet     912   109.79    1492   2.67e-01   1.000e+00  (seed 0)
+fourier           4225      jet     919   108.93    1481   2.98e-03   1.643e-01  (seed 0)
+mscale            3297      jet     346   289.41    2510   2.47e-01   1.001e+00  (seed 0)
+cauchy            3681 autograd      20  5112.25   81060   2.47e-01   9.960e-01  (seed 0)
+complex_sinh      6594      jet     899   111.33    1493   1.10e-03   1.006e-01  (seed 1)
+complex_sinh_noinit     6594      jet     899   111.38    1493   2.49e-01   1.000e+00  (seed 1)
+real_sinh         3297      jet     897   111.59    1492   2.49e-01   1.000e+00  (seed 1)
+tanh              3297      jet     910   109.96    1491   2.49e-01   9.998e-01  (seed 1)
+siren             3297      jet     900   111.21    1492   4.67e-01   1.002e+00  (seed 1)
+fourier           4225      jet     911   109.92    1480   5.41e-02   4.475e-01  (seed 1)
+mscale            3297      jet     342   292.70    2510   2.39e-01   9.795e-01  (seed 1)
+cauchy            3681 autograd      20  5251.04   81060   2.49e-01   9.989e-01  (seed 1)
+
+[ok] wrote results/oscillatory_suite.csv

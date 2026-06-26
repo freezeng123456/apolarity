@@ -1,0 +1,67 @@
+device=cuda hidden=32 depth=4 budget=60.0s/run seeds=2
+
+=== helmholtz_a2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    5623    10.67     183   5.39e-05   4.708e-02  (seed 0)
+fourier                  8281      jet    3299    18.19     222   2.89e-04   2.249e-01  (seed 0)
+siren                    6391      jet    3243    18.50     223   1.88e-04   8.034e-02  (seed 0)
+mscale                   6633      jet    2437    24.63     330   2.40e-02   2.686e-01  (seed 0)
+tanh                     6391      jet    3235    18.55     223   2.50e-01   1.000e+00  (seed 0)
+real_sinh                6391      jet    3226    18.60     223   2.50e-01   1.000e+00  (seed 0)
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    5666    10.59     183   1.25e-04   6.422e-02  (seed 1)
+fourier                  8281      jet    3299    18.19     222   1.69e-04   6.289e-02  (seed 1)
+siren                    6391      jet    3206    18.72     223   1.61e-04   6.249e-02  (seed 1)
+mscale                   6633      jet    2420    24.81     330   3.03e-02   3.983e-01  (seed 1)
+tanh                     6391      jet    3229    18.59     223   2.47e-01   1.000e+00  (seed 1)
+real_sinh                6391      jet    3209    18.70     223   2.47e-01   1.000e+00  (seed 1)
+
+=== helmholtz_a4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    5572    10.77     183   5.79e-04   3.504e-01  (seed 0)
+fourier                  8281      jet    3263    18.39     222   3.25e-03   4.773e-01  (seed 0)
+siren                    6391      jet    3225    18.61     223   1.10e-03   3.055e-01  (seed 0)
+mscale                   6633      jet    2429    24.70     330   2.49e-01   1.000e+00  (seed 0)
+tanh                     6391      jet    3230    18.58     223   2.49e-01   1.000e+00  (seed 0)
+real_sinh                6391      jet    3177    18.89     223   2.49e-01   1.000e+00  (seed 0)
+complex_sinh             6594      jet    5657    10.61     183   1.15e-03   2.483e-01  (seed 1)
+fourier                  8281      jet    3286    18.26     222   2.44e-03   3.786e-01  (seed 1)
+siren                    6391      jet    3229    18.59     223   9.51e-04   3.662e-01  (seed 1)
+mscale                   6633      jet    2429    24.71     330   2.56e-01   1.000e+00  (seed 1)
+tanh                     6391      jet    3227    18.60     223   2.57e-01   1.000e+00  (seed 1)
+real_sinh                6391      jet    3210    18.69     223   2.57e-01   9.999e-01  (seed 1)
+
+=== helmholtz_a6  (d=2, order=2, sweep=6.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    5617    10.68     183   6.64e-03   5.141e-01  (seed 0)
+fourier                  8281      jet    3285    18.27     222   2.60e-03   8.315e-01  (seed 0)
+siren                    6391      jet    3227    18.60     223   5.18e-04   8.222e-01  (seed 0)
+mscale                   6633      jet    2407    24.93     330   2.41e-01   1.001e+00  (seed 0)
+tanh                     6391      jet    3230    18.58     223   2.41e-01   1.000e+00  (seed 0)
+real_sinh                6391      jet    3213    18.68     223   2.41e-01   1.000e+00  (seed 0)
+complex_sinh             6594      jet    5647    10.63     183   8.29e-03   5.938e-01  (seed 1)
+fourier                  8281      jet    3281    18.29     222   1.51e-03   8.670e-01  (seed 1)
+siren                    6391      jet    3225    18.61     223   3.34e-04   8.128e-01  (seed 1)
+mscale                   6633      jet    2428    24.72     330   2.57e-01   1.001e+00  (seed 1)
+tanh                     6391      jet    3230    18.58     223   2.57e-01   1.000e+00  (seed 1)
+real_sinh                6391      jet    3209    18.70     223   2.57e-01   1.000e+00  (seed 1)
+
+=== helmholtz_a8  (d=2, order=2, sweep=8.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    5606    10.70     183   1.23e-02   5.462e-01  (seed 0)
+fourier                  8281      jet    3277    18.31     222   8.37e-04   9.133e-01  (seed 0)
+siren                    6391      jet    3228    18.59     223   1.54e-04   9.162e-01  (seed 0)
+mscale                   6633      jet    2427    24.73     330   2.47e-01   9.999e-01  (seed 0)
+tanh                     6391      jet    3204    18.73     223   2.47e-01   9.999e-01  (seed 0)
+real_sinh                6391      jet    3183    18.85     223   2.47e-01   1.000e+00  (seed 0)
+complex_sinh             6594      jet    5505    10.90     183   1.74e-02   6.734e-01  (seed 1)
+fourier                  8281      jet    3282    18.29     222   2.89e-04   9.496e-01  (seed 1)
+siren                    6391      jet    3230    18.58     223   7.62e-05   9.383e-01  (seed 1)
+mscale                   6633      jet    2429    24.71     330   2.50e-01   1.000e+00  (seed 1)
+tanh                     6391      jet    3233    18.57     223   2.51e-01   1.000e+00  (seed 1)
+real_sinh                6391      jet    3210    18.69     223   2.51e-01   1.000e+00  (seed 1)
+
+[ok] wrote results/helmholtz_highk.csv

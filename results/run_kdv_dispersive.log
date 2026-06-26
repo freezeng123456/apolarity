@@ -1,0 +1,67 @@
+device=cuda hidden=32 depth=4 budget=60.0s/run seeds=2
+
+=== kdv_k2  (d=2, order=3, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    6140     9.77     180   2.30e-04   1.466e-01  (seed 0)
+fourier                  8281      jet    3432    17.49     228   7.42e-04   2.752e-01  (seed 0)
+siren                    6391      jet    3259    18.41     229   5.86e-04   4.758e-01  (seed 0)
+mscale                   6633      jet    2424    24.76     322   3.54e-02   1.680e+00  (seed 0)
+tanh                     6391      jet    3246    18.49     229   5.47e-01   1.665e+00  (seed 0)
+real_sinh                6391      jet    3208    18.71     229   6.10e-01   9.870e-01  (seed 0)
+/root/apolenv/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh             6594      jet    6278     9.56     180   2.49e-04   2.854e-01  (seed 1)
+fourier                  8281      jet    3427    17.51     228   3.67e-04   2.167e-01  (seed 1)
+siren                    6391      jet    3256    18.44     229   3.84e-04   4.359e-01  (seed 1)
+mscale                   6633      jet    2422    24.78     322   2.44e-02   9.590e-01  (seed 1)
+tanh                     6391      jet    3247    18.48     229   6.00e-01   1.672e+00  (seed 1)
+real_sinh                6391      jet    3208    18.71     229   2.38e-01   9.941e-01  (seed 1)
+
+=== kdv_k3  (d=2, order=3, sweep=3.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    6259     9.59     180   2.03e-04   1.405e-01  (seed 0)
+fourier                  8281      jet    3410    17.60     228   2.41e-03   4.130e-01  (seed 0)
+siren                    6391      jet    3237    18.54     229   1.13e-03   6.039e-01  (seed 0)
+mscale                   6633      jet    2423    24.77     322   1.96e-01   3.218e+00  (seed 0)
+tanh                     6391      jet    3247    18.49     229   4.49e-01   1.575e+00  (seed 0)
+real_sinh                6391      jet    3206    18.72     229   2.71e-01   1.011e+00  (seed 0)
+complex_sinh             6594      jet    6260     9.59     180   6.27e-04   2.770e-01  (seed 1)
+fourier                  8281      jet    3428    17.51     228   1.28e-03   5.548e-01  (seed 1)
+siren                    6391      jet    3252    18.45     229   1.15e-03   6.238e-01  (seed 1)
+mscale                   6633      jet    2417    24.83     322   1.04e-01   1.104e+00  (seed 1)
+tanh                     6391      jet    3232    18.57     229   6.80e-01   1.712e+00  (seed 1)
+real_sinh                6391      jet    3204    18.73     229   2.68e-01   1.068e+00  (seed 1)
+
+=== kdv_k4  (d=2, order=3, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    6105     9.83     180   2.20e-03   5.019e-01  (seed 0)
+fourier                  8281      jet    3393    17.69     228   4.48e-03   5.419e-01  (seed 0)
+siren                    6391      jet    3222    18.63     229   2.21e-03   5.999e-01  (seed 0)
+mscale                   6633      jet    2389    25.13     322   2.00e-01   3.199e+00  (seed 0)
+tanh                     6391      jet    3210    18.70     229   6.41e-01   3.519e+00  (seed 0)
+real_sinh                6391      jet    3174    18.91     229   3.35e-01   1.016e+00  (seed 0)
+complex_sinh             6594      jet    6034     9.94     180   2.00e-03   6.287e-01  (seed 1)
+fourier                  8281      jet    3395    17.68     228   4.83e-03   6.969e-01  (seed 1)
+siren                    6391      jet    3222    18.63     229   2.47e-03   5.663e-01  (seed 1)
+mscale                   6633      jet    2389    25.12     322   2.53e-01   1.958e+00  (seed 1)
+tanh                     6391      jet    3209    18.70     229   7.16e-01   1.663e+00  (seed 1)
+real_sinh                6391      jet    3173    18.91     229   3.24e-01   1.016e+00  (seed 1)
+
+=== kdv_k5  (d=2, order=3, sweep=5.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh             6594      jet    6021     9.97     180   3.90e-03   6.960e-01  (seed 0)
+fourier                  8281      jet    3391    17.70     228   7.01e-03   9.262e-01  (seed 0)
+siren                    6391      jet    3222    18.63     229   3.99e-03   6.833e-01  (seed 0)
+mscale                   6633      jet    2389    25.12     322   2.31e-01   4.337e+00  (seed 0)
+tanh                     6391      jet    3212    18.68     229   6.43e-01   2.148e+00  (seed 0)
+real_sinh                6391      jet    3172    18.92     229   2.48e-01   1.015e+00  (seed 0)
+complex_sinh             6594      jet    6051     9.92     180   5.04e-03   8.505e-01  (seed 1)
+fourier                  8281      jet    3393    17.69     228   5.95e-03   1.244e+00  (seed 1)
+siren                    6391      jet    3222    18.63     229   3.95e-03   7.084e-01  (seed 1)
+mscale                   6633      jet    2389    25.12     322   2.06e-01   2.285e+00  (seed 1)
+tanh                     6391      jet    3211    18.69     229   4.22e-01   3.287e+00  (seed 1)
+real_sinh                6391      jet    3173    18.92     229   2.47e-01   1.001e+00  (seed 1)
+
+[ok] wrote results/kdv_dispersive.csv

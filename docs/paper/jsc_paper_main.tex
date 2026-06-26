@@ -74,7 +74,16 @@ with nested automatic differentiation and real polarization. The
 results confirm round-off-level agreement with the direct reference and
 show that, for repeated-index multi-indices, the Waring schedule reduces
 the number of Taylor directions while remaining competitive in measured
-wall-clock time.
+wall-clock time. Because \(\sinh\) is entire on \(\C\), the same backend
+also makes \emph{complex-parameter} \(\sinh\) networks high-order
+differentiable without any runtime dtype conversion; we study these as a
+PINN ansatz for oscillatory and high-order problems and benchmark them,
+under matched parameter counts and a shared training protocol, against
+strong real high-frequency baselines (Fourier features, SIREN, MscaleDNN)
+on a literature-grounded suite of nine PDE families. The complex network
+is competitive-to-superior on the majority of instances, with the largest
+gains on balanced repeated-index high-order operators and on genuinely
+complex-valued problems.
 
 \medskip
 \noindent\textbf{Keywords.} Physics-informed neural networks; high-order
@@ -166,15 +175,39 @@ nested automatic differentiation and real polarization with Taylor jets
 Within a fixed wall-clock budget, the complex Waring backend gives the
 best result in the single tested PDE run; we report this as fixed-budget
 evidence rather than a statistical superiority claim.
+
+\item \textbf{Oscillatory expressivity study
+(Sections~\ref{sec:benchmarks}--\ref{sec:osc-results}).} The entirety of
+\(\sinh\) on \(\C\) lets the same backend differentiate
+\emph{complex-parameter} \(\sinh\) networks to arbitrary order with no
+dtype casting in the inner loop. We treat such a network as a PINN ansatz
+and ask whether the complex value field is itself more expressive on
+oscillatory and high-order targets. On a literature-grounded suite of nine
+PDE families -- evaluated under matched real-parameter counts, matched
+frequency initialization, and one shared training protocol -- the complex
+\(\sinh\) network is competitive-to-superior against Fourier-feature,
+SIREN, and MscaleDNN baselines on most instances, with the clearest
+advantage on balanced repeated-index high-order operators
+(e.g.\ \(\Delta^{3}\), mixed plate modes) and on genuinely complex-valued
+problems (nonlinear Schr\"odinger, lossy Maxwell). We report the advantage
+and its limits honestly, including the families where the gap closes.
 \end{enumerate}
 
 \subsection{Scope and limitations}
 
-This work treats one fixed multi-index at a time. We do \emph{not}
-address operator sums such as the Laplacian, polyharmonic operators,
-or generic Hessian contractions; for these, trace-collapsing techniques
-\cite{Li2024forwardLaplacian,Gao2023folx} are more suitable. We also
-do not pursue stochastic estimation; its accuracy-cost tradeoffs are
+The \emph{rank advantage} of this work is specific to one fixed
+multi-index: it shortens the directional schedule of a single
+repeated-index mixed partial. Operator sums such as the Laplacian or the
+polyharmonic operator \(\Delta^{m}\) are still evaluated exactly by the
+same jet machinery -- each summand is one (rank-one) directional jet and
+the residual is their sum -- but for such sums the Waring rank offers no
+shortening, and dedicated trace-collapsing techniques
+\cite{Li2024forwardLaplacian,Gao2023folx} can be more efficient when only
+a Laplacian is needed. The oscillatory study of
+Sections~\ref{sec:benchmarks}--\ref{sec:osc-results} uses the backend in
+this summed, exact-but-not-shortened mode wherever the operator is a sum,
+and exploits the genuine rank advantage on the mixed high-order terms. We
+also do not pursue stochastic estimation; its accuracy-cost tradeoffs are
 complementary to ours \cite{Shi2024stde}.
 
 \subsection{Relation to existing approaches}
@@ -345,12 +378,14 @@ Lemma~\ref{lem:Qu-expand},
 Substituting this expansion into statement (1), and using that the
 order-\(p\) active jet of \(u\) at \(x\) can be prescribed arbitrarily,
 shows that (1) is equivalent to the finite-dimensional coefficient system
+\begingroup\renewcommand{\theHequation}{eqstar}
 \begin{equation}
 \sum_{r=1}^{R}c_{r}\,v_{r}^{\beta}
 \;=\; \alpha!\,\delta_{\alpha\beta},
 \qquad \forall\,\beta\in\Z_{\ge 0}^{n+1}\text{ with }|\beta|=p.
 \tag{$\star$}\label{eq:star}
 \end{equation}
+\endgroup
 On the other hand, expanding statement (2) gives
 \((v_{r}\!\cdot\!z)^{p}=\sum_{|\beta|=p}\binom{p}{\beta}v_{r}^{\beta}z^{\beta}\)
 and hence, after comparing coefficients of \(z^{\beta}\),
@@ -926,6 +961,49 @@ conversion in the inner loop. These results support C3 for this
 single-seed manufactured problem.
 
 % =========================================================
+\input{benchmarks}
+% =========================================================
+
+% =========================================================
+\section{Complex versus real networks on the oscillatory suite}
+\label{sec:osc-results}
+% =========================================================
+
+Section~\ref{sec:benchmarks} fixed the problems and the protocol. We now
+report the outcome of the contest between the complex-parameter \(\sinh\)
+network and the real high-frequency baselines. The question is deliberately
+narrow: \emph{at a matched real-parameter budget and a shared training
+protocol, does carrying the network's value field in \(\C\) buy accuracy on
+oscillatory and high-order PDEs?}
+
+\paragraph{Reading the tables.}
+Every entry is the relative \(L^{2}\) error \eqref{eq:relL2} on the held-out
+grid, averaged over the random seeds; the best (smallest) entry in each row
+is set in bold. For each problem family we also report the
+\emph{advantage factor}
+\begin{equation}\label{eq:adv}
+  \mathrm{adv}
+  \;=\;
+  \frac{\min_{\text{real baselines}} \mathcal{E}_{L^2}}
+       {\mathcal{E}_{L^2}(\text{complex }\sinh)} ,
+\end{equation}
+so that \(\mathrm{adv}>1\) means the complex network beats the best real
+contender on that instance, and the win count over the family quantifies how
+often this happens.
+
+\paragraph{Hardware and budget.}
+All runs in this section are measured on a single NVIDIA H20 GPU
+(\(97\)~GB, CUDA 12.1, PyTorch 2.5) in \texttt{float64}/\texttt{complex128}.
+Each (problem, variant, seed) receives the same wall-clock budget
+(\(60\)--\(85\)~s depending on family) and the cosine schedule of
+Section~\ref{sec:bm:protocol}; reported errors are means over two to three
+seeds. The complete raw logs and per-seed CSV files are in
+\path{results/}.
+
+% --- tables and per-family discussion filled from results/*_v3.csv ---
+\input{osc_results}
+
+% =========================================================
 \section{Discussion and Limitations}
 \label{sec:discussion}
 % =========================================================
@@ -959,6 +1037,22 @@ problem, while the observed accuracy gap between B3 and B2 should be
 validated with multiple seeds, fixed evaluation grids, and structured
 CSV/JSON result files before being used as a statistical comparison.
 
+\paragraph{Complex value fields on oscillatory PDEs.}
+The oscillatory study (Sections~\ref{sec:benchmarks}--\ref{sec:osc-results})
+gives a second, independent reason to value the entire-on-\(\C\) backend: it
+makes complex-parameter \(\sinh\) networks usable as a PINN ansatz, and that
+ansatz is empirically more expressive than strong real high-frequency baselines
+on most of a literature-grounded suite. The advantage is real but bounded. It
+is largest exactly where the theory predicts -- balanced repeated-index
+high-order operators, where the complex schedule is also rank-optimal -- and on
+genuinely complex-valued fields, where a split real--imaginary surrogate is at a
+structural disadvantage. It shrinks or disappears on first-order-in-time
+dispersive operators (KdV) and on low-frequency heterogeneous media, and no
+representation escapes the budget-limited saturation of high-frequency PINNs at
+the most extreme orders and wavenumbers. We therefore present complex
+\(\sinh\) networks as a competitive default for high-order and complex-valued
+oscillatory PINNs, not as a universal replacement for real architectures.
+
 \paragraph{Connection to STDE.}
 The Stochastic Taylor Derivative Estimator \cite{Shi2024stde} solves a
 strictly broader problem -- arbitrary contraction of the order-\(k\)
@@ -989,10 +1083,25 @@ achieves the lowest error in the reported single-seed fixed-budget run.
 The method is at its most useful for repeated-index multi-indices, where
 the complex Waring rank is materially smaller than the coalesced real
 polarization count. For square-free patterns it offers no rank advantage;
-for operator sums it is out of scope. Within its niche -- a single,
+for operator sums the rank is not shortened, although the jet still
+evaluates them exactly term by term. Within its niche -- a single,
 dominating, repeated-index high-order operator -- it provides an exact
 deterministic alternative to stochastic estimators, while leaving broader
 operator contractions to methods designed for that setting.
+
+The same entire-on-\(\C\) backend has a second payoff. Because it makes
+complex-parameter \(\sinh\) networks high-order differentiable at no extra
+inner-loop cost, it enables a complex value field as a PINN ansatz. On a
+literature-grounded suite of nine oscillatory and high-order PDE families,
+evaluated at matched real-parameter counts and under one shared training
+protocol against Fourier-feature, SIREN, and MscaleDNN baselines, the complex
+\(\sinh\) network is the most accurate method on the majority of instances and
+is clearly strongest on balanced high-order operators and on genuinely
+complex-valued problems. It is not a universal win -- dispersive and
+low-frequency heterogeneous problems remain better served by real
+high-frequency networks, and all methods saturate at the most extreme
+frequencies within a fixed budget -- but it is a competitive default precisely
+in the high-order and complex-valued regimes that motivate this work.
 
 % =========================================================
 \appendix
@@ -1077,6 +1186,11 @@ JAX} (2023), GitHub: microsoft/folx.
 Derivatives: Principles and Techniques of Algorithmic Differentiation},
 2nd ed., SIAM (2008).
 
+\bibitem{Hao2024PINNacle} Z.~Hao, J.~Yao, C.~Su, H.~Su, Z.~Wang, F.~Lu,
+Z.~Xia, Y.~Zhang, S.~Liu, L.~Lu, J.~Zhu, \emph{PINNacle: a comprehensive
+benchmark of physics-informed neural networks for solving PDEs}, NeurIPS
+Datasets and Benchmarks Track (2024); arXiv:2306.08827.
+
 \bibitem{Hermann2020} J.~Hermann, Z.~Sch\"atzle, F.~No\'e,
 \emph{Deep-neural-network solution of the electronic Schr\"odinger
 equation}, Nature Chemistry \textbf{12} (2020), 891--897.
@@ -1089,6 +1203,10 @@ physics-informed neural networks}, arXiv:2307.12306 (2023).
 Algebras, and Determinantal Loci}, Lecture Notes in Math.\ 1721,
 Springer (1999).
 
+\bibitem{Jiang2024Maxwell} Q.~Jiang, M.~Salvadori, D.~Ota, V.~Shankar,
+K.~Shukla, \emph{Complex-valued deep operator network (DeepONet) for
+three-dimensional Maxwell's equations}, arXiv:2411.18733 (2024).
+
 \bibitem{Landsberg2012} J.~M.~Landsberg, \emph{Tensors: Geometry and
 Applications}, Graduate Studies in Mathematics 128, AMS (2012).
 
@@ -1096,6 +1214,10 @@ Applications}, Graduate Studies in Mathematics 128, AMS (2012).
 C.~Wang, Z.~Li, X.~Li, J.~Chen, J.~Chen, \emph{A computational framework
 for neural network-based variational Monte Carlo with Forward
 Laplacian}, Nature Mach.\ Intell. (2024).
+
+\bibitem{Liu2020MscaleDNN} Z.~Liu, W.~Cai, Z.-Q.~J.~Xu, \emph{Multi-scale
+deep neural network (MscaleDNN) for solving Poisson--Boltzmann equation in
+complex domains}, Commun.\ Comput.\ Phys. \textbf{28} (2020), 1970--2001.
 
 \bibitem{Pfau2020} D.~Pfau, J.~S.~Spencer, A.~G.~de G.~Matthews,
 W.~M.~C.~Foulkes, \emph{Ab initio solution of the many-electron
@@ -1112,6 +1234,15 @@ differential equations}, J.\ Comput.\ Phys. \textbf{378} (2019),
 \emph{Stochastic Taylor derivative estimator: efficient amortization
 for arbitrary differential operators}, NeurIPS (2024); arXiv:2412.00088.
 
+\bibitem{Sitzmann2020SIREN} V.~Sitzmann, J.~N.~P.~Martel, A.~W.~Bergman,
+D.~B.~Lindell, G.~Wetzstein, \emph{Implicit neural representations with
+periodic activation functions}, NeurIPS (2020).
+
+\bibitem{Tancik2020Fourier} M.~Tancik, P.~P.~Srinivasan, B.~Mildenhall,
+S.~Fridovich-Keil, N.~Raghavan, U.~Singhal, R.~Ramamoorthi, J.~T.~Barron,
+R.~Ng, \emph{Fourier features let networks learn high frequency functions
+in low dimensional domains}, NeurIPS (2020).
+
 \bibitem{TaylorDiff2023} S.~Tan, Y.~Chen et al., \emph{TaylorDiff.jl:
 Taylor-mode automatic differentiation in Julia} (2023), GitHub:
 JuliaDiff/TaylorDiff.jl.
@@ -1119,6 +1250,16 @@ JuliaDiff/TaylorDiff.jl.
 \bibitem{Trabelsi2018complexNN} C.~Trabelsi, O.~Bilaniuk, Y.~Zhang,
 D.~Serdyuk, S.~Subramanian, J.~F.~Santos, S.~Mehri, N.~Rostamzadeh,
 Y.~Bengio, C.~J.~Pal, \emph{Deep Complex Networks}, ICLR (2018).
+
+\bibitem{Vahab2022Biharmonic} M.~Vahab, E.~Haghighat, M.~Khaleghi,
+N.~Khalili, \emph{A physics-informed neural network approach to solution
+and identification of biharmonic equations of elasticity}, J.\ Eng.\ Mech.
+\textbf{148} (2022), 04021154; arXiv:2108.07243.
+
+\bibitem{Wang2021Pathologies} S.~Wang, Y.~Teng, P.~Perdikaris,
+\emph{Understanding and mitigating gradient flow pathologies in
+physics-informed neural networks}, SIAM J.\ Sci.\ Comput. \textbf{43}
+(2021), A3055--A3081.
 
 \end{thebibliography}
 

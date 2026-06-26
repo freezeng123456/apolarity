@@ -1,0 +1,40 @@
+device=cuda hidden=32 depth=4 budget=70.0s seeds=2 lr_schedule=cosine
+
+=== nls_k1 (k=1) ===
+variant            rep  params  steps  ms/step      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh    complex    6594   7025     9.96   7.30e-05   7.704e-03  (seed 0)
+siren           split2    6594   4389    15.95   2.37e-04   1.083e-02  (seed 0)
+fourier         split2    8450   4588    15.26   1.78e-04   1.789e-02  (seed 0)
+tanh            split2    6594   4350    16.09   5.52e-03   2.302e-01  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh    complex    6594   6809    10.28   9.24e-05   7.415e-03  (seed 1)
+siren           split2    6594   4364    16.04   1.93e-04   1.322e-02  (seed 1)
+fourier         split2    8450   4550    15.39   1.72e-04   1.848e-02  (seed 1)
+tanh            split2    6594   4325    16.19   1.14e-02   3.216e-01  (seed 1)
+
+=== nls_k2 (k=2) ===
+variant            rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    6594   6948    10.08   1.06e-04   2.960e-02  (seed 0)
+siren           split2    6594   4352    16.09   4.60e-04   9.171e-02  (seed 0)
+fourier         split2    8450   4565    15.34   3.83e-04   8.470e-02  (seed 0)
+tanh            split2    6594   4359    16.06   1.08e-02   3.638e-01  (seed 0)
+complex_sinh    complex    6594   7033     9.95   1.57e-04   3.566e-02  (seed 1)
+siren           split2    6594   4313    16.23   2.35e-04   4.943e-02  (seed 1)
+fourier         split2    8450   4499    15.56   3.03e-04   7.331e-02  (seed 1)
+tanh            split2    6594   4353    16.08   1.39e-02   4.047e-01  (seed 1)
+
+=== nls_k4 (k=4) ===
+variant            rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    6594   6783    10.32   9.24e-05   2.915e-02  (seed 0)
+siren           split2    6594   4299    16.29   3.86e-04   9.123e-02  (seed 0)
+fourier         split2    8450   4506    15.54   2.76e-04   7.859e-02  (seed 0)
+tanh            split2    6594   4284    16.34   2.26e-02   3.998e-01  (seed 0)
+complex_sinh    complex    6594   6809    10.28   2.24e-04   5.346e-02  (seed 1)
+siren           split2    6594   4384    15.97   3.00e-04   8.511e-02  (seed 1)
+fourier         split2    8450   4573    15.31   4.67e-04   1.003e-01  (seed 1)
+tanh            split2    6594   4338    16.14   2.26e-02   3.892e-01  (seed 1)
+
+[ok] wrote results/nls_v3.csv

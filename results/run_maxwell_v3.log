@@ -1,0 +1,40 @@
+device=cuda hidden=32 depth=4 budget=60.0s seeds=2 lr_schedule=cosine
+
+=== maxwell_a2 (a=2, |kappa^2|=40.3) ===
+variant             rep  params  steps  ms/step      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh    complex    6594   5696    10.53   4.24e-03   2.124e-01  (seed 0)
+siren            split2    6594   3438    17.45   1.84e-02   3.026e-01  (seed 0)
+fourier          split2    8450   3421    17.54   1.69e-02   5.298e-01  (seed 0)
+tanh             split2    6594   3384    17.73   3.89e-01   1.402e+00  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh    complex    6594   5456    11.00   4.02e-03   2.488e-01  (seed 1)
+siren            split2    6594   3412    17.59   2.61e-02   4.229e-01  (seed 1)
+fourier          split2    8450   3422    17.54   7.44e-03   2.585e-01  (seed 1)
+tanh             split2    6594   3447    17.41   9.46e-01   2.119e+00  (seed 1)
+
+=== maxwell_a4 (a=4, |kappa^2|=161.0) ===
+variant             rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    6594   5679    10.57   2.50e-02   5.017e-01  (seed 0)
+siren            split2    6594   3482    17.23   9.82e-02   7.579e-01  (seed 0)
+fourier          split2    8450   3485    17.22   5.71e-02   6.755e-01  (seed 0)
+tanh             split2    6594   3464    17.32   9.20e-01   1.957e+00  (seed 0)
+complex_sinh    complex    6594   5665    10.59   1.92e-02   4.666e-01  (seed 1)
+siren            split2    6594   3477    17.26   1.06e-01   7.656e-01  (seed 1)
+fourier          split2    8450   3477    17.26   9.19e-02   9.822e-01  (seed 1)
+tanh             split2    6594   3458    17.35   6.70e-01   1.677e+00  (seed 1)
+
+=== maxwell_a6 (a=6, |kappa^2|=362.3) ===
+variant             rep  params  steps  ms/step      L_int      L2_err
+complex_sinh    complex    6594   5668    10.59   5.37e-02   6.665e-01  (seed 0)
+siren            split2    6594   3480    17.25   1.47e-01   9.290e-01  (seed 0)
+fourier          split2    8450   3434    17.48   1.23e-01   8.816e-01  (seed 0)
+tanh             split2    6594   3393    17.69   5.46e-01   1.430e+00  (seed 0)
+complex_sinh    complex    6594   5488    10.93   5.63e-02   5.766e-01  (seed 1)
+siren            split2    6594   3417    17.56   1.62e-01   9.468e-01  (seed 1)
+fourier          split2    8450   3425    17.52   1.35e-01   1.158e+00  (seed 1)
+tanh             split2    6594   3412    17.59   7.03e-01   1.676e+00  (seed 1)
+
+[ok] wrote results/maxwell_v3.csv

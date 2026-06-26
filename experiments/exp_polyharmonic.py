@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Polyharmonic eigenmode -- a CONTROLLED ORDER SWEEP at FIXED frequency.
+
+  2D (default):  Delta^m u = (-S)^m u  on (-1,1)^2,  u = sin(pi x) sin(pi y),
+                 S = 2 pi^2.  Delta^m expands to (m+1) high-order jet terms.
+  1D (--dim 1):  d^(2m)/dx^(2m) u = (-pi^2)^m u  on (-1,1),  u = sin(pi x),
+                 S = pi^2.  The operator is a SINGLE monomial partial, so it is
+                 cheap enough to push the order axis to 8, 10, 12.
+
+Navier (simply-supported) BCs:  the lower even derivatives vanish on the boundary
+(Delta^j u = 0, j = 0..m-1).  The exact solution, frequency, and domain are held
+FIXED across the sweep; only the differential ORDER of the operator changes -- so
+this isolates the core claim (complex sinh's advantage over parameter-matched real
+baselines grows with the derivative order) with no frequency confound.
+
+Frequency-matched init: the order-m operator amplifies an init frequency w by
+~w^order, so omega0 must sit at (not above) the target |grad| -- otherwise an
+over-large omega0 is amplified by omega0^order and buries the signal (this is why
+omega0=10 stalled the high orders).  Defaults: 1D omega0=pi, 2D omega0=2pi.
+
+Run:
+  python experiments/exp_polyharmonic.py --out results/polyharmonic.csv          # 2D
+  python experiments/exp_polyharmonic.py --dim 1 --orders 2,4,6,8,10 --out ...   # 1D
+"""
+from __future__ import annotations
+
+import math
+
+import torch
+
+from osc_common import LinearProblem, laplacian_power_terms, run_linear_suite, default_argparser
+
+
+def _u2(x):
+    return torch.sin(math.pi * x[..., 0]) * torch.sin(math.pi * x[..., 1])
+
+
+def _u1(x):
+    return torch.sin(math.pi * x[..., 0])
+
+
+def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None):
+    if dim == 2:
+        S, u_exact = 2.0 * math.pi ** 2, _u2
+        om = omega0 if omega0 is not None else 2.0 * math.pi
+        fs = sigma if sigma is not None else math.pi
+    elif dim == 1:
+        S, u_exact = math.pi ** 2, _u1
+        om = omega0 if omega0 is not None else math.pi
+        fs = sigma if sigma is not None else math.pi
+    else:
+        raise ValueError("dim in {1,2}")
+    probs = []
+    for order in orders:
+        m = order // 2
+        lam = (-S) ** m                      # Delta^m u = (-S)^m u
+        probs.append(LinearProblem(
+            name=f"polyharm{dim}d_o{order}", d=dim, order=order,
+            terms=laplacian_power_terms(dim, m), zeroth=0.0,
+            u_exact=u_exact, source_f=(lambda lam=lam, u=u_exact: (lambda x: lam * u(x)))(),
+            res_scale=S ** m, S=S, bc_lap_powers=tuple(range(1, m)),
+            sweep=float(order),
+            extra={"omega0": om, "fourier_sigma": fs},
+        ))
+    return probs
+
+
+if __name__ == "__main__":
+    ap = default_argparser(seconds=120.0)
+    ap.add_argument("--orders", default="2,4,6,8")
+    ap.add_argument("--dim", type=int, default=2, choices=[1, 2])
+    ap.add_argument("--omega0", type=float, default=None)
+    ap.add_argument("--sigma", type=float, default=None)
+    args = ap.parse_args()
+    orders = [int(s) for s in args.orders.split(",") if s]
+    variants = [v for v in args.variants.split(",") if v]
+    default_out = f"results/polyharmonic{args.dim}d.csv"
+    run_linear_suite(make_problems(orders, args.dim, args.omega0, args.sigma),
+                     variants, args, args.out or default_out)
