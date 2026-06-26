@@ -23,6 +23,30 @@ C="--seconds 600 --seeds 2 --depth 4 --lr-schedule cosine --history"
 REAL=complex_sinh,fourier,siren,mscale
 CPLX=complex_sinh,siren,fourier,tanh
 
+GIT_ID=(-c user.name=freezeng -c user.email=freezeng@tencent.com)
+
+gitpush() {  # name -- force-add this family's outputs, commit, push (never aborts)
+  local name=$1 f files=()
+  for f in "${OUT}/${name}_h128.csv" "${OUT}/${name}_h128.json" \
+           "${OUT}/${name}_h128_history.json" "${OUT}/${name}_h64.csv" \
+           "${OUT}/${name}_h64.json" "${OUT}/${name}_h64_history.json" \
+           "${OUT}/run_${name}_h128.log" "${OUT}/run_${name}_h64.log"; do
+    [ -e "$f" ] && files+=("$f")
+  done
+  [ ${#files[@]} -eq 0 ] && { echo "[git] no files for ${name}"; return; }
+  git add -f "${files[@]}" 2>/dev/null
+  if git "${GIT_ID[@]}" commit -m "width-study: ${name} (600s, complex@{64,128} vs SOTA@128)" >/dev/null 2>&1; then
+    echo "[git] committed ${name}"
+  else
+    echo "[git] nothing to commit for ${name}"
+  fi
+  if timeout 180 git push origin master >/dev/null 2>&1; then
+    echo "[git] pushed ${name} $(date)"
+  else
+    echo "[git] push FAILED for ${name} (continuing) $(date)"
+  fi
+}
+
 run() {  # name script variants128 extra...
   local name=$1 script=$2 v128=$3; shift 3
   echo "[w] === ${name} @128 === $(date)"
@@ -33,6 +57,7 @@ run() {  # name script variants128 extra...
   $PY "experiments/${script}" $C --hidden 64 --variants complex_sinh "$@" \
       --out "${OUT}/${name}_h64.csv" > "${OUT}/run_${name}_h64.log" 2>&1
   echo "[w] done ${name}@64 rc=$? $(date)"
+  gitpush "${name}"
 }
 
 echo "[w] START $(date)"
