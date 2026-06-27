@@ -1,0 +1,23 @@
+device=cuda hidden=64 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== polyharm2d_o2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            25474      jet   29786    20.14     286   2.45e-07   4.080e-04  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            25474      jet   29844    20.11     286   1.31e-07   2.844e-04  (seed 1)
+
+=== polyharm2d_o4  (d=2, order=4, sweep=4.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            25474      jet    7307    82.12     913   8.95e-06   1.566e-02  (seed 0)
+complex_sinh            25474      jet    7329    81.87     913   8.94e-06   2.890e-03  (seed 1)
+
+=== polyharm2d_o6  (d=2, order=6, sweep=6.0, terms=4) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            25474      jet    2191   273.97    2905   8.86e-05   1.749e-01  (seed 0)
+complex_sinh            25474      jet    2191   273.96    2905   7.04e-05   2.579e-02  (seed 1)
+[ok] wrote results/width/poly2d_h64_history.json  (6 traces)
+
+[ok] wrote results/width/poly2d_h64.csv
