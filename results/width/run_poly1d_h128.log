@@ -1,0 +1,63 @@
+device=cuda hidden=128 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== polyharm1d_o2  (d=1, order=2, sweep=2.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            99842      jet   19008    31.57     316   5.46e-08   1.130e-04  (seed 0)
+fourier                 66049      jet   18534    32.37     315   1.88e-07   2.821e-04  (seed 0)
+siren                   49921      jet   20318    29.53     315   1.13e-06   6.296e-05  (seed 0)
+mscale                 149763      jet    6832    87.83     704   6.26e-06   2.989e-04  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            99842      jet   18982    31.61     316   5.39e-08   1.046e-05  (seed 1)
+fourier                 66049      jet   18448    32.53     315   6.35e-07   2.448e-04  (seed 1)
+siren                   49921      jet   20208    29.69     315   3.39e-07   6.313e-05  (seed 1)
+mscale                 149763      jet    6843    87.70     704   4.51e-06   2.021e-04  (seed 1)
+
+=== polyharm1d_o4  (d=1, order=4, sweep=4.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            99842      jet   10621    56.50     476   1.76e-06   4.762e-04  (seed 0)
+fourier                 66049      jet   10086    59.50     475   9.55e-05   3.833e-02  (seed 0)
+siren                   49921      jet   11061    54.25     475   1.97e-06   2.126e-02  (seed 0)
+mscale                 149763      jet    3733   160.79    1131   1.95e-06   1.518e-02  (seed 0)
+complex_sinh            99842      jet   10598    56.62     476   1.89e-06   4.741e-04  (seed 1)
+fourier                 66049      jet   10131    59.23     475   1.50e-05   4.143e-02  (seed 1)
+siren                   49921      jet   11010    54.50     475   6.97e-06   1.755e-02  (seed 1)
+mscale                 149763      jet    3736   160.63    1131   1.30e-06   1.364e-02  (seed 1)
+
+=== polyharm1d_o6  (d=1, order=6, sweep=6.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            99842      jet    6978    86.00     636   4.87e-07   3.702e-02  (seed 0)
+fourier                 66049      jet    6611    90.76     635   9.19e-03   1.551e-01  (seed 0)
+siren                   49921      jet    7160    83.81     635   3.16e-04   5.758e-02  (seed 0)
+mscale                 149763      jet    2425   247.48    1644   5.23e-05   6.297e-02  (seed 0)
+complex_sinh            99842      jet    7018    85.50     636   8.98e-06   2.601e-01  (seed 1)
+fourier                 66049      jet    6624    90.59     635   1.64e-01   4.232e-01  (seed 1)
+siren                   49921      jet    7165    83.76     635   5.98e-03   1.362e-01  (seed 1)
+mscale                 149763      jet    2425   247.51    1644   1.23e-05   5.473e-02  (seed 1)
+
+=== polyharm1d_o8  (d=1, order=8, sweep=8.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            99842      jet    5023   119.49     797   4.05e-05   1.420e-01  (seed 0)
+fourier                 66049      jet    4719   127.16     795   7.53e-01   9.911e-01  (seed 0)
+siren                   49921      jet    5099   117.70     796   5.65e-01   9.875e-01  (seed 0)
+mscale                 149763      jet    1722   348.65    2203   2.24e-04   1.314e-01  (seed 0)
+complex_sinh            99842      jet    5025   119.42     797   3.23e-05   2.787e-01  (seed 1)
+fourier                 66049      jet    4717   127.23     795   1.22e+00   1.028e+00  (seed 1)
+siren                   49921      jet    5093   117.83     796   6.83e-01   1.023e+00  (seed 1)
+mscale                 149763      jet    1721   348.78    2203   3.77e-04   6.891e-02  (seed 1)
+
+=== polyharm1d_o10  (d=1, order=10, sweep=10.0, terms=1) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            99842      jet    3774   159.02     999   4.54e-01   9.700e-01  (seed 0)
+fourier                 66049      jet    3551   169.02     993   7.84e+03   1.025e+00  (seed 0)
+siren                   49921      jet    3812   157.46     997   1.76e+02   9.711e-01  (seed 0)
+mscale                 149763      jet    1282   468.38    2810   1.94e-01   6.019e-01  (seed 0)
+complex_sinh            99842      jet    3768   159.26     999   4.72e-01   9.765e-01  (seed 1)
+fourier                 66049      jet    3553   168.93     994   1.75e+04   1.037e+00  (seed 1)
+siren                   49921      jet    3805   157.71     997   1.46e+03   1.041e+00  (seed 1)
+mscale                 149763      jet    1280   469.18    2810   2.50e-01   6.411e-01  (seed 1)
+[ok] wrote results/width/poly1d_h128_history.json  (40 traces)
+
+[ok] wrote results/width/poly1d_h128.csv
