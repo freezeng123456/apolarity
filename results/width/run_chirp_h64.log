@@ -1,0 +1,28 @@
+device=cuda hidden=64 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== chirp_a2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            25474      jet   25368    23.65     302   5.37e-06   1.542e-03  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            25474      jet   25368    23.65     302   7.05e-06   8.763e-04  (seed 1)
+
+=== chirp_a4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            25474      jet   25302    23.71     302   3.80e-05   1.715e-01  (seed 0)
+complex_sinh            25474      jet   25024    23.98     302   5.84e-05   3.202e-01  (seed 1)
+
+=== chirp_a6  (d=2, order=2, sweep=6.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            25474      jet   25181    23.83     302   1.79e-04   5.557e-01  (seed 0)
+complex_sinh            25474      jet   25202    23.81     302   1.31e-04   3.106e-01  (seed 1)
+
+=== chirp_a8  (d=2, order=2, sweep=8.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh            25474      jet   25121    23.89     302   4.26e-04   5.781e-01  (seed 0)
+complex_sinh            25474      jet   25238    23.77     302   4.14e-04   6.013e-01  (seed 1)
+[ok] wrote results/width/chirp_h64_history.json  (8 traces)
+
+[ok] wrote results/width/chirp_h64.csv

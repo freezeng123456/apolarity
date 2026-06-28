@@ -1,0 +1,52 @@
+device=cuda hidden=128 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== chirp_a2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    8225    72.96     548   2.92e-05   5.357e-03  (seed 0)
+fourier                 66049      jet    8654    69.34     508   1.61e-05   2.521e-02  (seed 0)
+siren                   50049      jet    9504    63.14     509   1.27e-05   1.492e-02  (seed 0)
+mscale                 150147      jet    3207   187.16    1336   1.16e-02   6.401e-01  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    8236    72.86     548   3.02e-05   2.090e-03  (seed 1)
+fourier                 66049      jet    8670    69.21     508   1.80e-05   3.199e-02  (seed 1)
+siren                   50049      jet    9507    63.12     509   1.15e-05   1.284e-02  (seed 1)
+mscale                 150147      jet    3210   186.99    1336   1.27e-02   6.424e-01  (seed 1)
+
+=== chirp_a4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    8242    72.81     548   1.77e-04   2.322e-01  (seed 0)
+fourier                 66049      jet    8671    69.20     508   1.06e-04   2.863e-01  (seed 0)
+siren                   50049      jet    9496    63.19     509   3.20e-05   3.077e-01  (seed 0)
+mscale                 150147      jet    3209   187.03    1336   5.45e-02   1.175e+00  (seed 0)
+complex_sinh           100098      jet    8242    72.81     548   1.62e-04   2.335e-01  (seed 1)
+fourier                 66049      jet    8670    69.21     508   1.46e-04   5.709e-01  (seed 1)
+siren                   50049      jet    9484    63.27     509   3.56e-05   2.949e-01  (seed 1)
+mscale                 150147      jet    3205   187.24    1336   5.47e-02   1.105e+00  (seed 1)
+
+=== chirp_a6  (d=2, order=2, sweep=6.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    8201    73.17     548   8.44e-04   6.344e-01  (seed 0)
+fourier                 66049      jet    8635    69.49     508   1.05e-04   1.030e+00  (seed 0)
+siren                   50049      jet    9496    63.19     509   2.04e-05   7.418e-01  (seed 0)
+mscale                 150147      jet    3211   186.91    1336   5.40e-02   1.398e+00  (seed 0)
+complex_sinh           100098      jet    8240    72.82     548   6.57e-04   4.668e-01  (seed 1)
+fourier                 66049      jet    8646    69.41     508   5.69e-05   1.098e+00  (seed 1)
+siren                   50049      jet    9478    63.31     509   2.23e-05   7.546e-01  (seed 1)
+mscale                 150147      jet    3206   187.18    1336   6.19e-02   1.655e+00  (seed 1)
+
+=== chirp_a8  (d=2, order=2, sweep=8.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    8209    73.10     548   2.01e-03   6.159e-01  (seed 0)
+fourier                 66049      jet    8646    69.40     508   4.54e-05   1.076e+00  (seed 0)
+siren                   50049      jet    9480    63.30     509   6.19e-06   8.383e-01  (seed 0)
+mscale                 150147      jet    3206   187.19    1336   9.12e-02   1.854e+00  (seed 0)
+complex_sinh           100098      jet    8207    73.12     548   1.71e-03   6.017e-01  (seed 1)
+fourier                 66049      jet    8647    69.40     508   1.74e-05   1.203e+00  (seed 1)
+siren                   50049      jet    9482    63.28     509   6.27e-06   8.526e-01  (seed 1)
+mscale                 150147      jet    3208   187.11    1336   7.90e-02   1.426e+00  (seed 1)
+[ok] wrote results/width/chirp_h128_history.json  (32 traces)
+
+[ok] wrote results/width/chirp_h128.csv
