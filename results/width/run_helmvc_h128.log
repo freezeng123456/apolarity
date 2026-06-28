@@ -1,0 +1,41 @@
+device=cuda hidden=128 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== helmvc_a2  (d=2, order=2, sweep=2.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    8260    72.65     548   1.14e-05   3.479e-01  (seed 0)
+fourier                 66049      jet    8675    69.17     508   8.40e-06   3.597e-01  (seed 0)
+siren                   50049      jet    9512    63.08     509   7.33e-06   2.264e-01  (seed 0)
+mscale                 150147      jet    3213   186.78    1336   6.58e-02   9.977e-01  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    8249    72.75     548   1.36e-05   5.698e-01  (seed 1)
+fourier                 66049      jet    8674    69.18     508   6.18e-06   1.587e-01  (seed 1)
+siren                   50049      jet    9523    63.01     509   7.09e-06   3.313e-01  (seed 1)
+mscale                 150147      jet    3212   186.89    1336   6.47e-02   9.943e-01  (seed 1)
+
+=== helmvc_a4  (d=2, order=2, sweep=4.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    8248    72.75     548   2.82e-05   8.245e-02  (seed 0)
+fourier                 66049      jet    8670    69.21     508   3.07e-05   3.628e-01  (seed 0)
+siren                   50049      jet    9517    63.05     509   1.95e-05   3.190e-01  (seed 0)
+mscale                 150147      jet    3212   186.89    1336   6.57e-02   1.000e+00  (seed 0)
+complex_sinh           100098      jet    8236    72.86     548   1.04e-04   4.450e-01  (seed 1)
+fourier                 66049      jet    8675    69.17     508   4.11e-05   6.925e-01  (seed 1)
+siren                   50049      jet    9518    63.05     509   1.86e-05   3.011e-01  (seed 1)
+mscale                 150147      jet    3213   186.83    1336   6.85e-02   1.000e+00  (seed 1)
+
+=== helmvc_a6  (d=2, order=2, sweep=6.0, terms=2) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    8247    72.76     548   1.18e-04   1.865e-01  (seed 0)
+fourier                 66049      jet    8677    69.16     508   1.61e-05   6.815e-01  (seed 0)
+siren                   50049      jet    9513    63.08     509   2.82e-06   7.340e-01  (seed 0)
+mscale                 150147      jet    3213   186.78    1336   6.43e-02   1.001e+00  (seed 0)
+complex_sinh           100098      jet    8229    72.92     548   1.22e-04   6.491e-01  (seed 1)
+fourier                 66049      jet    8678    69.15     508   1.02e-05   8.344e-01  (seed 1)
+siren                   50049      jet    9469    63.37     509   3.69e-06   6.841e-01  (seed 1)
+mscale                 150147      jet    3205   187.29    1336   6.80e-02   1.001e+00  (seed 1)
+[ok] wrote results/width/helmvc_h128_history.json  (24 traces)
+
+[ok] wrote results/width/helmvc_h128.csv
