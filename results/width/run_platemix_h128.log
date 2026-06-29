@@ -1,0 +1,41 @@
+device=cuda hidden=128 depth=4 budget=600.0s/run seeds=2 lr_schedule=cosine
+
+=== platemix_m2  (d=2, order=4, sweep=3.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    2412   248.90    1759   1.88e-04   1.200e-01  (seed 0)
+fourier                 66049      jet    2219   270.51    1757   1.82e-04   8.409e-01  (seed 0)
+siren                   50049      jet    2424   247.69    1760   3.30e-04   6.484e-01  (seed 0)
+mscale                 150147      jet     819   733.17    5063   2.52e-01   1.000e+00  (seed 0)
+/root/miniconda3/envs/emlnn/lib/python3.11/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh           100098      jet    2412   248.91    1759   9.94e-05   1.616e-01  (seed 1)
+fourier                 66049      jet    2221   270.24    1757   1.26e-04   8.245e-01  (seed 1)
+siren                   50049      jet    2426   247.48    1760   2.60e-04   7.013e-01  (seed 1)
+mscale                 150147      jet     819   733.26    5063   2.43e-01   9.999e-01  (seed 1)
+
+=== platemix_m3  (d=2, order=4, sweep=4.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    2412   248.92    1759   3.10e-04   1.900e-01  (seed 0)
+fourier                 66049      jet    2221   270.28    1757   3.52e-05   8.886e-01  (seed 0)
+siren                   50049      jet    2423   247.76    1760   6.69e-05   9.191e-01  (seed 0)
+mscale                 150147      jet     819   733.51    5063   2.48e-01   1.000e+00  (seed 0)
+complex_sinh           100098      jet    2407   249.37    1759   4.13e-04   3.266e-01  (seed 1)
+fourier                 66049      jet    2219   270.51    1757   2.55e-05   9.333e-01  (seed 1)
+siren                   50049      jet    2423   247.77    1760   6.73e-05   9.041e-01  (seed 1)
+mscale                 150147      jet     819   733.34    5063   2.47e-01   1.000e+00  (seed 1)
+
+=== platemix_m4  (d=2, order=4, sweep=5.0, terms=3) ===
+variant                params       be   steps  ms/step  peakMB      L_int      L2_err
+complex_sinh           100098      jet    2408   249.25    1759   8.10e-04   1.969e-01  (seed 0)
+fourier                 66049      jet    2220   270.39    1757   9.93e-06   9.491e-01  (seed 0)
+siren                   50049      jet    2424   247.69    1760   3.45e-05   9.619e-01  (seed 0)
+mscale                 150147      jet     819   733.34    5063   2.50e-01   1.000e+00  (seed 0)
+complex_sinh           100098      jet    2415   248.59    1759   1.58e-03   4.596e-01  (seed 1)
+fourier                 66049      jet    2220   270.45    1757   6.77e-06   9.346e-01  (seed 1)
+siren                   50049      jet    2423   247.74    1760   2.40e-05   9.645e-01  (seed 1)
+mscale                 150147      jet     819   733.02    5063   2.57e-01   1.000e+00  (seed 1)
+[ok] wrote results/width/platemix_h128_history.json  (24 traces)
+
+[ok] wrote results/width/platemix_h128.csv
