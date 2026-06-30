@@ -11,7 +11,7 @@ Euler-Bernoulli beam vibration (1D, 4th order):
 
 Sweep the mode number m (= n) to raise the oscillation while keeping the order
 fixed at 4.  Real "high-frequency SOTA" baselines (Fourier, SIREN, MscaleDNN)
-are parameter-matched and frequency-matched to the complex sinh net.
+are frequency-matched to the complex sinh net (literal width; see width study).
 Acceptance: complex advantage grows with the mode number.
 
 Run:

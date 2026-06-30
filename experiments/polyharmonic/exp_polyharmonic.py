@@ -10,7 +10,7 @@
 Navier (simply-supported) BCs:  the lower even derivatives vanish on the boundary
 (Delta^j u = 0, j = 0..m-1).  The exact solution, frequency, and domain are held
 FIXED across the sweep; only the differential ORDER of the operator changes -- so
-this isolates the core claim (complex sinh's advantage over parameter-matched real
+this isolates the core claim (complex sinh's advantage over frequency-matched real
 baselines grows with the derivative order) with no frequency confound.
 
 Frequency-matched init: the order-m operator amplifies an init frequency w by

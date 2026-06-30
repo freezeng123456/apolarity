@@ -202,10 +202,13 @@ def variant_width(variant: str, H: int, mult: float = 1.0) -> int:
 
 def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
                 omega0: float = OMEGA0, fourier_sigma: float = 2.0,
-                real_width_mult: float = math.sqrt(2.0)):
+                real_width_mult: float = 1.0):
     """Frequency-aware inits (omega0 / fourier_sigma) let the frequency-rich
     architectures (SIREN, complex-sinh, Fourier) be matched to the problem's
-    wavenumber so every method gets its best shot at each frequency."""
+    wavenumber so every method gets its best shot at each frequency.
+
+    Note: ``real_width_mult`` is legacy and ignored; all variants use literal
+    width H (see variant_width)."""
     He = variant_width(variant, H, real_width_mult)
     if variant == "complex_sinh":
         net = build_plain(d, H, depth, torch.complex128, "sinh", out=out)
@@ -260,7 +263,7 @@ def deriv_alpha(model: nn.Module, x: Tensor, alpha: tuple[int, ...]) -> Tensor:
 # ---------------------------------------------------------------------------
 # Complex-valued field wrappers: native complex net vs split-real RVPINN.
 # A single complex net represents u: R^d -> C directly; the real baselines need
-# two independent real nets (Re, Im), parameter-matched as a PAIR (mult=1).
+# two independent real nets (Re, Im), each at the same literal width H.
 # ---------------------------------------------------------------------------
 class ComplexField:
     def __init__(self, model, mdt):

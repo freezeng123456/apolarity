@@ -11,8 +11,8 @@ Helmholtz equation for the out-of-plane field E_z:
 A complex permittivity (the i beta loss term) makes E genuinely complex-valued, so
 this is a LINEAR complex-valued companion to the cubic NLS upper-bound test: a
 single complex sinh net carries E in C natively, whereas the real baselines must
-use a split-real (Re/Im) RVPINN -- parameter-matched as a pair.  Sweep the
-wavenumber a; acceptance: the complex advantage grows with a.
+use a split-real (Re/Im) RVPINN -- two real nets at the same literal width H.
+Sweep the wavenumber a; acceptance: the complex advantage grows with a.
 
 Run:
   python experiments/exp_maxwell.py --out results/maxwell.csv

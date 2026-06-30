@@ -81,7 +81,9 @@ wall-clock time. Because \(\sinh\) is entire on \(\C\), the same backend
 also makes \emph{complex-parameter} \(\sinh\) networks high-order
 differentiable without any runtime dtype conversion; we study these as a
 PINN ansatz for oscillatory and high-order problems and benchmark them,
-under matched parameter counts and a shared training protocol, against
+under a shared width-robustness protocol (real baselines at width \(128\),
+complex \(\sinh\) at widths \(64\) and \(128\), matched frequency
+initialization) and a common training budget, against
 strong real high-frequency baselines (Fourier features, SIREN, MscaleDNN)
 on a literature-grounded suite of nine PDE families. The complex network
 is competitive-to-superior on the majority of instances, with the largest
@@ -186,8 +188,10 @@ evidence rather than a statistical superiority claim.
 dtype casting in the inner loop. We treat such a network as a PINN ansatz
 and ask whether the complex value field is itself more expressive on
 oscillatory and high-order targets. On a literature-grounded suite of nine
-PDE families -- evaluated under matched real-parameter counts, matched
-frequency initialization, and one shared training protocol -- the complex
+PDE families -- evaluated under the width-robustness design of
+Section~\ref{sec:bm:protocol} (literal widths; real baselines at
+\(128\), complex \(\sinh\) at \(64\) and \(128\)), matched frequency
+initialization, and one shared training protocol -- the complex
 \(\sinh\) network is competitive-to-superior against Fourier-feature,
 SIREN, and MscaleDNN baselines on most instances, with the clearest
 advantage on balanced repeated-index high-order operators
@@ -1060,7 +1064,8 @@ The same entire-on-\(\C\) backend has a second payoff. Because it makes
 complex-parameter \(\sinh\) networks high-order differentiable at no extra
 inner-loop cost, it enables a complex value field as a PINN ansatz. On a
 literature-grounded suite of nine oscillatory and high-order PDE families,
-evaluated at matched real-parameter counts and under one shared training
+evaluated under the same width-robustness protocol as
+Section~\ref{sec:bm:protocol} and one shared training
 protocol against Fourier-feature, SIREN, and MscaleDNN baselines, the complex
 \(\sinh\) network is the most accurate method on the majority of instances and
 is clearly strongest on balanced high-order operators and on genuinely
