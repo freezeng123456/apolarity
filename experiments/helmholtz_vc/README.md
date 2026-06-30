@@ -1,21 +1,20 @@
-# Variable-coefficient Helmholtz (scattering)
+# Variable-coefficient (scattering) Helmholtz
 
-**Problem.** \(-\Delta u - \kappa(x)^2 u = f\) on \([0,1]^2\) with a spatially
-varying wavenumber \(\kappa(x)\) (heterogeneous medium), manufactured solution.
-Sweeps the mean wavenumber.
+**Problem.** \(\Delta u + \kappa^2(x)u = f\) on \((-1,1)^2\) with a spatially varying
+coefficient \(\kappa^2(x)=(a\pi)^2(1+0.5\sin\pi x\sin\pi y)\) (a \(\pm50\%\) lens),
+manufactured \(u=\sin(a\pi x)\sin(a\pi y)\), Dirichlet \(0\). Probes robustness to
+medium heterogeneity rather than a single clean eigenmode.
 
-**Source.** Heterogeneous-medium / scattering Helmholtz, a standard harder variant
-of the constant-coefficient benchmark (PINNacle, Hao et al. 2024).
+**Source.** PINNacle (Hao 2024) heterogeneous-medium family.
 
-**Why it matters.** Confirms the frequency-axis advantage survives spatially
-varying coefficients (no global Fourier basis matches the local wavelength).
+**Sweep.** background wavenumber \(a\in\{2,4,6\}\). Init \(\omega_0=\max(10,2\pi a)\),
+\(\sigma=\max(2,\pi a)\).
 
 ## Outputs (`data/`)
-- `helmvc_v3.csv` -- accuracy vs mean wavenumber.
-- `helmvc_history.json` -- traces at sweep 6.
+Width study (600 s, 2 seeds): `helmvc_h{128,64}.{csv,json}` + `*_history.json`.
 
 ## Reproduce
 ```bash
 bash run.sh
 ```
-Figure: `fig_helmvc.pdf`.
+Figure: `docs/paper/figures/fig_helmvc.pdf` (via `experiments/tools/plot_width.py`).

@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Polyharmonic order sweep (1D to order 10, 2D to order 6) -- headline order axis.
+# Polyharmonic order sweep (1D + 2D) -- 600s width study.
 set -u; cd "$(dirname "$0")"
 PY=/root/miniconda3/envs/emlnn/bin/python
-C="--hidden 32 --depth 4 --lr-schedule cosine"
-V=complex_sinh,fourier,siren,mscale,real_sinh
+C="--seconds 600 --seeds 2 --depth 4 --lr-schedule cosine --history"
+REAL=complex_sinh,fourier,siren,mscale
 mkdir -p data
-# accuracy tables
-$PY exp_polyharmonic.py --seconds 85  --seeds 3 $C --variants $V --dim 1 --orders 2,4,6,8,10 --out data/poly1d_v3.csv
-$PY exp_polyharmonic.py --seconds 100 --seeds 2 $C --variants $V --dim 2 --orders 2,4,6 --omega0 10 --out data/poly2d_v3.csv
-# convergence traces (representative order)
-$PY exp_polyharmonic.py --seconds 70 --seeds 2 $C --variants $V --dim 1 --orders 4 --history --out data/poly1d.csv
-$PY exp_polyharmonic.py --seconds 70 --seeds 2 $C --variants $V --dim 2 --orders 6 --history --out data/poly2d.csv
+
+# --- 1D order axis (omega0=pi default), orders 2..10 ---
+$PY exp_polyharmonic.py $C --hidden 128 --variants $REAL        --dim 1 --orders 2,4,6,8,10 --out data/poly1d_h128.csv
+$PY exp_polyharmonic.py $C --hidden 64  --variants complex_sinh --dim 1 --orders 2,4,6,8,10 --out data/poly1d_h64.csv
+
+# --- 2D order axis (omega0=10), orders 2..6 ---
+$PY exp_polyharmonic.py $C --hidden 128 --variants $REAL        --dim 2 --orders 2,4,6 --omega0 10 --out data/poly2d_h128.csv
+$PY exp_polyharmonic.py $C --hidden 64  --variants complex_sinh --dim 2 --orders 2,4,6 --omega0 10 --out data/poly2d_h64.csv

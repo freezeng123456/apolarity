@@ -37,52 +37,55 @@ src/apolarity/
   taylor_jet.py      # Taylor-mode AD for Linear / sinh / tanh MLPs
   operators.py       # single_monomial_partial entry point
 experiments/
-  benchmark_single_monomial.py        # micro-benchmark
-  train_pinn_ch_sixth_order.py        # 4D Cahn-Hilliard PINN
-  pinn_5min_compare.py                # one-shot 3-backend comparison
-  generate_paper_tables.py            # CSV-to-LaTeX table snippets
+  common/            # shared harness (osc_common.py)
+  tools/             # plot_width.py, build_width_tables.py (figures + LaTeX tables)
+  <family>/          # one PDE family each: exp_*.py + run.sh + README.md + data/
+  core_method/       # micro-benchmark + manufactured 6th-order PINN (paper Section 5)
+  archived/          # superseded experiments (see archived/progress.md)
 docs/
   beamer/  apolarity_report_zh.tex    # Chinese slide deck (17 pages)
   paper/   jsc_paper_main.tex         # JSC paper draft (12 pages)
 scripts/
   cuda_env.sh                         # CUDA loader for the T4 host
-  run_quick_compare.sh                # 5-minute backend sweep
+  run_widthstudy.sh                   # 600s width-robustness benchmark driver
 tests/
 ```
+
+See `experiments/README.md` for the oscillatory / high-order PDE families and how
+to reproduce the figures and tables.
 
 ## Quick benchmark
 
 ```bash
 source scripts/cuda_env.sh
-PYTHONPATH=src python3.11 experiments/benchmark_single_monomial.py \
+PYTHONPATH=src python3.11 experiments/core_method/benchmark_single_monomial.py \
   --device auto --dtype float64 --d 8 --batch 8 \
   --hidden 64 --depth 4 --activation sinh --warmup 5 --repeats 60 \
   --methods direct_autodiff,polarization_jet,waring_complex_jet \
   --alphas '111;1111;1122;111111;111122;112233;123456' \
-  --out results/paper_jsc_revision/single_monomial_value.csv
+  --out results/single_monomial_value.csv
 ```
 
-## PINN comparison (3 backends, 60 s each)
+## Manufactured 6th-order PINN (paper Section 5)
 
 ```bash
 source scripts/cuda_env.sh
-PYTHONPATH=src python3.11 experiments/pinn_5min_compare.py \
-  --seconds 60 --hidden 32 --depth 4 --n-int 128 --n-bc 64 \
-  --backends waring_complex_jet,polarization_jet,direct_autodiff \
-  --out results/paper_jsc_revision/pinn_60s.csv
+PYTHONPATH=src python3.11 experiments/core_method/train_pinn_ch_sixth_order.py
 ```
 
 The three backends compared are `direct_autodiff`, `polarization_jet`,
 and `waring_complex_jet`. Results for the four-dimensional manufactured
 sixth-order PDE are reported in the paper, Section 5.
 
-## Paper table snippets
+## Oscillatory / high-order PDE benchmark
+
+The complex-`sinh` network against Fourier-feature, SIREN, MscaleDNN and
+split-real `tanh` baselines, one folder per PDE family under `experiments/`:
 
 ```bash
-PYTHONPATH=src python3.11 experiments/generate_paper_tables.py \
-  --micro-csv results/paper_jsc_revision/single_monomial_value.csv \
-  --pinn-csv results/paper_jsc_revision/pinn_60s.csv \
-  --out-dir results/paper_jsc_revision/table_snippets
+bash scripts/run_widthstudy.sh                  # all families (long)
+python experiments/tools/plot_width.py          # -> docs/paper/figures/fig_*.pdf
+python experiments/tools/build_width_tables.py  # -> docs/paper/tables/w_*.tex
 ```
 
 ## API

@@ -1,21 +1,20 @@
 # Linearized KdV / dispersive wave (3rd order)
 
-**Problem.** \(u_t + u_{xxx} = 0\) on a periodic strip with a travelling
-sinusoidal solution \(u=\sin(k(x-ct))\), \(c=-k^2\); sweeps the wavenumber \(k\).
+**Problem.** \(u_t + \delta\,u_{xxx}=f\) on \((x,t)\in(-1,1)^2\), \(\delta=1\),
+manufactured \(u=\sin(k\pi x)\cos(k\pi t)\), Dirichlet \(=u_\star\). The odd 3rd-order
+dispersion term is where the Taylor-jet backend and complex `sinh` are exercised.
 
-**Source.** Korteweg-de Vries dispersive benchmark (Raissi et al. 2019 use the
-nonlinear KdV; here the linear dispersion term isolates the odd, 3rd-order operator).
+**Source.** Raissi 2019 (KdV); here the linearized dispersive term isolates the
+3rd-order operator.
 
-**Why it matters.** A deliberate *counter-case*: an **odd**-order operator. It
-checks whether the complex `sinh` advantage is specific to even, sign-balanced
-operators (it is largest there) versus odd dispersive ones.
+**Sweep.** wavenumber \(k\in\{2,3,4,5,6\}\). Init \(\omega_0=\max(10,2\pi k)\),
+\(\sigma=\max(2,\pi k)\).
 
 ## Outputs (`data/`)
-- `kdv_v3.csv` -- accuracy vs wavenumber.
-- `kdv_history.json` -- traces at wavenumber 4.
+Width study (600 s, 2 seeds): `kdv_h{128,64}.{csv,json}` + `*_history.json`.
 
 ## Reproduce
 ```bash
 bash run.sh
 ```
-Figure: `fig_kdv.pdf`.
+Figure: `docs/paper/figures/fig_kdv.pdf` (via `experiments/tools/plot_width.py`).

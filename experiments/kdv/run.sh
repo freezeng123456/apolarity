@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Linearized KdV / dispersive wave (3rd order) -- the dispersive counter-case.
+# Linearized KdV / dispersive wave (3rd order) -- 600s width study.
 set -u; cd "$(dirname "$0")"
 PY=/root/miniconda3/envs/emlnn/bin/python
-C="--hidden 32 --depth 4 --lr-schedule cosine"
-V=complex_sinh,fourier,siren,mscale
+C="--seconds 600 --seeds 2 --depth 4 --lr-schedule cosine --history"
+REAL=complex_sinh,fourier,siren,mscale
 mkdir -p data
-$PY exp_kdv_dispersive.py --seconds 70 --seeds 3 $C --variants $V --sweeps 2,3,4,5,6 --out data/kdv_v3.csv
-$PY exp_kdv_dispersive.py --seconds 70 --seeds 2 $C --variants $V --sweeps 4 --history --out data/kdv.csv
+$PY exp_kdv_dispersive.py $C --hidden 128 --variants $REAL        --sweeps 2,3,4,5,6 --out data/kdv_h128.csv
+$PY exp_kdv_dispersive.py $C --hidden 64  --variants complex_sinh --sweeps 2,3,4,5,6 --out data/kdv_h64.csv

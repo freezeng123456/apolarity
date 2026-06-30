@@ -1,13 +1,13 @@
 # Experiments
 
-One experiment family per subfolder. Each family folder is self-contained:
+One experiment family per subfolder, each self-contained:
 
 ```
 <family>/
-  exp_<name>.py     # the experiment (imports the shared harness ../osc_common.py)
-  run.sh            # exact commands to reproduce this family's CSVs + history
+  exp_<name>.py     # the experiment (imports the shared harness ../common/osc_common.py)
+  run.sh            # exact commands to reproduce this family's data
   README.md         # problem, literature source, outputs
-  data/             # <name>_v3.csv/.json (accuracy) + <name>_history.json (traces)
+  data/             # <stem>_h128.* and <stem>_h64.* (CSV + JSON + history traces)
 ```
 
 ## Families (paper Section "Numerical experiments on oscillatory and high-order PDEs")
@@ -25,27 +25,36 @@ One experiment family per subfolder. Each family folder is self-contained:
 | `maxwell/`       | time-harmonic Maxwell, lossy medium (complex-valued) | 2 |
 | `core_method/`   | direct-derivative microbenchmark + manufactured 6th-order PINN | — |
 
-## Shared code (at this level)
+## Shared code
 
-- `osc_common.py` — architectures (complex `sinh`, Fourier, SIREN, MscaleDNN,
-  real `sinh`/`tanh`), the single complex-Waring Taylor-jet derivative backend,
-  and the `train_eval` loop (equal wall-clock budget, floored cosine schedule,
-  optional `--history` convergence logging).
-- `plot_convergence.py` — builds the per-family paper figures
-  (`docs/paper/figures/fig_<key>.pdf`) from each family's `data/`.
-- `aggregate_osc.py` — cross-family roll-up and advantage-factor check.
+- `common/osc_common.py` — architectures (complex `sinh`, Fourier-features,
+  SIREN, MscaleDNN, split-real `tanh`), the single complex-Waring Taylor-jet
+  derivative backend, and the `train_eval` loop (equal wall-clock budget, floored
+  cosine schedule, optional `--history` convergence logging). Every `exp_*.py`
+  imports it via a one-line path bootstrap.
+- `tools/plot_width.py` — builds the per-family paper figures
+  `docs/paper/figures/fig_<key>.pdf` from each family's `data/`.
+- `tools/build_width_tables.py` — writes the per-family LaTeX tables
+  `docs/paper/tables/w_<key>.tex`.
+
+## The current study (width robustness, 600 s)
+
+Real baselines run at width 128; the complex `sinh` net runs at **both** 64 and
+128 (a complex weight carries ~2× the real DOF, so these bracket the baselines).
+If complex@64 ≈ complex@128 the method is insensitive to width. Depth 4, 2 seeds,
+600 s wall-clock per (problem, variant, seed).
 
 ## Reproducing the paper
 
 ```bash
-# accuracy tables (all families, ~hours)
-bash scripts/run_oscillatory_v3.sh
-bash scripts/run_oscillatory_v4.sh
-# convergence traces for the figures
-bash scripts/run_history.sh
-# regenerate figures
-python experiments/plot_convergence.py
+# everything, in one driver (long):
+bash scripts/run_widthstudy.sh
+# or a single family:
+bash experiments/helmholtz/run.sh
+# regenerate figures + tables from the data already in each family's data/:
+python experiments/tools/plot_width.py
+python experiments/tools/build_width_tables.py
 ```
 
-Superseded / exploratory experiments are documented in
+Superseded / exploratory experiments are kept in `archived/` and documented in
 `archived/progress.md`.

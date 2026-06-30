@@ -1,21 +1,25 @@
-# Cahn-Hilliard phase field (4th / 6th order, nonlinear)
+# Cahn–Hilliard (4th & 6th order, nonlinear)
 
-**Problem.** Cahn-Hilliard-type evolution \(u_t = \Delta(\,\cdot\,)\) with a
-manufactured oscillatory solution; the spatial order (4 or 6) and frequency \(a\)
-are both swept. Nonlinear (cubic) reaction term included.
+**Problem.** On \((x,t)\in(-1,1)^2\), \(\Delta=\partial_x^2\):
+- 4th: \(u_t = M[\Delta(u^3)-\Delta u-\gamma\Delta^2 u]\)
+- 6th: \(\;+\,\kappa\Delta^3 u\)
 
-**Source.** Cahn-Hilliard phase-field PINN benchmark (high-order, nonlinear;
-PINNacle, Hao et al. 2024).
+with \(M=\gamma=\kappa=1\). The nonlinear flux \(\Delta(u^3)=3u^2u_{xx}+6u(u_x)^2\) is
+built from single-monomial partials, so the whole residual runs through the fast
+Taylor-jet. Manufactured \(u=\sin(a\pi x)\cos(a\pi t)\).
 
-**Why it matters.** Combines high order *and* nonlinearity, the most demanding real
-family: shows the order advantage persists when the residual is nonlinear.
+**Source.** Raissi 2019 / PINNacle (Hao 2024).
+
+**Sweep.** amplitude/frequency \(a\in\{2,3\}\), order \(\in\{4,6\}\). Init
+\(\omega_0=\max(10,2\pi a)\), \(\sigma=\max(2,\pi a)\).
 
 ## Outputs (`data/`)
-- `cahn_hilliard_v3.csv` -- accuracy over (order, frequency).
-- `cahn_hilliard_history.json` -- traces at 6th order, \(a=2\).
+Width study (600 s, 2 seeds): `cahn_hilliard_h{128,64}.*` (problems `ch4_a*`,
+`ch6_a*`; `.csv` + `.json` + `_history.json`).
 
 ## Reproduce
 ```bash
 bash run.sh
 ```
-Figure: `fig_cahn.pdf`.
+Figure: `docs/paper/figures/fig_cahn.pdf` (6th order; via
+`experiments/tools/plot_width.py`).
