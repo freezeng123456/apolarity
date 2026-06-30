@@ -3,9 +3,11 @@
 
 Provides:
   * architectures (complex sinh w/ holomorphic init, real sinh, tanh, SIREN,
-    Fourier-features, MscaleDNN, compleX-PINN/Cauchy), with the REAL baselines
-    PARAMETER-MATCHED to the complex network (width ~ sqrt(2) * H, so they have
-    >= the real DOF of the complex net -- an honest "equal-parameter" contest);
+    Fourier-features, MscaleDNN, compleX-PINN/Cauchy).  All variants use the
+    same literal hidden width H passed on the command line (no sqrt(2)
+    rescaling).  The width study runs real baselines at H=128 and complex sinh
+    at both H=64 and H=128 so the two complex widths bracket the reals in
+    parameter count (each complex weight counts as 2 real DOF in n_params).
   * a single exact derivative backend (complex Waring + Taylor jet) for all
     jet-compatible nets, with nested autograd as the fallback (Cauchy);
   * a generic train/eval loop (fixed dense collocation, equal wall-clock budget)
