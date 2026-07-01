@@ -333,17 +333,19 @@ def laplacian_power_terms(d: int, j: int) -> list[tuple[float, tuple[int, ...]]]
 # ---------------------------------------------------------------------------
 def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
                lr_schedule="constant", lr_final=None, record_history=False,
-               history_n=40):
+               history_every_steps=20, history_eval_fn=None):
     """loss_fn() -> (loss_tensor, L_int_float).  eval_fn() -> float (rel L2).
 
     lr_schedule: "constant" or "cosine".  Cosine uses a TIME fraction (elapsed /
     seconds) since the loop is wall-clock bounded, decaying lr -> lr_final.  The
     same schedule is applied to every architecture, so the comparison stays fair.
 
-    record_history: if True, sample (training-elapsed, rel L2, interior loss)
-    ~history_n times across the run for convergence figures.  The periodic eval
-    cost is excluded from the wall-clock budget so the step count stays
-    comparable to a non-history run.
+    record_history: if True, every history_every_steps training steps record
+    (training-elapsed, rel L2, interior loss).  Periodic and final eval wall time
+    is tracked in eval_accum and excluded from the training budget (elapsed and
+    ms/step), so every run receives the same training-time budget.  history_eval_fn,
+    if given, is used for periodic snapshots; eval_fn is always used for the final
+    reported rel L2.
     """
     if lr_final is None:
         lr_final = lr * 0.1  # gentle floor: cosine helps high-order but a too-low
@@ -366,8 +368,7 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
     t0 = time.perf_counter()
     steps, losses, nan_hit = 0, [], False
     history, eval_accum = [], 0.0
-    hist_dt = seconds / max(1, history_n)
-    next_hist = 0.0
+    snap_eval = history_eval_fn if history_eval_fn is not None else eval_fn
     while True:
         elapsed = time.perf_counter() - t0 - eval_accum
         if elapsed >= seconds:
@@ -386,17 +387,19 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
         if not math.isfinite(L_int):
             nan_hit = True
             break
-        if record_history and elapsed >= next_hist:
+        if record_history and history_every_steps > 0 and steps % history_every_steps == 0:
             te = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.synchronize()
-            history.append([round(elapsed, 3), float(eval_fn()), float(L_int)])
-            next_hist += hist_dt
+            history.append([round(elapsed, 3), float(snap_eval()), float(L_int)])
             eval_accum += time.perf_counter() - te
     if device.type == "cuda":
         torch.cuda.synchronize()
     elapsed = time.perf_counter() - t0 - eval_accum
+    te = time.perf_counter()
     err = eval_fn()
+    if record_history:
+        eval_accum += time.perf_counter() - te
     peak = torch.cuda.max_memory_allocated(device) / 2 ** 20 if device.type == "cuda" else float("nan")
     out = {"steps": steps, "ms_per_step": 1000.0 * elapsed / max(1, steps),
            "peak_mb": peak,
@@ -474,8 +477,10 @@ def linear_loss_factory(prob: LinearProblem, x_int, x_bc, model_dtype):
 def run_linear_suite(problems, variants, args, out_csv: str):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sk = sched_kwargs(args)
+    seed_start = getattr(args, "seed_start", 0)
+    seed_ids = list(range(seed_start, seed_start + args.seeds))
     print(f"device={device} hidden={args.hidden} depth={args.depth} "
-          f"budget={args.seconds}s/run seeds={args.seeds} lr_schedule={sk['lr_schedule']}",
+          f"budget={args.seconds}s/run seeds={seed_ids} lr_schedule={sk['lr_schedule']}",
           flush=True)
     rows = []
     for prob in problems:
@@ -486,9 +491,11 @@ def run_linear_suite(problems, variants, args, out_csv: str):
         g = torch.Generator(device=device).manual_seed(12345)
         lo, hi = prob.box
         eval_r = torch.empty(8192, prob.d, device=device, dtype=torch.float64).uniform_(lo, hi, generator=g)
+        hist_n = min(getattr(args, "history_eval_n", 4096), eval_r.shape[0])
+        eval_r_hist = eval_r[:hist_n]
         om = prob.extra.get("omega0", OMEGA0)
         fs = prob.extra.get("fourier_sigma", 2.0)
-        for seed in range(args.seeds):
+        for seed in seed_ids:
             for v in variants:
                 torch.manual_seed(seed)
                 model, mdt = build_model(v, prob.d, args.hidden, args.depth,
@@ -505,8 +512,16 @@ def run_linear_suite(problems, variants, args, out_csv: str):
                         return (((pred - tgt) ** 2).mean().sqrt()
                                 / (tgt ** 2).mean().sqrt()).item()
 
+                def history_eval_fn():
+                    with torch.no_grad():
+                        pred = predict(model, eval_r_hist.to(mdt)).real.squeeze(-1)
+                        tgt = prob.u_exact(eval_r_hist)
+                        return (((pred - tgt) ** 2).mean().sqrt()
+                                / (tgt ** 2).mean().sqrt()).item()
+
                 m = train_eval(model, mdt, lambda: lf(model), eval_fn,
-                               seconds=args.seconds, lr=args.lr, device=device, **sk)
+                               seconds=args.seconds, lr=args.lr, device=device,
+                               history_eval_fn=history_eval_fn, **sk)
                 row = {"problem": prob.name, "order": prob.order, "sweep": prob.sweep,
                        "variant": v, "seed": seed, "params": n_params(model),
                        "backend": "jet" if v in JET_VARIANTS else "autograd", **m}
@@ -564,7 +579,14 @@ def default_argparser(seconds=80.0, n_int=4096, n_bc=512):
     ap.add_argument("--lr-final", type=float, default=None)
     ap.add_argument("--history", action="store_true",
                     help="record rel-L2 & loss vs time traces for convergence figures")
+    ap.add_argument("--history-every-steps", type=int, default=20,
+                    help="with --history: rel-L2 snapshot every N training steps "
+                         "(eval wall time excluded from training budget)")
+    ap.add_argument("--history-eval-n", type=int, default=4096,
+                    help="collocation points for periodic history rel-L2 (final uses 8192)")
     ap.add_argument("--seeds", type=int, default=2)
+    ap.add_argument("--seed-start", type=int, default=0,
+                    help="first seed index (inclusive); runs seed-start .. seed-start+seeds-1")
     ap.add_argument("--variants",
                     default="complex_sinh,fourier,siren,mscale")
     ap.add_argument("--out", default="")
@@ -574,4 +596,5 @@ def default_argparser(seconds=80.0, n_int=4096, n_bc=512):
 def sched_kwargs(args) -> dict:
     return {"lr_schedule": getattr(args, "lr_schedule", "constant"),
             "lr_final": getattr(args, "lr_final", None),
-            "record_history": getattr(args, "history", False)}
+            "record_history": getattr(args, "history", False),
+            "history_every_steps": getattr(args, "history_every_steps", 20)}
