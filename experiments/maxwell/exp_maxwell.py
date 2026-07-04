@@ -73,6 +73,7 @@ def run(sweeps, variants, args):
         sigma = max(2.0, math.pi * a)
         g = torch.Generator(device=device).manual_seed(2025)
         eval_r = _sample(8192, device, g)
+        eval_r_hist = eval_r[: min(getattr(args, "history_eval_n", 4096), eval_r.shape[0])]
         print(f"\n=== {name} (a={a}, |kappa^2|={abs(kappa2):.1f}) ===", flush=True)
         print(f"{'variant':<16}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
               f"{'L_int':>11}{'L2_err':>12}", flush=True)
@@ -107,8 +108,16 @@ def run(sweeps, variants, args):
                         return ((pred - tgt).abs() ** 2).mean().sqrt().item() / \
                                ((tgt.abs() ** 2).mean().sqrt().item() + 1e-30)
 
+                def history_eval_fn():
+                    with torch.no_grad():
+                        pred = field.pred(eval_r_hist)
+                        tgt = E_exact(eval_r_hist)
+                        return ((pred - tgt).abs() ** 2).mean().sqrt().item() / \
+                               ((tgt.abs() ** 2).mean().sqrt().item() + 1e-30)
+
                 m = train_eval(module, None, loss_fn, eval_fn,
-                               seconds=args.seconds, lr=args.lr, device=device, **sk)
+                               seconds=args.seconds, lr=args.lr, device=device,
+                               history_eval_fn=history_eval_fn, **sk)
                 rep = "complex" if is_complex else "split2"
                 rows.append({"problem": name, "order": 2, "sweep": float(a),
                              "variant": v, "rep": rep, "seed": seed,
