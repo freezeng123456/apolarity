@@ -47,7 +47,9 @@ docs/
   paper/   jsc_paper_main.tex         # JSC paper draft (12 pages)
 scripts/
   cuda_env.sh                         # CUDA loader for the T4 host
-  run_widthstudy.sh                   # 600s width-robustness benchmark driver
+  run_widthstudy.sh                   # 600s width-robustness benchmark driver (archived suite)
+  run_jsc_main3.sh                    # JSC main text: poly2d + chirp + Maxwell (1200s each)
+  run_maxwell_finish.sh               # add Maxwell seeds 3-4, merge, git push
 tests/
 ```
 
@@ -79,11 +81,18 @@ sixth-order PDE are reported in the paper, Section 5.
 
 ## Oscillatory / high-order PDE benchmark
 
-The complex-`sinh` network against Fourier-feature, SIREN, MscaleDNN and
-split-real `tanh` baselines, one folder per PDE family under `experiments/`:
+**JSC main text (three 20-minute runs):** polyharmonic 2D, chirp (\(a=1,2,3\)),
+Maxwell — each 1200 s, 5 seeds. See `experiments/README.md`.
 
 ```bash
-bash scripts/run_widthstudy.sh                  # all families (long)
+bash scripts/run_jsc_main3.sh                   # all three (or per-family run.sh)
+bash scripts/run_maxwell_finish.sh              # Maxwell seeds 3-4 only
+```
+
+Full archived suite (600 s, 9 families) and figure regeneration:
+
+```bash
+bash scripts/run_widthstudy.sh                  # all families (long, archived)
 python experiments/tools/plot_width.py          # -> docs/paper/figures/fig_*.pdf
 python experiments/tools/build_width_tables.py  # -> docs/paper/tables/w_*.tex
 ```

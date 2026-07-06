@@ -37,7 +37,27 @@ One experiment family per subfolder, each self-contained:
 - `tools/build_width_tables.py` — writes the per-family LaTeX tables
   `docs/paper/tables/w_<key>.tex`.
 
-## The current study (width robustness, 600 s)
+## JSC main-text experiments (three 20-minute runs)
+
+Going forward, **only three** oscillatory width studies are maintained for the
+JSC paper main text. Each uses **1200 s (20 min)** wall-clock, **5 seeds**,
+depth 4, step-based history (rel-\(L^2\) every 20 training steps; eval time
+excluded from the budget):
+
+| folder | sweep | driver |
+|---|---|---|
+| `polyharmonic/` (2D only) | orders 2, 4, 6 | `experiments/polyharmonic/run.sh` |
+| `chirp/` | \(a=1,2,3\) | `experiments/chirp/run.sh` |
+| `maxwell/` | \(a=2,4,6\) | `experiments/maxwell/run.sh` |
+
+Protocol (all three): real baselines at width 128; complex \(\sinh\) at widths
+64 and 128. See `scripts/run_jsc_main3.sh` for the batch driver; use
+`scripts/run_maxwell_finish.sh` to add missing Maxwell seeds and push.
+
+The remaining families under `experiments/` keep their archived **600 s, 2-seed**
+width-study data for the full-suite supplement; they are not scheduled for reruns.
+
+## Archived width study (600 s, 2 seeds)
 
 Real baselines run at width 128; the complex `sinh` net runs at **both** 64 and
 128 (a complex weight carries ~2× the real DOF, so these bracket the baselines).

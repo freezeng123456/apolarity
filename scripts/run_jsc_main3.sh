@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# JSC main-text width study: polyharmonic 2D, chirp (a=1,2,3), Maxwell.
-# 1200 s wall-clock, 5 seeds (Maxwell: keep seeds 0-1, add 2-4).
+# JSC main-text width study — the ONLY three oscillatory experiments we maintain:
+#   polyharmonic 2D, chirp (a=1,2,3), Maxwell.
+# 1200 s (20 min) wall-clock, 5 seeds each.
 # History: rel-L2 every 20 training steps (eval time excluded from budget).
+# For Maxwell seeds 3-4 only, prefer scripts/run_maxwell_finish.sh.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export PYTHONUNBUFFERED=1

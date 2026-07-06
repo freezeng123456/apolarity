@@ -59,8 +59,10 @@ def _sample_bc(B, device):
 def run(sweeps, variants, args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sk = sched_kwargs(args)
+    seed_start = getattr(args, "seed_start", 0)
+    seed_ids = list(range(seed_start, seed_start + args.seeds))
     print(f"device={device} hidden={args.hidden} depth={args.depth} "
-          f"budget={args.seconds}s seeds={args.seeds} lr_schedule={sk['lr_schedule']}", flush=True)
+          f"budget={args.seconds}s seeds={seed_ids} lr_schedule={sk['lr_schedule']}", flush=True)
     rows = []
     for a in sweeps:
         name = f"maxwell_a{a}"
@@ -77,7 +79,7 @@ def run(sweeps, variants, args):
         print(f"\n=== {name} (a={a}, |kappa^2|={abs(kappa2):.1f}) ===", flush=True)
         print(f"{'variant':<16}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
               f"{'L_int':>11}{'L2_err':>12}", flush=True)
-        for seed in range(args.seeds):
+        for seed in seed_ids:
             for v in variants:
                 torch.manual_seed(seed)
                 field, is_complex = make_complex_field(

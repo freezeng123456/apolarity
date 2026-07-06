@@ -12,10 +12,15 @@ use a split-real (Re/Im) pair (RVPINN).
 \(\sigma=\max(2,\pi a)\).
 
 ## Outputs (`data/`)
-Width study (600 s, 2 seeds): `maxwell_h{128,64}.{csv,json}` + `*_history.json`.
-Real baselines here are `siren,fourier,tanh` (split-real).
+JSC main-text width study (**1200 s, 5 seeds**): `maxwell_h{128,64}.{csv,json}`
++ `*_history.json`. Real baselines: `siren,fourier,tanh` (split-real).
 
-## Reproduce
+To finish seeds 3–4 after an partial run:
+```bash
+bash ../../scripts/run_maxwell_finish.sh
+```
+
+## Reproduce (full 5-seed run)
 ```bash
 bash run.sh
 ```
