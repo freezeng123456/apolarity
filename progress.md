@@ -108,7 +108,7 @@ Status meanings:
 | Task ID | Setting | Status | Formal output |
 |---|---|---|---|
 | `poly_d2_o2` | Poly `d=2`, order 2 | READY | none |
-| `poly_d2_o4` | Poly `d=2`, order 4 | READY | none |
+| `poly_d2_o4` | Poly `d=2`, order 4 | DONE | `experiments/results/jsc_v2/poly_d2_o4` |
 | `poly_d2_o6` | Poly `d=2`, order 6 | READY | none |
 | `poly_d3_o2` | Poly `d=3`, order 2 | READY | none |
 | `poly_d3_o4` | Poly `d=3`, order 4 | READY | none |
