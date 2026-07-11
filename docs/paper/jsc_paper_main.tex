@@ -79,9 +79,9 @@ of Taylor directions. Because \(\sinh\) is entire on \(\C\), the same backend
 also makes \emph{complex-parameter} \(\sinh\) networks high-order
 differentiable without any runtime dtype conversion; we study these as a
 PINN ansatz for polyharmonic, radial-chirp, and complex Maxwell problems.
-Protocol \texttt{jsc\_v2} matches three audited real baselines to the
-trainable-real-parameter budget of a width-128 Complex Sinh model and gives
-every method the same wall-clock and collocation protocol.
+Protocol \texttt{jsc\_v2} gives all four methods literal hidden width 128 and
+the same wall-clock and collocation protocol, while reporting their differing
+trainable real parameter counts.
 
 \medskip
 \noindent\textbf{Keywords.} Physics-informed neural networks; high-order
@@ -178,7 +178,7 @@ dtype casting in the inner loop. We treat such a network as a PINN ansatz
 and ask whether the complex value field is itself more expressive on
 oscillatory and high-order targets. Protocol \texttt{jsc\_v2} compares it on
 polyharmonic, radial-chirp, and lossy-Maxwell tasks with three source-audited
-baselines under matched trainable real DOF, paired collocation, and one shared
+baselines under literal width 128, paired collocation, and one shared
 wall-clock protocol. Results remain TBD.
 \end{enumerate}
 

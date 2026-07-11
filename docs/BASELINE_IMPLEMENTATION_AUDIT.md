@@ -164,7 +164,8 @@ Old local difference: scale was folded once into the first weight
 initialization. That preserves an initial forward map under a parameter
 relabeling, but does not preserve the optimization dynamics; the scale was no
 longer fixed in the computational graph. It also used default Kaiming-uniform
-initialization and gave every subnet the full baseline width.
+initialization. The current literal-width protocol deliberately gives every
+subnet width 128 and reports the resulting larger parameter count.
 
 The local jet hook multiplies all input jet coefficients by each fixed scale,
 which gives the required factor `a_k**order` in derivatives. Tests verify the
@@ -187,17 +188,22 @@ Its evidence chain is the paper formula, `complex_freq_init_`, backend
 equivalence tests, complex parameter-gradient tests, and the architecture
 fidelity test.
 
-## Parameter-budget rule
+## Literal-width rule
 
-The sole capacity reference is one native-complex Complex Sinh model with
-`H=128`. A complex trainable scalar counts as two real degrees of freedom.
-Frozen Fourier matrices do not count. For a complex target, each real baseline
-uses two independent scalar networks and both count.
+Every formal method uses literal hidden width `H=128`; the protocol does not
+match trainable parameter counts. A complex trainable scalar still counts as
+two real degrees of freedom, and frozen Fourier matrices do not count. For a
+complex target, each real baseline uses two independent `H=128` scalar
+networks.
 
-`formal_architecture_budgets` searches integer widths and rejects a table if a
-method differs from the reference by more than 5%. Every result row records the
-actual width, real DOF, representation, and completed optimizer steps. No
-formal H=64 output is accepted.
+The resulting real DOF is deliberately disclosed: in scalar 2D the counts are
+100098 (Complex Sinh), 50049 (SIREN), 66305 (mFF-PINN), and 150147
+(MscaleDNN-2-sin); in scalar 3D they are 100354, 50177, 66305, and 150531. For
+Maxwell they are 100098, 100098, 132610, and 300294 after counting both
+split-real networks. These differences are not described as parameter
+fairness. The controls are shared literal width and equal wall-clock budget.
+Every result row records width, real DOF, representation, and completed steps,
+and the validator rejects any formal width other than 128.
 
 ## Training details not copied from upstream
 

@@ -15,11 +15,9 @@ use a split-real (Re/Im) pair (RVPINN).
 
 The three sweep values are formal `jsc_v2` settings. The only formal methods
 are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
-\(H=128\) uses the native complex representation and defines the true trainable
-real-parameter budget. Each external baseline uses a split-real representation
-and an automatically matched integer width; both real networks count toward
-the parameter budget, whose mismatch must not exceed \(5\%\). \(H=64\) is not
-run or discussed.
+\(H=128\) uses the native complex representation. Each external baseline uses
+two \(H=128\) networks in a split-real representation. Their total trainable
+real parameter counts are recorded but do not change the shared literal width.
 
 ## Current outputs
 

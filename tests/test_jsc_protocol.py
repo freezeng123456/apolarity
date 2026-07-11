@@ -19,13 +19,14 @@ from protocol import (  # noqa: E402
     DEPTH,
     EVALUATION_PROTOCOL,
     FORMAL_METHODS,
+    FORMAL_WIDTH,
     N_BOUNDARY,
     N_INTERIOR,
     PROTOCOL_ID,
     SEEDS,
     all_tasks,
     get_task,
-    validate_budget_table,
+    validate_architecture_table,
 )
 from validate_jsc_results import validate_task_directory  # noqa: E402
 
@@ -65,15 +66,13 @@ def test_protocol_rejects_non_preregistered_settings(family, kwargs):
         ("maxwell", {"sweep": 6}),
     ],
 )
-def test_protocol_parameter_tables_match_reference(family, kwargs):
-    budgets = validate_budget_table(get_task(family, **kwargs))
-    assert set(budgets) == set(FORMAL_METHODS)
-    assert budgets["complex_sinh"].width == 128
-    assert all(budget.width != 64 for budget in budgets.values())
-    assert all(budget.relative_error <= 0.05 for budget in budgets.values())
+def test_protocol_architecture_tables_use_literal_width_128(family, kwargs):
+    specs = validate_architecture_table(get_task(family, **kwargs))
+    assert set(specs) == set(FORMAL_METHODS)
+    assert all(spec.width == FORMAL_WIDTH for spec in specs.values())
 
 
-def _row(method: str, seed: int, width: int, real_dof: int, target: int) -> dict:
+def _row(method: str, seed: int, width: int, real_dof: int, reference: int) -> dict:
     return {
         "protocol_id": PROTOCOL_ID,
         "git_sha": "a" * 40,
@@ -90,8 +89,8 @@ def _row(method: str, seed: int, width: int, real_dof: int, target: int) -> dict
         "hidden": width,
         "params": real_dof,
         "real_dof": real_dof,
-        "target_real_dof": target,
-        "parameter_relative_error": abs(real_dof - target) / target,
+        "reference_real_dof": reference,
+        "relative_dof_difference": abs(real_dof - reference) / reference,
         "representation": "native_complex" if method == "complex_sinh" else "real",
         "collocation": COLLOCATION_PROTOCOL,
         "evaluation_protocol": EVALUATION_PROTOCOL,
@@ -120,8 +119,8 @@ def _row(method: str, seed: int, width: int, real_dof: int, target: int) -> dict
 
 def _write_fake_bundle(task_dir: Path, *, bad_width: bool = False) -> None:
     target = 100_000
-    for method_index, method in enumerate(FORMAL_METHODS):
-        width = 64 if bad_width and method == "siren" else 128 + method_index
+    for method in FORMAL_METHODS:
+        width = 64 if bad_width and method == "siren" else FORMAL_WIDTH
         rows = [_row(method, seed, width, target, target) for seed in SEEDS]
         (task_dir / f"{method}_part.json").write_text(json.dumps(rows))
         histories = [
@@ -146,7 +145,7 @@ def test_validator_merges_only_complete_five_seed_bundle(tmp_path: Path):
     assert {row["variant"] for row in rows} == set(FORMAL_METHODS)
 
 
-def test_validator_rejects_formal_h64(tmp_path: Path):
+def test_validator_rejects_any_non_128_width(tmp_path: Path):
     _write_fake_bundle(tmp_path, bad_width=True)
-    with pytest.raises(ValueError, match="H=64"):
+    with pytest.raises(ValueError, match="requires literal H=128"):
         validate_task_directory(tmp_path)

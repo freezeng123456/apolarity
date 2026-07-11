@@ -55,8 +55,8 @@ def build(key: str, items) -> Path:
         r"\centering",
         r"\small",
         rf"\caption{{{title}: mean relative $L^2$ error after 1200\,s over five "
-        r"seeds. Methods are matched to the Complex Sinh $H=128$ real-DOF "
-        r"budget; actual integer widths are shown in the headers.}}",
+        r"seeds. Every method uses literal hidden width $H=128$; trainable "
+        r"real degrees of freedom are reported separately.}}",
         rf"\label{{tab:jsc-v2-{key}}}",
         r"\begin{tabular}{@{}l" + "r" * len(methods) + r"@{}}",
         r"\toprule",

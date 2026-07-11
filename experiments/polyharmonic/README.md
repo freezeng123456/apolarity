@@ -18,10 +18,9 @@ follow-up. The frozen initialization is \(\omega_0=2\pi\) and
 ## Formal comparison
 
 The only formal methods are `complex_sinh`, SIREN, mFF-PINN, and
-MscaleDNN-2-sin under `protocol_id=jsc_v2`. Complex Sinh \(H=128\) defines the
-true trainable real-parameter budget. External baselines receive automatically
-matched integer widths with at most \(5\%\) mismatch. \(H=64\) is not run or
-discussed.
+MscaleDNN-2-sin under `protocol_id=jsc_v2`. All four methods use literal hidden
+width \(H=128\) and the same wall-clock budget. Their differing trainable real
+parameter counts are recorded but do not change the width.
 
 ## Current outputs
 

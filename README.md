@@ -66,10 +66,10 @@ The only formal methods are:
 - mFF-PINN;
 - MscaleDNN-2-sin.
 
-The only formal protocol is `jsc_v2`. Its capacity reference is the true
-trainable real-degree-of-freedom budget of Complex Sinh at \(H=128\). Each
-external baseline is assigned the closest integer width automatically, with at
-most \(5\%\) parameter-budget mismatch. \(H=64\) is neither run nor discussed.
+The only formal protocol is `jsc_v2`. Every formal method uses the same literal
+hidden width \(H=128\) and the same wall-clock budget. Trainable real degrees of
+freedom are recorded for transparency but are not used to rescale widths.
+\(H=64\) is neither run nor discussed.
 
 The preregistered settings are:
 

@@ -18,10 +18,8 @@ tests described in the repository's baseline audit.
 Protocol \texttt{jsc\_v2} uses a 1200-second wall-clock budget per
 \((\text{problem},\text{method},\text{seed})\), five seeds, four trainable
 hidden layers, paired per-seed collocation points, and a fixed held-out
-evaluation set.  Every method is matched to the real trainable-parameter
-budget of the width-128 complex \(\sinh\) network.  Width-64 experiments are
-excluded because a smaller network completes more optimizer steps within a
-fixed wall-clock budget, confounding architecture and throughput.
+evaluation set. Every method uses literal hidden width \(H=128\). Trainable
+real degrees of freedom are disclosed but are not matched across methods.
 
 The four methods receive the same interior and boundary points for a given
 seed.  Results must record the protocol identifier, Git commit, hardware,
@@ -97,9 +95,8 @@ The two-dimensional transverse-magnetic problem is represented by
 \end{equation}
 with \(\beta=0.2\), exact Dirichlet data, and
 \(a\in\{2,4,6\}\).  Complex \(\sinh\) represents \(E\) natively; each real
-baseline uses a split real--imaginary pair whose total trainable-parameter
-budget is matched to the native complex model.  Each \(a\) is an independent
-atomic task.
+baseline uses a split real--imaginary pair of two width-128 networks. Each
+\(a\) is an independent atomic task.
 
 \paragraph{Results.}
 \emph{TBD after validated \texttt{jsc\_v2} runs.}

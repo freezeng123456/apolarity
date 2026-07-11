@@ -49,33 +49,33 @@ The GitHub CLI is installed locally, but this host has no authenticated GitHub
 token. Immutable public API/raw source URLs were therefore used for the audit;
 all evidence links are commit-pinned.
 
-## Parameter-budget definition
+## Literal-width fairness definition
 
-The only capacity reference is a native-complex Complex Sinh model at `H=128`.
-A complex trainable scalar counts as two real degrees of freedom. Frozen
-Fourier maps do not count. Maxwell real baselines count both split-real
+Fairness was corrected on 2026-07-11: all four formal methods use literal
+hidden width `H=128`. Trainable real degrees of freedom are disclosed but do
+not determine widths. A complex trainable scalar counts as two real degrees of
+freedom, frozen Fourier maps do not count, and Maxwell counts both split-real
 component networks.
 
-The nearest integer width is selected automatically and rejected if its real
-DOF differs by more than 5%. Current dry-run tables are:
+The resulting parameter tables are:
 
-- scalar 2D: Complex Sinh `H=128, 100098 DOF`; SIREN
-  `H=181, 99551`; mFF-PINN `H=158, 100805`; MscaleDNN-2-sin
-  `H=104, 99531`;
-- scalar 3D: Complex Sinh `H=128, 100354 DOF`; SIREN
-  `H=182, 100829`; mFF-PINN `H=158, 100805`; MscaleDNN-2-sin
-  `H=104, 99843`;
-- Maxwell split-real: Complex Sinh `H=128, 100098 DOF`; SIREN
-  `H=128, 100098`; mFF-PINN `H=112, 101698`; MscaleDNN-2-sin
-  `H=73, 98994`.
+- scalar 2D, all `H=128`: Complex Sinh `100098 DOF`; SIREN `50049`;
+  mFF-PINN `66305`; MscaleDNN-2-sin `150147`;
+- scalar 3D, all `H=128`: Complex Sinh `100354 DOF`; SIREN `50177`;
+  mFF-PINN `66305`; MscaleDNN-2-sin `150531`;
+- Maxwell, all component networks `H=128`: Complex Sinh `100098 DOF`;
+  split-real SIREN `100098`; split-real mFF-PINN `132610`; split-real
+  MscaleDNN-2-sin `300294`.
 
-Formal H=64 output is rejected by both protocol and validator.
+This is literal-width plus equal-wall-clock control, not parameter-count
+matching. The protocol and validator reject every formal width other than 128.
 
 ## Frozen protocol
 
 `experiments/common/protocol.py` is the single source of truth:
 
 - protocol: `jsc_v2`;
+- literal hidden width: `H=128` for every formal method and component network;
 - wall-clock: 1200 seconds per method and seed;
 - seeds: `0..4`;
 - depth: four trainable hidden layers;
@@ -143,8 +143,8 @@ Every canonical row records the protocol and task IDs, Git SHA/dirty flag,
 problem setting, actual width, real DOF, representation, seed, collocation and
 evaluation protocols, all method frequency/scale settings, budget, optimizer,
 steps, and hardware. The validator requires 20 unique method/seed rows, all
-five seeds, finite metrics, nonempty monotone histories, one DOF target, and
-the exact protocol metadata.
+five seeds, finite metrics, nonempty monotone histories, a consistent Complex
+Sinh DOF reference, and the exact protocol metadata.
 
 The plot and table tools read only task directories carrying a `VALIDATED`
 marker and canonical jsc_v2 files. With no validated data they exit cleanly
@@ -156,7 +156,7 @@ without generating evidence.
 - Expected warnings: 13 PyTorch warnings about complex modules.
 - Architecture tests cover upstream SIREN initialization/omega placement,
   mFF branch sharing/mapping, Mscale explicit scaling/initialization, Complex
-  Sinh initialization, output shapes, and parameter budgets.
+  Sinh initialization, output shapes, literal width, and parameter reporting.
 - Jet-vs-direct tests cover low/high-order input derivatives and parameter
   gradients through scaled sine, Fourier branches, and Mscale subnets.
 - Existing backend, complex-gradient, 3D Delta-cubed, collocation RNG,
@@ -168,19 +168,18 @@ without generating evidence.
 
 ## Smoke status
 
-The quick smoke phase used one seed, 32 interior points, 16 boundary points,
-and a one-second budget per method. It exercised the hardest Poly derivative
-path plus representative Chirp and Maxwell paths:
+The first quick smoke phase used superseded automatically selected widths and
+was discarded. A corrected smoke then ran every method at literal `H=128`
+using one seed, 32 interior points, 16 boundary points, and one second per
+method:
 
-- `poly_d3_o6`: all four methods ran, wrote histories, and passed smoke
-  validation;
-- `chirp_a2`: all four methods ran, wrote histories, and passed smoke
-  validation;
-- `maxwell_a4`: native-complex and all three split-real baselines ran, wrote
-  histories, and passed smoke validation.
+- `poly_d3_o6`: all four H=128 methods wrote histories and passed validation;
+- `chirp_a2`: all four H=128 methods wrote histories and passed validation;
+- `maxwell_a4`: native-complex and all three split-real H=128 baselines wrote
+  histories and passed validation.
 
-All smoke metrics were finite and no run reported NaN. The one-second values
-are deliberately not retained or interpreted as accuracy measurements.
+All corrected smoke metrics were finite and no run reported NaN. Temporary
+bundles are not retained or interpreted as accuracy measurements.
 
 ## Readiness review
 
@@ -189,7 +188,7 @@ Implementation readiness checks pass:
 - source-pinned baseline audit: complete;
 - four formal method specifications: complete;
 - unexplained architecture branches: none in the formal registry;
-- parameter mismatch at most 5%: pass;
+- literal `H=128` enforcement: implemented and smoke-validated;
 - protocol and 12-setting grid: frozen;
 - runner/validator/plot/table chain: implemented and tested;
 - old results and hard-coded empirical conclusions: removed;

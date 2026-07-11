@@ -32,7 +32,7 @@ Historical or archived runners and every family-local `run.sh` are retained
 only for implementation diagnosis. They do not implement the formal evidence
 pipeline, and their outputs cannot be cited as paper evidence.
 
-## Frozen formal methods and capacity
+## Frozen formal methods and literal width
 
 The only formal comparison contains:
 
@@ -41,12 +41,11 @@ The only formal comparison contains:
 - mFF-PINN;
 - MscaleDNN-2-sin.
 
-The capacity reference is Complex Sinh \(H=128\), counted by true trainable
-real degrees of freedom (each complex parameter counts as two real degrees of
-freedom). The three external baselines receive automatically selected integer
-widths whose trainable parameter counts differ from the reference by no more
-than \(5\%\). Maxwell counts both split-real baseline networks. Formal \(H=64\)
-outputs are rejected and are not part of the discussion.
+Every formal method uses literal hidden width \(H=128\). Trainable real degrees
+of freedom are recorded separately (each complex parameter counts as two real
+degrees of freedom), but they do not change the width. Maxwell counts both
+split-real \(H=128\) baseline networks. Any formal output with a width other
+than 128 is rejected.
 
 ## The only formal protocol: `jsc_v2`
 
@@ -75,7 +74,7 @@ python scripts/validate_jsc_results.py \
 ```
 
 `validate_jsc_results.py` checks the protocol metadata, the four methods, the
-five seeds, unique keys, parameter-budget tolerance, finite metrics, and
-history traces. Figure and table builders accept only validated
+five seeds, unique keys, literal \(H=128\), finite metrics, and history traces.
+Figure and table builders accept only validated
 `protocol_id=jsc_v2` bundles. Since no formal bundle currently exists, their
 paper outputs remain **TBD**.

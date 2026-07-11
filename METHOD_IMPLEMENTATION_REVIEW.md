@@ -19,10 +19,11 @@ The formal method registry is exactly:
 Auxiliary `tanh`, Cauchy, and `complex_sinh_noinit` code is not available to the
 formal atomic runner. `real_sinh` is not supported.
 
-Capacity is matched by trainable real degrees of freedom. The reference is
-native-complex `complex_sinh` at `H=128`; external baselines receive the closest
-integer width within 5%. For Maxwell, the two split-real component networks are
-counted together. Frozen Fourier maps are excluded from trainable DOF.
+All four formal methods use literal hidden width `H=128`; trainable real degrees
+of freedom are not matched. For Maxwell, each external baseline uses two
+`H=128` split-real component networks. Actual trainable real DOF is recorded
+for transparency, with complex scalars counted twice and frozen Fourier maps
+excluded.
 
 Executable contracts are in:
 

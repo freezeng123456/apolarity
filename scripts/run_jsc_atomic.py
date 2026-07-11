@@ -38,7 +38,7 @@ from protocol import (  # noqa: E402
     RESULT_ROOT,
     SEEDS,
     get_task,
-    validate_budget_table,
+    validate_architecture_table,
 )
 from validate_jsc_results import validate_task_directory  # noqa: E402
 
@@ -145,7 +145,7 @@ def _enrich_part(
     *,
     task,
     method: str,
-    budget,
+    spec,
     sha: str,
     dirty: bool,
     hardware: str,
@@ -157,7 +157,7 @@ def _enrich_part(
     expected_rows = 1 if smoke else len(SEEDS)
     if len(rows) != expected_rows:
         raise ValueError(f"{method} wrote {len(rows)} rows, expected {expected_rows}")
-    expected_representation = budget.representation
+    expected_representation = spec.representation
     frequency = {
         "complex_sinh_omega0": task.omega0,
         "siren_first_omega0": 30.0,
@@ -170,9 +170,9 @@ def _enrich_part(
     for row in rows:
         if row["variant"] != method:
             raise ValueError(f"{output} contains unexpected method {row['variant']}")
-        if int(row["params"]) != budget.real_dof:
+        if int(row["params"]) != spec.real_dof:
             raise ValueError(
-                f"{method} emitted {row['params']} DOF, expected {budget.real_dof}"
+                f"{method} emitted {row['params']} DOF, expected {spec.real_dof}"
             )
         row.update({
             "protocol_id": PROTOCOL_ID,
@@ -181,10 +181,10 @@ def _enrich_part(
             "task_id": task.task_id,
             "family": task.family,
             "dimension": task.dimension,
-            "actual_width": budget.width,
-            "real_dof": budget.real_dof,
-            "target_real_dof": budget.target_real_dof,
-            "parameter_relative_error": budget.relative_error,
+            "actual_width": spec.width,
+            "real_dof": spec.real_dof,
+            "reference_real_dof": spec.reference_real_dof,
+            "relative_dof_difference": spec.relative_dof_difference,
             "representation": expected_representation,
             "collocation": COLLOCATION_PROTOCOL,
             "evaluation_protocol": EVALUATION_PROTOCOL,
@@ -209,8 +209,8 @@ def _enrich_part(
             "dimension": task.dimension,
             "variant": method,
             "representation": expected_representation,
-            "actual_width": budget.width,
-            "real_dof": budget.real_dof,
+            "actual_width": spec.width,
+            "real_dof": spec.real_dof,
         })
     history_path.write_text(json.dumps(histories, indent=2) + "\n")
 
@@ -232,7 +232,7 @@ def main() -> None:
         order=args.order,
         sweep=args.sweep,
     )
-    budgets = validate_budget_table(task)
+    specs = validate_architecture_table(task)
     sha, dirty = _git_state()
     if dirty and not (args.smoke or args.dry_run):
         raise RuntimeError(
@@ -246,7 +246,7 @@ def main() -> None:
     manifest = {
         "protocol_id": PROTOCOL_ID,
         "task": asdict(task),
-        "methods": {method: asdict(budget) for method, budget in budgets.items()},
+        "methods": {method: asdict(spec) for method, spec in specs.items()},
         "git_sha": sha,
         "git_dirty": dirty,
         "smoke": args.smoke,
@@ -275,12 +275,12 @@ def main() -> None:
     env["PYTHONPATH"] = str(ROOT / "src")
 
     for method in FORMAL_METHODS:
-        budget = budgets[method]
+        spec = specs[method]
         output = task_dir / f"{method}_part.csv"
         command = _experiment_command(
             task,
             method,
-            budget.width,
+            spec.width,
             output,
             smoke=args.smoke,
         )
@@ -290,7 +290,7 @@ def main() -> None:
             output,
             task=task,
             method=method,
-            budget=budget,
+            spec=spec,
             sha=sha,
             dirty=dirty,
             hardware=hardware,

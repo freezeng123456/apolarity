@@ -20,9 +20,9 @@ from protocol import (  # noqa: E402
     COLLOCATION_PROTOCOL,
     DEPTH,
     FORMAL_METHODS,
+    FORMAL_WIDTH,
     N_BOUNDARY,
     N_INTERIOR,
-    PARAMETER_TOLERANCE,
     PROTOCOL_ID,
     SEEDS,
 )
@@ -41,8 +41,8 @@ REQUIRED_FIELDS = {
     "seed",
     "actual_width",
     "real_dof",
-    "target_real_dof",
-    "parameter_relative_error",
+    "reference_real_dof",
+    "relative_dof_difference",
     "representation",
     "collocation",
     "evaluation_protocol",
@@ -92,7 +92,7 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
 
     seen: set[tuple[str, int]] = set()
     by_method: dict[str, set[int]] = {method: set() for method in FORMAL_METHODS}
-    target_dofs: set[int] = set()
+    reference_dofs: set[int] = set()
     for index, row in enumerate(rows):
         missing = REQUIRED_FIELDS - row.keys()
         if missing:
@@ -108,8 +108,11 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
             raise ValueError(f"duplicate method/seed key {key}")
         seen.add(key)
         by_method[method].add(seed)
-        if int(row["actual_width"]) == 64:
-            raise ValueError("jsc_v2 rejects formal H=64 output")
+        if int(row["actual_width"]) != FORMAL_WIDTH:
+            raise ValueError(
+                f"jsc_v2 requires literal H={FORMAL_WIDTH}; "
+                f"row {index} has H={row['actual_width']}"
+            )
         if int(row["depth"]) != DEPTH:
             raise ValueError(f"row {index} depth does not match jsc_v2")
         if not smoke:
@@ -120,13 +123,11 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
         if row["collocation"] != COLLOCATION_PROTOCOL:
             raise ValueError(f"row {index} has wrong collocation protocol")
         real_dof = int(row["real_dof"])
-        target_dof = int(row["target_real_dof"])
-        target_dofs.add(target_dof)
-        error = abs(real_dof - target_dof) / target_dof
-        if error > PARAMETER_TOLERANCE:
-            raise ValueError(f"{method} parameter mismatch is {error:.2%}")
-        if abs(float(row["parameter_relative_error"]) - error) > 1e-12:
-            raise ValueError(f"row {index} has inconsistent parameter error")
+        reference_dof = int(row["reference_real_dof"])
+        reference_dofs.add(reference_dof)
+        difference = abs(real_dof - reference_dof) / reference_dof
+        if abs(float(row["relative_dof_difference"]) - difference) > 1e-12:
+            raise ValueError(f"row {index} has inconsistent real-DOF difference")
         if bool(row["nan"]):
             raise ValueError(f"row {index} reports a NaN training failure")
         if int(row["steps"]) <= 0:
@@ -137,8 +138,8 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
         if not str(row["git_sha"]) or not str(row["hardware"]):
             raise ValueError(f"row {index} lacks provenance strings")
 
-    if len(target_dofs) != 1:
-        raise ValueError("all four methods must use the same target real DOF")
+    if len(reference_dofs) != 1:
+        raise ValueError("all rows must use the same Complex Sinh DOF reference")
     for method, seeds in by_method.items():
         if seeds != expected_seeds:
             raise ValueError(

@@ -22,7 +22,7 @@ from osc_common import (  # noqa: E402
     ScaledSin,
     build_model,
     build_siren,
-    formal_architecture_budgets,
+    formal_architecture_specs,
     n_params,
 )
 
@@ -159,28 +159,26 @@ def test_complex_sinh_initialization_is_frequency_rich_and_scalar_output():
 
 
 @pytest.mark.parametrize("split_real", [False, True])
-def test_four_method_parameter_budgets_are_within_five_percent(split_real):
-    budgets = formal_architecture_budgets(
+def test_four_formal_methods_use_literal_width_128(split_real):
+    specs = formal_architecture_specs(
         2,
         depth=4,
-        complex_width=128,
+        literal_width=128,
         split_real_baselines=split_real,
         omega0=2 * math.pi,
         fourier_sigma=math.pi,
     )
-    assert set(budgets) == set(FORMAL_VARIANTS)
-    assert budgets["complex_sinh"].width == 128
-    assert all(budget.width != 64 for budget in budgets.values())
-    assert all(budget.relative_error <= 0.05 for budget in budgets.values())
+    assert set(specs) == set(FORMAL_VARIANTS)
+    assert all(spec.width == 128 for spec in specs.values())
 
-    for variant, budget in budgets.items():
+    for variant, spec in specs.items():
         model, _ = build_model(
             variant,
             2,
-            budget.width,
+            spec.width,
             4,
             omega0=2 * math.pi,
             fourier_sigma=math.pi,
         )
-        multiplier = 2 if budget.representation == "split_real" else 1
-        assert multiplier * n_params(model) == budget.real_dof
+        multiplier = 2 if spec.representation == "split_real" else 1
+        assert multiplier * n_params(model) == spec.real_dof

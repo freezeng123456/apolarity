@@ -6,11 +6,11 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-from osc_common import ArchitectureBudget, FORMAL_VARIANTS, formal_architecture_budgets
+from osc_common import ArchitectureSpec, FORMAL_VARIANTS, formal_architecture_specs
 
 
 PROTOCOL_ID = "jsc_v2"
-COMPLEX_REFERENCE_WIDTH = 128
+FORMAL_WIDTH = 128
 FORMAL_METHODS = FORMAL_VARIANTS
 SEEDS = (0, 1, 2, 3, 4)
 BUDGET_SECONDS = 1200.0
@@ -24,7 +24,6 @@ COLLOCATION_PROTOCOL = "paired_seed_v1"
 EVALUATION_PROTOCOL = "fixed_seed_12345_n8192_v1"
 HISTORY_EVERY_STEPS = 20
 HISTORY_EVAL_N = 4096
-PARAMETER_TOLERANCE = 0.05
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULT_ROOT = ROOT / "experiments" / "results" / PROTOCOL_ID
@@ -47,11 +46,11 @@ class AtomicTask:
             return f"d{self.dimension}_o{self.order}"
         return f"a{self.sweep}"
 
-    def budgets(self) -> dict[str, ArchitectureBudget]:
-        return formal_architecture_budgets(
+    def specs(self) -> dict[str, ArchitectureSpec]:
+        return formal_architecture_specs(
             self.dimension,
             depth=DEPTH,
-            complex_width=COMPLEX_REFERENCE_WIDTH,
+            literal_width=FORMAL_WIDTH,
             split_real_baselines=self.split_real_baselines,
             omega0=self.omega0,
             fourier_sigma=self.fourier_sigma,
@@ -135,15 +134,14 @@ def all_tasks() -> tuple[AtomicTask, ...]:
     )
 
 
-def validate_budget_table(task: AtomicTask) -> dict[str, ArchitectureBudget]:
-    budgets = task.budgets()
-    if set(budgets) != set(FORMAL_METHODS):
-        raise ValueError("parameter table does not contain the four formal methods")
-    for budget in budgets.values():
-        if budget.width == 64:
-            raise ValueError("jsc_v2 rejects formal H=64 output")
-        if budget.relative_error > PARAMETER_TOLERANCE:
+def validate_architecture_table(task: AtomicTask) -> dict[str, ArchitectureSpec]:
+    specs = task.specs()
+    if set(specs) != set(FORMAL_METHODS):
+        raise ValueError("architecture table does not contain the four formal methods")
+    for spec in specs.values():
+        if spec.width != FORMAL_WIDTH:
             raise ValueError(
-                f"{budget.method} parameter mismatch {budget.relative_error:.2%}"
+                f"jsc_v2 requires literal H={FORMAL_WIDTH}; "
+                f"{spec.method} has H={spec.width}"
             )
-    return budgets
+    return specs

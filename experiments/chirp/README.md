@@ -14,9 +14,8 @@ Liu 2020). Removes the "separable sine" confound present in the other families.
 
 The three sweep values are formal `jsc_v2` settings. The only formal methods
 are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
-\(H=128\) defines the true trainable real-parameter budget; external baselines
-receive automatically matched integer widths with at most \(5\%\) mismatch.
-\(H=64\) is not run or discussed.
+and all three baselines use literal hidden width \(H=128\). Trainable real
+parameter counts are reported separately and are not used to rescale widths.
 
 ## Current outputs
 

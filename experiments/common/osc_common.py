@@ -356,8 +356,8 @@ COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit"}
 def variant_width(variant: str, H: int, mult: float = 1.0) -> int:
     """Return an explicitly requested literal width.
 
-    Formal runners call :func:`matched_width` first; this compatibility helper
-    never performs hidden rescaling at model-construction time.
+    The formal protocol passes H=128 to every architecture. This compatibility
+    helper never performs hidden rescaling at model-construction time.
     """
     return H
 
@@ -403,12 +403,12 @@ def n_params(model: nn.Module) -> int:
 
 
 @dataclass(frozen=True)
-class ArchitectureBudget:
+class ArchitectureSpec:
     method: str
     width: int
     real_dof: int
-    target_real_dof: int
-    relative_error: float
+    reference_real_dof: int
+    relative_dof_difference: float
     representation: str
 
 
@@ -445,98 +445,54 @@ def architecture_real_dof(
     return multiplier * n_params(model)
 
 
-def matched_width(
-    variant: str,
-    d: int,
-    depth: int,
-    target_real_dof: int,
-    *,
-    representation: str = "real",
-    out: int = 1,
-    omega0: float = OMEGA0,
-    fourier_sigma: float = 2.0,
-    max_relative_error: float = 0.05,
-    max_width: int = 1024,
-) -> ArchitectureBudget:
-    """Choose the integer width closest to a real-DOF target."""
-    if variant == "complex_sinh":
-        raise ValueError("complex_sinh is the capacity reference, not a matched baseline")
-    widths = range(2, max_width + 1, 2) if variant == "fourier" else range(1, max_width + 1)
-    best: ArchitectureBudget | None = None
-    for width in widths:
-        dof = architecture_real_dof(
-            variant,
-            d,
-            width,
-            depth,
-            representation=representation,
-            out=out,
-            omega0=omega0,
-            fourier_sigma=fourier_sigma,
-        )
-        relative_error = abs(dof - target_real_dof) / target_real_dof
-        candidate = ArchitectureBudget(
-            variant,
-            width,
-            dof,
-            target_real_dof,
-            relative_error,
-            representation,
-        )
-        if best is None or candidate.relative_error < best.relative_error:
-            best = candidate
-        if dof > target_real_dof and best is not None:
-            break
-    if best is None or best.relative_error > max_relative_error:
-        error = math.inf if best is None else best.relative_error
-        raise ValueError(
-            f"no {variant} integer width matches {target_real_dof} DOF within "
-            f"{max_relative_error:.1%}; best error={error:.2%}"
-        )
-    return best
-
-
-def formal_architecture_budgets(
+def formal_architecture_specs(
     d: int,
     depth: int = 4,
     *,
-    complex_width: int = 128,
+    literal_width: int = 128,
     split_real_baselines: bool = False,
     omega0: float = OMEGA0,
     fourier_sigma: float = 2.0,
-) -> dict[str, ArchitectureBudget]:
-    """Build the four-method parameter table for one problem representation."""
-    target = architecture_real_dof(
+) -> dict[str, ArchitectureSpec]:
+    """Build the fixed-literal-width four-method architecture table.
+
+    Real trainable DOF is reported for transparency but is not used to change
+    any method's width.
+    """
+    reference = architecture_real_dof(
         "complex_sinh",
         d,
-        complex_width,
+        literal_width,
         depth,
         representation="native_complex",
         omega0=omega0,
         fourier_sigma=fourier_sigma,
     )
-    budgets = {
-        "complex_sinh": ArchitectureBudget(
-            "complex_sinh",
-            complex_width,
-            target,
-            target,
-            0.0,
-            "native_complex",
+    specs: dict[str, ArchitectureSpec] = {}
+    for variant in FORMAL_VARIANTS:
+        representation = (
+            "native_complex"
+            if variant == "complex_sinh"
+            else ("split_real" if split_real_baselines else "real")
         )
-    }
-    representation = "split_real" if split_real_baselines else "real"
-    for variant in FORMAL_VARIANTS[1:]:
-        budgets[variant] = matched_width(
+        dof = architecture_real_dof(
             variant,
             d,
+            literal_width,
             depth,
-            target,
             representation=representation,
             omega0=omega0,
             fourier_sigma=fourier_sigma,
         )
-    return budgets
+        specs[variant] = ArchitectureSpec(
+            variant,
+            literal_width,
+            dof,
+            reference,
+            abs(dof - reference) / reference,
+            representation,
+        )
+    return specs
 
 
 # ---------------------------------------------------------------------------
