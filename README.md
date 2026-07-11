@@ -38,64 +38,65 @@ src/apolarity/
   operators.py       # single_monomial_partial entry point
 experiments/
   common/            # shared harness (osc_common.py)
-  tools/             # plot_width.py, build_width_tables.py (figures + LaTeX tables)
+  tools/             # jsc_v2-only figure and LaTeX-table builders
   <family>/          # one PDE family each: exp_*.py + run.sh + README.md + data/
-  core_method/       # micro-benchmark + manufactured 6th-order PINN (paper Section 5)
-  archived/          # superseded experiments (see archived/progress.md)
+  core_method/       # implementation diagnostics
+  archived/          # historical implementation diagnostics
 docs/
-  beamer/  apolarity_report_zh.tex    # Chinese slide deck (17 pages)
-  paper/   jsc_paper_main.tex         # JSC paper draft (12 pages)
+  beamer/  apolarity_report_zh.tex
+  paper/   jsc_paper_main.tex
 scripts/
-  cuda_env.sh                         # CUDA loader for the T4 host
-  run_widthstudy.sh                   # 600s width-robustness benchmark driver (archived suite)
-  run_jsc_main3.sh                    # JSC main text: poly2d + chirp + Maxwell (1200s each)
-  run_maxwell_finish.sh               # add Maxwell seeds 3-4, merge, git push
+  run_jsc_main3.sh                    # launch exactly one jsc_v2 setting
+  validate_jsc_results.py             # validate one atomic result bundle
 tests/
 ```
 
-See `experiments/README.md` for the oscillatory / high-order PDE families and how
-to reproduce the figures and tables.
+See `experiments/README.md` for the frozen experiment protocol.
 
-## Quick benchmark
+## Experiment status
 
-```bash
-source scripts/cuda_env.sh
-PYTHONPATH=src python3.11 experiments/core_method/benchmark_single_monomial.py \
-  --device auto --dtype float64 --d 8 --batch 8 \
-  --hidden 64 --depth 4 --activation sinh --warmup 5 --repeats 60 \
-  --methods direct_autodiff,polarization_jet,waring_complex_jet \
-  --alphas '111;1111;1122;111111;111122;112233;123456' \
-  --out results/single_monomial_value.csv
-```
+All `experiments/*/data/` directories have been cleared. There are currently no
+formal experiment results. Paper figures and tables are **TBD** and must not be
+inferred from historical outputs.
 
-## Manufactured 6th-order PINN (paper Section 5)
+The only formal methods are:
 
-```bash
-source scripts/cuda_env.sh
-PYTHONPATH=src python3.11 experiments/core_method/train_pinn_ch_sixth_order.py
-```
+- `complex_sinh` (Complex Sinh, the proposed method);
+- SIREN;
+- mFF-PINN;
+- MscaleDNN-2-sin.
 
-The three backends compared are `direct_autodiff`, `polarization_jet`,
-and `waring_complex_jet`. Results for the four-dimensional manufactured
-sixth-order PDE are reported in the paper, Section 5.
+The only formal protocol is `jsc_v2`. Its capacity reference is the true
+trainable real-degree-of-freedom budget of Complex Sinh at \(H=128\). Each
+external baseline is assigned the closest integer width automatically, with at
+most \(5\%\) parameter-budget mismatch. \(H=64\) is neither run nor discussed.
 
-## Oscillatory / high-order PDE benchmark
+The preregistered settings are:
 
-**JSC main text (three 20-minute runs):** polyharmonic 2D, chirp (\(a=1,2,3\)),
-Maxwell — each 1200 s, 5 seeds. See `experiments/README.md`.
+- Poly: \(d\in\{2,3\}\), operator order \(2,4,6\), including \(d=3\), order 6;
+- Chirp: \(a\in\{1,2,3\}\);
+- Maxwell: \(a\in\{2,4,6\}\).
+
+Launch exactly one setting through `scripts/run_jsc_main3.sh`:
 
 ```bash
-bash scripts/run_jsc_main3.sh                   # all three (or per-family run.sh)
-bash scripts/run_maxwell_finish.sh              # Maxwell seeds 3-4 only
+bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh chirp --sweep 2
+bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
 
-Full archived suite (600 s, 9 families) and figure regeneration:
+Each command above is a separate example; do not combine settings into one
+launch. A formal output bundle is admissible only after
+`validate_jsc_results.py` succeeds, for example:
 
 ```bash
-bash scripts/run_widthstudy.sh                  # all families (long, archived)
-python experiments/tools/plot_width.py          # -> docs/paper/figures/fig_*.pdf
-python experiments/tools/build_width_tables.py  # -> docs/paper/tables/w_*.tex
+python scripts/validate_jsc_results.py \
+  experiments/results/jsc_v2/poly_d3_o6
 ```
+
+Historical or archived runners, every family-local `run.sh`, and scripts under
+`experiments/core_method/` are retained only for implementation diagnosis.
+Their outputs are not paper evidence.
 
 ## API
 
@@ -109,30 +110,19 @@ deriv = single_monomial_partial(model, x, alpha, backend="auto")
 (for instance `(0, 0, 1)` for the third-order partial that differentiates
 twice in coordinate 0 and once in coordinate 1). For complex-parameter
 networks, pass an `nn.Sequential` whose linear layers carry
-`torch.complex128` weights; the jet rules dispatch on tensor dtype.
-
-## Environment (Tesla T4 host)
-
-The host carries `python3.11` and `torch 2.5.1+cu121` at
-`/usr/local/lib/python3.11/site-packages/`, but the NVIDIA wheel
-shared libraries are not on the default `LD_LIBRARY_PATH`. The
-canonical loader is committed:
-
-```bash
-source scripts/cuda_env.sh
-python3.11 -c "import torch; print(torch.cuda.get_device_name(0))"
-# -> Tesla T4
-```
+`torch.complex128` weights; the jet rules dispatch on tensor dtype. Inputs must
+have shape `(batch, d)` and models must return one scalar per input with shape
+`(batch, 1)`; invalid coordinate indices and multi-output models are rejected.
 
 ## Documents
 
-- Slide deck (Chinese, 17 pages):
+- Slide deck:
 
   ```bash
   cd docs/beamer && xelatex -interaction=nonstopmode apolarity_report_zh.tex
   ```
 
-- Paper draft (12 pages):
+- Paper draft:
 
   ```bash
   cd docs/paper && xelatex -interaction=nonstopmode jsc_paper_main.tex

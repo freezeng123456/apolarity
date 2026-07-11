@@ -82,12 +82,12 @@
 \end{frame}
 
 \begin{frame}{Concrete pain point}
-  $p=6$, depth-4 MLP, batch 8, hidden 64 on a Tesla T4:
+  For a depth-4 MLP and a sixth-order partial:
   \begin{itemize}
-    \item Each forward pass $\approx 1\,\mathrm{ms}$.
     \item Six nested \texttt{autograd.grad} calls: graph carries six layers
           of higher-order tape; replay + dispatch dominate.
-    \item Wall-clock per single $\dal u$ call: \alert{tens of milliseconds}.
+    \item The exact timing and memory comparison is \alert{TBD} after the
+          reset benchmark is executed.
   \end{itemize}
 
   \medskip

@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# High-wavenumber Helmholtz (+ anisotropic) -- 600s width study.
-# Real baselines @128, complex sinh @{128,64}, depth 4, 2 seeds, --history.
-set -u; cd "$(dirname "$0")"
-PY=/root/miniconda3/envs/emlnn/bin/python
+# DIAGNOSTIC ONLY: H=128 implementation checks; not jsc_v2 or paper evidence.
+set -euo pipefail; cd "$(dirname "$0")"
+source ../../scripts/cuda_env.sh
+PY="${APOLARITY_PYTHON:-/usr/bin/python3.11}"
 C="--seconds 600 --seeds 2 --depth 4 --lr-schedule cosine --history"
 REAL=complex_sinh,fourier,siren,mscale
 mkdir -p data
+echo "WARNING: diagnostic-only output (not jsc_v2); do not use for paper." >&2
 
 # --- isotropic wavenumber sweep ---
 $PY exp_helmholtz_highk.py $C --hidden 128 --variants $REAL        --sweeps 2,4,6,8,10 --out data/helmholtz_h128.csv
-$PY exp_helmholtz_highk.py $C --hidden 64  --variants complex_sinh --sweeps 2,4,6,8,10 --out data/helmholtz_h64.csv
 
 # --- anisotropic (1,4) gradient-pathology case ---
 $PY exp_helmholtz_highk.py $C --hidden 128 --variants $REAL        --aniso --out data/helmholtz_aniso_h128.csv
-$PY exp_helmholtz_highk.py $C --hidden 64  --variants complex_sinh --aniso --out data/helmholtz_aniso_h64.csv

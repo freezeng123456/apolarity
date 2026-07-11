@@ -1,24 +1,42 @@
-# Polyharmonic order sweep (1D + 2D)
+# Polyharmonic order sweep
 
 **Problem.** Controlled order axis at fixed frequency.
-- 2D: \(\Delta^m u=(-2\pi^2)^m u\) on \((-1,1)^2\), \(u=\sin\pi x\sin\pi y\).
+- \(d\)D: \(\Delta^m u=(-d\pi^2)^m u\) on \((-1,1)^d\),
+  \(u=\prod_{i=1}^d\sin(\pi x_i)\).
 - 1D: \(d^{2m}u/dx^{2m}=(-\pi^2)^m u\) on \((-1,1)\), \(u=\sin\pi x\).
 Navier (simply-supported) BCs: \(\Delta^j u=0\), \(j=0..m-1\). Only the operator
 **order** changes across the sweep — no frequency confound.
 
 **Source.** Vahab 2022 (high-order generalization of the biharmonic benchmark).
 
-**Sweep.** order \(2m\): 1D \(\{2,4,6,8,10\}\), 2D \(\{2,4,6\}\). Init 1D
-\(\omega_0=\pi\); 2D \(\omega_0=10\); \(\sigma=\pi\). (An order-\(m\) operator
-amplifies init frequency like \(\omega^m\), so \(\omega_0\) must sit at the target.)
+**Formal `jsc_v2` grid.** \(d\in\{2,3\}\), order
+\(2m\in\{2,4,6\}\). The \(d=3\), order-6 case is required, not an optional
+follow-up. The frozen initialization is \(\omega_0=2\pi\) and
+\(\sigma=\pi\). An order-\(m\) operator amplifies initialization frequency like
+\(\omega^m\), so the initialization must remain part of the protocol.
 
-## Outputs (`data/`)
-Width study (600 s, 2 seeds): `poly1d_h{128,64}.*` and `poly2d_h{128,64}.*`
-(`.csv` + `.json` + `_history.json`).
+## Formal comparison
 
-## Reproduce
+The only formal methods are `complex_sinh`, SIREN, mFF-PINN, and
+MscaleDNN-2-sin under `protocol_id=jsc_v2`. Complex Sinh \(H=128\) defines the
+true trainable real-parameter budget. External baselines receive automatically
+matched integer widths with at most \(5\%\) mismatch. \(H=64\) is not run or
+discussed.
+
+## Current outputs
+
+`data/` is empty. No formal Poly result exists, and all Poly paper figures and
+tables are **TBD**.
+
+## Launch one formal setting
+
 ```bash
-bash run.sh
+bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+python scripts/validate_jsc_results.py \
+  experiments/results/jsc_v2/poly_d3_o6
 ```
-Figures: `docs/paper/figures/fig_poly1d.pdf`, `fig_poly2d.pdf` (via
-`experiments/tools/plot_width.py`).
+
+Choose exactly one allowed `--dim` and one allowed `--order` per launch. The
+family-local `run.sh`, historical 1D/width-study commands, and archived runners
+are implementation diagnostics only; their outputs cannot be used as paper
+evidence.

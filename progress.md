@@ -1,0 +1,202 @@
+# Project progress
+
+Last updated: 2026-07-11
+
+## Current state
+
+The experiment repository is reset. All prior CSV/JSON/history files, logs,
+PID files, generated figures, compiled documents, result HTML, and the
+hard-coded result Canvas are absent. Manuscript and slide result sections now
+contain `TBD` placeholders rather than legacy measurements.
+
+No formal experiment was launched during this reset. There is no active PID,
+ETA, or retained error number. New data is admissible only when it carries
+`protocol_id=jsc_v2` and passes `scripts/validate_jsc_results.py`.
+
+The three representative smoke tasks have now completed successfully. Their
+temporary result bundles are not scientific results and are deleted before
+Git upload.
+
+## Formal methods
+
+The formal registry contains exactly four methods:
+
+1. **Complex Sinh**: the paper method; complex128, four trainable sinh hidden
+   layers, and frequency-rich complex first-layer initialization.
+2. **SIREN**: explicit `sin(omega * Linear(x))` parameterization, upstream
+   weight initialization, and default first/hidden omega of 30.
+3. **mFF-PINN**: two frozen Fourier branches with scales `(1, sigma)`, a shared
+   four-layer tanh trunk, branch concatenation, and a linear output.
+4. **MscaleDNN-2-sin**: independent sine subnets evaluated at fixed input
+   scales `(1, 2, 4)`, initialized with the original Gaussian rule and summed.
+
+`real_sinh` is removed. `tanh`, Cauchy, and `complex_sinh_noinit` are auxiliary
+implementation checks and are not visible to the formal runner.
+
+The complete evidence chain is in
+`docs/BASELINE_IMPLEMENTATION_AUDIT.md`. Pinned upstream commits are:
+
+- SIREN: `vsitzmann/siren@4df34baee3f0f9c8f351630992c1fe1f69114b5f`;
+- MultiscalePINNs: `PredictiveIntelligenceLab/MultiscalePINNs@ba7d6bb8af6cabe348def80bed72110f5f0e3621`;
+- general Fourier-feature cross-reference:
+  `tancik/fourier-feature-networks@9c110c31ce3794222fff408ac27bbf74d8fe8993`;
+- original MscaleDNN:
+  `xuzhiqin1990/mscalednn@1c6c6f69e9ad586ccaea90a8e8fa0d07313460b2`;
+- PyTorch MscaleDNN cross-reference:
+  `Blue-Giant/MscaleDNN_torch@b63796dd42a2020a0c2b241b1c824cc0405fad91`.
+
+The GitHub CLI is installed locally, but this host has no authenticated GitHub
+token. Immutable public API/raw source URLs were therefore used for the audit;
+all evidence links are commit-pinned.
+
+## Parameter-budget definition
+
+The only capacity reference is a native-complex Complex Sinh model at `H=128`.
+A complex trainable scalar counts as two real degrees of freedom. Frozen
+Fourier maps do not count. Maxwell real baselines count both split-real
+component networks.
+
+The nearest integer width is selected automatically and rejected if its real
+DOF differs by more than 5%. Current dry-run tables are:
+
+- scalar 2D: Complex Sinh `H=128, 100098 DOF`; SIREN
+  `H=181, 99551`; mFF-PINN `H=158, 100805`; MscaleDNN-2-sin
+  `H=104, 99531`;
+- scalar 3D: Complex Sinh `H=128, 100354 DOF`; SIREN
+  `H=182, 100829`; mFF-PINN `H=158, 100805`; MscaleDNN-2-sin
+  `H=104, 99843`;
+- Maxwell split-real: Complex Sinh `H=128, 100098 DOF`; SIREN
+  `H=128, 100098`; mFF-PINN `H=112, 101698`; MscaleDNN-2-sin
+  `H=73, 98994`.
+
+Formal H=64 output is rejected by both protocol and validator.
+
+## Frozen protocol
+
+`experiments/common/protocol.py` is the single source of truth:
+
+- protocol: `jsc_v2`;
+- wall-clock: 1200 seconds per method and seed;
+- seeds: `0..4`;
+- depth: four trainable hidden layers;
+- collocation: 4096 interior and 512 boundary points;
+- optimizer schedule: Adam, cosine learning-rate decay;
+- paired collocation: `paired_seed_v1`;
+- fixed held-out evaluation: `fixed_seed_12345_n8192_v1`.
+
+Preregistered settings:
+
+- Poly: `d={2,3}` and `order={2,4,6}`, including `d=3, order=6`;
+- Chirp: `a={1,2,3}`;
+- Maxwell: `a={2,4,6}` with split-real external baselines.
+
+There are 12 atomic tasks. Each task contains
+`1 setting x 4 methods x 5 seeds = 20` runs, or 24000 seconds of nominal
+training time. Tasks are not chained or scheduled by the repository.
+
+## Experiment todo tracker
+
+Status meanings:
+
+- `READY`: protocol, parameter table, runner, and smoke path are ready, but no
+  formal run has been authorized;
+- `RUNNING`: one detached formal task is active;
+- `VALIDATING`: training finished and the canonical bundle is under review;
+- `DONE`: the 20-row bundle passed validation and manual log review;
+- `BLOCKED`: a concrete implementation, data, or hardware issue must be fixed.
+
+| Task ID | Setting | Status | Formal output |
+|---|---|---|---|
+| `poly_d2_o2` | Poly `d=2`, order 2 | READY | none |
+| `poly_d2_o4` | Poly `d=2`, order 4 | READY | none |
+| `poly_d2_o6` | Poly `d=2`, order 6 | READY | none |
+| `poly_d3_o2` | Poly `d=3`, order 2 | READY | none |
+| `poly_d3_o4` | Poly `d=3`, order 4 | READY | none |
+| `poly_d3_o6` | Poly `d=3`, order 6 | READY | none |
+| `chirp_a1` | Chirp `a=1` | READY | none |
+| `chirp_a2` | Chirp `a=2` | READY | none |
+| `chirp_a3` | Chirp `a=3` | READY | none |
+| `maxwell_a2` | Maxwell `a=2` | READY | none |
+| `maxwell_a4` | Maxwell `a=4` | READY | none |
+| `maxwell_a6` | Maxwell `a=6` | READY | none |
+
+No task is prescheduled. Only one row moves from `READY` to `RUNNING` after the
+user names that exact task. Each completed task must be validated and reviewed
+before another task is selected.
+
+## Runner and result contract
+
+`scripts/run_jsc_main3.sh` launches exactly one detached atomic task with
+`setsid + nohup`. It never commits or pushes. Examples:
+
+```bash
+bash scripts/run_jsc_main3.sh --dry-run poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh chirp --sweep 2
+bash scripts/run_jsc_main3.sh maxwell --sweep 4
+```
+
+Formal execution requires a clean Git worktree so the recorded SHA identifies
+the code. Smoke output is isolated under `experiments/results/_smoke/`.
+
+Every canonical row records the protocol and task IDs, Git SHA/dirty flag,
+problem setting, actual width, real DOF, representation, seed, collocation and
+evaluation protocols, all method frequency/scale settings, budget, optimizer,
+steps, and hardware. The validator requires 20 unique method/seed rows, all
+five seeds, finite metrics, nonempty monotone histories, one DOF target, and
+the exact protocol metadata.
+
+The plot and table tools read only task directories carrying a `VALIDATED`
+marker and canonical jsc_v2 files. With no validated data they exit cleanly
+without generating evidence.
+
+## Verification
+
+- Full test suite: **68 passed**.
+- Expected warnings: 13 PyTorch warnings about complex modules.
+- Architecture tests cover upstream SIREN initialization/omega placement,
+  mFF branch sharing/mapping, Mscale explicit scaling/initialization, Complex
+  Sinh initialization, output shapes, and parameter budgets.
+- Jet-vs-direct tests cover low/high-order input derivatives and parameter
+  gradients through scaled sine, Fourier branches, and Mscale subnets.
+- Existing backend, complex-gradient, 3D Delta-cubed, collocation RNG,
+  Gaussian-Hermite, and PDE formula tests remain passing.
+- Modified Python files have no IDE linter diagnostics.
+- Python compilation, shell syntax, and `git diff --check` pass.
+- The atomic `poly d=3, order=6` dry run emits a 20-run manifest and a valid
+  four-method parameter table.
+
+## Smoke status
+
+The quick smoke phase used one seed, 32 interior points, 16 boundary points,
+and a one-second budget per method. It exercised the hardest Poly derivative
+path plus representative Chirp and Maxwell paths:
+
+- `poly_d3_o6`: all four methods ran, wrote histories, and passed smoke
+  validation;
+- `chirp_a2`: all four methods ran, wrote histories, and passed smoke
+  validation;
+- `maxwell_a4`: native-complex and all three split-real baselines ran, wrote
+  histories, and passed smoke validation.
+
+All smoke metrics were finite and no run reported NaN. The one-second values
+are deliberately not retained or interpreted as accuracy measurements.
+
+## Readiness review
+
+Implementation readiness checks pass:
+
+- source-pinned baseline audit: complete;
+- four formal method specifications: complete;
+- unexplained architecture branches: none in the formal registry;
+- parameter mismatch at most 5%: pass;
+- protocol and 12-setting grid: frozen;
+- runner/validator/plot/table chain: implemented and tested;
+- old results and hard-coded empirical conclusions: removed;
+- formal experiment process: none running.
+
+The implementation, audit, parameter tables, and smoke paths are ready. After
+the reset changes are committed and pushed, the remaining gate is explicit
+user selection of one exact atomic task. Until a validated formal bundle
+exists, all paper figures, tables, timings, and accuracy conclusions remain
+`TBD`.

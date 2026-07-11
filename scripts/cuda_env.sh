@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Source this file to make python3.11 + torch (cu121 wheel) find NVIDIA shared libs
-# AND select the CUDA visible device on the T4 host.
+# AND select the CUDA visible device on the active experiment host.
 #
 # Usage:
 #   source scripts/cuda_env.sh
 #   python3.11 experiments/benchmark_single_monomial.py ...
 #
-# Path layout discovered on the host (2026-06-02):
+# Path layout verified on the H20 host (2026-07-10):
 #   - python3.11 binary:    /usr/bin/python3.11
 #   - torch + nvidia wheels: /usr/local/lib/python3.11/site-packages/nvidia/<cmp>/lib
-#   - GPU:                  Tesla T4 (CUDA 12.2 driver, 12.1 cu wheel)
+#   - GPU:                  NVIDIA H20 (CUDA 12.x driver, 12.1 cu wheel)
 #
 # This script is committed so any future tool / experiment in apolarity/ can
-# rely on a single canonical entry point for the T4 environment.
+# rely on a single canonical entry point for the experiment environment.
 
 _NV_BASE=/usr/local/lib/python3.11/site-packages/nvidia
 
@@ -33,7 +33,7 @@ ${LD_LIBRARY_PATH:-}"
 
 unset _NV_BASE
 
-# Default to the only T4 device on this host.
+# Default to the first visible CUDA device.
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 
 # Convenience alias: prefer python3.11 as the project interpreter.

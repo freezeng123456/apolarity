@@ -56,7 +56,7 @@ def _source(a):
     return f
 
 
-def make_problems(sweeps=(2, 4, 6, 8)):
+def make_problems(sweeps=(2, 4, 6)):
     probs = []
     for a in sweeps:
         probs.append(LinearProblem(
@@ -73,7 +73,7 @@ def make_problems(sweeps=(2, 4, 6, 8)):
 
 if __name__ == "__main__":
     ap = default_argparser(seconds=80.0)
-    ap.add_argument("--sweeps", default="2,4,6,8")
+    ap.add_argument("--sweeps", default="2,4,6")
     args = ap.parse_args()
     sweeps = [int(s) for s in args.sweeps.split(",") if s]
     variants = [v for v in args.variants.split(",") if v]

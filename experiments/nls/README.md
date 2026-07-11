@@ -11,12 +11,19 @@ pair (RVPINN).
 **Sweep.** temporal frequency \(k\in\{1,2,4\}\). Init \(\omega_0=\max(10,2kL_T)\),
 \(\sigma=\max(2,kL_T)\), \(L_T=\pi/4\).
 
-## Outputs (`data/`)
-Width study (600 s, 2 seeds): `nls_h{128,64}.{csv,json}` + `*_history.json`.
-Real baselines here are `siren,fourier,tanh` (split-real).
+## Experiment status
 
-## Reproduce
+This family is outside the formal `jsc_v2` grid. `data/` is empty, there are no
+formal results, and its paper figure and table are **TBD**.
+
+The only formal methods in this repository are `complex_sinh`, SIREN,
+mFF-PINN, and MscaleDNN-2-sin, compared only through the `jsc_v2` atomic
+runner. The family-local launcher below is retained for implementation
+diagnosis only:
+
 ```bash
 bash run.sh
 ```
-Figure: `docs/paper/figures/fig_nls.pdf` (via `experiments/tools/plot_width.py`).
+
+Outputs from this `run.sh`, historical width studies, or archived runners
+cannot be used as paper evidence.

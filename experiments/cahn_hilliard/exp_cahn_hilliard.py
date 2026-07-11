@@ -82,8 +82,10 @@ def ch_source(u_exact, x, order):
 def run(cases, variants, args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sk = sched_kwargs(args)
+    seed_start = getattr(args, "seed_start", 0)
+    seed_ids = list(range(seed_start, seed_start + args.seeds))
     print(f"device={device} hidden={args.hidden} depth={args.depth} "
-          f"budget={args.seconds}s seeds={args.seeds} lr_schedule={sk['lr_schedule']}", flush=True)
+          f"budget={args.seconds}s seeds={seed_ids} lr_schedule={sk['lr_schedule']}", flush=True)
     rows = []
     for a, order in cases:
         name = f"ch{order}_a{a}"
@@ -97,17 +99,18 @@ def run(cases, variants, args):
         eval_r = torch.empty(8192, 2, device=device, dtype=torch.float64).uniform_(-1, 1, generator=g)
         print(f"\n=== {name} (order={order}, a={a}) ===", flush=True)
         print(f"{'variant':<16}{'params':>8}{'steps':>7}{'ms/step':>9}{'L_int':>11}{'L2_err':>12}", flush=True)
-        for seed in range(args.seeds):
+        for seed in seed_ids:
+            train_gen = torch.Generator(device=device).manual_seed(seed)
+            x_int = sample_interior(args.n_int, 2, device=device, generator=train_gen)
+            x_bc = sample_boundary(args.n_bc, 2, device=device, generator=train_gen)
+            f_int = ch_source(u_exact, x_int, order).unsqueeze(-1).to(torch.float64)
+            bc_targets = [u_exact(x_bc) if not al
+                          else autograd_partial(u_exact, x_bc, al) for al in bc_alphas]
             for v in variants:
                 torch.manual_seed(seed)
                 model, mdt = build_model(v, 2, args.hidden, args.depth,
                                          omega0=omega0, fourier_sigma=sigma)
                 model = model.to(device)
-                x_int = sample_interior(args.n_int, 2, device=device)
-                x_bc = sample_boundary(args.n_bc, 2, device=device)
-                f_int = ch_source(u_exact, x_int, order).unsqueeze(-1).to(torch.float64)
-                bc_targets = [u_exact(x_bc) if not al
-                              else autograd_partial(u_exact, x_bc, al) for al in bc_alphas]
 
                 def loss_fn():
                     R = ch_terms_net(model, x_int.to(mdt), order).unsqueeze(-1)
@@ -137,9 +140,19 @@ def run(cases, variants, args):
                                seconds=args.seconds, lr=args.lr, device=device, **sk)
                 rows.append({"problem": name, "order": order, "sweep": float(a),
                              "variant": v, "seed": seed, "params": n_params(model),
-                             "backend": "jet" if v in JET_VARIANTS else "autograd", **m})
+                             "backend": "jet" if v in JET_VARIANTS else "autograd",
+                             "hidden": args.hidden, "depth": args.depth,
+                             "budget_seconds": args.seconds, "n_int": args.n_int,
+                             "n_bc": args.n_bc, "lr": args.lr,
+                             "lr_schedule": sk["lr_schedule"], "omega0": omega0,
+                             "fourier_sigma": sigma,
+                             "collocation": "paired_seed_v1", **m})
                 print(f"{v:<16}{n_params(model):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
                       f"{m['L_int_last']:>11.2e}{m['L2_err']:>12.3e}  (seed {seed})", flush=True)
+                del model, loss_fn, eval_fn
+                if device.type == "cuda":
+                    torch.cuda.empty_cache()
+            del x_int, x_bc, f_int, bc_targets
     write_rows(rows, args.out or "results/cahn_hilliard.csv")
     return rows
 

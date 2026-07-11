@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Polyharmonic eigenmode -- a CONTROLLED ORDER SWEEP at FIXED frequency.
 
-  2D (default):  Delta^m u = (-S)^m u  on (-1,1)^2,  u = sin(pi x) sin(pi y),
-                 S = 2 pi^2.  Delta^m expands to (m+1) high-order jet terms.
+  dD:  Delta^m u = (-S)^m u  on (-1,1)^d,
+       u = product_i sin(pi x_i), S = d pi^2.
+       Delta^m expands into C(d+m-1,m) high-order jet terms.
   1D (--dim 1):  d^(2m)/dx^(2m) u = (-pi^2)^m u  on (-1,1),  u = sin(pi x),
                  S = pi^2.  The operator is a SINGLE monomial partial, so it is
                  cheap enough to push the order axis to 8, 10, 12.
@@ -21,6 +22,7 @@ omega0=10 stalled the high orders).  Defaults: 1D omega0=pi, 2D omega0=2pi.
 Run:
   python experiments/exp_polyharmonic.py --out results/polyharmonic.csv          # 2D
   python experiments/exp_polyharmonic.py --dim 1 --orders 2,4,6,8,10 --out ...   # 1D
+  python experiments/exp_polyharmonic.py --dim 3 --orders 2,4,6 --out ...         # 3D
 """
 from __future__ import annotations
 
@@ -34,27 +36,21 @@ _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 
 from osc_common import LinearProblem, laplacian_power_terms, run_linear_suite, default_argparser
 
 
-def _u2(x):
-    return torch.sin(math.pi * x[..., 0]) * torch.sin(math.pi * x[..., 1])
-
-
-def _u1(x):
-    return torch.sin(math.pi * x[..., 0])
+def _u_product(x):
+    return torch.sin(math.pi * x).prod(dim=-1)
 
 
 def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None):
-    if dim == 2:
-        S, u_exact = 2.0 * math.pi ** 2, _u2
-        om = omega0 if omega0 is not None else 2.0 * math.pi
-        fs = sigma if sigma is not None else math.pi
-    elif dim == 1:
-        S, u_exact = math.pi ** 2, _u1
-        om = omega0 if omega0 is not None else math.pi
-        fs = sigma if sigma is not None else math.pi
-    else:
-        raise ValueError("dim in {1,2}")
+    if dim < 1:
+        raise ValueError("dim must be positive")
+    S, u_exact = dim * math.pi ** 2, _u_product
+    default_omega0 = math.pi if dim == 1 else 2.0 * math.pi
+    om = omega0 if omega0 is not None else default_omega0
+    fs = sigma if sigma is not None else math.pi
     probs = []
     for order in orders:
+        if order < 2 or order % 2:
+            raise ValueError("polyharmonic orders must be positive even integers")
         m = order // 2
         lam = (-S) ** m                      # Delta^m u = (-S)^m u
         probs.append(LinearProblem(
@@ -71,7 +67,7 @@ def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None):
 if __name__ == "__main__":
     ap = default_argparser(seconds=120.0)
     ap.add_argument("--orders", default="2,4,6,8")
-    ap.add_argument("--dim", type=int, default=2, choices=[1, 2])
+    ap.add_argument("--dim", type=int, default=2)
     ap.add_argument("--omega0", type=float, default=None)
     ap.add_argument("--sigma", type=float, default=None)
     args = ap.parse_args()

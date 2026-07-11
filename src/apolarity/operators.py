@@ -26,6 +26,15 @@ def _alpha_tuple(alpha: Iterable[int]) -> tuple[int, ...]:
     return out
 
 
+def _validate_request(x: Tensor, alpha: tuple[int, ...]) -> tuple[int, int]:
+    if x.ndim != 2:
+        raise ValueError(f"x must have shape (batch, d); got {tuple(x.shape)}")
+    batch, d = x.shape
+    if any(idx < 0 or idx >= d for idx in alpha):
+        raise ValueError(f"alpha indices must lie in [0, {d}); got {alpha}")
+    return batch, d
+
+
 def _real_of(dtype: torch.dtype) -> torch.dtype:
     """Return the underlying real dtype (e.g. complex128 -> float64)."""
     if dtype == torch.complex128:
@@ -38,17 +47,27 @@ def _real_of(dtype: torch.dtype) -> torch.dtype:
 def direct_monomial_autodiff(model: nn.Module, x: Tensor, alpha: Iterable[int], *, create_graph: bool = True) -> Tensor:
     """Direct nested coordinate autodiff reference for one expanded multi-index."""
     alpha_t = _alpha_tuple(alpha)
+    batch, _d = _validate_request(x, alpha_t)
     x_req = x if x.requires_grad else x.detach().clone().requires_grad_(True)
     y = model(x_req)
+    if y.ndim != 2 or y.shape != (batch, 1):
+        raise ValueError(
+            "single_monomial_partial requires scalar model output with shape "
+            f"(batch, 1); got {tuple(y.shape)}"
+        )
     deriv = y
     for k, idx in enumerate(alpha_t):
         cg = create_graph or (k < len(alpha_t) - 1)
         s = deriv.sum()
-        # Explicit grad_outputs so this works for both real and complex outputs.
+        # PyTorch returns the conjugate Wirtinger derivative for a holomorphic
+        # complex output. Conjugating it recovers the analytic input derivative,
+        # matching directional Taylor jets and real-coordinate finite differences.
         grad = torch.autograd.grad(
             s, x_req, grad_outputs=torch.ones_like(s),
             create_graph=cg, retain_graph=True,
         )[0]
+        if grad.is_complex():
+            grad = grad.conj()
         deriv = grad[:, idx:idx + 1]
     return deriv
 
@@ -103,7 +122,7 @@ def single_monomial_partial(
     """
     alpha_t = _alpha_tuple(alpha)
     p = len(alpha_t)
-    B, d = x.shape
+    B, d = _validate_request(x, alpha_t)
 
     if backend == "direct_autodiff":
         return direct_monomial_autodiff(model, x, alpha_t, create_graph=create_graph)

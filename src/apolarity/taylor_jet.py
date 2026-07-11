@@ -43,7 +43,7 @@ identity z = 1 - y^2.
 
 Numerical correctness: verified against torch nested autograd to machine
 precision (max rel err < 5e-16 in fp64) for p up to 6 -- see
-tests/test_taylor_jet.py.
+tests/test_backend_equivalence.py.
 
 Memory and gradient backflow
 ============================
@@ -76,8 +76,8 @@ Risk profile (project-internal evaluation, 2026-05-11):
 - ``reverse`` and ``fd`` backends are NOT compiled (they contain
   ``torch.autograd.grad(create_graph=True)`` which Dynamo cannot trace).
 - ``loss.backward()`` through a compiled jet still flows to model parameters
-  (verified by tests/test_taylor_jet.py::test_jet_backward_to_theta_matches_reverse
-   when run with TAYLOR_JET_COMPILE=1).
+  (the eager path is covered by
+  tests/test_backend_equivalence.py::test_real_parameter_gradients_match_direct).
 - First compile on each net+p incurs ~1-30 s overhead (Inductor fusion +
   kernel selection); amortized over a 20-min training run.
 """
@@ -183,7 +183,9 @@ def _linear_params_for_term(weight: Tensor, bias: Tensor | None, term: Tensor) -
 
 
 def _is_sin_module(m: nn.Module) -> bool:
-    return m.__class__.__name__.lower() in {"sin", "sine", "sinactivation"}
+    return m.__class__.__name__.lower() in {
+        "sin", "sine", "scaledsin", "sinactivation"
+    }
 
 
 def _is_sinh_module(m: nn.Module) -> bool:
@@ -388,6 +390,9 @@ def _jet_forward_tensors(
         elif isinstance(layer, nn.Sigmoid):
             out = jet_sigmoid(TaylorJet(out)).terms
         elif _is_sin_module(layer):
+            omega0 = float(getattr(layer, "omega0", 1.0))
+            if omega0 != 1.0:
+                out = [term * omega0 for term in out]
             out = jet_sin(TaylorJet(out)).terms
         elif _is_sinh_module(layer):
             out = jet_sinh(TaylorJet(out)).terms
@@ -439,6 +444,25 @@ def _resolve_sequential_net(model: nn.Module) -> nn.Sequential:
     )
 
 
+def _jet_forward_model(model: nn.Module, jet: TaylorJet) -> TaylorJet:
+    """Run a jet through a sequential model or an explicit composite hook.
+
+    Composite experiment architectures (for example shared-trunk Fourier
+    branches and MscaleDNN subnets) expose ``jet_forward(TaylorJet)``.  Keeping
+    the hook at the model boundary lets them reuse the same primitive jet rules
+    without pretending that a branched graph is a flat ``nn.Sequential``.
+    """
+    hook = getattr(model, "jet_forward", None)
+    if callable(hook):
+        out = hook(jet)
+        if not isinstance(out, TaylorJet):
+            raise TypeError(
+                f"{type(model).__name__}.jet_forward must return TaylorJet"
+            )
+        return out
+    return jet_forward_sequential(_resolve_sequential_net(model), jet)
+
+
 def tp_directional_via_jet(
     model: nn.Module, xyt_input: Tensor, Z: Tensor, p: int,
 ) -> Tensor:
@@ -464,16 +488,19 @@ def tp_directional_via_jet(
     """
     if p < 1:
         raise ValueError(f"p must be >= 1; got {p}")
-    net = _resolve_sequential_net(model)
-
     B, K, d = Z.shape
     xyt_exp = xyt_input.unsqueeze(1).expand(B, K, d).reshape(B * K, d)
     Z_flat = Z.reshape(B * K, d)
 
     in_jet = TaylorJet.from_input(xyt_exp, Z_flat, p)
-    out_jet = jet_forward_sequential(net, in_jet)
+    out_jet = _jet_forward_model(model, in_jet)
 
     # out_jet.terms[p] is already T_p = g^{(p)}(0) / p!  (probabilist convention)
+    if out_jet.terms[p].numel() != B * K:
+        raise ValueError(
+            "Taylor-jet partials require scalar model output with one value per "
+            f"input; got output shape {tuple(out_jet.terms[p].shape)}"
+        )
     return out_jet.terms[p].reshape(B, K, 1)
 
 
@@ -488,14 +515,17 @@ def tp_directional_all_via_jet(
     """
     if p_max < 1:
         raise ValueError(f"p_max must be >= 1; got {p_max}")
-    net = _resolve_sequential_net(model)
-
     B, K, d = Z.shape
     xyt_exp = xyt_input.unsqueeze(1).expand(B, K, d).reshape(B * K, d)
     Z_flat = Z.reshape(B * K, d)
 
     in_jet = TaylorJet.from_input(xyt_exp, Z_flat, p_max)
-    out_jet = jet_forward_sequential(net, in_jet)
+    out_jet = _jet_forward_model(model, in_jet)
+    if out_jet.terms[0].numel() != B * K:
+        raise ValueError(
+            "Taylor-jet partials require scalar model output with one value per "
+            f"input; got output shape {tuple(out_jet.terms[0].shape)}"
+        )
 
     out_list: List[Tensor] = []
     for k in range(1, p_max + 1):

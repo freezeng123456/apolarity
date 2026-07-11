@@ -16,7 +16,6 @@ Architectures (variants)
 ------------------------
   complex_sinh : complex128 params, entire sinh activation  (THIS PROJECT)
                  physical solution Re(u); derivatives via complex Waring jet.
-  real_sinh    : float64 params, sinh activation (ablation of param type).
   tanh         : vanilla float64 tanh MLP.
   siren        : float64 sine MLP with SIREN init (periodic activations).
   fourier      : random Fourier-feature embedding + tanh MLP.
@@ -225,8 +224,6 @@ def build_model(variant: str, d: int, H: int, depth: int):
         return net, torch.complex128
     if variant == "complex_sinh_noinit":  # ablation: default init (no freq init)
         return build_plain(d, H, depth, torch.complex128, "sinh"), torch.complex128
-    if variant == "real_sinh":
-        return build_plain(d, H, depth, torch.float64, "sinh"), torch.float64
     if variant == "tanh":
         return build_plain(d, H, depth, torch.float64, "tanh"), torch.float64
     if variant == "siren":
@@ -241,7 +238,7 @@ def build_model(variant: str, d: int, H: int, depth: int):
     raise ValueError(variant)
 
 
-JET_VARIANTS = {"complex_sinh", "complex_sinh_noinit", "real_sinh", "tanh",
+JET_VARIANTS = {"complex_sinh", "complex_sinh_noinit", "tanh",
                 "siren", "fourier", "mscale"}
 
 
@@ -515,7 +512,7 @@ def main():
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--seeds", type=int, default=2)
     ap.add_argument("--variants",
-                    default="complex_sinh,real_sinh,tanh,siren,fourier,mscale,cauchy")
+                    default="complex_sinh,tanh,siren,fourier,mscale,cauchy")
     ap.add_argument("--problems", default="helmholtz_hf,kdv,biharmonic,triharmonic")
     ap.add_argument("--out", default="")
     args = ap.parse_args()

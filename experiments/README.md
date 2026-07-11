@@ -1,80 +1,81 @@
 # Experiments
 
-One experiment family per subfolder, each self-contained:
+One PDE family is kept per subfolder:
 
 ```
 <family>/
   exp_<name>.py     # the experiment (imports the shared harness ../common/osc_common.py)
-  run.sh            # exact commands to reproduce this family's data
-  README.md         # problem, literature source, outputs
-  data/             # <stem>_h128.* and <stem>_h64.* (CSV + JSON + history traces)
+  run.sh            # historical/family diagnostic launcher; not a formal runner
+  README.md         # problem, literature source, current protocol status
+  data/             # currently empty
 ```
 
-## Families (paper Section "Numerical experiments on oscillatory and high-order PDEs")
+All `experiments/*/data/` directories have been cleared. There are currently no
+formal results, and all paper figures and tables are **TBD**.
 
-| folder | family | operator order |
+## Families
+
+| folder | family | status |
 |---|---|---|
-| `helmholtz/`     | high-wavenumber Helmholtz (+ anisotropic) | 2 |
-| `helmholtz_vc/`  | variable-coefficient (scattering) Helmholtz | 2 |
-| `chirp/`         | non-separable radial chirp | 2 |
-| `polyharmonic/`  | polyharmonic order sweep (1D + 2D) | 2–10 |
-| `plate_beam/`    | Kirchhoff plate / Euler–Bernoulli beam / mixed-mode plate | 4 |
-| `kdv/`           | linearized KdV / dispersive wave | 3 |
-| `cahn_hilliard/` | Cahn–Hilliard (nonlinear phase field) | 4 / 6 |
-| `nls/`           | cubic nonlinear Schrödinger (complex-valued) | 2 |
-| `maxwell/`       | time-harmonic Maxwell, lossy medium (complex-valued) | 2 |
-| `core_method/`   | direct-derivative microbenchmark + manufactured 6th-order PINN | — |
+| `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v2` |
+| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v2` |
+| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v2` |
+| `helmholtz/` | high-wavenumber Helmholtz (+ anisotropic) | diagnostic only |
+| `helmholtz_vc/` | variable-coefficient Helmholtz | diagnostic only |
+| `plate_beam/` | Kirchhoff plate / Euler–Bernoulli beam | diagnostic only |
+| `kdv/` | linearized KdV / dispersive wave | diagnostic only |
+| `cahn_hilliard/` | Cahn–Hilliard | diagnostic only |
+| `nls/` | cubic nonlinear Schrödinger | diagnostic only |
+| `core_method/` | derivative and training diagnostics | diagnostic only |
 
-## Shared code
+Historical or archived runners and every family-local `run.sh` are retained
+only for implementation diagnosis. They do not implement the formal evidence
+pipeline, and their outputs cannot be cited as paper evidence.
 
-- `common/osc_common.py` — architectures (complex `sinh`, Fourier-features,
-  SIREN, MscaleDNN, split-real `tanh`), the single complex-Waring Taylor-jet
-  derivative backend, and the `train_eval` loop (equal wall-clock budget, floored
-  cosine schedule, optional `--history` convergence logging). Every `exp_*.py`
-  imports it via a one-line path bootstrap.
-- `tools/plot_width.py` — builds the per-family paper figures
-  `docs/paper/figures/fig_<key>.pdf` from each family's `data/`.
-- `tools/build_width_tables.py` — writes the per-family LaTeX tables
-  `docs/paper/tables/w_<key>.tex`.
+## Frozen formal methods and capacity
 
-## JSC main-text experiments (three 20-minute runs)
+The only formal comparison contains:
 
-Going forward, **only three** oscillatory width studies are maintained for the
-JSC paper main text. Each uses **1200 s (20 min)** wall-clock, **5 seeds**,
-depth 4, step-based history (rel-\(L^2\) every 20 training steps; eval time
-excluded from the budget):
+- `complex_sinh` (Complex Sinh);
+- SIREN;
+- mFF-PINN;
+- MscaleDNN-2-sin.
 
-| folder | sweep | driver |
-|---|---|---|
-| `polyharmonic/` (2D only) | orders 2, 4, 6 | `experiments/polyharmonic/run.sh` |
-| `chirp/` | \(a=1,2,3\) | `experiments/chirp/run.sh` |
-| `maxwell/` | \(a=2,4,6\) | `experiments/maxwell/run.sh` |
+The capacity reference is Complex Sinh \(H=128\), counted by true trainable
+real degrees of freedom (each complex parameter counts as two real degrees of
+freedom). The three external baselines receive automatically selected integer
+widths whose trainable parameter counts differ from the reference by no more
+than \(5\%\). Maxwell counts both split-real baseline networks. Formal \(H=64\)
+outputs are rejected and are not part of the discussion.
 
-Protocol (all three): real baselines at width 128; complex \(\sinh\) at widths
-64 and 128. See `scripts/run_jsc_main3.sh` for the batch driver; use
-`scripts/run_maxwell_finish.sh` to add missing Maxwell seeds and push.
+## The only formal protocol: `jsc_v2`
 
-The remaining families under `experiments/` keep their archived **600 s, 2-seed**
-width-study data for the full-suite supplement; they are not scheduled for reruns.
+The complete preregistered grid is:
 
-## Archived width study (600 s, 2 seeds)
+- Poly: \(d\in\{2,3\}\) and order \(\in\{2,4,6\}\); \(d=3\), order 6 is a
+  required setting;
+- Chirp: \(a\in\{1,2,3\}\);
+- Maxwell: \(a\in\{2,4,6\}\).
 
-Real baselines run at width 128; the complex `sinh` net runs at **both** 64 and
-128 (a complex weight carries ~2× the real DOF, so these bracket the baselines).
-If complex@64 ≈ complex@128 the method is insensitive to width. Depth 4, 2 seeds,
-600 s wall-clock per (problem, variant, seed).
-
-## Reproducing the paper
+Formal tasks must be launched one setting at a time:
 
 ```bash
-# everything, in one driver (long):
-bash scripts/run_widthstudy.sh
-# or a single family:
-bash experiments/helmholtz/run.sh
-# regenerate figures + tables from the data already in each family's data/:
-python experiments/tools/plot_width.py
-python experiments/tools/build_width_tables.py
+bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh chirp --sweep 2
+bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
 
-Superseded / exploratory experiments are kept in `archived/` and documented in
-`archived/progress.md`.
+These are three independent examples, not a batch command. The canonical
+outputs live under `experiments/results/jsc_v2/<task_id>/`. Every formal bundle
+must pass the validator before it can be consumed:
+
+```bash
+python scripts/validate_jsc_results.py \
+  experiments/results/jsc_v2/poly_d3_o6
+```
+
+`validate_jsc_results.py` checks the protocol metadata, the four methods, the
+five seeds, unique keys, parameter-budget tolerance, finite metrics, and
+history traces. Figure and table builders accept only validated
+`protocol_id=jsc_v2` bundles. Since no formal bundle currently exists, their
+paper outputs remain **TBD**.

@@ -71,24 +71,17 @@ roots-of-unity construction. We combine this schedule with Taylor-mode
 propagation through multilayer perceptrons, using the entire activation
 \(\sinh\) when complex parameters are used, to obtain an exact
 floating-point implementation that is differentiable with respect to
-network parameters. Numerical experiments on direct derivative tasks
-and a four-dimensional manufactured sixth-order PDE compare the method
-with nested automatic differentiation and real polarization. The
-results confirm round-off-level agreement with the direct reference and
-show that, for repeated-index multi-indices, the Waring schedule reduces
-the number of Taylor directions while remaining competitive in measured
-wall-clock time. Because \(\sinh\) is entire on \(\C\), the same backend
+network parameters. Executable tests establish value and parameter-gradient
+agreement with direct automatic differentiation; timing and fixed-budget
+accuracy experiments are preregistered but not yet reported. For
+repeated-index multi-indices, the Waring schedule provably reduces the number
+of Taylor directions. Because \(\sinh\) is entire on \(\C\), the same backend
 also makes \emph{complex-parameter} \(\sinh\) networks high-order
 differentiable without any runtime dtype conversion; we study these as a
-PINN ansatz for oscillatory and high-order problems and benchmark them,
-under a shared width-robustness protocol (real baselines at width \(128\),
-complex \(\sinh\) at widths \(64\) and \(128\), matched frequency
-initialization) and a common training budget, against
-strong real high-frequency baselines (Fourier features, SIREN, MscaleDNN)
-on a literature-grounded suite of nine PDE families. The complex network
-is competitive-to-superior on the majority of instances, with the largest
-gains on balanced repeated-index high-order operators and on genuinely
-complex-valued problems.
+PINN ansatz for polyharmonic, radial-chirp, and complex Maxwell problems.
+Protocol \texttt{jsc\_v2} matches three audited real baselines to the
+trainable-real-parameter budget of a width-128 Complex Sinh model and gives
+every method the same wall-clock and collocation protocol.
 
 \medskip
 \noindent\textbf{Keywords.} Physics-informed neural networks; high-order
@@ -172,14 +165,10 @@ and complex parameters, and the resulting algorithm is exact up to
 floating-point round-off.
 
 \item \textbf{Scientific-computing evaluation
-(Section~\ref{sec:experiments}).} We benchmark direct derivative
-queries and a four-dimensional manufactured sixth-order PDE. The
-comparison uses the two implemented deterministic baselines -- direct
-nested automatic differentiation and real polarization with Taylor jets
--- and reports both direction counts and measured wall-clock costs.
-Within a fixed wall-clock budget, the complex Waring backend gives the
-best result in the single tested PDE run; we report this as fixed-budget
-evidence rather than a statistical superiority claim.
+(Section~\ref{sec:experiments}).} We preregister direct-derivative and
+manufactured sixth-order PDE comparisons against direct nested automatic
+differentiation and real polarization with Taylor jets. Direction counts are
+theoretical; timing and training values remain TBD.
 
 \item \textbf{Oscillatory expressivity study
 (Section~\ref{sec:osc}).} The entirety of
@@ -187,17 +176,10 @@ evidence rather than a statistical superiority claim.
 \emph{complex-parameter} \(\sinh\) networks to arbitrary order with no
 dtype casting in the inner loop. We treat such a network as a PINN ansatz
 and ask whether the complex value field is itself more expressive on
-oscillatory and high-order targets. On a literature-grounded suite of nine
-PDE families -- evaluated under the width-robustness design of
-Section~\ref{sec:bm:protocol} (literal widths; real baselines at
-\(128\), complex \(\sinh\) at \(64\) and \(128\)), matched frequency
-initialization, and one shared training protocol -- the complex
-\(\sinh\) network is competitive-to-superior against Fourier-feature,
-SIREN, and MscaleDNN baselines on most instances, with the clearest
-advantage on balanced repeated-index high-order operators
-(e.g.\ \(\Delta^{3}\), mixed plate modes) and on genuinely complex-valued
-problems (nonlinear Schr\"odinger, lossy Maxwell). We report the advantage
-and its limits honestly, including the families where the gap closes.
+oscillatory and high-order targets. Protocol \texttt{jsc\_v2} compares it on
+polyharmonic, radial-chirp, and lossy-Maxwell tasks with three source-audited
+baselines under matched trainable real DOF, paired collocation, and one shared
+wall-clock protocol. Results remain TBD.
 \end{enumerate}
 
 \subsection{Scope and limitations}
@@ -790,21 +772,19 @@ We evaluate three claims:
   smaller than the coalesced polarization count, the complex-Waring
   backend uses fewer Taylor directions; measured wall-clock differences
   are reported rather than inferred solely from rank.
-\item[(C3)] On a 4D manufactured sixth-order PDE, training a
-  complex-parameter \(\sinh\) PINN with the Waring backend has a much
-  smaller time-per-step than nested AD and reaches the lowest error in
-  the single-seed fixed-budget run reported here.
+\item[(C3)] A reset fixed-budget experiment will measure the training cost and
+  accuracy of the three derivative backends on a 4D manufactured sixth-order
+  PDE; no legacy measurement is retained in this draft.
 \end{itemize}
 
 \subsection{Experimental setup}
 
-\textbf{Hardware.} Single-GPU NVIDIA T4 (16~GB), CUDA 12.1, PyTorch 2.5.
+\textbf{Hardware.} The final hardware and software identifiers will be recorded
+with every validated result bundle; no legacy timing is retained in this draft.
 
-\textbf{Networks.} The direct-derivative microbenchmark uses a real
-Linear--\(\sinh\) MLP with hidden width 64 and depth 4, matching the
-saved run in \path{results/quick_compare_T4_20260602_0303.txt}.
-The PDE experiment uses a complex-parameter Linear--\(\sinh\) MLP with
-hidden width 32 and depth 4. In the PDE loss, the physical solution is
+\textbf{Networks.} The final microbenchmark and manufactured-PDE
+configurations are preregistered by the experiment protocol before execution.
+In the PDE loss, the physical solution is
 \(\Re u\); imaginary parts of the weights are regularized via a Tikhonov
 term \(\lambda\|\mathrm{Im}\,W\|^{2}\) with \(\lambda=10^{-6}\).
 
@@ -813,14 +793,9 @@ the PDE training uses complex128 parameters and activations. Reference
 values for derivative accuracy are computed with backend B1 (direct
 nested AD) on the same network instance.
 
-\textbf{Timing protocol.} The microbenchmark reports median wall-clock
-per derivative call over 60 timed repetitions after 5 warm-up calls, as
-recorded in the saved result file. The PDE experiment gives each
-backend a 60-second wall-clock training budget and reports the realized
-per-step time and peak allocated GPU memory. The saved PDE run uses one
-random seed shared across backends; it is intended as a controlled
-fixed-budget comparison, not as an uncertainty-quantified training
-study.
+\textbf{Timing protocol.} Timing repetitions, warm-up, wall-clock budget,
+seeds, and evaluation points will be fixed in the protocol metadata before a
+new run.  Tables in this section remain empty until regenerated and validated.
 
 \subsection{Direct derivative microbenchmark}
 
@@ -836,41 +811,30 @@ per call for the three backends on selected patterns.
 \toprule
 pattern & \(p\) & \(R_{\C}\) & \(R_{\mathrm{pol}}\) & B1 (ms) & B2 (ms) & B3 (ms) \\
 \midrule
-\((3)\)        & \(3\) & \(1\)         & \(2\)  & \(3.399\) & \(2.399\) & \(2.532\) \\
-\((4)\)        & \(4\) & \(1\)         & \(2\)  & \(7.679\) & \(3.302\) & \(3.425\) \\
-\((2,2)\)      & \(4\) & \(\mathbf{3}\)& \(4\)  & \(7.689\) & \(3.314\) & \(3.458\) \\
-\((6)\)        & \(6\) & \(1\)         & \(3\)  & \(52.253\)& \(5.916\) & \(5.837\) \\
-\((4,2)\)      & \(6\) & \(\mathbf{5}\)& \(7\)  & \(52.373\)& \(5.918\) & \(5.904\) \\
-\((2,2,2)\)    & \(6\) & \(\mathbf{9}\)& \(13\) & \(52.219\)& \(5.911\) & \(5.916\) \\
-\((1^{6})\)    & \(6\) & \(32\)        & \(32\) & \(52.323\)& \(5.961\) & \(5.943\) \\
+\((3)\)        & \(3\) & \(1\)         & \(2\)  & TBD & TBD & TBD \\
+\((4)\)        & \(4\) & \(1\)         & \(2\)  & TBD & TBD & TBD \\
+\((2,2)\)      & \(4\) & \(\mathbf{3}\)& \(4\)  & TBD & TBD & TBD \\
+\((6)\)        & \(6\) & \(1\)         & \(3\)  & TBD & TBD & TBD \\
+\((4,2)\)      & \(6\) & \(\mathbf{5}\)& \(7\)  & TBD & TBD & TBD \\
+\((2,2,2)\)    & \(6\) & \(\mathbf{9}\)& \(13\) & TBD & TBD & TBD \\
+\((1^{6})\)    & \(6\) & \(32\)        & \(32\) & TBD & TBD & TBD \\
 \bottomrule
 \end{tabular}
-\caption{Median wall-clock per single \(\dal u\) call on the T4, with
-\(d=8\), \(B=8\), hidden width 64, depth 4, fp64, and a real-parameter
-\(\sinh\) MLP. Times are from 60 timed repetitions after 5 warm-up calls.
-Bold entries mark patterns where \(R_{\C}<R_{\mathrm{pol}}\). The largest
-reported relative error of a jet backend against B1 is below
-\(6\cdot 10^{-15}\).}
+\caption{Single-\(\dal u\) timing table.  Algebraic ranks are fixed;
+timings remain TBD until the reset microbenchmark is executed and validated.}
 \label{tab:micro}
 \end{table}
 
-The relative error of B2 and B3 against B1 is at the round-off level.
-At \(p=6\) the jet path is roughly \(8.8\times\) faster than nested AD in
-this value-only benchmark. This verifies the accuracy part of C1 for the
-patterns tested; parameter-gradient support is exercised in the PINN
-experiment below.
+Backend equivalence is covered by the repository tests. Performance claims
+remain TBD until the reset benchmark is executed.
 
 \subsection{Repeated-index regime}
 
 For repeated patterns, the algebraic advantage of B3 is a smaller number
 of Taylor directions: for example, \((4,2)\) uses 5 directions instead of
-7, and \((2,2,2)\) uses 9 instead of 13. Table~\ref{tab:micro} shows
-that this direction-count reduction does not automatically translate
-into a large value-only wall-clock gain on the tested T4 configuration:
-B2 and B3 are within a few percent, with the complex arithmetic overhead
-partly offsetting the shorter schedule. We therefore treat C2 as a
-complexity and direction-count advantage, and report measured timings
-case by case rather than claiming a universal wall-clock ordering.
+7, and \((2,2,2)\) uses 9 instead of 13. This direction-count reduction
+does not by itself imply a universal wall-clock ordering, so measured timings
+remain TBD.
 
 \subsection{PINN experiment: 4D manufactured sixth-order PDE}
 \label{ssec:pinn}
@@ -915,16 +879,10 @@ learning rate \(10^{-3}\); each step samples
 boundary points.
 
 \paragraph{Comparison protocol.}
-Each backend is given the same wall-clock budget of 60 seconds. We
-report \emph{steps completed within the budget}, the wall-clock per
-step, peak GPU memory, the final value of \(\mathcal{L}_{\mathrm{int}}\)
-(averaged over the last 20 steps), and the relative \(L^{2}\) error of
-\(\Re u\) against \(u_{\mathrm{exact}}\) on a held-out grid of size
-\(4096\). Results in Table~\ref{tab:pinn-60s} are measured directly on
-the T4 with the implementation of this paper. For a submission-quality
-accuracy comparison between B2 and B3, the same protocol should be
-repeated over multiple seeds with a fixed and recorded held-out
-evaluation set.
+The reset benchmark will preregister a common wall-clock budget, seeds,
+sampling, and held-out evaluation set.  We report completed steps, time per
+step, peak memory, final interior loss, and relative \(L^2\) error only after
+the result bundle passes validation.
 
 \begin{table}[ht]
 \centering
@@ -933,39 +891,20 @@ evaluation set.
 \toprule
 backend & steps & ms/step & peak (MB) & final \(\mathcal{L}_{\mathrm{int}}\) & rel.\ \(L^{2}\) error \\
 \midrule
-B3 (complex Waring + jet) & \(4248\) & \(\mathbf{14.1}\) & \(\mathbf{40}\)
-   & \(\mathbf{1.74\!\times\!10^{-3}}\) & \(\mathbf{8.50\!\times\!10^{-3}}\) \\
-B2 (polarization + jet)   & \(4192\) & \(14.3\)          & \(49\)
-   & \(6.32\!\times\!10^{-3}\)         & \(4.43\!\times\!10^{-2}\) \\
-B1 (direct nested AD)     & \(211\)  & \(285.6\)         & \(103\)
-   & \(2.82\!\times\!10^{-1}\)         & \(2.49\!\times\!10^{-1}\) \\
+B3 (complex Waring + jet) & TBD & TBD & TBD & TBD & TBD \\
+B2 (polarization + jet)   & TBD & TBD & TBD & TBD & TBD \\
+B1 (direct nested AD)     & TBD & TBD & TBD & TBD & TBD \\
 \bottomrule
 \end{tabular}
 \caption{PINN training cost and accuracy on the 4D manufactured
-sixth-order problem \eqref{eq:CH-pde}, identical 60-second wall-clock
-budget per backend. Same network, optimizer, sampling rule and seed are
-used across rows. This is a single-seed run: the complex Waring backend
-reaches the lowest interior loss and the smallest \(L^{2}\) error here,
-while nested AD completes only \(211\) steps and remains far from
-convergence.}
+sixth-order problem \eqref{eq:CH-pde}.  Values remain TBD until the reset
+protocol is executed and validated.}
 \label{tab:pinn-60s}
 \end{table}
 
-Three observations are in order.
-First, the two jet-based backends share essentially identical
-per-step cost (\(14.1\) and \(14.3\) ms), which is roughly \(20\times\)
-faster than nested AD; nested AD's peak memory is \(2.5\times\) higher
-because of the deeper autograd graph.
-Second, B3 uses \(R_{\C}=5\) directions, two fewer than polarization
-(\(R_{\mathrm{pol}}=7\)). In this fixed-budget run it also reaches a
-smaller final \(L^{2}\) error (\(8.5\!\times\!10^{-3}\) vs.\
-\(4.4\!\times\!10^{-2}\)), although this accuracy comparison is affected
-by stochastic sampling during training and should be read together with
-additional seeds in future work.
-Third, \(\sinh\) is entire on \(\C\), so complex Waring directions and
-complex-parameter \(\sinh\) MLPs compose without any runtime dtype
-conversion in the inner loop. These results support C3 for this
-single-seed manufactured problem.
+The algebraic direction counts remain fixed:
+\(R_{\C}=5\) and \(R_{\mathrm{pol}}=7\) for the \((4,2)\) pattern.
+Timing, memory, and optimization conclusions remain TBD.
 
 % =========================================================
 % Oscillatory / high-order PINN suite: each family states its problem and is
@@ -998,31 +937,16 @@ scope and are best served by trace-collapsing methods
 \cite{Li2024forwardLaplacian,Gao2023folx}.
 
 \paragraph{Experimental evidence.}
-The direct-derivative benchmark is a value-mode accuracy and timing test;
-it verifies round-off agreement and exposes the direction-count
-advantage, but it does not by itself prove a universal wall-clock ordering
-between complex Waring and real polarization. The PINN experiment is a
-single-seed fixed-budget run. It demonstrates that the jet backends reduce
-per-step cost substantially relative to nested AD on the manufactured
-problem, while the observed accuracy gap between B3 and B2 should be
-validated with multiple seeds, fixed evaluation grids, and structured
-CSV/JSON result files before being used as a statistical comparison.
+Backend value and parameter-gradient equivalence is established by executable
+tests.  Timing, memory, and fixed-budget accuracy evidence has been reset and
+will be stated only after the new result bundles pass validation.
 
 \paragraph{Complex value fields on oscillatory PDEs.}
-The oscillatory study (Section~\ref{sec:osc})
-gives a second, independent reason to value the entire-on-\(\C\) backend: it
-makes complex-parameter \(\sinh\) networks usable as a PINN ansatz, and that
-ansatz is empirically more expressive than strong real high-frequency baselines
-on most of a literature-grounded suite. The advantage is real but bounded. It
-is largest exactly where the theory predicts -- balanced repeated-index
-high-order operators, where the complex schedule is also rank-optimal -- and on
-genuinely complex-valued fields, where a split real--imaginary surrogate is at a
-structural disadvantage. It shrinks or disappears on first-order-in-time
-dispersive operators (KdV) and on low-frequency heterogeneous media, and no
-representation escapes the budget-limited saturation of high-frequency PINNs at
-the most extreme orders and wavenumbers. We therefore present complex
-\(\sinh\) networks as a competitive default for high-order and complex-valued
-oscillatory PINNs, not as a universal replacement for real architectures.
+The entire-on-\(\C\) backend makes complex-parameter \(\sinh\) networks usable
+as a PINN ansatz in the oscillatory study (Section~\ref{sec:osc}). Whether
+that representation is more accurate than the three audited baselines is the
+question tested by protocol \texttt{jsc\_v2}; no pre-reset empirical conclusion
+is retained.
 
 \paragraph{Connection to STDE.}
 The Stochastic Taylor Derivative Estimator \cite{Shi2024stde} solves a
@@ -1046,10 +970,9 @@ Carlini--Catalisano--Geramita rank theorem and its roots-of-unity
 construction yield an explicit, rank-optimal directional schedule over
 \(\C\); paired with Taylor-mode propagation through \(\sinh\)-activated
 MLPs, this gives a deterministic, exact, parameter-differentiable
-backend for high-order single-monomial residuals. In the tested 4D
-manufactured sixth-order PDE, the jet backends are much faster per step
-than nested automatic differentiation, and the complex Waring backend
-achieves the lowest error in the reported single-seed fixed-budget run.
+backend for high-order single-monomial residuals.  Numerical timing and
+fixed-budget accuracy claims have been reset and remain TBD until the
+preregistered experiments are executed and validated.
 
 The method is at its most useful for repeated-index multi-indices, where
 the complex Waring rank is materially smaller than the coalesced real
@@ -1060,20 +983,11 @@ dominating, repeated-index high-order operator -- it provides an exact
 deterministic alternative to stochastic estimators, while leaving broader
 operator contractions to methods designed for that setting.
 
-The same entire-on-\(\C\) backend has a second payoff. Because it makes
-complex-parameter \(\sinh\) networks high-order differentiable at no extra
-inner-loop cost, it enables a complex value field as a PINN ansatz. On a
-literature-grounded suite of nine oscillatory and high-order PDE families,
-evaluated under the same width-robustness protocol as
-Section~\ref{sec:bm:protocol} and one shared training
-protocol against Fourier-feature, SIREN, and MscaleDNN baselines, the complex
-\(\sinh\) network is the most accurate method on the majority of instances and
-is clearly strongest on balanced high-order operators and on genuinely
-complex-valued problems. It is not a universal win -- dispersive and
-low-frequency heterogeneous problems remain better served by real
-high-frequency networks, and all methods saturate at the most extreme
-frequencies within a fixed budget -- but it is a competitive default precisely
-in the high-order and complex-valued regimes that motivate this work.
+The same entire-on-\(\C\) backend also enables a high-order differentiable
+complex value field as a PINN ansatz. Protocol \texttt{jsc\_v2} will measure
+whether this representation improves fixed-budget accuracy on the three core
+problem families relative to the audited SIREN, mFF-PINN, and MscaleDNN-2-sin
+baselines.
 
 % =========================================================
 \appendix

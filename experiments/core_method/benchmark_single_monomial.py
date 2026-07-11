@@ -146,6 +146,8 @@ def rel_error(ref: Tensor, y: Tensor) -> tuple[float, float]:
 
 
 def probabilists_hermite(z: Tensor, n: int) -> Tensor:
+    if n < 0:
+        raise ValueError(f"Hermite degree must be non-negative; got {n}")
     if n == 0:
         return torch.ones_like(z)
     if n == 1:
@@ -167,9 +169,23 @@ def hermite_weight(Z: Tensor, alpha: tuple[int, ...]) -> Tensor:
 
 
 def gaussian_hermite_mc(model: nn.Module, x: Tensor, alpha: tuple[int, ...], Z: Tensor, sigma: float) -> Tensor:
+    if sigma <= 0.0:
+        raise ValueError(f"sigma must be positive; got {sigma}")
+    if Z.ndim != 3 or x.ndim != 2 or Z.shape[0] != x.shape[0] or Z.shape[2] != x.shape[1]:
+        raise ValueError(
+            f"expected x=(B,d) and Z=(B,K,d); got x={tuple(x.shape)}, Z={tuple(Z.shape)}"
+        )
     B, K, d = Z.shape
+    if K < 1:
+        raise ValueError("Z must contain at least one Monte Carlo sample")
     flat = (x.unsqueeze(1) + sigma * Z).reshape(B * K, d)
-    u = model(flat).reshape(B, K, 1)
+    raw = model(flat)
+    if raw.ndim != 2 or raw.shape != (B * K, 1):
+        raise ValueError(
+            "Gaussian-Hermite estimator requires scalar model output with shape "
+            f"(B*K, 1); got {tuple(raw.shape)}"
+        )
+    u = raw.reshape(B, K, 1)
     w = hermite_weight(Z, alpha)
     return (w * u).mean(dim=1) / (sigma ** len(alpha))
 
@@ -242,10 +258,14 @@ def main() -> None:
                     grad_model = model
                     dirs = rinfo.rank
                 elif method == "auto":
-                    selected = "polarization_jet" if args.measure == "backward" else (
-                        "waring_complex_jet" if cinfo.rank <= 0.8 * rinfo.rank else "polarization_jet"
+                    selected = (
+                        "waring_complex_jet"
+                        if cinfo.rank <= 0.8 * rinfo.rank
+                        else "polarization_jet"
                     )
-                    fn = lambda alpha=alpha, selected=selected: single_monomial_partial(model, x, alpha, backend=selected)
+                    fn = lambda alpha=alpha: single_monomial_partial(
+                        model, x, alpha, backend="auto"
+                    )
                     grad_model = model
                     dirs = cinfo.rank if selected == "waring_complex_jet" else rinfo.rank
                     row["selected_backend"] = selected

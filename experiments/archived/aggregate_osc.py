@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT = ["helmholtz_highk", "kdv_dispersive", "plate_beam",
            "cahn_hilliard", "nls"]
-REAL_BASELINES = ["fourier", "siren", "mscale", "tanh", "real_sinh"]
+REAL_BASELINES = ["fourier", "siren", "mscale", "tanh"]
 COMPLEX = "complex_sinh"
 
 

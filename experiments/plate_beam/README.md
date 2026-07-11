@@ -12,13 +12,19 @@
 4; only oscillation rises. Init \(\omega_0=\max(10,2\pi f)\), \(\sigma=\max(2,\pi f)\),
 \(f=\max(m,n)\).
 
-## Outputs (`data/`)
-Width study (600 s, 2 seeds): `plate_beam_h{128,64}.*` (problems `plate_m*`,
-`beam_m*`) and `platemix_h{128,64}.*` (`.csv` + `.json` + `_history.json`).
+## Experiment status
 
-## Reproduce
+This family is outside the formal `jsc_v2` grid. `data/` is empty, there are no
+formal results, and its paper figures and tables are **TBD**.
+
+The only formal methods in this repository are `complex_sinh`, SIREN,
+mFF-PINN, and MscaleDNN-2-sin, compared only through the `jsc_v2` atomic
+runner. The family-local launcher below is retained for implementation
+diagnosis only:
+
 ```bash
 bash run.sh
 ```
-Figures: `docs/paper/figures/fig_plate.pdf`, `fig_beam.pdf`, `fig_platemix.pdf`
-(via `experiments/tools/plot_width.py`).
+
+Outputs from this `run.sh`, historical width studies, or archived runners
+cannot be used as paper evidence.

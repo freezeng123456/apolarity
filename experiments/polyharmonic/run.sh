@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-# Polyharmonic 2D order sweep -- 1200s (20 min) width study (JSC main text).
-set -u; cd "$(dirname "$0")"
-PY=/root/miniconda3/envs/emlnn/bin/python
-C="--seconds 1200 --seeds 5 --depth 4 --lr-schedule cosine --history"
-REAL=complex_sinh,fourier,siren,mscale
-mkdir -p data
-$PY exp_polyharmonic.py $C --hidden 128 --variants $REAL \
-  --dim 2 --orders 2,4,6 --omega0 10 --out data/poly2d_h128.csv
-$PY exp_polyharmonic.py $C --hidden 64  --variants complex_sinh \
-  --dim 2 --orders 2,4,6 --omega0 10 --out data/poly2d_h64.csv
+# Launch exactly one preregistered jsc_v2 Poly task.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+source "$ROOT/scripts/cuda_env.sh"
+
+if [[ $# -ne 4 || "${1:-}" != "--dim" || "${3:-}" != "--order" ]]; then
+  echo "usage: $0 --dim DIM --order ORDER" >&2
+  exit 2
+fi
+
+DIM="$2"
+ORDER="$4"
+exec bash "$ROOT/scripts/run_jsc_main3.sh" poly --dim "$DIM" --order "$ORDER"

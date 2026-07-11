@@ -2,12 +2,11 @@
 """Shared machinery for the oscillatory high-order PINN benchmark suite.
 
 Provides:
-  * architectures (complex sinh w/ holomorphic init, real sinh, tanh, SIREN,
-    Fourier-features, MscaleDNN, compleX-PINN/Cauchy).  All variants use the
-    same literal hidden width H passed on the command line (no sqrt(2)
-    rescaling).  The width study runs real baselines at H=128 and complex sinh
-    at both H=64 and H=128 so the two complex widths bracket the reals in
-    parameter count (each complex weight counts as 2 real DOF in n_params).
+  * the four formal architectures (complex sinh, upstream-faithful SIREN,
+    mFF-PINN, and MscaleDNN-2-sin), plus explicitly auxiliary tanh/Cauchy
+    implementations;
+  * real-trainable-parameter accounting and integer width matching against the
+    complex-sinh H=128 capacity reference;
   * a single exact derivative backend (complex Waring + Taylor jet) for all
     jet-compatible nets, with nested autograd as the fallback (Cauchy);
   * a generic train/eval loop (fixed dense collocation, equal wall-clock budget)
@@ -36,8 +35,13 @@ import torch.nn as nn
 from torch import Tensor
 
 from apolarity import single_monomial_partial
+from apolarity.taylor_jet import TaylorJet, jet_forward_sequential
 
-OMEGA0 = 10.0  # frequency scale for SIREN / complex-SIREN (holomorphic) inits
+OMEGA0 = 10.0  # legacy call-site default for the complex-sinh frequency init
+SIREN_FIRST_OMEGA0 = 30.0
+SIREN_HIDDEN_OMEGA0 = 30.0
+MSCALE_SCALES = (1.0, 2.0, 4.0)
+FORMAL_VARIANTS = ("complex_sinh", "siren", "fourier", "mscale")
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +55,19 @@ class SinhActivation(nn.Module):
 class Sin(nn.Module):  # name recognised by taylor_jet._is_sin_module
     def forward(self, x: Tensor) -> Tensor:
         return torch.sin(x)
+
+
+class ScaledSin(nn.Module):
+    """Official SIREN activation ``sin(omega0 * linear(x))``."""
+
+    def __init__(self, omega0: float):
+        super().__init__()
+        if omega0 <= 0:
+            raise ValueError("omega0 must be positive")
+        self.omega0 = float(omega0)
+
+    def forward(self, x: Tensor) -> Tensor:
+        return torch.sin(self.omega0 * x)
 
 
 class CauchyActivation(nn.Module):
@@ -87,26 +104,45 @@ def build_plain(d: int, H: int, depth: int, dtype: torch.dtype, act: str,
     return _seq(layers, dtype)
 
 
-def siren_init_(net: nn.Sequential, omega0: float) -> None:
+def siren_init_(
+    net: nn.Sequential,
+    first_omega0: float = SIREN_FIRST_OMEGA0,
+    hidden_omega0: float = SIREN_HIDDEN_OMEGA0,
+) -> None:
+    """Reproduce ``vsitzmann/siren`` SineLayer initialization.
+
+    Only weights are overwritten. Biases intentionally retain the
+    ``nn.Linear`` default, matching the upstream PyTorch implementation.
+    """
     linears = [m for m in net if isinstance(m, nn.Linear)]
     with torch.no_grad():
         for i, lin in enumerate(linears):
             fan_in = lin.weight.shape[1]
             if i == 0:
-                bound = omega0 / fan_in
-            elif i == len(linears) - 1:
-                bound = math.sqrt(6.0 / fan_in) * 1e-1
+                bound = 1.0 / fan_in
             else:
-                bound = math.sqrt(6.0 / fan_in)
+                bound = math.sqrt(6.0 / fan_in) / hidden_omega0
             lin.weight.uniform_(-bound, bound)
-            if lin.bias is not None:
-                lin.bias.uniform_(-bound, bound)
 
 
-def build_siren(d: int, H: int, depth: int, omega0: float, out: int = 1) -> nn.Sequential:
-    net = build_plain(d, H, depth, torch.float64, "sin", out=out)
-    siren_init_(net, omega0)
-    return net
+def build_siren(
+    d: int,
+    H: int,
+    depth: int,
+    first_omega0: float = SIREN_FIRST_OMEGA0,
+    hidden_omega0: float = SIREN_HIDDEN_OMEGA0,
+    out: int = 1,
+) -> nn.Sequential:
+    """Official SIREN parameterization with ``depth`` sine hidden layers."""
+    if depth < 1:
+        raise ValueError("SIREN depth must be at least one")
+    layers: list[nn.Module] = [nn.Linear(d, H), ScaledSin(first_omega0)]
+    for _ in range(depth - 1):
+        layers.extend([nn.Linear(H, H), ScaledSin(hidden_omega0)])
+    layers.append(nn.Linear(H, out))
+    net = nn.Sequential(*layers)
+    siren_init_(net, first_omega0, hidden_omega0)
+    return net.to(dtype=torch.float64)
 
 
 def complex_freq_init_(net: nn.Sequential, omega0: float) -> None:
@@ -127,44 +163,169 @@ def complex_freq_init_(net: nn.Sequential, omega0: float) -> None:
             first.bias.copy_(b)
 
 
-def build_fourier(d: int, H: int, depth: int, m_feat: int, sigma: float,
-                  out: int = 1) -> nn.Sequential:
-    """Random Fourier features [sin(Bx), cos(Bx)] as frozen Linear(d->2m)+Sin,
-    then a tanh MLP.  Jet-compatible."""
-    B = torch.randn(m_feat, d, dtype=torch.float64) * sigma
-    W0 = torch.cat([B, B], dim=0)
-    b0 = torch.cat([torch.zeros(m_feat), torch.full((m_feat,), math.pi / 2)])
-    first = nn.Linear(d, 2 * m_feat)
+def _fourier_feature_map(d: int, frequencies: int, sigma: float) -> nn.Sequential:
+    """Frozen ``[sin(Bx), cos(Bx)]`` map used by MultiscalePINNs.
+
+    ``sigma`` is the angular-frequency standard deviation; no extra ``2*pi``
+    factor is applied.
+    """
+    if frequencies < 1:
+        raise ValueError("frequencies must be positive")
+    if sigma <= 0:
+        raise ValueError("Fourier sigma must be positive")
+    B = torch.randn(frequencies, d, dtype=torch.float64) * sigma
+    first = nn.Linear(d, 2 * frequencies, bias=True, dtype=torch.float64)
     with torch.no_grad():
-        first.weight.copy_(W0)
-        first.bias.copy_(b0)
-    first.weight.requires_grad_(False)
-    first.bias.requires_grad_(False)
-    layers: list[nn.Module] = [first, Sin()]
-    in_dim = 2 * m_feat
-    for _ in range(depth - 1):
-        layers.append(nn.Linear(in_dim, H))
-        layers.append(nn.Tanh())
-        in_dim = H
-    layers.append(nn.Linear(in_dim, out))
-    return _seq(layers, torch.float64)
+        first.weight.copy_(torch.cat([B, B], dim=0))
+        first.bias.copy_(
+            torch.cat([
+                torch.zeros(frequencies, dtype=torch.float64),
+                torch.full((frequencies,), math.pi / 2, dtype=torch.float64),
+            ])
+        )
+    first.requires_grad_(False)
+    return nn.Sequential(first, Sin())
+
+
+class FourierPINN(nn.Module):
+    """Multiscale Fourier-feature PINN with a shared tanh trunk.
+
+    This is the ``NN_mFF`` contract from MultiscalePINNs: two frozen Fourier
+    maps, shared trainable hidden layers, branch concatenation, linear output.
+    """
+
+    def __init__(
+        self,
+        d: int,
+        H: int,
+        depth: int,
+        sigma: float,
+        out: int = 1,
+        *,
+        input_mean: tuple[float, ...] | None = None,
+        input_std: tuple[float, ...] | None = None,
+    ):
+        super().__init__()
+        if H < 2 or H % 2:
+            raise ValueError("FourierPINN width must be an even integer >= 2")
+        if depth < 1:
+            raise ValueError("FourierPINN depth must be at least one")
+        mean = input_mean if input_mean is not None else (0.0,) * d
+        # All formal domains are [-1, 1]^d. Use their exact uniform moments
+        # instead of estimating normalization from a method-dependent sample.
+        std = input_std if input_std is not None else (1.0 / math.sqrt(3.0),) * d
+        if len(mean) != d or len(std) != d or any(s <= 0 for s in std):
+            raise ValueError("input_mean/input_std must match d and std must be positive")
+        self.register_buffer("input_mean", torch.tensor(mean, dtype=torch.float64))
+        self.register_buffer("input_std", torch.tensor(std, dtype=torch.float64))
+        frequencies = H // 2
+        self.branch_sigmas = (1.0, float(sigma))
+        self.feature_maps = nn.ModuleList(
+            [_fourier_feature_map(d, frequencies, s) for s in self.branch_sigmas]
+        )
+        trunk_layers: list[nn.Module] = []
+        for _ in range(depth):
+            trunk_layers.extend([nn.Linear(H, H), nn.Tanh()])
+        self.trunk = nn.Sequential(*trunk_layers).to(dtype=torch.float64)
+        self.output = nn.Linear(2 * H, out, dtype=torch.float64)
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        with torch.no_grad():
+            for module in [*self.trunk, self.output]:
+                if isinstance(module, nn.Linear):
+                    nn.init.xavier_normal_(module.weight)
+                    if module.bias is not None:
+                        nn.init.normal_(module.bias)
+
+    def _standardize(self, x: Tensor) -> Tensor:
+        return (x - self.input_mean) / self.input_std
+
+    def forward(self, x: Tensor) -> Tensor:
+        xbar = self._standardize(x)
+        branches = [self.trunk(feature(xbar)) for feature in self.feature_maps]
+        return self.output(torch.cat(branches, dim=-1))
+
+    def jet_forward(self, jet: TaylorJet) -> TaylorJet:
+        standardized = TaylorJet([
+            (jet.terms[0] - self.input_mean) / self.input_std,
+            *[term / self.input_std for term in jet.terms[1:]],
+        ])
+        branch_jets = [
+            jet_forward_sequential(
+                self.trunk,
+                jet_forward_sequential(feature, standardized),
+            )
+            for feature in self.feature_maps
+        ]
+        merged = TaylorJet([
+            torch.cat([branch.terms[k] for branch in branch_jets], dim=-1)
+            for k in range(jet.order + 1)
+        ])
+        return jet_forward_sequential(nn.Sequential(self.output), merged)
+
+
+def build_fourier(
+    d: int,
+    H: int,
+    depth: int,
+    m_feat: int | None,
+    sigma: float,
+    out: int = 1,
+) -> FourierPINN:
+    """Build the formal mFF-PINN.
+
+    ``m_feat`` is accepted for backward call-site compatibility. The upstream
+    contract fixes each branch to ``H/2`` frequencies so its mapped width is H.
+    """
+    if m_feat not in (None, H // 2, H):
+        raise ValueError("formal Fourier mapping uses H/2 frequencies per branch")
+    return FourierPINN(d, H, depth, sigma, out=out)
 
 
 class MultiScaleNet(nn.Module):
-    """MscaleDNN: output = sum_k subnet_k(a_k * x), each a sine MLP."""
+    """MscaleDNN-2-sin: independent ``F_k(a_k*x)`` subnets, summed output."""
 
     def __init__(self, d: int, H: int, depth: int, scales: tuple[float, ...], out: int = 1):
         super().__init__()
-        self.subnets = nn.ModuleList()
-        for a in scales:
-            sub = build_plain(d, H, depth, torch.float64, "sin", out=out)
-            with torch.no_grad():
-                first = next(m for m in sub if isinstance(m, nn.Linear))
-                first.weight.mul_(a)
-            self.subnets.append(sub)
+        if depth < 1:
+            raise ValueError("MscaleDNN depth must be at least one")
+        if not scales or any(a <= 0 for a in scales):
+            raise ValueError("MscaleDNN scales must be positive")
+        self.scales = tuple(float(a) for a in scales)
+        self.subnets = nn.ModuleList([
+            build_plain(d, H, depth, torch.float64, "sin", out=out)
+            for _ in self.scales
+        ])
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        """Original-author Gaussian rule, corrected for each layer's true fan."""
+        with torch.no_grad():
+            for subnet in self.subnets:
+                for layer in subnet:
+                    if isinstance(layer, nn.Linear):
+                        fan_in, fan_out = layer.weight.shape[1], layer.weight.shape[0]
+                        std = 2.0 / math.sqrt(fan_in + fan_out)
+                        nn.init.normal_(layer.weight, mean=0.0, std=std)
+                        if layer.bias is not None:
+                            nn.init.normal_(layer.bias, mean=0.0, std=std)
 
     def forward(self, x: Tensor) -> Tensor:
-        return sum(sub(x) for sub in self.subnets)
+        return sum(
+            subnet(scale * x)
+            for scale, subnet in zip(self.scales, self.subnets, strict=True)
+        )
+
+    def jet_forward(self, jet: TaylorJet) -> TaylorJet:
+        outputs = []
+        for scale, subnet in zip(self.scales, self.subnets, strict=True):
+            scaled = TaylorJet([term * scale for term in jet.terms])
+            outputs.append(jet_forward_sequential(subnet, scaled))
+        return TaylorJet([
+            sum(output.terms[k] for output in outputs)
+            for k in range(jet.order + 1)
+        ])
 
 
 class CauchyNet(nn.Module):
@@ -185,30 +346,31 @@ class CauchyNet(nn.Module):
         return self.net(x)
 
 
-JET_VARIANTS = {"complex_sinh", "complex_sinh_noinit", "tanh",
-                "siren", "fourier", "mscale"}
+JET_VARIANTS = {
+    "complex_sinh", "complex_sinh_noinit", "tanh",
+    "siren", "fourier", "mscale",
+}
 COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit"}
 
 
 def variant_width(variant: str, H: int, mult: float = 1.0) -> int:
-    """Every architecture uses the LITERAL hidden width H -- depth and width are
-    matched across methods (no parameter-count rescaling).  The complex net's
-    comparability (its complex weights carry ~2x the real DOF) is handled by
-    EVALUATING IT AT TWO WIDTHS that bracket the real baselines, e.g. complex at
-    64 and 128 against the real baselines at 128.  The `mult` argument is kept for
-    call-site compatibility but ignored."""
+    """Return an explicitly requested literal width.
+
+    Formal runners call :func:`matched_width` first; this compatibility helper
+    never performs hidden rescaling at model-construction time.
+    """
     return H
 
 
 def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
                 omega0: float = OMEGA0, fourier_sigma: float = 2.0,
                 real_width_mult: float = 1.0):
-    """Frequency-aware inits (omega0 / fourier_sigma) let the frequency-rich
-    architectures (SIREN, complex-sinh, Fourier) be matched to the problem's
-    wavenumber so every method gets its best shot at each frequency.
+    """Construct a formal method or an explicitly auxiliary architecture.
 
-    Note: ``real_width_mult`` is legacy and ignored; all variants use literal
-    width H (see variant_width)."""
+    ``omega0`` applies only to the proposed complex-sinh initialization.
+    Formal SIREN keeps the upstream default omega values of 30; Fourier sigma is
+    interpreted in standardized coordinates without an extra ``2*pi``.
+    """
     He = variant_width(variant, H, real_width_mult)
     if variant == "complex_sinh":
         net = build_plain(d, H, depth, torch.complex128, "sinh", out=out)
@@ -219,22 +381,162 @@ def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
     if variant == "tanh":
         return build_plain(d, He, depth, torch.float64, "tanh", out=out), torch.float64
     if variant == "siren":
-        return build_siren(d, He, depth, omega0, out=out), torch.float64
+        return build_siren(d, He, depth, out=out), torch.float64
     if variant == "fourier":
-        return build_fourier(d, He, depth, He, sigma=fourier_sigma, out=out), torch.float64
+        return build_fourier(
+            d, He, depth, He // 2, sigma=fourier_sigma, out=out
+        ), torch.float64
     if variant == "mscale":
-        return MultiScaleNet(d, He, depth, (1.0, 2.0, 4.0), out=out), torch.float64
+        return MultiScaleNet(d, He, depth, MSCALE_SCALES, out=out), torch.float64
     if variant == "cauchy":
         return CauchyNet(d, He, depth, out=out), torch.float64
     raise ValueError(variant)
 
 
 def n_params(model: nn.Module) -> int:
+    """Count trainable real degrees of freedom (complex scalar = two reals)."""
     tot = 0
     for p in model.parameters():
         if p.requires_grad:
             tot += p.numel() * (2 if p.dtype.is_complex else 1)
     return tot
+
+
+@dataclass(frozen=True)
+class ArchitectureBudget:
+    method: str
+    width: int
+    real_dof: int
+    target_real_dof: int
+    relative_error: float
+    representation: str
+
+
+def architecture_real_dof(
+    variant: str,
+    d: int,
+    width: int,
+    depth: int,
+    *,
+    representation: str = "real",
+    out: int = 1,
+    omega0: float = OMEGA0,
+    fourier_sigma: float = 2.0,
+) -> int:
+    """Return total trainable real DOF for one physical field."""
+    if representation not in {"real", "native_complex", "split_real"}:
+        raise ValueError(f"unknown representation {representation!r}")
+    if variant.startswith("complex") and representation != "native_complex":
+        raise ValueError("complex variants require representation='native_complex'")
+    if not variant.startswith("complex") and representation == "native_complex":
+        raise ValueError("real variants cannot use native_complex representation")
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(0)
+        model, _ = build_model(
+            variant,
+            d,
+            width,
+            depth,
+            out=out,
+            omega0=omega0,
+            fourier_sigma=fourier_sigma,
+        )
+    multiplier = 2 if representation == "split_real" else 1
+    return multiplier * n_params(model)
+
+
+def matched_width(
+    variant: str,
+    d: int,
+    depth: int,
+    target_real_dof: int,
+    *,
+    representation: str = "real",
+    out: int = 1,
+    omega0: float = OMEGA0,
+    fourier_sigma: float = 2.0,
+    max_relative_error: float = 0.05,
+    max_width: int = 1024,
+) -> ArchitectureBudget:
+    """Choose the integer width closest to a real-DOF target."""
+    if variant == "complex_sinh":
+        raise ValueError("complex_sinh is the capacity reference, not a matched baseline")
+    widths = range(2, max_width + 1, 2) if variant == "fourier" else range(1, max_width + 1)
+    best: ArchitectureBudget | None = None
+    for width in widths:
+        dof = architecture_real_dof(
+            variant,
+            d,
+            width,
+            depth,
+            representation=representation,
+            out=out,
+            omega0=omega0,
+            fourier_sigma=fourier_sigma,
+        )
+        relative_error = abs(dof - target_real_dof) / target_real_dof
+        candidate = ArchitectureBudget(
+            variant,
+            width,
+            dof,
+            target_real_dof,
+            relative_error,
+            representation,
+        )
+        if best is None or candidate.relative_error < best.relative_error:
+            best = candidate
+        if dof > target_real_dof and best is not None:
+            break
+    if best is None or best.relative_error > max_relative_error:
+        error = math.inf if best is None else best.relative_error
+        raise ValueError(
+            f"no {variant} integer width matches {target_real_dof} DOF within "
+            f"{max_relative_error:.1%}; best error={error:.2%}"
+        )
+    return best
+
+
+def formal_architecture_budgets(
+    d: int,
+    depth: int = 4,
+    *,
+    complex_width: int = 128,
+    split_real_baselines: bool = False,
+    omega0: float = OMEGA0,
+    fourier_sigma: float = 2.0,
+) -> dict[str, ArchitectureBudget]:
+    """Build the four-method parameter table for one problem representation."""
+    target = architecture_real_dof(
+        "complex_sinh",
+        d,
+        complex_width,
+        depth,
+        representation="native_complex",
+        omega0=omega0,
+        fourier_sigma=fourier_sigma,
+    )
+    budgets = {
+        "complex_sinh": ArchitectureBudget(
+            "complex_sinh",
+            complex_width,
+            target,
+            target,
+            0.0,
+            "native_complex",
+        )
+    }
+    representation = "split_real" if split_real_baselines else "real"
+    for variant in FORMAL_VARIANTS[1:]:
+        budgets[variant] = matched_width(
+            variant,
+            d,
+            depth,
+            target,
+            representation=representation,
+            omega0=omega0,
+            fourier_sigma=fourier_sigma,
+        )
+    return budgets
 
 
 # ---------------------------------------------------------------------------
@@ -246,15 +548,11 @@ def predict(model: nn.Module, x: Tensor) -> Tensor:
 
 
 def deriv_alpha(model: nn.Module, x: Tensor, alpha: tuple[int, ...]) -> Tensor:
-    """Single-monomial partial d^alpha of the model output.  Returns same out_dim
-    as the model.  Uses the complex Waring + Taylor-jet backend where supported,
-    nested autograd for the Cauchy net."""
-    if isinstance(model, MultiScaleNet):
-        s = None
-        for sub in model.subnets:
-            t = single_monomial_partial(sub, x, alpha, backend="waring_complex_jet")
-            s = t if s is None else s + t
-        return s
+    """Single-monomial partial d^alpha for a scalar-output model.
+
+    Uses the complex Waring + Taylor-jet backend where supported and nested
+    coordinate autodiff for the Cauchy net.
+    """
     if isinstance(model, CauchyNet):
         return single_monomial_partial(model.net, x, alpha, backend="direct_autodiff")
     return single_monomial_partial(model, x, alpha, backend="waring_complex_jet")
@@ -304,14 +602,34 @@ def make_complex_field(variant, d, H, depth, device, *, omega0=OMEGA0, sigma=2.0
 # ---------------------------------------------------------------------------
 # Sampling
 # ---------------------------------------------------------------------------
-def sample_interior(B: int, d: int, *, device, lo: float = -1.0, hi: float = 1.0) -> Tensor:
-    return torch.empty(B, d, device=device, dtype=torch.float64).uniform_(lo, hi)
+def sample_interior(
+    B: int,
+    d: int,
+    *,
+    device,
+    lo: float = -1.0,
+    hi: float = 1.0,
+    generator: torch.Generator | None = None,
+) -> Tensor:
+    return torch.empty(B, d, device=device, dtype=torch.float64).uniform_(
+        lo, hi, generator=generator
+    )
 
 
-def sample_boundary(B: int, d: int, *, device, lo: float = -1.0, hi: float = 1.0) -> Tensor:
-    x = torch.empty(B, d, device=device, dtype=torch.float64).uniform_(lo, hi)
-    face = torch.randint(0, d, (B,), device=device)
-    sign = torch.where(torch.rand(B, device=device) < 0.5,
+def sample_boundary(
+    B: int,
+    d: int,
+    *,
+    device,
+    lo: float = -1.0,
+    hi: float = 1.0,
+    generator: torch.Generator | None = None,
+) -> Tensor:
+    x = torch.empty(B, d, device=device, dtype=torch.float64).uniform_(
+        lo, hi, generator=generator
+    )
+    face = torch.randint(0, d, (B,), device=device, generator=generator)
+    sign = torch.where(torch.rand(B, device=device, generator=generator) < 0.5,
                        torch.tensor(lo, dtype=torch.float64, device=device),
                        torch.tensor(hi, dtype=torch.float64, device=device))
     x[torch.arange(B, device=device), face] = sign
@@ -319,13 +637,37 @@ def sample_boundary(B: int, d: int, *, device, lo: float = -1.0, hi: float = 1.0
 
 
 def laplacian_power_terms(d: int, j: int) -> list[tuple[float, tuple[int, ...]]]:
-    """Expanded terms of Delta^j.  d=1: d^{2j}/dx^{2j}.  d=2: binomial expansion."""
-    if d == 1:
-        return [(1.0, (0,) * (2 * j))]
-    if d == 2:
-        return [(float(math.comb(j, i)), (0,) * (2 * i) + (1,) * (2 * (j - i)))
-                for i in range(j + 1)]
-    raise NotImplementedError("laplacian_power_terms implements d in {1,2}")
+    """Expand ``Delta^j`` into monomial partials in any positive dimension.
+
+    For a weak composition ``k_0 + ... + k_{d-1} = j``, the corresponding
+    term has multinomial coefficient ``j! / prod_i k_i!`` and differentiates
+    coordinate ``i`` exactly ``2 k_i`` times.
+    """
+    if d < 1:
+        raise ValueError("d must be positive")
+    if j < 0:
+        raise ValueError("j must be non-negative")
+
+    compositions: list[tuple[int, ...]] = []
+
+    def visit(remaining: int, parts: int, prefix: tuple[int, ...]) -> None:
+        if parts == 1:
+            compositions.append(prefix + (remaining,))
+            return
+        for value in range(remaining + 1):
+            visit(remaining - value, parts - 1, prefix + (value,))
+
+    visit(j, d, ())
+    numerator = math.factorial(j)
+    terms = []
+    for powers in compositions:
+        coeff = numerator
+        alpha = []
+        for coordinate, power in enumerate(powers):
+            coeff //= math.factorial(power)
+            alpha.extend([coordinate] * (2 * power))
+        terms.append((float(coeff), tuple(alpha)))
+    return terms
 
 
 # ---------------------------------------------------------------------------
@@ -496,13 +838,18 @@ def run_linear_suite(problems, variants, args, out_csv: str):
         om = prob.extra.get("omega0", OMEGA0)
         fs = prob.extra.get("fourier_sigma", 2.0)
         for seed in seed_ids:
+            train_gen = torch.Generator(device=device).manual_seed(seed)
+            x_int = sample_interior(
+                args.n_int, prob.d, device=device, lo=lo, hi=hi, generator=train_gen
+            )
+            x_bc = sample_boundary(
+                args.n_bc, prob.d, device=device, lo=lo, hi=hi, generator=train_gen
+            )
             for v in variants:
                 torch.manual_seed(seed)
                 model, mdt = build_model(v, prob.d, args.hidden, args.depth,
                                          omega0=om, fourier_sigma=fs)
                 model = model.to(device)
-                x_int = sample_interior(args.n_int, prob.d, device=device, lo=lo, hi=hi)
-                x_bc = sample_boundary(args.n_bc, prob.d, device=device, lo=lo, hi=hi)
                 lf = linear_loss_factory(prob, x_int, x_bc, mdt)
 
                 def eval_fn():
@@ -524,12 +871,25 @@ def run_linear_suite(problems, variants, args, out_csv: str):
                                history_eval_fn=history_eval_fn, **sk)
                 row = {"problem": prob.name, "order": prob.order, "sweep": prob.sweep,
                        "variant": v, "seed": seed, "params": n_params(model),
-                       "backend": "jet" if v in JET_VARIANTS else "autograd", **m}
+                       "backend": "jet" if v in JET_VARIANTS else "autograd",
+                       "hidden": args.hidden, "depth": args.depth,
+                       "budget_seconds": args.seconds, "n_int": args.n_int,
+                       "n_bc": args.n_bc, "lr": args.lr,
+                       "lr_schedule": sk["lr_schedule"], "omega0": om,
+                       "fourier_sigma": fs, "collocation": "paired_seed_v1", **m}
                 rows.append(row)
                 print(f"{v:<20} {row['params']:>8} {row['backend']:>8} {m['steps']:>7} "
                       f"{m['ms_per_step']:>8.2f} {m['peak_mb']:>7.0f} "
                       f"{m['L_int_last']:>10.2e} {m['L2_err']:>11.3e}  (seed {seed})",
                       flush=True)
+                # High-dimensional operator sums can use most of GPU memory.
+                # Release per-run closures and cached blocks before constructing
+                # the next architecture so an OOM in one variant does not
+                # contaminate subsequent runs through allocator fragmentation.
+                del model, lf, eval_fn, history_eval_fn
+                if device.type == "cuda":
+                    torch.cuda.empty_cache()
+            del x_int, x_bc
     write_rows(rows, out_csv)
     return rows
 

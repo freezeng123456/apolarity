@@ -15,7 +15,7 @@ use a split-real (Re/Im) RVPINN -- two real nets at the same literal width H.
 Sweep the wavenumber a; acceptance: the complex advantage grows with a.
 
 Run:
-  python experiments/exp_maxwell.py --out results/maxwell.csv
+  python experiments/maxwell/exp_maxwell.py --out results/maxwell.csv
 """
 from __future__ import annotations
 
@@ -45,12 +45,12 @@ def _sample(B, device, gen=None):
     return torch.empty(B, 2, device=device, dtype=torch.float64).uniform_(-1, 1, generator=gen)
 
 
-def _sample_bc(B, device):
-    x = _sample(B, device)
-    face = torch.randint(0, 2, (B,), device=device)
+def _sample_bc(B, device, gen=None):
+    x = _sample(B, device, gen)
+    face = torch.randint(0, 2, (B,), device=device, generator=gen)
     lo = torch.tensor(-1.0, dtype=torch.float64, device=device)
     hi = torch.tensor(1.0, dtype=torch.float64, device=device)
-    pick = torch.where(torch.rand(B, device=device) < 0.5, lo, hi)
+    pick = torch.where(torch.rand(B, device=device, generator=gen) < 0.5, lo, hi)
     idx = torch.arange(B, device=device)
     x[idx, face] = pick
     return x
@@ -73,22 +73,23 @@ def run(sweeps, variants, args):
         E_exact = make_e_exact(a)
         omega0 = max(OMEGA0, 2.0 * math.pi * a)
         sigma = max(2.0, math.pi * a)
-        g = torch.Generator(device=device).manual_seed(2025)
+        g = torch.Generator(device=device).manual_seed(12345)
         eval_r = _sample(8192, device, g)
         eval_r_hist = eval_r[: min(getattr(args, "history_eval_n", 4096), eval_r.shape[0])]
         print(f"\n=== {name} (a={a}, |kappa^2|={abs(kappa2):.1f}) ===", flush=True)
         print(f"{'variant':<16}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
               f"{'L_int':>11}{'L2_err':>12}", flush=True)
         for seed in seed_ids:
+            train_gen = torch.Generator(device=device).manual_seed(seed)
+            x_int = _sample(args.n_int, device, train_gen)
+            x_bc = _sample_bc(args.n_bc, device, train_gen)
+            f_int = lam * E_exact(x_int)
+            bc_t = E_exact(x_bc)
             for v in variants:
                 torch.manual_seed(seed)
                 field, is_complex = make_complex_field(
                     v, 2, args.hidden, args.depth, device, omega0=omega0, sigma=sigma)
                 module = field.module
-                x_int = _sample(args.n_int, device)
-                x_bc = _sample_bc(args.n_bc, device)
-                f_int = lam * E_exact(x_int)
-                bc_t = E_exact(x_bc)
 
                 def loss_fn():
                     u = field.pred(x_int)
@@ -124,9 +125,19 @@ def run(sweeps, variants, args):
                 rows.append({"problem": name, "order": 2, "sweep": float(a),
                              "variant": v, "rep": rep, "seed": seed,
                              "params": n_params(module),
-                             "backend": "jet" if v in JET_VARIANTS else "autograd", **m})
+                             "backend": "jet" if v in JET_VARIANTS else "autograd",
+                             "hidden": args.hidden, "depth": args.depth,
+                             "budget_seconds": args.seconds, "n_int": args.n_int,
+                             "n_bc": args.n_bc, "lr": args.lr,
+                             "lr_schedule": sk["lr_schedule"], "omega0": omega0,
+                             "fourier_sigma": sigma,
+                             "collocation": "paired_seed_v1", **m})
                 print(f"{v:<16}{rep:>7}{n_params(module):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
                       f"{m['L_int_last']:>11.2e}{m['L2_err']:>12.3e}  (seed {seed})", flush=True)
+                del field, module, loss_fn, eval_fn, history_eval_fn
+                if device.type == "cuda":
+                    torch.cuda.empty_cache()
+            del x_int, x_bc, f_int, bc_t
     write_rows(rows, args.out or "results/maxwell.csv")
     return rows
 
@@ -137,6 +148,4 @@ if __name__ == "__main__":
     args = ap.parse_args()
     sweeps = [int(s) for s in args.sweeps.split(",") if s]
     variants = [v for v in (args.variants.split(",") if args.variants else [])]
-    if variants == ["complex_sinh", "fourier", "siren", "mscale", "tanh", "real_sinh"]:
-        variants = ["complex_sinh", "tanh", "siren", "fourier", "mscale"]
     run(sweeps, variants, args)

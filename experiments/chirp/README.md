@@ -7,14 +7,30 @@ grows with radius — so \(u\) is **not** a single Fourier mode. Dirichlet \(=u_
 **Source.** Chirp / space-varying-frequency expressivity test (Tancik 2020,
 Liu 2020). Removes the "separable sine" confound present in the other families.
 
-**Sweep.** chirp rate \(a\in\{2,4,6,8\}\). Init \(\omega_0=\max(10,2\pi a)\),
+**Sweep.** chirp rate \(a\in\{1,2,3\}\). Init \(\omega_0=\max(10,2\pi a)\),
 \(\sigma=\max(2,\pi a)\).
 
-## Outputs (`data/`)
-Width study (600 s, 2 seeds): `chirp_h{128,64}.{csv,json}` + `*_history.json`.
+## Formal comparison
 
-## Reproduce
+The three sweep values are formal `jsc_v2` settings. The only formal methods
+are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
+\(H=128\) defines the true trainable real-parameter budget; external baselines
+receive automatically matched integer widths with at most \(5\%\) mismatch.
+\(H=64\) is not run or discussed.
+
+## Current outputs
+
+`data/` is empty. No formal Chirp result exists, and the Chirp paper figure and
+table are **TBD**.
+
+## Launch one formal setting
+
 ```bash
-bash run.sh
+bash scripts/run_jsc_main3.sh chirp --sweep 2
+python scripts/validate_jsc_results.py \
+  experiments/results/jsc_v2/chirp_a2
 ```
-Figure: `docs/paper/figures/fig_chirp.pdf` (via `experiments/tools/plot_width.py`).
+
+Choose exactly one allowed `--sweep` value per launch. The family-local
+`run.sh` and archived runners are implementation diagnostics only; their
+outputs cannot be used as paper evidence.

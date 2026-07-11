@@ -8,18 +8,19 @@
 
 **Source.** Wang–Teng–Perdikaris 2021 (gradient pathology); isotropic extension as in PINN literature.
 
-## Outputs (`data/`)
+## Experiment status
 
-| stem | protocol | content |
-|------|----------|---------|
-| `helmholtz_h{128,64}` | 600s, 2 seeds | isotropic \(a=2..10\) |
-| `helmholtz_aniso_h{128,64}` | 600s, 2 seeds | legacy single \((1,4)\), name `helm_aniso_1_4` |
-| `helmholtz_wang2021_h{128,64}` | **1200s, 5 seeds** | Wang triple \((1,1),(1,2),(1,4)\) |
+This family is outside the formal `jsc_v2` grid. `data/` is empty, there are no
+formal results, and its paper figure and table are **TBD**.
 
-## Reproduce
+The only formal methods in this repository are `complex_sinh`, SIREN,
+mFF-PINN, and MscaleDNN-2-sin, compared only through the `jsc_v2` atomic
+runner. The family-local launcher below is retained for implementation
+diagnosis only:
 
 ```bash
-bash run.sh                                    # archived 600s suite
-bash ../../scripts/run_helmholtz_wang2021.sh   # Wang (1,1),(1,2),(1,4) @ 1200s
+bash run.sh
 ```
-Figure: `docs/paper/figures/fig_helmholtz.pdf` (via `experiments/tools/plot_width.py`).
+
+Outputs from this `run.sh`, historical Wang/width-study scripts, or archived
+runners cannot be used as paper evidence.
