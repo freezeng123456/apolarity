@@ -6,8 +6,8 @@
 #   source scripts/cuda_env.sh
 #   python3.11 experiments/benchmark_single_monomial.py ...
 #
-# Path layout verified on the H20 host (2026-07-10):
-#   - python3.11 binary:    /usr/bin/python3.11
+# Path layout verified on the H20 host (2026-07-14):
+#   - python3.11 binary:    /root/miniconda3/envs/apolarity/bin/python
 #   - torch + nvidia wheels: /usr/local/lib/python3.11/site-packages/nvidia/<cmp>/lib
 #   - GPU:                  NVIDIA H20 (CUDA 12.x driver, 12.1 cu wheel)
 #
@@ -37,7 +37,7 @@ unset _NV_BASE
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 
 # Convenience alias: prefer python3.11 as the project interpreter.
-export APOLARITY_PYTHON="${APOLARITY_PYTHON:-/usr/bin/python3.11}"
+export APOLARITY_PYTHON="${APOLARITY_PYTHON:-/root/miniconda3/envs/apolarity/bin/python}"
 
 # Make `python` resolve to python3.11 inside scripts that invoke `python`.
 if ! command -v python >/dev/null 2>&1; then
