@@ -1,17 +1,18 @@
 # Project progress
 
-Last updated: 2026-07-12
+Last updated: 2026-07-14
 
 ## Current state
 
-The experiment repository is reset. All prior CSV/JSON/history files, logs,
-PID files, generated figures, compiled documents, result HTML, and the
-hard-coded result Canvas are absent. Manuscript and slide result sections now
-contain `TBD` placeholders rather than legacy measurements.
+The legacy experiment repository was reset before the `jsc_v2` campaign. New
+formal bundles now exist for Poly `d=2`, orders 2/4/6; Poly `d=3`, order 6;
+and Chirp `a=1`. Each completed bundle contains 20 method/seed rows and carries
+a `VALIDATED` marker. Manuscript and slide result sections remain `TBD` until
+the preregistered campaign is complete and the validated data are reviewed.
 
-No formal experiment was launched during this reset. There is no active PID,
-ETA, or retained error number. New data is admissible only when it carries
-`protocol_id=jsc_v2` and passes `scripts/validate_jsc_results.py`.
+No formal experiment is active at this update. New data is admissible only
+when it carries `protocol_id=jsc_v2` and passes
+`scripts/validate_jsc_results.py`.
 
 The three representative smoke tasks have now completed successfully. Their
 temporary result bundles are not scientific results and are deleted before
@@ -104,25 +105,35 @@ Status meanings:
 - `VALIDATING`: training finished and the canonical bundle is under review;
 - `DONE`: the 20-row bundle passed validation and manual log review;
 - `BLOCKED`: a concrete implementation, data, or hardware issue must be fixed.
+- `QUEUED`: user-authorized task waiting in the detached serial queue; this is
+  an operator state rather than part of the formal protocol.
 
 | Task ID | Setting | Status | Formal output |
 |---|---|---|---|
-| `poly_d2_o2` | Poly `d=2`, order 2 | READY | none |
+| `poly_d2_o2` | Poly `d=2`, order 2 | DONE | `experiments/results/jsc_v2/poly_d2_o2` |
 | `poly_d2_o4` | Poly `d=2`, order 4 | DONE | `experiments/results/jsc_v2/poly_d2_o4` |
 | `poly_d2_o6` | Poly `d=2`, order 6| DONE | `experiments/results/jsc_v2/poly_d2_o6` |
-| `poly_d3_o2` | Poly `d=3`, order 2 | READY | none |
-| `poly_d3_o4` | Poly `d=3`, order 4 | READY | none |
+| `poly_d3_o2` | Poly `d=3`, order 2 | QUEUED | none |
+| `poly_d3_o4` | Poly `d=3`, order 4 | QUEUED | none |
 | `poly_d3_o6` | Poly `d=3`, order 6 | DONE | `experiments/results/jsc_v2/poly_d3_o6` |
-| `chirp_a1` | Chirp `a=1` | READY | none |
-| `chirp_a2` | Chirp `a=2` | READY | none |
-| `chirp_a3` | Chirp `a=3` | READY | none |
+| `chirp_a1` | Chirp `a=1` | DONE | `experiments/results/jsc_v2/chirp_a1` |
+| `chirp_a2` | Chirp `a=2` | QUEUED | none |
+| `chirp_a3` | Chirp `a=3` | QUEUED | none |
 | `maxwell_a2` | Maxwell `a=2` | READY | none |
 | `maxwell_a4` | Maxwell `a=4` | READY | none |
 | `maxwell_a6` | Maxwell `a=6` | READY | none |
 
-No task is prescheduled. Only one row moves from `READY` to `RUNNING` after the
-user names that exact task. Each completed task must be validated and reviewed
-before another task is selected.
+Queued serial execution plan (2026-07-14):
+1. `poly_d3_o2`
+2. `poly_d3_o4`
+3. `chirp_a2`
+4. `chirp_a3`
+
+Total nominal training time: ~26 hours 40 minutes (4 tasks × 6 hours
+40 minutes), plus validation and Git upload overhead.
+
+The queue stops immediately if training, validation, commit, or push fails.
+Each successor starts only after its predecessor has been validated and pushed.
 
 ## Runner and result contract
 
@@ -147,8 +158,8 @@ five seeds, finite metrics, nonempty monotone histories, a consistent Complex
 Sinh DOF reference, and the exact protocol metadata.
 
 The plot and table tools read only task directories carrying a `VALIDATED`
-marker and canonical jsc_v2 files. With no validated data they exit cleanly
-without generating evidence.
+marker and canonical jsc_v2 files. Validated data now exist, but manuscript
+generation remains deferred until the selected Poly and Chirp tasks complete.
 
 ## Verification
 
@@ -192,10 +203,9 @@ Implementation readiness checks pass:
 - protocol and 12-setting grid: frozen;
 - runner/validator/plot/table chain: implemented and tested;
 - old results and hard-coded empirical conclusions: removed;
-- formal experiment process: none running.
+- completed formal bundles: five; queued formal bundles: four.
 
-The implementation, audit, parameter tables, and smoke paths are ready. After
-the reset changes are committed and pushed, the remaining gate is explicit
-user selection of one exact atomic task. Until a validated formal bundle
-exists, all paper figures, tables, timings, and accuracy conclusions remain
-`TBD`.
+The implementation, audit, parameter tables, and smoke paths are ready. The
+user has authorized the four-task serial queue listed above. Paper figures,
+tables, timings, and accuracy conclusions remain `TBD` until the selected
+campaign is complete and reviewed.
