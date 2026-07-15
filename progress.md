@@ -113,7 +113,7 @@ Status meanings:
 | `poly_d2_o2` | Poly `d=2`, order 2 | DONE | `experiments/results/jsc_v2/poly_d2_o2` |
 | `poly_d2_o4` | Poly `d=2`, order 4 | DONE | `experiments/results/jsc_v2/poly_d2_o4` |
 | `poly_d2_o6` | Poly `d=2`, order 6| DONE | `experiments/results/jsc_v2/poly_d2_o6` |
-| `poly_d3_o2` | Poly `d=3`, order 2 | QUEUED | none |
+| `poly_d3_o2` | Poly `d=3`, order 2 | DONE | `experiments/results/jsc_v2/poly_d3_o2` |
 | `poly_d3_o4` | Poly `d=3`, order 4 | QUEUED | none |
 | `poly_d3_o6` | Poly `d=3`, order 6 | DONE | `experiments/results/jsc_v2/poly_d3_o6` |
 | `chirp_a1` | Chirp `a=1` | DONE | `experiments/results/jsc_v2/chirp_a1` |
