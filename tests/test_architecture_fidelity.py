@@ -136,6 +136,20 @@ def test_mscale_is_explicit_scaled_input_subnet_sum():
     torch.testing.assert_close(model(x), expected)
 
 
+def test_mscale5_is_five_scale_sensitivity_variant():
+    torch.manual_seed(18)
+    model, dtype = build_model("mscale5", 2, 7, 3)
+    assert dtype == torch.float64
+    assert isinstance(model, MultiScaleNet)
+    assert model.scales == (1.0, 2.0, 4.0, 8.0, 16.0)
+    x = torch.randn(3, 2, dtype=torch.float64)
+    expected = sum(
+        subnet(scale * x)
+        for scale, subnet in zip(model.scales, model.subnets, strict=True)
+    )
+    torch.testing.assert_close(model(x), expected)
+
+
 @pytest.mark.parametrize("alpha", [(0, 1), (0, 0, 1, 1)])
 def test_mscale_scaled_chain_rule_and_parameter_gradients_match_direct(alpha):
     torch.manual_seed(19)

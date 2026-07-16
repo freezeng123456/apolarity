@@ -41,6 +41,7 @@ OMEGA0 = 10.0  # legacy call-site default for the complex-sinh frequency init
 SIREN_FIRST_OMEGA0 = 30.0
 SIREN_HIDDEN_OMEGA0 = 30.0
 MSCALE_SCALES = (1.0, 2.0, 4.0)
+MSCALE5_SCALES = (1.0, 2.0, 4.0, 8.0, 16.0)
 FORMAL_VARIANTS = ("complex_sinh", "siren", "fourier", "mscale")
 
 
@@ -348,7 +349,7 @@ class CauchyNet(nn.Module):
 
 JET_VARIANTS = {
     "complex_sinh", "complex_sinh_noinit", "tanh",
-    "siren", "fourier", "mscale",
+    "siren", "fourier", "mscale", "mscale5",
 }
 COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit"}
 
@@ -388,6 +389,8 @@ def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
         ), torch.float64
     if variant == "mscale":
         return MultiScaleNet(d, He, depth, MSCALE_SCALES, out=out), torch.float64
+    if variant == "mscale5":
+        return MultiScaleNet(d, He, depth, MSCALE5_SCALES, out=out), torch.float64
     if variant == "cauchy":
         return CauchyNet(d, He, depth, out=out), torch.float64
     raise ValueError(variant)
