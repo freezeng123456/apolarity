@@ -1,0 +1,52 @@
+{
+  "protocol_id": "jsc_v2",
+  "task": {
+    "family": "poly",
+    "task_id": "poly_d2_o4",
+    "dimension": 2,
+    "order": 4,
+    "sweep": 4,
+    "omega0": 6.283185307179586,
+    "fourier_sigma": 3.141592653589793,
+    "split_real_baselines": false
+  },
+  "methods": {
+    "complex_sinh": {
+      "method": "complex_sinh",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "native_complex"
+    },
+    "siren": {
+      "method": "siren",
+      "width": 128,
+      "real_dof": 50049,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.5,
+      "representation": "real"
+    },
+    "fourier": {
+      "method": "fourier",
+      "width": 128,
+      "real_dof": 66305,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.3375991528302264,
+      "representation": "real"
+    },
+    "mscale": {
+      "method": "mscale",
+      "width": 128,
+      "real_dof": 150147,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.5,
+      "representation": "real"
+    }
+  },
+  "git_sha": "8e6bc95eb329acca2c92c626b04aab39a2324028",
+  "git_dirty": false,
+  "smoke": false,
+  "estimated_runs": 20,
+  "estimated_training_seconds": 24000.0
+}
