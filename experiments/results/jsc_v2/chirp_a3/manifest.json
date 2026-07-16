@@ -1,0 +1,52 @@
+{
+  "protocol_id": "jsc_v2",
+  "task": {
+    "family": "chirp",
+    "task_id": "chirp_a3",
+    "dimension": 2,
+    "order": 2,
+    "sweep": 3,
+    "omega0": 18.84955592153876,
+    "fourier_sigma": 9.42477796076938,
+    "split_real_baselines": false
+  },
+  "methods": {
+    "complex_sinh": {
+      "method": "complex_sinh",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "native_complex"
+    },
+    "siren": {
+      "method": "siren",
+      "width": 128,
+      "real_dof": 50049,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.5,
+      "representation": "real"
+    },
+    "fourier": {
+      "method": "fourier",
+      "width": 128,
+      "real_dof": 66305,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.3375991528302264,
+      "representation": "real"
+    },
+    "mscale": {
+      "method": "mscale",
+      "width": 128,
+      "real_dof": 150147,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.5,
+      "representation": "real"
+    }
+  },
+  "git_sha": "836f0782d2afbc189a88d3c28a3fa9cbbe946404",
+  "git_dirty": false,
+  "smoke": false,
+  "estimated_runs": 20,
+  "estimated_training_seconds": 24000.0
+}

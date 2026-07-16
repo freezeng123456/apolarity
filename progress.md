@@ -118,7 +118,7 @@ Status meanings:
 | `poly_d3_o6` | Poly `d=3`, order 6 | DONE | `experiments/results/jsc_v2/poly_d3_o6` |
 | `chirp_a1` | Chirp `a=1` | DONE | `experiments/results/jsc_v2/chirp_a1` |
 | `chirp_a2` | Chirp `a=2` | DONE | `experiments/results/jsc_v2/chirp_a2` |
-| `chirp_a3` | Chirp `a=3` | QUEUED | none |
+| `chirp_a3` | Chirp `a=3` | DONE | `experiments/results/jsc_v2/chirp_a3` |
 | `maxwell_a2` | Maxwell `a=2` | READY | none |
 | `maxwell_a4` | Maxwell `a=4` | READY | none |
 | `maxwell_a6` | Maxwell `a=6` | READY | none |
