@@ -1,0 +1,52 @@
+{
+  "protocol_id": "jsc_v2",
+  "task": {
+    "family": "maxwell",
+    "task_id": "maxwell_a4",
+    "dimension": 2,
+    "order": 2,
+    "sweep": 4,
+    "omega0": 25.132741228718345,
+    "fourier_sigma": 12.566370614359172,
+    "split_real_baselines": true
+  },
+  "methods": {
+    "complex_sinh": {
+      "method": "complex_sinh",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "native_complex"
+    },
+    "siren": {
+      "method": "siren",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "split_real"
+    },
+    "fourier": {
+      "method": "fourier",
+      "width": 128,
+      "real_dof": 132610,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.32480169433954725,
+      "representation": "split_real"
+    },
+    "mscale": {
+      "method": "mscale",
+      "width": 128,
+      "real_dof": 300294,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 2.0,
+      "representation": "split_real"
+    }
+  },
+  "git_sha": "67b34ac651f51285a8e36ef1ca7e7c1497ad90b6",
+  "git_dirty": false,
+  "smoke": false,
+  "estimated_runs": 20,
+  "estimated_training_seconds": 24000.0
+}
