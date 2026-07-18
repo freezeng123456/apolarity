@@ -59,6 +59,21 @@ def train(model, loss_fn, eval_fn, args, device):
     )
 
 
+def variant_name(args) -> str:
+    return args.variant_label or "vanilla_tanh_direct_ad"
+
+
+def attach_final_loss_parts(metrics, components, bc_weight: float) -> None:
+    """Record the objective decomposition without changing the training loop."""
+    L_int, L_bc = components()
+    metrics.update({
+        "L_int_final": float(L_int.item()),
+        "L_bc_final": float(L_bc.item()),
+        "loss_final": float((L_int + bc_weight * L_bc).item()),
+        "bc_weight": float(bc_weight),
+    })
+
+
 def run_poly(args, device):
     torch.manual_seed(args.seed)
     x_int, x_bc, x_eval = common_points(args, device)
@@ -68,7 +83,9 @@ def run_poly(args, device):
     S = 2.0 * math.pi**2
     f = (S**2 * torch.sin(math.pi * x_int).prod(dim=1)).detach()
 
-    def loss_fn():
+    bc_weight = args.bc_weight_poly
+
+    def components():
         u = model(x_int).squeeze(1)
         lap = direct_laplacian(u, x_int)
         bilap = direct_laplacian(lap, x_int)
@@ -76,7 +93,11 @@ def run_poly(args, device):
         u_bc = model(x_bc).squeeze(1)
         lap_bc = direct_laplacian(u_bc, x_bc)
         L_bc = u_bc.square().mean() + (lap_bc / S).square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
@@ -84,7 +105,8 @@ def run_poly(args, device):
             return relative_l2(model(x_eval).squeeze(1), target)
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    return {"problem": "poly_d2_o4", "variant": "vanilla_tanh_direct_ad",
+    attach_final_loss_parts(metrics, components, bc_weight)
+    return {"problem": "poly_d2_o4", "variant": variant_name(args),
             "seed": args.seed, "params": n_params(model), **metrics}
 
 
@@ -98,19 +120,26 @@ def run_chirp(args, device):
     bc = chirp_exact(a, x_bc)
     scale = 2.0 * (a * math.pi) ** 2
 
-    def loss_fn():
+    bc_weight = args.bc_weight_chirp
+
+    def components():
         u = model(x_int).squeeze(1)
         residual = -direct_laplacian(u, x_int) + u - f
         L_int = (residual / scale).square().mean()
         L_bc = (model(x_bc).squeeze(1) - bc).square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
             return relative_l2(model(x_eval).squeeze(1), chirp_exact(a, x_eval))
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    return {"problem": "chirp_a2", "variant": "vanilla_tanh_direct_ad",
+    attach_final_loss_parts(metrics, components, bc_weight)
+    return {"problem": "chirp_a2", "variant": variant_name(args),
             "seed": args.seed, "params": n_params(model), **metrics}
 
 
@@ -131,7 +160,9 @@ def run_maxwell(args, device):
     def pred(x):
         return re(x).squeeze(1) + 1j * im(x).squeeze(1)
 
-    def loss_fn():
+    bc_weight = args.bc_weight_maxwell
+
+    def components():
         ur = re(x_int).squeeze(1)
         ui = im(x_int).squeeze(1)
         u = ur + 1j * ui
@@ -139,14 +170,19 @@ def run_maxwell(args, device):
         residual = lap + kappa2 * u - f
         L_int = (residual.abs() / (2.0 * ap**2)).square().mean()
         L_bc = (pred(x_bc) - bc).abs().square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
             return relative_l2(pred(x_eval), maxwell_exact(a, x_eval))
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    return {"problem": "maxwell_a4", "variant": "vanilla_tanh_direct_ad",
+    attach_final_loss_parts(metrics, components, bc_weight)
+    return {"problem": "maxwell_a4", "variant": variant_name(args),
             "seed": args.seed, "params": n_params(model),
             "representation": "split_real", **metrics}
 
@@ -164,6 +200,10 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--lr-final", type=float, default=1e-4)
     parser.add_argument("--history-every-steps", type=int, default=20)
+    parser.add_argument("--bc-weight-poly", type=float, default=100.0)
+    parser.add_argument("--bc-weight-chirp", type=float, default=100.0)
+    parser.add_argument("--bc-weight-maxwell", type=float, default=100.0)
+    parser.add_argument("--variant-label", default=None)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 

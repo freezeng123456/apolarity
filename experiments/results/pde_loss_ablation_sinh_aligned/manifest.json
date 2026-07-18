@@ -1,0 +1,36 @@
+{
+  "status": "diagnostic_only",
+  "paper_evidence": false,
+  "base_git_sha": "edc14cf63ff3c98a855da6c937d023935ad24633",
+  "hardware": "NVIDIA H20, 97871 MiB",
+  "python": "3.11.15",
+  "torch": "2.5.1+cu121",
+  "seed": 0,
+  "budget_seconds_per_run": 180.0,
+  "hidden_width": 128,
+  "hidden_depth": 4,
+  "n_interior": 4096,
+  "n_boundary": 512,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "learning_rate_schedule": "cosine_by_training_time",
+  "collocation": "paired_seed_v1",
+  "evaluation": "fixed_seed_12345_n8192_v1",
+  "method": "vanilla_tanh_direct_ad",
+  "alignment": "match each strict-Vanilla initial ||grad(w_bc L_bc)|| / ||grad(L_int)|| to Complex-Sinh at w_bc=100",
+  "complex_sinh_gradient_ratios": {
+    "poly_d2_o4": 44.93203932747698,
+    "chirp_a2": 1518.2029564414554,
+    "maxwell_a4": 1519.7270955592987
+  },
+  "vanilla_gradient_ratios_at_weight_100": {
+    "poly_d2_o4": 3173.152873500846,
+    "chirp_a2": 44602.05089651633,
+    "maxwell_a4": 323.8451709032741
+  },
+  "aligned_boundary_weights": {
+    "poly_d2_o4": 1.4160061339214578,
+    "chirp_a2": 3.4038859781670614,
+    "maxwell_a4": 469.27582440721653
+  }
+}
