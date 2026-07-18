@@ -1,0 +1,13 @@
+{
+  "status": "shared_weight_selection",
+  "paper_evidence": false,
+  "training_seed": 0,
+  "validation_eval_seed": 54321,
+  "budget_seconds_per_method_candidate": 30.0,
+  "selection_score": "geometric mean of Vanilla and Complex-Sinh validation relative L2",
+  "normalization": "PDE by S^m and Delta^j boundary residual by S^j, S=2*pi^2",
+  "poly_d2_o4": {
+    "boundary_terms": ["u", "Delta u"],
+    "frozen_weights": [0.02, 0.58]
+  }
+}
