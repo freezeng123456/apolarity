@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Strict vanilla-PINN pilots: tanh MLPs with nested coordinate autodiff."""
+"""Complex-Sinh controls with configurable PDE/boundary loss weights."""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +17,9 @@ sys.path.insert(0, str(COMMON))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from osc_common import (  # noqa: E402
+    build_model,
+    deriv_alpha,
+    make_complex_field,
     n_params,
     sample_boundary,
     sample_interior,
@@ -25,10 +27,8 @@ from osc_common import (  # noqa: E402
     write_rows,
 )
 from run_specialized_baseline_pilot import (  # noqa: E402
-    TanhMLP,
     chirp_exact,
     chirp_source,
-    direct_laplacian,
     maxwell_exact,
     relative_l2,
 )
@@ -59,12 +59,7 @@ def train(model, loss_fn, eval_fn, args, device):
     )
 
 
-def variant_name(args) -> str:
-    return args.variant_label or "vanilla_tanh_direct_ad"
-
-
-def attach_final_loss_parts(metrics, components, bc_weight: float) -> None:
-    """Record the objective decomposition without changing the training loop."""
+def finalize(metrics, components, bc_weight: float) -> None:
     L_int, L_bc = components()
     metrics.update({
         "L_int_final": float(L_int.item()),
@@ -74,117 +69,131 @@ def attach_final_loss_parts(metrics, components, bc_weight: float) -> None:
     })
 
 
+def complex_regularizer(model) -> torch.Tensor:
+    return 1e-6 * sum(
+        parameter.imag.square().mean()
+        for parameter in model.parameters()
+        if parameter.requires_grad
+    )
+
+
 def run_poly(args, device):
     torch.manual_seed(args.seed)
     x_int, x_bc, x_eval = common_points(args, device)
-    x_int.requires_grad_(True)
-    x_bc.requires_grad_(True)
-    model = TanhMLP(2, args.hidden, args.depth, 1).to(device)
+    model, model_dtype = build_model(
+        "complex_sinh", 2, args.hidden, args.depth, omega0=2.0 * math.pi
+    )
+    model = model.to(device)
+    xi, xb = x_int.to(model_dtype), x_bc.to(model_dtype)
     S = 2.0 * math.pi**2
-    f = (S**2 * torch.sin(math.pi * x_int).prod(dim=1)).detach()
-
+    f = S**2 * torch.sin(math.pi * x_int).prod(dim=1)
     bc_weight = args.bc_weight_poly
 
     def components():
-        u = model(x_int).squeeze(1)
-        lap = direct_laplacian(u, x_int)
-        bilap = direct_laplacian(lap, x_int)
+        bilap = (
+            deriv_alpha(model, xi, (0, 0, 0, 0))
+            + 2.0 * deriv_alpha(model, xi, (0, 0, 1, 1))
+            + deriv_alpha(model, xi, (1, 1, 1, 1))
+        ).real.squeeze(1)
         L_int = ((bilap - f) / S**2).square().mean()
-        u_bc = model(x_bc).squeeze(1)
-        lap_bc = direct_laplacian(u_bc, x_bc)
+        u_bc = model(xb).real.squeeze(1)
+        lap_bc = (
+            deriv_alpha(model, xb, (0, 0))
+            + deriv_alpha(model, xb, (1, 1))
+        ).real.squeeze(1)
         L_bc = u_bc.square().mean() + (lap_bc / S).square().mean()
         return L_int, L_bc
 
     def loss_fn():
         L_int, L_bc = components()
-        return L_int + bc_weight * L_bc, L_int.item()
+        return L_int + bc_weight * L_bc + complex_regularizer(model), L_int.item()
 
     def eval_fn():
         with torch.no_grad():
             target = torch.sin(math.pi * x_eval).prod(dim=1)
-            return relative_l2(model(x_eval).squeeze(1), target)
+            return relative_l2(model(x_eval.to(model_dtype)).real.squeeze(1), target)
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    attach_final_loss_parts(metrics, components, bc_weight)
-    return {"problem": "poly_d2_o4", "variant": variant_name(args),
+    finalize(metrics, components, bc_weight)
+    return {"problem": "poly_d2_o4", "variant": args.variant_label,
             "seed": args.seed, "params": n_params(model), **metrics}
 
 
 def run_chirp(args, device):
     torch.manual_seed(args.seed)
     x_int, x_bc, x_eval = common_points(args, device)
-    x_int.requires_grad_(True)
-    model = TanhMLP(2, args.hidden, args.depth, 1).to(device)
     a = 2
-    f = chirp_source(a, x_int).detach()
+    model, model_dtype = build_model(
+        "complex_sinh", 2, args.hidden, args.depth, omega0=2.0 * math.pi * a
+    )
+    model = model.to(device)
+    xi, xb = x_int.to(model_dtype), x_bc.to(model_dtype)
+    f = chirp_source(a, x_int)
     bc = chirp_exact(a, x_bc)
     scale = 2.0 * (a * math.pi) ** 2
-
     bc_weight = args.bc_weight_chirp
 
     def components():
-        u = model(x_int).squeeze(1)
-        residual = -direct_laplacian(u, x_int) + u - f
-        L_int = (residual / scale).square().mean()
-        L_bc = (model(x_bc).squeeze(1) - bc).square().mean()
+        u = model(xi).real.squeeze(1)
+        lap = (
+            deriv_alpha(model, xi, (0, 0))
+            + deriv_alpha(model, xi, (1, 1))
+        ).real.squeeze(1)
+        L_int = ((-lap + u - f) / scale).square().mean()
+        L_bc = (model(xb).real.squeeze(1) - bc).square().mean()
         return L_int, L_bc
 
     def loss_fn():
         L_int, L_bc = components()
-        return L_int + bc_weight * L_bc, L_int.item()
+        return L_int + bc_weight * L_bc + complex_regularizer(model), L_int.item()
 
     def eval_fn():
         with torch.no_grad():
-            return relative_l2(model(x_eval).squeeze(1), chirp_exact(a, x_eval))
+            pred = model(x_eval.to(model_dtype)).real.squeeze(1)
+            return relative_l2(pred, chirp_exact(a, x_eval))
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    attach_final_loss_parts(metrics, components, bc_weight)
-    return {"problem": "chirp_a2", "variant": variant_name(args),
+    finalize(metrics, components, bc_weight)
+    return {"problem": "chirp_a2", "variant": args.variant_label,
             "seed": args.seed, "params": n_params(model), **metrics}
 
 
 def run_maxwell(args, device):
     torch.manual_seed(args.seed)
     x_int, x_bc, x_eval = common_points(args, device)
-    x_int.requires_grad_(True)
-    re = TanhMLP(2, args.hidden, args.depth, 1).to(device)
-    im = TanhMLP(2, args.hidden, args.depth, 1).to(device)
-    model = nn.ModuleList([re, im])
     a = 4
     ap = a * math.pi
+    field, _ = make_complex_field(
+        "complex_sinh", 2, args.hidden, args.depth, device,
+        omega0=2.0 * math.pi * a, sigma=math.pi * a,
+    )
+    model = field.module
     kappa2 = ap**2 * (1.0 + 0.2j)
-    multiplier = -2.0 * ap**2 + kappa2
-    f = (multiplier * maxwell_exact(a, x_int)).detach()
+    f = (-2.0 * ap**2 + kappa2) * maxwell_exact(a, x_int)
     bc = maxwell_exact(a, x_bc)
-
-    def pred(x):
-        return re(x).squeeze(1) + 1j * im(x).squeeze(1)
-
+    scale = 2.0 * ap**2
     bc_weight = args.bc_weight_maxwell
 
     def components():
-        ur = re(x_int).squeeze(1)
-        ui = im(x_int).squeeze(1)
-        u = ur + 1j * ui
-        lap = direct_laplacian(ur, x_int) + 1j * direct_laplacian(ui, x_int)
-        residual = lap + kappa2 * u - f
-        L_int = (residual.abs() / (2.0 * ap**2)).square().mean()
-        L_bc = (pred(x_bc) - bc).abs().square().mean()
+        u = field.pred(x_int)
+        lap = field.deriv(x_int, (0, 0)) + field.deriv(x_int, (1, 1))
+        L_int = ((lap + kappa2 * u - f).abs() / scale).square().mean()
+        L_bc = (field.pred(x_bc) - bc).abs().square().mean()
         return L_int, L_bc
 
     def loss_fn():
         L_int, L_bc = components()
-        return L_int + bc_weight * L_bc, L_int.item()
+        return L_int + bc_weight * L_bc + complex_regularizer(model), L_int.item()
 
     def eval_fn():
         with torch.no_grad():
-            return relative_l2(pred(x_eval), maxwell_exact(a, x_eval))
+            return relative_l2(field.pred(x_eval), maxwell_exact(a, x_eval))
 
     metrics = train(model, loss_fn, eval_fn, args, device)
-    attach_final_loss_parts(metrics, components, bc_weight)
-    return {"problem": "maxwell_a4", "variant": variant_name(args),
+    finalize(metrics, components, bc_weight)
+    return {"problem": "maxwell_a4", "variant": args.variant_label,
             "seed": args.seed, "params": n_params(model),
-            "representation": "split_real", **metrics}
+            "representation": "native_complex", **metrics}
 
 
 def main():
@@ -204,7 +213,7 @@ def main():
     parser.add_argument("--bc-weight-poly", type=float, default=100.0)
     parser.add_argument("--bc-weight-chirp", type=float, default=100.0)
     parser.add_argument("--bc-weight-maxwell", type=float, default=100.0)
-    parser.add_argument("--variant-label", default=None)
+    parser.add_argument("--variant-label", default="complex_sinh_weight_control")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
@@ -214,12 +223,10 @@ def main():
     rows = []
     print(f"device={device} selected={selected} seconds={args.seconds}", flush=True)
     for name in selected:
-        print(f"[run] {name}", flush=True)
         row = runners[name](args, device)
         rows.append(row)
         print(f"[done] {row['problem']} steps={row['steps']} "
-              f"ms/step={row['ms_per_step']:.2f} L2={row['L2_err']:.6g}",
-              flush=True)
+              f"ms/step={row['ms_per_step']:.2f} L2={row['L2_err']:.6g}", flush=True)
         if device.type == "cuda":
             torch.cuda.empty_cache()
     write_rows(rows, str(args.out))

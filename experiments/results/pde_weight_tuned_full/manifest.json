@@ -1,0 +1,20 @@
+{
+  "status": "controlled_single_seed_comparison",
+  "paper_evidence": "requires_multi_seed_confirmation",
+  "source_parent_commit": "2f256cf",
+  "hardware": "NVIDIA H20, 97871 MiB",
+  "python": "3.11.15",
+  "torch": "2.5.1+cu121",
+  "training_seed": 0,
+  "evaluation_seed": 12345,
+  "budget_seconds_per_run": 180.0,
+  "hidden_width": 128,
+  "hidden_depth": 4,
+  "n_interior": 4096,
+  "n_boundary": 512,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "learning_rate_schedule": "cosine_by_training_time",
+  "weight_selection_manifest": "../pde_weight_tuning/manifest.json",
+  "reporting_rule": "final model L2; histories retain best-so-far information"
+}

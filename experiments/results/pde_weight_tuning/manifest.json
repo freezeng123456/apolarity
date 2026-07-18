@@ -1,0 +1,29 @@
+{
+  "status": "weight_selection",
+  "paper_evidence": false,
+  "source_parent_commit": "2f256cf",
+  "hardware": "NVIDIA H20, 97871 MiB",
+  "python": "3.11.15",
+  "torch": "2.5.1+cu121",
+  "training_seed": 0,
+  "validation_eval_seed": 54321,
+  "budget_seconds_per_candidate": 30.0,
+  "objective": "L_int + w_bc * L_bc",
+  "selection_rule": "lowest held-out validation L2 within the predeclared scalar grid and boundary extensions",
+  "grids": {
+    "vanilla_poly": [0.03, 0.1, 0.3, 1.0, 3.0],
+    "vanilla_chirp": [0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    "vanilla_maxwell": [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0],
+    "sinh_poly": [0.1, 0.3, 1.0, 3.0, 10.0],
+    "sinh_chirp": [0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    "sinh_maxwell": [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0],
+    "mim_poly": [0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    "wire_chirp": [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    "pwnn_maxwell": [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0]
+  },
+  "selected_weights": {
+    "vanilla": {"poly_d2_o4": 0.3, "chirp_a2": 0.1, "maxwell_a4": 0.03},
+    "complex_sinh": {"poly_d2_o4": 1.0, "chirp_a2": 0.1, "maxwell_a4": 0.03},
+    "specialized": {"poly_d2_o4_mim": 1.0, "chirp_a2_wire": 0.001, "maxwell_a4_pwnn": 0.03}
+  }
+}

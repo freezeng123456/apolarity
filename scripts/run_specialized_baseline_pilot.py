@@ -158,14 +158,16 @@ def run_poly(args, device: torch.device) -> dict:
     x_int = sample_interior(args.n_int, 2, device=device, generator=generator)
     x_bc = sample_boundary(args.n_bc, 2, device=device, generator=generator)
     x_int.requires_grad_(True)
-    eval_generator = torch.Generator(device=device).manual_seed(12345)
+    eval_generator = torch.Generator(device=device).manual_seed(args.eval_seed)
     x_eval = sample_interior(8192, 2, device=device, generator=eval_generator)
 
     model = TanhMLP(2, args.hidden, args.depth, 2).to(device)
     S = 2.0 * math.pi**2
     f_scaled = torch.sin(math.pi * x_int).prod(dim=1).detach()  # f / S^2
 
-    def loss_fn():
+    bc_weight = args.bc_weight_poly
+
+    def components():
         uv = model(x_int)
         u, v = uv[:, 0], uv[:, 1]  # v approximates Delta(u)/(-S)
         r1 = direct_laplacian(u, x_int) / S + v
@@ -173,7 +175,11 @@ def run_poly(args, device: torch.device) -> dict:
         L_int = r1.square().mean() + r2.square().mean()
         uv_bc = model(x_bc)
         L_bc = uv_bc.square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
@@ -194,12 +200,17 @@ def run_poly(args, device: torch.device) -> dict:
         record_history=True,
         history_every_steps=args.history_every_steps,
     )
+    L_int, L_bc = components()
     return {
         "problem": "poly_d2_o4",
         "variant": "mim_p_shared",
         "seed": args.seed,
         "params": n_params(model),
         "representation": "real_two_output",
+        "bc_weight": bc_weight,
+        "L_int_final": L_int.item(),
+        "L_bc_final": L_bc.item(),
+        "loss_final": (L_int + bc_weight * L_bc).item(),
         **metrics,
     }
 
@@ -223,7 +234,7 @@ def run_chirp(args, device: torch.device) -> dict:
     x_int = sample_interior(args.n_int, 2, device=device, generator=generator)
     x_bc = sample_boundary(args.n_bc, 2, device=device, generator=generator)
     x_int.requires_grad_(True)
-    eval_generator = torch.Generator(device=device).manual_seed(12345)
+    eval_generator = torch.Generator(device=device).manual_seed(args.eval_seed)
     x_eval = sample_interior(8192, 2, device=device, generator=eval_generator)
 
     a = 2
@@ -233,12 +244,18 @@ def run_chirp(args, device: torch.device) -> dict:
     bc = chirp_exact(a, x_bc)
     residual_scale = 2.0 * (a * math.pi) ** 2
 
-    def loss_fn():
+    bc_weight = args.bc_weight_chirp
+
+    def components():
         u = model(x_int).squeeze(1)
         residual = -direct_laplacian(u, x_int) + u - f
         L_int = (residual / residual_scale).square().mean()
         L_bc = (model(x_bc).squeeze(1) - bc).square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
@@ -257,6 +274,7 @@ def run_chirp(args, device: torch.device) -> dict:
         record_history=True,
         history_every_steps=args.history_every_steps,
     )
+    L_int, L_bc = components()
     return {
         "problem": "chirp_a2",
         "variant": "wire",
@@ -265,6 +283,10 @@ def run_chirp(args, device: torch.device) -> dict:
         "representation": "complex_gabor_real_output",
         "wire_sigma": args.wire_sigma,
         "wire_upstream_commit": "bf95232e0f60434bcbd9b4398ef4c11490832526",
+        "bc_weight": bc_weight,
+        "L_int_final": L_int.item(),
+        "L_bc_final": L_bc.item(),
+        "loss_final": (L_int + bc_weight * L_bc).item(),
         **metrics,
     }
 
@@ -279,7 +301,7 @@ def run_maxwell(args, device: torch.device) -> dict:
     generator = torch.Generator(device=device).manual_seed(args.seed)
     x_int = sample_interior(args.n_int, 2, device=device, generator=generator)
     x_bc = sample_boundary(args.n_bc, 2, device=device, generator=generator)
-    eval_generator = torch.Generator(device=device).manual_seed(12345)
+    eval_generator = torch.Generator(device=device).manual_seed(args.eval_seed)
     x_eval = sample_interior(8192, 2, device=device, generator=eval_generator)
 
     a = 4
@@ -291,12 +313,18 @@ def run_maxwell(args, device: torch.device) -> dict:
     bc = maxwell_exact(a, x_bc)
     model = PlaneWaveNet(2, args.hidden, init_wavenumber=ap).to(device)
 
-    def loss_fn():
+    bc_weight = args.bc_weight_maxwell
+
+    def components():
         pred, lap = model.pred_and_laplacian(x_int)
         residual = lap + kappa2 * pred - f
         L_int = (residual.abs() / (2.0 * ap**2)).square().mean()
         L_bc = (model(x_bc) - bc).abs().square().mean()
-        return L_int + 100.0 * L_bc, L_int.item()
+        return L_int, L_bc
+
+    def loss_fn():
+        L_int, L_bc = components()
+        return L_int + bc_weight * L_bc, L_int.item()
 
     def eval_fn():
         with torch.no_grad():
@@ -315,12 +343,17 @@ def run_maxwell(args, device: torch.device) -> dict:
         record_history=True,
         history_every_steps=args.history_every_steps,
     )
+    L_int, L_bc = components()
     return {
         "problem": "maxwell_a4",
         "variant": "pwnn",
         "seed": args.seed,
         "params": n_params(model),
         "representation": "native_complex_plane_wave",
+        "bc_weight": bc_weight,
+        "L_int_final": L_int.item(),
+        "L_bc_final": L_bc.item(),
+        "loss_final": (L_int + bc_weight * L_bc).item(),
         **metrics,
     }
 
@@ -338,6 +371,10 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--lr-final", type=float, default=1e-4)
     parser.add_argument("--history-every-steps", type=int, default=20)
+    parser.add_argument("--eval-seed", type=int, default=12345)
+    parser.add_argument("--bc-weight-poly", type=float, default=100.0)
+    parser.add_argument("--bc-weight-chirp", type=float, default=100.0)
+    parser.add_argument("--bc-weight-maxwell", type=float, default=100.0)
     parser.add_argument("--wire-sigma", type=float, default=10.0)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
