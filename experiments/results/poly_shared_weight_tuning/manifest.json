@@ -9,5 +9,15 @@
   "poly_d2_o4": {
     "boundary_terms": ["u", "Delta u"],
     "frozen_weights": [0.02, 0.58]
+  },
+  "poly_d2_o2": {
+    "boundary_terms": ["u"],
+    "grid": [0.01, 0.03, 0.1, 0.3, 1.0, 3.0],
+    "frozen_weights": [0.3]
+  },
+  "poly_d2_o6": {
+    "boundary_terms": ["u", "Delta u", "Delta^2 u"],
+    "search": "five fixed-sum profiles, two 90-second confirmations, then total-scale endpoints",
+    "frozen_weights": [0.02, 0.1, 0.78]
   }
 }
