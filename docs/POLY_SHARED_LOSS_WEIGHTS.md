@@ -24,7 +24,58 @@ candidate vector is shared by both methods.  The symmetric selection score is
 the geometric mean of the two validation relative-L2 errors.  Once frozen,
 the final comparison uses evaluation seed 12345 and does not retune.
 
-## Poly d2 o4
+## Cartesian-grid audit for o4 and o6
+
+The earlier o4/o6 weights below were obtained by a staged profile-and-scale
+search.  A later audit replaces that heuristic for future comparisons with the
+predeclared per-component grid
+
+```text
+G = {0.01, 0.03, 0.1, 0.3, 1, 3}.
+```
+
+Every Cartesian product point uses training seed 0, evaluation seed 54321,
+and 30 wall-clock seconds for each method.  The ranking key is the geometric
+mean of the Vanilla and Sinh validation relative-L2 errors, followed by the
+maximum error and weight sum as tie breakers.  The audit contains all 36 o4
+points and all 216 o6 points, with no missing or non-finite results.
+
+For o4, the grid winner is
+
+```text
+[lambda_u, lambda_Delta_u] = [0.3, 3.0].
+```
+
+| rank | weights | Vanilla relative L2 | Sinh relative L2 | geometric mean |
+|---:|---|---:|---:|---:|
+| 1 | `[0.3, 3.0]` | 1.385e-1 | 4.637e-3 | **2.534e-2** |
+| 2 | `[0.03, 1.0]` | 1.118e-1 | 2.166e-2 | 4.921e-2 |
+| 3 | `[0.03, 3.0]` | 1.533e-1 | 1.673e-2 | 5.065e-2 |
+
+For o6, the 30-second winner is `[3.0, 0.01, 0.1]`.  Direct sixth-order AD
+fits only about 35 Vanilla updates into 30 seconds, so the top five grid points
+were re-run for 90 seconds under the same shared protocol.  The confirmation
+ranking selects
+
+```text
+[lambda_u, lambda_Delta_u, lambda_Delta2_u] = [3.0, 0.01, 0.03].
+```
+
+| confirmation rank | weights | Vanilla relative L2 | Sinh relative L2 | geometric mean |
+|---:|---|---:|---:|---:|
+| 1 | `[3.0, 0.01, 0.03]` | 9.988e-1 | 7.915e-2 | **2.812e-1** |
+| 2 | `[3.0, 0.03, 0.01]` | 9.988e-1 | 8.048e-2 | 2.835e-1 |
+| 3 | `[3.0, 0.03, 0.03]` | 9.988e-1 | 8.529e-2 | 2.919e-1 |
+
+The 90-second confirmation is a candidate-selection run, not a formal paper
+comparison.  In particular, all five confirmed o6 candidates leave Vanilla
+near relative error 1 under this short budget.  The selected vectors must be
+used in a fresh 180-second final comparison before replacing the historical
+formal metrics below.
+
+## Earlier staged search and formal runs
+
+### Poly d2 o4
 
 The two weights correspond to `[u, Delta u]` after derivative normalization.
 The ratio sweep fixes their sum at 0.6 and tests increasingly strong emphasis
@@ -51,7 +102,7 @@ Both methods use the same loss vector and improve through the end of training.
 Multi-seed confirmation remains necessary before using the row as final paper
 evidence.
 
-## Poly d2 o2
+### Poly d2 o2
 
 The scalar sweep tests `lambda_u` in
 `{0.01, 0.03, 0.1, 0.3, 1, 3}`.  The shared geometric-mean validation score is
@@ -73,7 +124,7 @@ Vanilla history briefly reaches `7.755e-4` near 179 seconds and then spikes to
 the reported final value; no best-checkpoint value is substituted into the
 table.
 
-## Poly d2 o6
+### Poly d2 o6
 
 The three weights correspond to `[u, Delta u, Delta^2 u]`.  Because sixth-order
 direct AD is expensive (about 0.86 seconds per step), the search is staged:
@@ -101,14 +152,15 @@ rather than a stationary zero solution.  Its remaining error is concentrated
 in the lower-order boundary conditions; only 210 sixth-order direct-AD steps
 fit in the shared wall-clock budget.
 
-## Frozen 2D Poly weight table
+## Weight table after the Cartesian audit
 
 | atomic problem | shared boundary weights |
 |---|---|
 | `poly_d2_o2` | `[0.3]` |
-| `poly_d2_o4` | `[0.02, 0.58]` |
-| `poly_d2_o6` | `[0.02, 0.10, 0.78]` |
+| `poly_d2_o4` | `[0.3, 3.0]` |
+| `poly_d2_o6` | `[3.0, 0.01, 0.03]` (top-five 90-second confirmation) |
 
-These weights are shared across the two methods.  The comparison remains a
-single-training-seed study and requires multi-seed confirmation before final
-paper use.
+These weights are shared across the two methods.  The o4/o6 180-second tables
+above still describe the earlier staged-search vectors and must not be quoted
+as results for the new Cartesian-grid vectors.  Fresh formal runs and
+multi-seed confirmation remain necessary before final paper use.
