@@ -63,6 +63,11 @@ def maxwell_exact(a: int, x: torch.Tensor) -> torch.Tensor:
 
 def partial(model: nn.Module, x: torch.Tensor, alpha: tuple[int, ...], method: str):
     backend = "direct_autodiff" if method == "vanilla" else "waring_complex_jet"
+    if method == "vanilla":
+        # Direct nested autodiff retains an input graph for each derivative.
+        # Reusing the same requires-grad tensor across loss calls would make
+        # the next optimizer step backpropagate through a freed graph.
+        x = x.detach().clone().requires_grad_(True)
     return single_monomial_partial(model, x, alpha, backend=backend)
 
 
@@ -90,10 +95,6 @@ def run_one(family: str, a: int, method: str, weight: float, seconds: float,
     x_eval = sample_interior(8192, 2, device=device, generator=eval_gen)
     model, dtype = build_problem(family, a, method, hidden, depth, device)
     xi, xb = x_int.to(dtype), x_bc.to(dtype)
-    if method == "vanilla":
-        xi.requires_grad_(True)
-        xb.requires_grad_(True)
-
     if family == "chirp":
         source = chirp_source(a, x_int).detach()
         bc_target = chirp_exact(a, x_bc)
