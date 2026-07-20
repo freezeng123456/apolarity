@@ -24,7 +24,52 @@ candidate vector is shared by both methods.  The symmetric selection score is
 the geometric mean of the two validation relative-L2 errors.  Once frozen,
 the final comparison uses evaluation seed 12345 and does not retune.
 
-## Cartesian-grid audit for o4 and o6
+## Power-of-ten grid audit for o4 and o6
+
+The latest audit restricts every boundary coefficient to an integer power of
+ten and searches the full range
+
+```text
+G = {1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3}.
+```
+
+Each Cartesian point uses training seed 0, evaluation seed 54321, and 30
+wall-clock seconds per method.  All 49 o4 points and all 343 o6 points are
+present, with two finite method rows per point.  The shared ranking metric is
+the geometric mean of the Vanilla and Sinh validation relative-L2 errors.
+
+The selected vectors are
+
+```text
+o4: [lambda_u, lambda_Delta_u] = [1e-1, 1e1]
+o6: [lambda_u, lambda_Delta_u, lambda_Delta2_u] = [1e-2, 1e0, 1e1]
+```
+
+| problem | weights | Vanilla relative L2 | Sinh relative L2 | geometric mean |
+|---|---|---:|---:|---:|
+| o4 | `[1e-1, 1e1]` | 1.011e-1 | 2.053e-2 | **4.556e-2** |
+| o6 | `[1e-2, 1e0, 1e1]` | 5.532e-1 | 1.443e-1 | **2.825e-1** |
+
+At the o4 winner, the final raw losses `(PDE, u, Delta u)` are
+`(1.812e-3, 1.488e-2, 2.821e-5)` for Vanilla and
+`(7.311e-5, 1.305e-4, 9.567e-7)` for Sinh.  After weighting, the boundary
+contributions are `(1.488e-3, 2.821e-4)` and
+`(1.305e-5, 9.567e-6)`, respectively.
+
+At the o6 winner, the final raw losses `(PDE, u, Delta u, Delta^2 u)` are
+`(1.681e-1, 2.067e-1, 1.159e-2, 3.663e-4)` for Vanilla and
+`(5.889e-4, 1.328e-2, 1.060e-3, 1.702e-5)` for Sinh.  The weighted boundary
+contributions are `(2.067e-3, 1.159e-2, 3.663e-3)` and
+`(1.328e-4, 1.060e-3, 1.702e-4)`, respectively.
+
+Neither winning vector touches the `1e-3` or `1e3` search boundary, so this
+range is adequate for the present 30-second screen.  In particular, the o6
+winner lowers the short-budget Vanilla error from the previous near-zero-solution
+region (about 1.0) to 0.553.  The screen still contains only about 35 direct-AD
+Vanilla updates for o6; fresh longer-budget and multi-seed runs are required
+before paper use.
+
+## Earlier Cartesian-grid audit for o4 and o6
 
 The earlier o4/o6 weights below were obtained by a staged profile-and-scale
 search.  A later audit replaces that heuristic for future comparisons with the
@@ -152,15 +197,15 @@ rather than a stationary zero solution.  Its remaining error is concentrated
 in the lower-order boundary conditions; only 210 sixth-order direct-AD steps
 fit in the shared wall-clock budget.
 
-## Weight table after the Cartesian audit
+## Current shared weight table
 
 | atomic problem | shared boundary weights |
 |---|---|
 | `poly_d2_o2` | `[0.3]` |
-| `poly_d2_o4` | `[0.3, 3.0]` |
-| `poly_d2_o6` | `[3.0, 0.01, 0.03]` (top-five 90-second confirmation) |
+| `poly_d2_o4` | `[1e-1, 1e1]` |
+| `poly_d2_o6` | `[1e-2, 1e0, 1e1]` |
 
 These weights are shared across the two methods.  The o4/o6 180-second tables
 above still describe the earlier staged-search vectors and must not be quoted
-as results for the new Cartesian-grid vectors.  Fresh formal runs and
+as results for the new power-grid vectors.  Fresh formal runs and
 multi-seed confirmation remain necessary before final paper use.
