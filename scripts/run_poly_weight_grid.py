@@ -77,6 +77,8 @@ def run_point(
         str(RUNNER),
         "--order",
         str(args.order),
+        "--dim",
+        str(args.dim),
         "--method",
         "both",
         "--bc-weights",
@@ -120,7 +122,8 @@ def write_summary(path: Path, records: list[dict], metadata: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--order", type=int, choices=(4, 6), required=True)
+    parser.add_argument("--order", type=int, choices=(2, 4, 6), required=True)
+    parser.add_argument("--dim", type=int, choices=(2, 3), default=2)
     parser.add_argument("--grid", default="0.01,0.03,0.1,0.3,1,3")
     parser.add_argument("--seconds", type=float, default=30.0)
     parser.add_argument("--confirm-top-k", type=int, default=0)
@@ -141,6 +144,7 @@ def main() -> None:
         records.append(score_rows(rows))
     metadata = {
         "order": args.order,
+        "dimension": args.dim,
         "grid": list(grid),
         "seconds_per_method": args.seconds,
         "seed": args.seed,

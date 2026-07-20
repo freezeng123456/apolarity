@@ -53,14 +53,14 @@ def exact_solution(x: torch.Tensor) -> torch.Tensor:
 def common_points(args, device: torch.device):
     train_generator = torch.Generator(device=device).manual_seed(args.seed)
     x_int = sample_interior(
-        args.n_int, 2, device=device, generator=train_generator
+        args.n_int, args.dim, device=device, generator=train_generator
     )
     x_bc = sample_boundary(
-        args.n_bc, 2, device=device, generator=train_generator
+        args.n_bc, args.dim, device=device, generator=train_generator
     )
     eval_generator = torch.Generator(device=device).manual_seed(args.eval_seed)
     x_eval = sample_interior(
-        args.n_eval, 2, device=device, generator=eval_generator
+        args.n_eval, args.dim, device=device, generator=eval_generator
     )
     return x_int, x_bc, x_eval
 
@@ -75,12 +75,12 @@ def repeated_laplacians(
 
 
 def jet_laplacian_power(
-    model: torch.nn.Module, x: torch.Tensor, power: int
+    model: torch.nn.Module, x: torch.Tensor, power: int, dim: int
 ) -> torch.Tensor:
     if power == 0:
         return model(x).real.squeeze(1)
     value = None
-    for coefficient, alpha in laplacian_power_terms(2, power):
+    for coefficient, alpha in laplacian_power_terms(dim, power):
         term = deriv_alpha(model, x, alpha).real.squeeze(1)
         value = coefficient * term if value is None else value + coefficient * term
     assert value is not None
@@ -100,7 +100,7 @@ def train_one(args, method: str, device: torch.device) -> dict:
     order = args.order
     m = order // 2
     weights = parse_bc_weights(args.bc_weights, order)
-    S = 2.0 * math.pi**2
+    S = args.dim * math.pi**2
     x_int, x_bc, x_eval = common_points(args, device)
     source = ((-S) ** m * exact_solution(x_int)).detach()
     bc_targets = [
@@ -110,7 +110,7 @@ def train_one(args, method: str, device: torch.device) -> dict:
     if method == "vanilla":
         x_int.requires_grad_(True)
         x_bc.requires_grad_(True)
-        model = TanhMLP(2, args.hidden, args.depth, 1).to(device)
+        model = TanhMLP(args.dim, args.hidden, args.depth, 1).to(device)
 
         def components():
             interior_powers = repeated_laplacians(
@@ -144,7 +144,7 @@ def train_one(args, method: str, device: torch.device) -> dict:
     else:
         model, model_dtype = build_model(
             "complex_sinh",
-            2,
+            args.dim,
             args.hidden,
             args.depth,
             omega0=2.0 * math.pi,
@@ -154,10 +154,13 @@ def train_one(args, method: str, device: torch.device) -> dict:
         xb = x_bc.to(model_dtype)
 
         def components():
-            interior = jet_laplacian_power(model, xi, m)
+            interior = jet_laplacian_power(model, xi, m, args.dim)
             L_int = ((interior - source) / (S**m)).square().mean()
             L_bc = [
-                ((jet_laplacian_power(model, xb, j) - bc_targets[j]) / (S**j))
+                (
+                    (jet_laplacian_power(model, xb, j, args.dim) - bc_targets[j])
+                    / (S**j)
+                )
                 .square()
                 .mean()
                 for j in range(m)
@@ -196,7 +199,7 @@ def train_one(args, method: str, device: torch.device) -> dict:
     L_int, L_bc = components()
     weighted_bc = sum(weight * term for weight, term in zip(weights, L_bc))
     row = {
-        "problem": f"poly_d2_o{order}",
+        "problem": f"poly_d{args.dim}_o{order}",
         "variant": variant,
         "representation": representation,
         "seed": args.seed,
@@ -218,6 +221,7 @@ def train_one(args, method: str, device: torch.device) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--order", type=int, choices=(2, 4, 6), required=True)
+    parser.add_argument("--dim", type=int, choices=(2, 3), default=2)
     parser.add_argument(
         "--method", choices=("vanilla", "sinh", "both"), default="both"
     )
@@ -247,7 +251,7 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     methods = ("vanilla", "sinh") if args.method == "both" else (args.method,)
     print(
-        f"device={device} order={args.order} methods={methods} "
+        f"device={device} dim={args.dim} order={args.order} methods={methods} "
         f"bc_weights={args.bc_weights} seconds={args.seconds}",
         flush=True,
     )

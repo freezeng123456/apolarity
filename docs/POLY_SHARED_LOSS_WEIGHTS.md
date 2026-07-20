@@ -1,8 +1,8 @@
-# Shared loss weights for the 2D polyharmonic comparison
+# Shared loss weights for the polyharmonic comparison
 
 ## Objective
 
-For order `2m`, both Vanilla PINN and Complex Sinh use exactly the same
+For order `2m` and dimension `d`, both Vanilla PINN and Complex Sinh use exactly the same
 dimensionless objective
 
 ```text
@@ -10,7 +10,7 @@ L = L_PDE + sum_{j=0}^{m-1} lambda_j L_bc,j,
 
 L_PDE  = MSE((Delta^m u - f) / S^m),
 L_bc,j = MSE((Delta^j u - Delta^j u_exact) / S^j),
-S       = 2 pi^2.
+S       = d pi^2.
 ```
 
 Consequently, o2 has one boundary weight, o4 has two, and o6 has three.  This
@@ -24,7 +24,41 @@ candidate vector is shared by both methods.  The symmetric selection score is
 the geometric mean of the two validation relative-L2 errors.  Once frozen,
 the final comparison uses evaluation seed 12345 and does not retune.
 
-## Power-of-ten grid audit for o4 and o6
+The weight search is dimension-specific: the normalization changes with `d`,
+so a vector selected for d=2 must not be reused for d=3 without a new search.
+
+## d=3 power-of-ten grid and formal runs
+
+The d=3 audit uses the same predeclared grid
+
+```text
+G = {1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3}.
+```
+
+It contains 7, 49, and 343 Cartesian points for o2, o4, and o6,
+respectively. Each point used 30 seconds per method, training seed 0, and
+evaluation seed 54321. The selected vectors and screen scores are:
+
+| problem | weights | Vanilla relative L2 | Sinh relative L2 | geometric mean |
+|---|---|---:|---:|---:|
+| d3 o2 | `[1e-1]` | 1.024e-1 | 5.030e-2 | **7.178e-2** |
+| d3 o4 | `[1e-1, 1e0]` | 7.452e-1 | 1.436e-1 | **3.272e-1** |
+| d3 o6 | `[1e-1, 1e-1, 1e0]` | 9.991e-1 | 4.035e-1 | **6.349e-1** |
+
+Using those frozen vectors, the 1200-second single-seed formal runs gave:
+
+| problem | Vanilla relative L2 | Sinh relative L2 | Vanilla loss | Sinh loss |
+|---|---:|---:|---:|---:|
+| d3 o2 | 2.108e-3 | 2.182e-3 | 2.695e-7 | 1.858e-7 |
+| d3 o4 | 2.380e-2 | **1.183e-2** | 6.001e-5 | 8.985e-6 |
+| d3 o6 | 4.968e-1 | **4.328e-2** | 2.677e-2 | 1.140e-4 |
+
+The d3 o6 screen is especially low-fidelity: sixth-order direct AD fits only
+about 14 Vanilla updates in 30 seconds, and 548 updates in 1200 seconds.
+These results are therefore diagnostic single-seed evidence; multi-seed runs
+and longer budgets are still required for paper-grade claims.
+
+## d=2 power-of-ten grid audit for o4 and o6
 
 The latest audit restricts every boundary coefficient to an integer power of
 ten and searches the full range
@@ -204,8 +238,12 @@ fit in the shared wall-clock budget.
 | `poly_d2_o2` | `[0.3]` |
 | `poly_d2_o4` | `[1e-1, 1e1]` |
 | `poly_d2_o6` | `[1e-2, 1e0, 1e1]` |
+| `poly_d3_o2` | `[1e-1]` |
+| `poly_d3_o4` | `[1e-1, 1e0]` |
+| `poly_d3_o6` | `[1e-1, 1e-1, 1e0]` |
 
-These weights are shared across the two methods.  The o4/o6 180-second tables
+These weights are shared across the two methods within each atomic problem.
+The o4/o6 180-second tables
 above still describe the earlier staged-search vectors and must not be quoted
 as results for the new power-grid vectors.  Fresh formal runs and
 multi-seed confirmation remain necessary before final paper use.

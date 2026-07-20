@@ -16,8 +16,10 @@ SPEC.loader.exec_module(grid_search)
 
 def test_cartesian_grid_sizes_and_order():
     grid = (0.01, 0.1, 1.0)
+    o2 = grid_search.cartesian_weights(2, grid)
     o4 = grid_search.cartesian_weights(4, grid)
     o6 = grid_search.cartesian_weights(6, grid)
+    assert len(o2) == 3
     assert len(o4) == 9
     assert len(o6) == 27
     assert o4[0] == (0.01, 0.01)

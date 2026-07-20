@@ -1,0 +1,34 @@
+{
+  "order": 6,
+  "dimension": 3,
+  "grid": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "seconds_per_method": 30.0,
+  "seed": 0,
+  "eval_seed": 54321,
+  "combinations": 343,
+  "selection_metric": "geometric_mean",
+  "tie_breakers": [
+    "max_error",
+    "weight_sum"
+  ],
+  "best": {
+    "bc_weights": [
+      0.1,
+      0.1,
+      1.0
+    ],
+    "vanilla_L2_err": 0.9990652985784999,
+    "sinh_L2_err": 0.40351475737404907,
+    "geometric_mean": 0.6349311707238315,
+    "max_error": 0.9990652985784999,
+    "weight_sum": 1.2
+  }
+}

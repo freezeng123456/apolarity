@@ -42,3 +42,25 @@ def test_repeated_laplacians_for_poly_exact_solution():
     S = 2.0 * torch.pi**2
     for j, value in enumerate(powers):
         torch.testing.assert_close(value, (-S) ** j * u, rtol=1e-10, atol=1e-10)
+
+
+def test_repeated_laplacians_for_three_dimensional_poly_exact_solution():
+    x = torch.tensor(
+        [[0.2, -0.3, 0.4], [0.4, 0.1, -0.2]],
+        dtype=torch.float64,
+        requires_grad=True,
+    )
+    u = study.exact_solution(x)
+    powers = study.repeated_laplacians(u, x, 3)
+    S = 3.0 * torch.pi**2
+    for j, value in enumerate(powers):
+        torch.testing.assert_close(value, (-S) ** j * u, rtol=1e-10, atol=1e-10)
+
+
+def test_complex_sinh_three_dimensional_laplacian_shape():
+    model, dtype = study.build_model(
+        "complex_sinh", 3, 8, 2, omega0=2.0 * torch.pi
+    )
+    x = torch.rand(5, 3, dtype=dtype)
+    value = study.jet_laplacian_power(model, x, power=1, dim=3)
+    assert value.shape == (5,)
