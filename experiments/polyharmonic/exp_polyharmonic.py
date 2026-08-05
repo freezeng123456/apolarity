@@ -82,7 +82,7 @@ def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None,
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=120.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--orders", default="2,4,6,8")
     ap.add_argument("--dim", type=int, default=2)
     ap.add_argument("--omega0", type=float, default=None)

@@ -15,11 +15,10 @@ use a split-real (Re/Im) pair (RVPINN).
 
 The three sweep values are formal `jsc_v3` settings with frozen
 `pow10_reasonable_v1` scalar weights in `experiments/common/boundary_weights.py`.
-The only formal methods
-are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
-\(H=128\) uses the native complex representation. Each external baseline uses
-two \(H=128\) networks in a split-real representation. Their total trainable
-real parameter counts are recorded but do not change the shared literal width.
+The only formal methods are `complex_sinh` and `complex_sinh_autodiff`: the
+same native-complex network is run once with the jet backend and once with
+direct nested coordinate autodiff. Both use literal hidden width \(H=128\) and
+the same wall-clock budget.
 
 ## Current outputs
 

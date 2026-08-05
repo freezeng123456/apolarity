@@ -67,11 +67,13 @@ REQUIRED_FIELDS = {
     "hardware",
     "steps",
     "ms_per_step",
+    "loss_last",
     "L_int_last",
     "L2_err",
+    "rel_error",
     "nan",
 }
-FINITE_METRICS = ("ms_per_step", "L_int_last", "L2_err")
+FINITE_METRICS = ("ms_per_step", "loss_last", "L_int_last", "L2_err", "rel_error")
 
 
 def _read_rows(paths: list[Path]) -> list[dict]:
@@ -157,6 +159,8 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
         for metric in FINITE_METRICS:
             if not math.isfinite(float(row[metric])):
                 raise ValueError(f"row {index} has non-finite {metric}")
+        if abs(float(row["rel_error"]) - float(row["L2_err"])) > 1e-12:
+            raise ValueError(f"row {index} has inconsistent rel_error/L2_err")
         if not str(row["git_sha"]) or not str(row["hardware"]):
             raise ValueError(f"row {index} lacks provenance strings")
 
@@ -196,7 +200,7 @@ def _validate_histories(paths: list[Path], rows: list[dict]) -> list[dict]:
             raise ValueError(f"history {index} is empty")
         previous_time = -math.inf
         for point in history:
-            if not isinstance(point, list) or len(point) != 3:
+            if not isinstance(point, list) or len(point) != 4:
                 raise ValueError(f"history {index} has malformed point")
             values = [float(value) for value in point]
             if not all(math.isfinite(value) for value in values):

@@ -74,7 +74,7 @@ def make_problems(sweeps=(2, 4, 6, 8), bc_weight=None):
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=80.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--sweeps", default="1,2,3")
     ap.add_argument("--bc-weight", default=None,
                     help="scalar powers-of-ten Dirichlet weight")

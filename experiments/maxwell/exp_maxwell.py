@@ -80,8 +80,8 @@ def run(sweeps, variants, args, bc_weight=None):
         eval_r = _sample(8192, device, g)
         eval_r_hist = eval_r[: min(getattr(args, "history_eval_n", 4096), eval_r.shape[0])]
         print(f"\n=== {name} (a={a}, |kappa^2|={abs(kappa2):.1f}) ===", flush=True)
-        print(f"{'variant':<16}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
-              f"{'L_int':>11}{'L2_err':>12}", flush=True)
+        print(f"{'variant':<24}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
+              f"{'loss':>11}{'L_int':>11}{'rel_error':>12}", flush=True)
         for seed in seed_ids:
             train_gen = torch.Generator(device=device).manual_seed(seed)
             x_int = _sample(args.n_int, device, train_gen)
@@ -137,8 +137,10 @@ def run(sweeps, variants, args, bc_weight=None):
                              "lr_schedule": sk["lr_schedule"], "omega0": omega0,
                              "fourier_sigma": sigma,
                              "collocation": "paired_seed_v1", **m})
-                print(f"{v:<16}{rep:>7}{n_params(module):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
-                      f"{m['L_int_last']:>11.2e}{m['L2_err']:>12.3e}  (seed {seed})", flush=True)
+                rows[-1]["rel_error"] = rows[-1]["L2_err"]
+                print(f"{v:<24}{rep:>7}{n_params(module):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
+                      f"{m['loss_last']:>11.3e}{m['L_int_last']:>11.3e}"
+                      f"{m['rel_error']:>12.3e}  (seed {seed})", flush=True)
                 del field, module, loss_fn, eval_fn, history_eval_fn
                 if device.type == "cuda":
                     torch.cuda.empty_cache()
@@ -148,7 +150,7 @@ def run(sweeps, variants, args, bc_weight=None):
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=80.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--sweeps", default="2,4,6")
     ap.add_argument("--bc-weight", default=None,
                     help="scalar powers-of-ten Dirichlet weight")

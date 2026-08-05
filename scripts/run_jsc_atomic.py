@@ -263,6 +263,8 @@ def main() -> None:
             * (1 if args.smoke else len(SEEDS))
             * (1.0 if args.smoke else BUDGET_SECONDS)
         ),
+        "history_schema": ["elapsed_seconds", "rel_error", "loss", "L_int"],
+        "row_metrics": ["loss_last", "L_int_last", "L2_err", "rel_error"],
     }
     if args.dry_run:
         print(json.dumps(manifest, indent=2))

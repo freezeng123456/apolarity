@@ -14,10 +14,10 @@ Liu 2020). Removes the "separable sine" confound present in the other families.
 
 The three sweep values are formal `jsc_v3` settings with frozen
 `pow10_reasonable_v1` scalar weights in `experiments/common/boundary_weights.py`.
-The only formal methods
-are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
-and all three baselines use literal hidden width \(H=128\). Trainable real
-parameter counts are reported separately and are not used to rescale widths.
+The only formal methods are `complex_sinh` and `complex_sinh_autodiff`: the
+same native-complex network is run once with the jet backend and once with
+direct nested coordinate autodiff. Both use literal hidden width \(H=128\) and
+the same wall-clock budget.
 
 ## Current outputs
 

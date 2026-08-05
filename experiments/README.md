@@ -19,7 +19,7 @@ auxiliary result bundles, and non-formal runners are kept under
 
 | folder | family | status |
 |---|---|---|
-| `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v3` (pow10 weights) |
+| `polyharmonic/` | Poly, \(d=2\), order \(2,4,6\) | formal `jsc_v3` (pow10 weights) |
 | `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v3` (pow10 weights) |
 | `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v3` (pow10 weights) |
 
@@ -28,20 +28,18 @@ Their historical runners and outputs are retained only for diagnosis; they do
 not implement the active formal evidence pipeline and cannot be cited as part
 of the active paper inventory.
 
-## Frozen formal methods and literal width
+## Frozen v3 methods and literal width
 
 The only formal comparison contains:
 
 - `complex_sinh` (Complex Sinh);
-- SIREN;
-- mFF-PINN;
-- MscaleDNN-2-sin.
+- `complex_sinh_autodiff` (the same Complex Sinh network with direct nested coordinate autodiff).
 
-Every formal method uses literal hidden width \(H=128\). Trainable real degrees
-of freedom are recorded separately (each complex parameter counts as two real
-degrees of freedom), but they do not change the width. Maxwell counts both
-split-real \(H=128\) baseline networks. Any formal output with a width other
-than 128 is rejected.
+Both methods use literal hidden width \(H=128\), identical initialization,
+collocation, seeds, loss weights, and wall-clock budget. Only the derivative
+backend changes. Trainable real degrees of freedom are recorded separately;
+both methods use the same native-complex network and any formal output with a
+width other than 128 is rejected.
 
 ## Frozen v2 results and pending v3 protocol
 
@@ -55,26 +53,24 @@ The next formal run is `jsc_v3`, with the archived-search-informed
 
 ```text
 Poly d2/o2 [0.1], d2/o4 [0.1, 10], d2/o6 [0.01, 1, 10]
-Poly d3/o2 [0.1], d3/o4 [0.1, 1], d3/o6 [0.1, 0.1, 1]
 Chirp a1/a2/a3 [1], [0.1], [0.01]
 Maxwell a2/a4/a6 [0.1], [0.1], [0.01]
 ```
 
 No `jsc_v3` training has been launched yet.
 
-## The formal task grid
+## The compact v3 task grid
 
-The complete preregistered grid is:
+The compact v3 grid is:
 
-- Poly: \(d\in\{2,3\}\) and order \(\in\{2,4,6\}\); \(d=3\), order 6 is a
-  required setting;
+- Poly: \(d=2\), order \(\in\{2,4,6\}\);
 - Chirp: \(a\in\{1,2,3\}\);
 - Maxwell: \(a\in\{2,4,6\}\).
 
 Formal tasks must be launched one setting at a time:
 
 ```bash
-bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh poly --dim 2 --order 6
 bash scripts/run_jsc_main3.sh chirp --sweep 2
 bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
@@ -85,11 +81,11 @@ must pass the validator before it can be consumed:
 
 ```bash
 python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v3/poly_d3_o6
+  experiments/results/jsc_v3/poly_d2_o6
 ```
 
 `validate_jsc_results.py` checks the protocol metadata, the boundary profile, the
-four methods, the five seeds, unique keys, literal \(H=128\), finite metrics, and
-history traces. Figure and table builders for the next run must accept only
-validated `protocol_id=jsc_v3` bundles. The old v2 figure remains a historical
-record until v3 results are available.
+two methods, the three seeds, unique keys, literal \(H=128\), finite loss and
+relative-error metrics, and four-column history traces. Figure and table builders
+for the next run must accept only validated `protocol_id=jsc_v3` bundles. The old
+v2 figure remains a historical record until v3 results are available.
