@@ -16,7 +16,7 @@ from pathlib import Path
 import torch
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 PROTOCOL_ID = "jsc_v2_mscale5_sensitivity_v1"
 SCALES = (1.0, 2.0, 4.0, 8.0, 16.0)
 TASKS = (

@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 from apolarity import single_monomial_partial
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 COMMON = ROOT / "experiments" / "common"
 sys.path.insert(0, str(COMMON))
 

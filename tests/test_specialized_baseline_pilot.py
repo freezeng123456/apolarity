@@ -6,7 +6,7 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "specialized_pilot", ROOT / "scripts" / "run_specialized_baseline_pilot.py"
+    "specialized_pilot", ROOT / "experiments" / "archived" / "scripts" / "run_specialized_baseline_pilot.py"
 )
 pilot = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

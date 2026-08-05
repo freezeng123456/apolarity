@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-RUNNER = ROOT / "scripts" / "run_poly_shared_weights.py"
+ROOT = Path(__file__).resolve().parents[3]
+RUNNER = ROOT / "experiments" / "archived" / "scripts" / "run_poly_shared_weights.py"
 METHODS = {"vanilla_tanh_direct_ad", "complex_sinh"}
 
 

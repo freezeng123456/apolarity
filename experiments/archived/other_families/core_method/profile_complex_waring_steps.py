@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[2]  # repo root (experiments/core_method/<file>)
+ROOT = Path(__file__).resolve().parents[4]  # repo root (experiments/archived/other_families/core_method/<file>)
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))

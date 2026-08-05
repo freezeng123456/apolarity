@@ -10,9 +10,10 @@ import sys
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-GRID_RUNNER = ROOT / "scripts" / "run_poly_weight_grid.py"
-FORMAL_RUNNER = ROOT / "scripts" / "run_poly_shared_weights.py"
+ROOT = Path(__file__).resolve().parents[3]
+ARCHIVED_SCRIPTS = ROOT / "experiments" / "archived" / "scripts"
+GRID_RUNNER = ARCHIVED_SCRIPTS / "run_poly_weight_grid.py"
+FORMAL_RUNNER = ARCHIVED_SCRIPTS / "run_poly_shared_weights.py"
 ORDERS = (2, 4, 6)
 
 

@@ -11,6 +11,8 @@ import torch.nn as nn
 MODULE_PATH = (
     Path(__file__).resolve().parents[1]
     / "experiments"
+    / "archived"
+    / "other_families"
     / "core_method"
     / "benchmark_single_monomial.py"
 )

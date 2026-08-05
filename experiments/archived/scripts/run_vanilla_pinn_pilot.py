@@ -12,10 +12,11 @@ import torch
 import torch.nn as nn
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 COMMON = ROOT / "experiments" / "common"
+ARCHIVED_SCRIPTS = ROOT / "experiments" / "archived" / "scripts"
 sys.path.insert(0, str(COMMON))
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ARCHIVED_SCRIPTS))
 
 from osc_common import (  # noqa: E402
     n_params,

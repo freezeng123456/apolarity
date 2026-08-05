@@ -7,7 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "poly_weight_grid", ROOT / "scripts" / "run_poly_weight_grid.py"
+    "poly_weight_grid", ROOT / "experiments" / "archived" / "scripts" / "run_poly_weight_grid.py"
 )
 grid_search = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

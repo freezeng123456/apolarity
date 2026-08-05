@@ -39,9 +39,11 @@ src/apolarity/
 experiments/
   common/            # shared harness (osc_common.py)
   tools/             # jsc_v2-only figure and LaTeX-table builders
-  <family>/          # one PDE family each: exp_*.py + run.sh + README.md + data/
-  core_method/       # implementation diagnostics
-  archived/          # historical implementation diagnostics
+  polyharmonic/      # active Polyharmonic family
+  chirp/             # active radial-chirp family
+  maxwell/           # active Maxwell family
+  results/jsc_v2/    # active validated formal bundles
+  archived/          # other families, auxiliary results, and historical runners
 docs/
   beamer/  apolarity_report_zh.tex
   paper/   jsc_paper_main.tex
@@ -55,9 +57,11 @@ See `experiments/README.md` for the frozen experiment protocol.
 
 ## Experiment status
 
-All `experiments/*/data/` directories have been cleared. There are currently no
-formal experiment results. Paper figures and tables are **TBD** and must not be
-inferred from historical outputs.
+All `experiments/*/data/` directories have been cleared. The active experiment
+scope is limited to Polyharmonic, Chirp, and Maxwell. Their validated formal
+bundles live under `experiments/results/jsc_v2/`. All other experiment families,
+auxiliary result bundles, and historical runners are under
+`experiments/archived/` and are not part of the active paper inventory.
 
 The only formal methods are:
 
@@ -94,9 +98,9 @@ python scripts/validate_jsc_results.py \
   experiments/results/jsc_v2/poly_d3_o6
 ```
 
-Historical or archived runners, every family-local `run.sh`, and scripts under
-`experiments/core_method/` are retained only for implementation diagnosis.
-Their outputs are not paper evidence.
+Historical or archived runners, every family-local `run.sh`, and all material
+under `experiments/archived/` are retained only for implementation diagnosis.
+Their outputs are not part of the active paper evidence.
 
 ## API
 

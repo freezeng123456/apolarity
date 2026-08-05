@@ -10,8 +10,10 @@ One PDE family is kept per subfolder:
   data/             # currently empty
 ```
 
-All `experiments/*/data/` directories have been cleared. There are currently no
-formal results, and all paper figures and tables are **TBD**.
+All `experiments/*/data/` directories have been cleared. The active paper
+scope is limited to the three formal problem families below. Other families,
+auxiliary result bundles, and non-formal runners are kept under
+`experiments/archived/` and are not part of the active inventory.
 
 ## Families
 
@@ -20,17 +22,11 @@ formal results, and all paper figures and tables are **TBD**.
 | `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v2` |
 | `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v2` |
 | `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v2` |
-| `helmholtz/` | high-wavenumber Helmholtz (+ anisotropic) | diagnostic only |
-| `helmholtz_vc/` | variable-coefficient Helmholtz | diagnostic only |
-| `plate_beam/` | Kirchhoff plate / Euler–Bernoulli beam | diagnostic only |
-| `kdv/` | linearized KdV / dispersive wave | diagnostic only |
-| `cahn_hilliard/` | Cahn–Hilliard | diagnostic only |
-| `nls/` | cubic nonlinear Schrödinger | diagnostic only |
-| `core_method/` | derivative and training diagnostics | diagnostic only |
 
-Historical or archived runners and every family-local `run.sh` are retained
-only for implementation diagnosis. They do not implement the formal evidence
-pipeline, and their outputs cannot be cited as paper evidence.
+The other families are archived in `experiments/archived/other_families/`.
+Their historical runners and outputs are retained only for diagnosis; they do
+not implement the active formal evidence pipeline and cannot be cited as part
+of the active paper inventory.
 
 ## Frozen formal methods and literal width
 
@@ -75,6 +71,6 @@ python scripts/validate_jsc_results.py \
 
 `validate_jsc_results.py` checks the protocol metadata, the four methods, the
 five seeds, unique keys, literal \(H=128\), finite metrics, and history traces.
-Figure and table builders accept only validated
-`protocol_id=jsc_v2` bundles. Since no formal bundle currently exists, their
-paper outputs remain **TBD**.
+Figure and table builders accept only validated `protocol_id=jsc_v2` bundles.
+The active results are the validated bundles under
+`experiments/results/jsc_v2/<task_id>/`.

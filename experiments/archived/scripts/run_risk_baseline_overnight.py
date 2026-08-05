@@ -15,10 +15,11 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 COMMON = ROOT / "experiments" / "common"
 SRC = ROOT / "src"
-for path in (COMMON, SRC, ROOT / "scripts"):
+ARCHIVED_SCRIPTS = ROOT / "experiments" / "archived" / "scripts"
+for path in (COMMON, SRC, ARCHIVED_SCRIPTS):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
