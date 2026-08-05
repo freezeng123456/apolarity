@@ -156,7 +156,7 @@ def all_tasks() -> tuple[AtomicTask, ...]:
 def validate_architecture_table(task: AtomicTask) -> dict[str, ArchitectureSpec]:
     specs = task.specs()
     if set(specs) != set(FORMAL_METHODS):
-        raise ValueError("architecture table does not contain the four formal methods")
+        raise ValueError("architecture table does not contain the two v3 methods")
     for spec in specs.values():
         if spec.width != FORMAL_WIDTH:
             raise ValueError(
