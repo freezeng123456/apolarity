@@ -8,12 +8,14 @@
 
 | 核查项 | 结论 |
 |---|---|
-| boundary 参数是否全部搜索 | **没有**。active 正式协议把 boundary loss 固定为 `bc_weight=100`，`n_bc=512`，随机均匀采 face/sign；没有在 1200 秒、5 seeds 的正式协议中搜索权重、采样量、face 比例或各边界分量权重。|
+| 是否做过“找一个合理权重”的历史搜索 | **三组都做过**。archive 对 Poly 的 d=2/3、order=2/4/6，Chirp 的 a=1/2/3，Maxwell 的 a=2/4/6 都能找到实际 grid/ranking/selected-weight 文件；但这不是 active `jsc_v2` 的 1200 秒、5-seed exhaustive sweep。|
+| active formal 是否已经采用这些搜索结果 | **还没有**。当前 active `jsc_v2` 仍固定 `bc_weight=100`；Poly archive 多数是逐 boundary-component 向量，不能直接等价替换 active 的 scalar weight。Chirp/Maxwell 的历史 scalar weights 可以直接作为合理候选。|
 | 每个主实验是否有 autodiff 基线 | **没有正式的**。active 的 240 条 canonical rows 全部是 `backend=jet`；三个 family 都没有纳入 active `jsc_v2` 的 direct-autodiff Vanilla 5-seed 对照。archive 中存在 Poly/Chirp/Maxwell 的单 seed direct-AD 控制，但不能替代正式基线。|
 | 日志/数据打点是否完整 | **history 足够画实时曲线，但日志不完整**。active 有 240 条 history traces 和最终指标；没有随结果提交的独立 runner `.log`，history 也没有逐时 `L_bc`、学习率、显存或梯度范数。|
 
-因此，现在可以画“正式 active 结果的实时相对 (L^2) 误差图”，但还不能写成
-“boundary 已充分调优”或“所有主实验均有 direct-AD baseline”。
+因此，如果问题是“有没有做过足以找合理权重的历史搜索”，答案是 **有，三组都有**；
+如果问题是“active 正式 1200 秒、5-seed protocol 是否已经用统一规则重新确认过这些权重”，
+答案仍是 **没有**。这两个结论需要区分。
 
 ## 1. boundary 参数核对
 
@@ -34,21 +36,61 @@ active `jsc_v2` 的固定 setting 是：
 `loss = L_int + 100.0 * L_bc`。active CSV/JSON 只记录 `n_bc=512`，没有 boundary
 weight 或 face 采样策略字段，说明这些量没有作为正式实验轴保存。
 
-archive 里确实做过一些先导搜索，但它们不是 active formal evidence：
+archive 中与“合理权重”直接相关的证据如下。
 
-- `experiments/archived/results/pde_weight_tuning/manifest.json`：代表性 Poly/Chirp/Maxwell
-  的 30 秒 scalar grid，按方法选过候选权重；
-- `experiments/archived/results/osc_shared_weight_grid/` 与
-  `osc_shared_weight_full20m/`：Chirp/Maxwell 的 scalar grid，随后做过 seed-0 的
-  1200 秒控制，选择值随 sweep 改变（例如 Chirp `a=1/2/3` 为 `1/0.1/0.01`，
-  Maxwell `a=2/4/6` 为 `0.1/0.1/0.01`）；
-- `experiments/archived/results/poly_shared_weight_tuning/` 与
-  `poly_shared_weight_power_grid/`：Poly 的逐 boundary-component 权重搜索，包含短预算
-  grid 和 seed-0 控制。
+### Polyharmonic：三维度/阶数轴都有搜索记录
 
-这些搜索存在三个缺口：不是 active `jsc_v2` 的 5-seed 1200 秒复核；没有统一的
-method × task 选择规则；也没有系统搜索 `n_bc`、face 比例/采样方式。故 boundary
-“全部搜过”这一项必须判定为 **否**。
+- `poly_shared_weight_tuning/`：d=2 的 order 2/4/6。order 2 做了 scalar grid；
+  order 4 做了 fixed-sum component profiles；order 6 做了多组 profile、90 秒确认
+  和 total-scale endpoint。
+- `poly_shared_weight_power_grid/`：d=2 的 order 4/6 做了 (7^m) component grid；
+  d=3 的 order 2/4/6 分别做了 7、49、343 个组合，grid 为
+  `[0.001, 0.01, 0.1, 1, 10, 100, 1000]`，并保存了 ranking/selected weights。
+- `poly_shared_weight_cartesian/`：d=2 order 4/6 又做了更窄的 6 点 Cartesian grid，
+  order 6 还对 top-5 做了 90 秒 confirmation。
+- `poly_power_grid_full20m/d3/`：d=3 order 2/4/6 使用 selected component weights
+  做过 seed-0、1200 秒 Vanilla/direct-AD vs Complex-Sinh 控制。
+
+典型 selected component weights 包括：
+
+| setting | archived reasonable weights |
+|---|---|
+| Poly d2/o2 | `[0.3]`（scalar tuning） |
+| Poly d2/o4 | `[0.02, 0.58]`；另有 power-grid `[0.1, 10.0]`、Cartesian `[0.3, 3.0]` |
+| Poly d2/o6 | `[0.02, 0.1, 0.78]`；另有 power-grid `[0.01, 1.0, 10.0]` |
+| Poly d3/o2 | `[0.1]` |
+| Poly d3/o4 | `[0.1, 1.0]` |
+| Poly d3/o6 | `[0.1, 0.1, 1.0]` |
+
+### Chirp：a=1/2/3 都做过 scalar grid
+
+`osc_shared_weight_grid/chirp_a{1,2,3}/ranking.json` 都存在，grid 是
+`[0.001, 0.01, 0.1, 1, 10, 100, 1000]`，每个候选同时比较 Vanilla 和 Sinh，
+按 geometric mean / max error 排序。随后 `osc_shared_weight_full20m/` 对三个 sweep
+做了 seed-0、1200 秒控制，selected scalar weights 是：
+
+```text
+chirp_a1 = 1.0,  chirp_a2 = 0.1,  chirp_a3 = 0.01
+```
+
+### Maxwell：a=2/4/6 都做过 scalar grid
+
+`osc_shared_weight_grid/maxwell_a{2,4,6}/ranking.json` 同样全部存在，使用同一个
+7 点 scalar grid，并有 1200 秒 seed-0 control。selected scalar weights 是：
+
+```text
+maxwell_a2 = 0.1,  maxwell_a4 = 0.1,  maxwell_a6 = 0.01
+```
+
+需要保留一个历史差异说明：更早的 `pde_weight_tuning/manifest.json` 对代表性
+`maxwell_a4` 给过 `0.03` 的 method-specific 候选；后来的 shared Vanilla/Sinh grid
+选择了 `0.1`。这不是“没有搜过”，而是不同旧 protocol/目标函数得到的合理候选不同。
+
+因此，按你现在的目标（找一个合理、可复用的权重，而不是声称全局最优），三组都可以
+判定为 **已经搜过参**。剩余缺口是：这些历史 selected weights 还没有被统一映射进
+active `jsc_v2`（尤其 Poly 的 component vector 与当前 scalar `bc_weight=100`
+接口不一致），并且没有做 active 5-seed formal confirmation；`n_bc`、face 比例和
+采样方式也没有搜索。
 
 ## 2. direct-autodiff 基线核对
 
@@ -141,9 +183,10 @@ timestamp，并在 manifest 中注明这一点。
 
 描述性地看，Complex Sinh 在 Chirp/Maxwell 三个 sweep 和低/中阶 Poly 上明显下降；
 Poly d3/o6 目前几乎没有收敛，不能用较低阶 Poly 的结果替代它。SIREN 在这套固定
-1200 秒协议下多数 task 仍接近 1。这里的现象不能归因于“boundary 已调到最优”，
-因为 boundary sweep 尚未成为 active formal protocol；同样也不能声称相对 direct AD
-的优势，因为 direct-AD 5-seed baseline 尚未补齐。
+1200 秒协议下多数 task 仍接近 1。现在可以说“历史上三组都做过合理权重搜索”，但
+active 这批曲线仍使用固定 `bc_weight=100`，所以不能把当前曲线表述成“已经采用了
+archive selected weights”，也不能声称相对 direct AD 的优势，因为 direct-AD 5-seed
+baseline 尚未补齐。
 
 ## 5. 论文实时图
 

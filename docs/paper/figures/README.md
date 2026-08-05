@@ -26,6 +26,7 @@ the median best-so-far error, and `×` marks the median final checkpoint. The
 figure is intentionally limited to the four active formal methods and excludes
 `auto` and every path under `experiments/archived`.
 
-The full audit, including all 12 active task final medians and the missing
-boundary/direct-autodiff evidence, is in
+The full audit, including all 12 active task final medians, the archived
+reasonable-weight searches, and the missing formal direct-autodiff evidence,
+is in
 `docs/paper/active_three_main_experiments_audit_zh.md`.
