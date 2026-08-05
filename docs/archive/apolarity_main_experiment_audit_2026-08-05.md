@@ -48,10 +48,12 @@
 
 ## 论文图
 
-`docs/paper/figures/paper_realtime_accuracy.pdf` 是向量版，PNG 是预览，CSV 是
-插值后的曲线数据。图中使用 raw median + seed IQR，同时画出 best-so-far 和
-final marker；`auto` 被排除。生成脚本是
-`experiments/tools/plot_paper_accuracy.py`。
+历史 mixed-scope 图的向量版、PNG 预览和 CSV 已移动到
+`docs/archive/figures/mixed_scope/`；生成脚本已移动到
+`experiments/archived/scripts/plot_paper_accuracy_mixed_scope.py`。这些文件混合了
+已归档的 P0/backend/risk-baseline 结果，只保留作 provenance，不能作为当前三主实验
+图。当前 active 图和新的边界/autodiff/logging 核查见
+`docs/paper/active_three_main_experiments_audit_zh.md`。
 
 在补齐 boundary protocol、Maxwell formal direct-AD baseline 和 P0-C 逐时
 boundary logging 之前，不应把结果写成“boundary 已充分调优”或“所有主实验均

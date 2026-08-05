@@ -1,0 +1,141 @@
+{
+  "protocol_id": "jsc_v2",
+  "source": "experiments/results/jsc_v2",
+  "active_scope": [
+    "polyharmonic",
+    "chirp",
+    "maxwell"
+  ],
+  "tasks": [
+    "poly_d2_o4",
+    "chirp_a2",
+    "maxwell_a4"
+  ],
+  "methods": [
+    "complex_sinh",
+    "siren",
+    "fourier",
+    "mscale"
+  ],
+  "budget_seconds": 1200.0,
+  "timing_note": "1200 s is the training-time budget; evaluation time is excluded, and the final optimizer step may overshoot the timestamp slightly",
+  "statistic": "median and seed IQR in log-error space; raw held-out relative L2 histories",
+  "best_so_far": "median of each seed's cumulative minimum; shown dotted for context",
+  "excluded": [
+    "auto",
+    "experiments/archived"
+  ],
+  "groups": {
+    "poly_d2_o4:complex_sinh": {
+      "n_seeds": 5,
+      "history_points_min": 247,
+      "history_points_max": 248,
+      "tmax_s": 1200.192,
+      "final_median_l2": 0.00784381568813464,
+      "final_q25_l2": 0.006562547332978424,
+      "final_q75_l2": 0.009599179861107891
+    },
+    "poly_d2_o4:siren": {
+      "n_seeds": 5,
+      "history_points_min": 247,
+      "history_points_max": 247,
+      "tmax_s": 1200.089,
+      "final_median_l2": 0.9999946858968648,
+      "final_q25_l2": 0.9999847727238974,
+      "final_q75_l2": 1.000040938988241
+    },
+    "poly_d2_o4:fourier": {
+      "n_seeds": 5,
+      "history_points_min": 105,
+      "history_points_max": 105,
+      "tmax_s": 1200.379,
+      "final_median_l2": 0.806063901513522,
+      "final_q25_l2": 0.7755765158396207,
+      "final_q75_l2": 0.927566321785371
+    },
+    "poly_d2_o4:mscale": {
+      "n_seeds": 5,
+      "history_points_min": 83,
+      "history_points_max": 83,
+      "tmax_s": 1200.479,
+      "final_median_l2": 0.5630039098468457,
+      "final_q25_l2": 0.5544820540859047,
+      "final_q75_l2": 0.5691844952311271
+    },
+    "chirp_a2:complex_sinh": {
+      "n_seeds": 5,
+      "history_points_min": 846,
+      "history_points_max": 852,
+      "tmax_s": 1200.052,
+      "final_median_l2": 0.0026365291906759675,
+      "final_q25_l2": 0.0022735455007776703,
+      "final_q75_l2": 0.002714249321386352
+    },
+    "chirp_a2:siren": {
+      "n_seeds": 5,
+      "history_points_min": 968,
+      "history_points_max": 970,
+      "tmax_s": 1200.041,
+      "final_median_l2": 1.5196610834247692,
+      "final_q25_l2": 1.5168740497000743,
+      "final_q75_l2": 1.5388007242453505
+    },
+    "chirp_a2:fourier": {
+      "n_seeds": 5,
+      "history_points_min": 413,
+      "history_points_max": 414,
+      "tmax_s": 1200.085,
+      "final_median_l2": 0.9818940260648706,
+      "final_q25_l2": 0.9467569165372832,
+      "final_q75_l2": 1.0264558358449125
+    },
+    "chirp_a2:mscale": {
+      "n_seeds": 5,
+      "history_points_min": 330,
+      "history_points_max": 330,
+      "tmax_s": 1200.157,
+      "final_median_l2": 0.7669052789683143,
+      "final_q25_l2": 0.7364435104308189,
+      "final_q75_l2": 0.8459650334611981
+    },
+    "maxwell_a4:complex_sinh": {
+      "n_seeds": 5,
+      "history_points_min": 847,
+      "history_points_max": 850,
+      "tmax_s": 1200.071,
+      "final_median_l2": 0.04283261746543567,
+      "final_q25_l2": 0.042039853433088366,
+      "final_q75_l2": 0.0430582937560714
+    },
+    "maxwell_a4:siren": {
+      "n_seeds": 5,
+      "history_points_min": 486,
+      "history_points_max": 486,
+      "tmax_s": 1200.077,
+      "final_median_l2": 1.0003548139919936,
+      "final_q25_l2": 1.0000767792788532,
+      "final_q75_l2": 1.000667727403804
+    },
+    "maxwell_a4:fourier": {
+      "n_seeds": 5,
+      "history_points_min": 207,
+      "history_points_max": 207,
+      "tmax_s": 1200.194,
+      "final_median_l2": 1.1229638150645533,
+      "final_q25_l2": 1.0433418595521526,
+      "final_q75_l2": 1.1263016869566678
+    },
+    "maxwell_a4:mscale": {
+      "n_seeds": 5,
+      "history_points_min": 164,
+      "history_points_max": 164,
+      "tmax_s": 1200.151,
+      "final_median_l2": 1.2905074859489676,
+      "final_q25_l2": 1.2677324758346067,
+      "final_q75_l2": 1.3488703615902422
+    }
+  },
+  "summary_csv": "docs/paper/figures/jsc_realtime_accuracy.csv",
+  "figure_pdf": "docs/paper/figures/jsc_realtime_accuracy.pdf",
+  "figure_png": "docs/paper/figures/jsc_realtime_accuracy.png"
+}
