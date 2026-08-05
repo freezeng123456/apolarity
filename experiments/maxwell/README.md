@@ -13,7 +13,9 @@ use a split-real (Re/Im) pair (RVPINN).
 
 ## Formal comparison
 
-The three sweep values are formal `jsc_v2` settings. The only formal methods
+The three sweep values are formal `jsc_v3` settings with frozen
+`pow10_reasonable_v1` scalar weights in `experiments/common/boundary_weights.py`.
+The only formal methods
 are `complex_sinh`, SIREN, mFF-PINN, and MscaleDNN-2-sin. Complex Sinh
 \(H=128\) uses the native complex representation. Each external baseline uses
 two \(H=128\) networks in a split-real representation. Their total trainable
@@ -21,15 +23,17 @@ real parameter counts are recorded but do not change the shared literal width.
 
 ## Current outputs
 
-`data/` is empty. No formal Maxwell result exists, and the Maxwell paper figure
-and table are **TBD**.
+`data/` is empty. The completed fixed-`bc_weight=100` `jsc_v2` bundle is kept as
+historical evidence under `experiments/results/jsc_v2/`; no `jsc_v3` Maxwell
+result has been launched yet, so the new Maxwell paper figure and table are
+**TBD**.
 
 ## Launch one formal setting
 
 ```bash
 bash scripts/run_jsc_main3.sh maxwell --sweep 4
 python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v2/maxwell_a4
+  experiments/results/jsc_v3/maxwell_a4
 ```
 
 Choose exactly one allowed `--sweep` value per launch. The family-local

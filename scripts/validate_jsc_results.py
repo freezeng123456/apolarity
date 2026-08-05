@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and merge one atomic jsc_v2 result bundle."""
+"""Validate and merge one atomic jsc_v3 result bundle."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ COMMON = ROOT / "experiments" / "common"
 sys.path.insert(0, str(COMMON))
 
 from protocol import (  # noqa: E402
+    BOUNDARY_PROFILE_ID,
+    BOUNDARY_WEIGHTS,
     BUDGET_SECONDS,
     COLLOCATION_PROTOCOL,
     DEPTH,
@@ -30,6 +32,8 @@ from protocol import (  # noqa: E402
 
 REQUIRED_FIELDS = {
     "protocol_id",
+    "boundary_profile_id",
+    "boundary_weights",
     "git_sha",
     "git_dirty",
     "task_id",
@@ -99,6 +103,22 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
             raise ValueError(f"row {index} missing metadata: {sorted(missing)}")
         if row["protocol_id"] != PROTOCOL_ID:
             raise ValueError(f"row {index} has protocol_id={row['protocol_id']!r}")
+        if row["boundary_profile_id"] != BOUNDARY_PROFILE_ID:
+            raise ValueError(
+                f"row {index} has boundary_profile_id={row['boundary_profile_id']!r}"
+            )
+        try:
+            weights = tuple(float(value) for value in json.loads(row["boundary_weights"]))
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ValueError(f"row {index} has malformed boundary_weights") from exc
+        expected_weights = BOUNDARY_WEIGHTS.get(str(row["task_id"]))
+        if expected_weights is None or len(weights) != len(expected_weights):
+            raise ValueError(f"row {index} has wrong boundary weight length")
+        if any(not math.isfinite(value) or value <= 0.0 for value in weights):
+            raise ValueError(f"row {index} has non-positive boundary weight")
+        if any(not math.isclose(value, expected, rel_tol=0.0, abs_tol=1e-12)
+               for value, expected in zip(weights, expected_weights)):
+            raise ValueError(f"row {index} has boundary weights inconsistent with {BOUNDARY_PROFILE_ID}")
         method = str(row["variant"])
         seed = int(row["seed"])
         if method not in FORMAL_METHODS:
@@ -110,16 +130,18 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
         by_method[method].add(seed)
         if int(row["actual_width"]) != FORMAL_WIDTH:
             raise ValueError(
-                f"jsc_v2 requires literal H={FORMAL_WIDTH}; "
+                f"{PROTOCOL_ID} requires literal H={FORMAL_WIDTH}; "
                 f"row {index} has H={row['actual_width']}"
             )
         if int(row["depth"]) != DEPTH:
-            raise ValueError(f"row {index} depth does not match jsc_v2")
+            raise ValueError(f"row {index} depth does not match {PROTOCOL_ID}")
         if not smoke:
             if float(row["budget_seconds"]) != BUDGET_SECONDS:
-                raise ValueError(f"row {index} budget does not match jsc_v2")
+                raise ValueError(f"row {index} budget does not match {PROTOCOL_ID}")
             if int(row["n_int"]) != N_INTERIOR or int(row["n_bc"]) != N_BOUNDARY:
-                raise ValueError(f"row {index} collocation sizes do not match jsc_v2")
+                raise ValueError(
+                    f"row {index} collocation sizes do not match {PROTOCOL_ID}"
+                )
         if row["collocation"] != COLLOCATION_PROTOCOL:
             raise ValueError(f"row {index} has wrong collocation protocol")
         real_dof = int(row["real_dof"])
@@ -151,8 +173,20 @@ def _validate_rows(rows: list[dict], *, smoke: bool) -> tuple[str, list[dict]]:
 def _validate_histories(paths: list[Path], rows: list[dict]) -> list[dict]:
     histories = _read_rows(paths)
     expected = {(row["variant"], int(row["seed"])) for row in rows}
+    task_id = str(rows[0]["task_id"])
+    expected_weights = BOUNDARY_WEIGHTS[task_id]
     seen: set[tuple[str, int]] = set()
     for index, item in enumerate(histories):
+        if item.get("protocol_id") != PROTOCOL_ID:
+            raise ValueError(f"history {index} has wrong protocol_id")
+        if item.get("boundary_profile_id") != BOUNDARY_PROFILE_ID:
+            raise ValueError(f"history {index} has wrong boundary_profile_id")
+        try:
+            history_weights = tuple(float(value) for value in item["boundary_weights"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"history {index} has malformed boundary_weights") from exc
+        if history_weights != expected_weights:
+            raise ValueError(f"history {index} has inconsistent boundary_weights")
         key = (str(item.get("variant")), int(item.get("seed", -1)))
         if key in seen:
             raise ValueError(f"duplicate history key {key}")

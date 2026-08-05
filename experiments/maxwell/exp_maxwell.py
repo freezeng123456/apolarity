@@ -20,6 +20,7 @@ Run:
 from __future__ import annotations
 
 import math
+import json
 
 import torch
 
@@ -28,6 +29,7 @@ import sys as _sys
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "common"))
 from osc_common import (OMEGA0, n_params, train_eval, write_rows, JET_VARIANTS,
                         default_argparser, sched_kwargs, make_complex_field)
+from boundary_weights import parse_weights, weights_for
 
 BETA = 0.2  # loss tangent -> complex permittivity -> complex-valued field
 
@@ -56,7 +58,7 @@ def _sample_bc(B, device, gen=None):
     return x
 
 
-def run(sweeps, variants, args):
+def run(sweeps, variants, args, bc_weight=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sk = sched_kwargs(args)
     seed_start = getattr(args, "seed_start", 0)
@@ -66,6 +68,7 @@ def run(sweeps, variants, args):
     rows = []
     for a in sweeps:
         name = f"maxwell_a{a}"
+        weight = weights_for(name)[0] if bc_weight is None else float(bc_weight)
         ap = a * math.pi
         kappa2 = (ap ** 2) * (1.0 + 1j * BETA)
         lam = (-2.0 * ap ** 2) + kappa2          # f = (Delta + kappa^2) E = lam * E
@@ -98,7 +101,7 @@ def run(sweeps, variants, args):
                     L_int = ((r.abs() / res_scale) ** 2).mean()
                     u_b = field.pred(x_bc)
                     L_bc = ((u_b - bc_t).abs() ** 2).mean()
-                    loss = L_int + 100.0 * L_bc
+                    loss = L_int + weight * L_bc
                     if is_complex:
                         loss = loss + 1e-6 * sum((p.imag ** 2).mean()
                                                  for p in module.parameters() if p.requires_grad)
@@ -129,6 +132,8 @@ def run(sweeps, variants, args):
                              "hidden": args.hidden, "depth": args.depth,
                              "budget_seconds": args.seconds, "n_int": args.n_int,
                              "n_bc": args.n_bc, "lr": args.lr,
+                             "boundary_weights": json.dumps([weight]),
+                             "bc_weight": weight,
                              "lr_schedule": sk["lr_schedule"], "omega0": omega0,
                              "fourier_sigma": sigma,
                              "collocation": "paired_seed_v1", **m})
@@ -145,7 +150,10 @@ def run(sweeps, variants, args):
 if __name__ == "__main__":
     ap = default_argparser(seconds=80.0)
     ap.add_argument("--sweeps", default="2,4,6")
+    ap.add_argument("--bc-weight", default=None,
+                    help="scalar powers-of-ten Dirichlet weight")
     args = ap.parse_args()
     sweeps = [int(s) for s in args.sweeps.split(",") if s]
     variants = [v for v in (args.variants.split(",") if args.variants else [])]
-    run(sweeps, variants, args)
+    bc_weight = None if args.bc_weight is None else parse_weights(args.bc_weight)[0]
+    run(sweeps, variants, args, bc_weight)

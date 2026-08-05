@@ -731,6 +731,10 @@ class LinearProblem:
     box: tuple[float, float] = (-1.0, 1.0)
     sweep: float = 0.0          # the swept parameter value (k, mode, ...), for plots
     bc_weight: float = 100.0
+    # When set, entries are ordered as [u, Delta u, Delta^2 u, ...] and are
+    # applied component-wise.  ``bc_weight`` remains the backwards-compatible
+    # scalar path for legacy experiments.
+    bc_weights: tuple[float, ...] | None = None
     extra: dict = field(default_factory=dict)
 
 
@@ -757,16 +761,24 @@ def linear_loss_factory(prob: LinearProblem, x_int, x_bc, model_dtype):
         L_int = (((res - f) / prob.res_scale) ** 2).mean()
 
         u_bc = predict(model, xb).real
-        L_bc = ((u_bc - bc_t) ** 2).mean()
+        bc_terms = [((u_bc - bc_t) ** 2).mean()]
         for j in prob.bc_lap_powers:
             lap = None
             for coeff, alpha in laplacian_power_terms(prob.d, j):
                 t = deriv_alpha(model, xb, alpha).real
                 lap = coeff * t if lap is None else lap + coeff * t
             tgt = ((-prob.S) ** j) * prob.u_exact(x_bc).unsqueeze(-1)
-            L_bc = L_bc + (((lap - tgt) / (prob.S ** j)) ** 2).mean()
+            bc_terms.append((((lap - tgt) / (prob.S ** j)) ** 2).mean())
 
-        loss = L_int + prob.bc_weight * L_bc
+        if prob.bc_weights is None:
+            loss = L_int + prob.bc_weight * sum(bc_terms)
+        else:
+            if len(prob.bc_weights) != len(bc_terms):
+                raise ValueError(
+                    f"{prob.name}: expected {len(bc_terms)} boundary weights, "
+                    f"got {len(prob.bc_weights)}"
+                )
+            loss = L_int + sum(weight * term for weight, term in zip(prob.bc_weights, bc_terms))
         if complex_params:
             loss = loss + 1e-6 * sum((p.imag ** 2).mean()
                                      for p in model.parameters() if p.requires_grad)
@@ -828,12 +840,16 @@ def run_linear_suite(problems, variants, args, out_csv: str):
                 m = train_eval(model, mdt, lambda: lf(model), eval_fn,
                                seconds=args.seconds, lr=args.lr, device=device,
                                history_eval_fn=history_eval_fn, **sk)
+                weights = prob.bc_weights
+                if weights is None:
+                    weights = (prob.bc_weight,) * (1 + len(prob.bc_lap_powers))
                 row = {"problem": prob.name, "order": prob.order, "sweep": prob.sweep,
                        "variant": v, "seed": seed, "params": n_params(model),
                        "backend": "jet" if v in JET_VARIANTS else "autograd",
                        "hidden": args.hidden, "depth": args.depth,
                        "budget_seconds": args.seconds, "n_int": args.n_int,
                        "n_bc": args.n_bc, "lr": args.lr,
+                       "boundary_weights": json.dumps(list(weights)),
                        "lr_schedule": sk["lr_schedule"], "omega0": om,
                        "fourier_sigma": fs, "collocation": "paired_seed_v1", **m}
                 rows.append(row)

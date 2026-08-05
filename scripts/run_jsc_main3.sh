@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch exactly one preregistered jsc_v2 atomic task.
+# Launch exactly one preregistered jsc_v3 atomic task.
 #
 # Examples:
 #   bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
@@ -36,7 +36,7 @@ LOG_DIR="$ROOT/experiments/logs"
 mkdir -p "$LOG_DIR"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 FAMILY="$1"
-LOG="$LOG_DIR/jsc_v2_${FAMILY}_${STAMP}.log"
+LOG="$LOG_DIR/jsc_v3_${FAMILY}_${STAMP}.log"
 PID_FILE="$LOG.pid"
 
 EXTRA=()

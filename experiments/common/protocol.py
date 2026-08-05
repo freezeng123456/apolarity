@@ -6,10 +6,16 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
+from boundary_weights import BOUNDARY_WEIGHTS, PROFILE_ID, weights_for
 from osc_common import ArchitectureSpec, FORMAL_VARIANTS, formal_architecture_specs
 
 
-PROTOCOL_ID = "jsc_v2"
+# jsc_v2 is the completed fixed-bc_weight=100 bundle.  The next run changes the
+# loss weighting, so it gets a new protocol id and result root rather than
+# silently mixing incompatible rows with the old results.
+PROTOCOL_ID = "jsc_v3"
+LEGACY_PROTOCOL_ID = "jsc_v2"
+BOUNDARY_PROFILE_ID = PROFILE_ID
 FORMAL_WIDTH = 128
 FORMAL_METHODS = FORMAL_VARIANTS
 SEEDS = (0, 1, 2, 3, 4)
@@ -39,6 +45,7 @@ class AtomicTask:
     omega0: float
     fourier_sigma: float
     split_real_baselines: bool
+    boundary_weights: tuple[float, ...]
 
     @property
     def setting(self) -> str:
@@ -59,9 +66,9 @@ class AtomicTask:
 
 def poly_task(dimension: int, order: int) -> AtomicTask:
     if dimension not in (2, 3):
-        raise ValueError("jsc_v2 Poly dimension must be 2 or 3")
+        raise ValueError("jsc_v3 Poly dimension must be 2 or 3")
     if order not in (2, 4, 6):
-        raise ValueError("jsc_v2 Poly order must be 2, 4, or 6")
+        raise ValueError("jsc_v3 Poly order must be 2, 4, or 6")
     return AtomicTask(
         family="poly",
         task_id=f"poly_d{dimension}_o{order}",
@@ -71,12 +78,13 @@ def poly_task(dimension: int, order: int) -> AtomicTask:
         omega0=2.0 * math.pi,
         fourier_sigma=math.pi,
         split_real_baselines=False,
+        boundary_weights=weights_for(f"poly_d{dimension}_o{order}"),
     )
 
 
 def chirp_task(a: int) -> AtomicTask:
     if a not in (1, 2, 3):
-        raise ValueError("jsc_v2 Chirp a must be 1, 2, or 3")
+        raise ValueError("jsc_v3 Chirp a must be 1, 2, or 3")
     return AtomicTask(
         family="chirp",
         task_id=f"chirp_a{a}",
@@ -86,12 +94,13 @@ def chirp_task(a: int) -> AtomicTask:
         omega0=max(10.0, 2.0 * math.pi * a),
         fourier_sigma=max(2.0, math.pi * a),
         split_real_baselines=False,
+        boundary_weights=weights_for(f"chirp_a{a}"),
     )
 
 
 def maxwell_task(a: int) -> AtomicTask:
     if a not in (2, 4, 6):
-        raise ValueError("jsc_v2 Maxwell a must be 2, 4, or 6")
+        raise ValueError("jsc_v3 Maxwell a must be 2, 4, or 6")
     return AtomicTask(
         family="maxwell",
         task_id=f"maxwell_a{a}",
@@ -101,6 +110,7 @@ def maxwell_task(a: int) -> AtomicTask:
         omega0=max(10.0, 2.0 * math.pi * a),
         fourier_sigma=max(2.0, math.pi * a),
         split_real_baselines=True,
+        boundary_weights=weights_for(f"maxwell_a{a}"),
     )
 
 
@@ -141,7 +151,7 @@ def validate_architecture_table(task: AtomicTask) -> dict[str, ArchitectureSpec]
     for spec in specs.values():
         if spec.width != FORMAL_WIDTH:
             raise ValueError(
-                f"jsc_v2 requires literal H={FORMAL_WIDTH}; "
+                f"{PROTOCOL_ID} requires literal H={FORMAL_WIDTH}; "
                 f"{spec.method} has H={spec.width}"
             )
     return specs

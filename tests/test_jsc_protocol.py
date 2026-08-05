@@ -14,6 +14,7 @@ sys.path.insert(0, str(COMMON))
 sys.path.insert(0, str(SCRIPTS))
 
 from protocol import (  # noqa: E402
+    BOUNDARY_PROFILE_ID,
     BUDGET_SECONDS,
     COLLOCATION_PROTOCOL,
     DEPTH,
@@ -75,6 +76,8 @@ def test_protocol_architecture_tables_use_literal_width_128(family, kwargs):
 def _row(method: str, seed: int, width: int, real_dof: int, reference: int) -> dict:
     return {
         "protocol_id": PROTOCOL_ID,
+        "boundary_profile_id": BOUNDARY_PROFILE_ID,
+        "boundary_weights": "[0.1]",
         "git_sha": "a" * 40,
         "git_dirty": False,
         "task_id": "poly_d2_o2",
@@ -126,6 +129,8 @@ def _write_fake_bundle(task_dir: Path, *, bad_width: bool = False) -> None:
         histories = [
             {
                 "protocol_id": PROTOCOL_ID,
+                "boundary_profile_id": BOUNDARY_PROFILE_ID,
+                "boundary_weights": [0.1],
                 "task_id": "poly_d2_o2",
                 "variant": method,
                 "seed": seed,

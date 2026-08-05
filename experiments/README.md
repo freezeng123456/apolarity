@@ -19,9 +19,9 @@ auxiliary result bundles, and non-formal runners are kept under
 
 | folder | family | status |
 |---|---|---|
-| `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v2` |
-| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v2` |
-| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v2` |
+| `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v3` (pow10 weights) |
+| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v3` (pow10 weights) |
+| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v3` (pow10 weights) |
 
 The other families are archived in `experiments/archived/other_families/`.
 Their historical runners and outputs are retained only for diagnosis; they do
@@ -43,7 +43,26 @@ degrees of freedom), but they do not change the width. Maxwell counts both
 split-real \(H=128\) baseline networks. Any formal output with a width other
 than 128 is rejected.
 
-## The only formal protocol: `jsc_v2`
+## Frozen v2 results and pending v3 protocol
+
+The completed 1200-second results under `experiments/results/jsc_v2/` are
+retained as the fixed-`bc_weight=100` historical bundle. They are not mixed with
+the next run because the boundary loss profile is changing.
+
+The next formal run is `jsc_v3`, with the archived-search-informed
+`pow10_reasonable_v1` boundary profile. The profile is frozen in
+`experiments/common/boundary_weights.py` and includes:
+
+```text
+Poly d2/o2 [0.1], d2/o4 [0.1, 10], d2/o6 [0.01, 1, 10]
+Poly d3/o2 [0.1], d3/o4 [0.1, 1], d3/o6 [0.1, 0.1, 1]
+Chirp a1/a2/a3 [1], [0.1], [0.01]
+Maxwell a2/a4/a6 [0.1], [0.1], [0.01]
+```
+
+No `jsc_v3` training has been launched yet.
+
+## The formal task grid
 
 The complete preregistered grid is:
 
@@ -60,17 +79,17 @@ bash scripts/run_jsc_main3.sh chirp --sweep 2
 bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
 
-These are three independent examples, not a batch command. The canonical
-outputs live under `experiments/results/jsc_v2/<task_id>/`. Every formal bundle
+These are three independent examples, not a batch command. The v3 canonical
+outputs will live under `experiments/results/jsc_v3/<task_id>/`. Every formal bundle
 must pass the validator before it can be consumed:
 
 ```bash
 python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v2/poly_d3_o6
+  experiments/results/jsc_v3/poly_d3_o6
 ```
 
-`validate_jsc_results.py` checks the protocol metadata, the four methods, the
-five seeds, unique keys, literal \(H=128\), finite metrics, and history traces.
-Figure and table builders accept only validated `protocol_id=jsc_v2` bundles.
-The active results are the validated bundles under
-`experiments/results/jsc_v2/<task_id>/`.
+`validate_jsc_results.py` checks the protocol metadata, the boundary profile, the
+four methods, the five seeds, unique keys, literal \(H=128\), finite metrics, and
+history traces. Figure and table builders for the next run must accept only
+validated `protocol_id=jsc_v3` bundles. The old v2 figure remains a historical
+record until v3 results are available.

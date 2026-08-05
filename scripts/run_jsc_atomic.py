@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pure Python executor for one preregistered jsc_v2 atomic task."""
+"""Pure Python executor for one preregistered jsc_v3 atomic task."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from protocol import (  # noqa: E402
     BUDGET_SECONDS,
+    BOUNDARY_PROFILE_ID,
     COLLOCATION_PROTOCOL,
     DEPTH,
     EVALUATION_PROTOCOL,
@@ -83,13 +84,14 @@ def _experiment_command(
 ) -> list[str]:
     if task.family == "poly":
         script = ROOT / "experiments" / "polyharmonic" / "exp_polyharmonic.py"
-        setting = ["--dim", str(task.dimension), "--orders", str(task.order)]
+        setting = ["--dim", str(task.dimension), "--orders", str(task.order),
+                   "--bc-weights", ",".join(f"{weight:g}" for weight in task.boundary_weights)]
     elif task.family == "chirp":
         script = ROOT / "experiments" / "chirp" / "exp_chirp.py"
-        setting = ["--sweeps", str(task.sweep)]
+        setting = ["--sweeps", str(task.sweep), "--bc-weight", f"{task.boundary_weights[0]:g}"]
     else:
         script = ROOT / "experiments" / "maxwell" / "exp_maxwell.py"
-        setting = ["--sweeps", str(task.sweep)]
+        setting = ["--sweeps", str(task.sweep), "--bc-weight", f"{task.boundary_weights[0]:g}"]
 
     seconds = 1.0 if smoke else BUDGET_SECONDS
     seeds = 1 if smoke else len(SEEDS)
@@ -176,6 +178,8 @@ def _enrich_part(
             )
         row.update({
             "protocol_id": PROTOCOL_ID,
+            "boundary_profile_id": BOUNDARY_PROFILE_ID,
+            "boundary_weights": json.dumps(list(task.boundary_weights)),
             "git_sha": sha,
             "git_dirty": dirty,
             "task_id": task.task_id,
@@ -204,6 +208,8 @@ def _enrich_part(
     for history in histories:
         history.update({
             "protocol_id": PROTOCOL_ID,
+            "boundary_profile_id": BOUNDARY_PROFILE_ID,
+            "boundary_weights": list(task.boundary_weights),
             "task_id": task.task_id,
             "family": task.family,
             "dimension": task.dimension,
@@ -236,7 +242,7 @@ def main() -> None:
     sha, dirty = _git_state()
     if dirty and not (args.smoke or args.dry_run):
         raise RuntimeError(
-            "formal jsc_v2 runs require a clean Git worktree so git_sha fully "
+            "formal jsc_v3 runs require a clean Git worktree so git_sha fully "
             "identifies the executed code"
         )
     root = args.output_root or (
@@ -245,6 +251,7 @@ def main() -> None:
     task_dir = root / task.task_id
     manifest = {
         "protocol_id": PROTOCOL_ID,
+        "boundary_profile_id": BOUNDARY_PROFILE_ID,
         "task": asdict(task),
         "methods": {method: asdict(spec) for method, spec in specs.items()},
         "git_sha": sha,
