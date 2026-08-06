@@ -358,6 +358,7 @@ def run_worker(args: argparse.Namespace) -> int:
             "method": args.method,
             "weights": list(weights),
             "steps": result["steps"],
+            "loss": result["loss"],
             "rel_error": result["rel_error"],
         }, sort_keys=True), flush=True)
         return 0 if result["status"] == "complete" else 2
