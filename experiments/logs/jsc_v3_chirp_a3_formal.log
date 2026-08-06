@@ -1,0 +1,35 @@
+[begin] chirp_a3 2026-08-06T13:22:30+08:00
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/chirp/exp_chirp.py --sweeps 3 --bc-weight 0.01 --variants complex_sinh --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s/run seeds=[0, 1, 2] lr_schedule=cosine
+
+=== chirp_a3  (d=2, order=2, sweep=3.0, terms=2) ===
+variant                    params       be   steps  ms/step        loss       L_int    rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh               100098      jet   13650    73.26   3.154e-05   1.167e-08    1.763e-04  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh               100098      jet   13623    73.41   3.413e-05   1.038e-08    1.693e-04  (seed 1)
+complex_sinh               100098      jet   13615    73.45   2.924e-05   1.901e-08    2.130e-04  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_part.csv
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/chirp/exp_chirp.py --sweeps 3 --bc-weight 0.01 --variants complex_sinh_autodiff --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_autodiff_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s/run seeds=[0, 1, 2] lr_schedule=cosine
+
+=== chirp_a3  (d=2, order=2, sweep=3.0, terms=2) ===
+variant                    params       be   steps  ms/step        loss       L_int    rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff      100098 autograd    9786   102.19   3.197e-05   4.330e-08    2.007e-04  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff      100098 autograd    9829   101.75   3.451e-05   2.310e-08    4.448e-04  (seed 1)
+complex_sinh_autodiff      100098 autograd    9773   102.33   2.960e-05   7.835e-08    3.698e-04  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_autodiff_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/chirp_a3/complex_sinh_autodiff_part.csv
+[complete] validated canonical bundle: /root/apolarity/experiments/results/jsc_v3/chirp_a3/chirp_a3
+[end] chirp_a3 2026-08-06T15:02:54+08:00

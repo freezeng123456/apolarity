@@ -1,0 +1,35 @@
+[begin] poly_d2_o6 2026-08-06T08:20:14+08:00
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/polyharmonic/exp_polyharmonic.py --dim 2 --orders 6 --bc-weights 0.01,1,10 --variants complex_sinh --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s/run seeds=[0, 1, 2] lr_schedule=cosine
+
+=== polyharm2d_o6  (d=2, order=6, sweep=6.0, terms=4) ===
+variant                    params       be   steps  ms/step        loss       L_int    rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh               100098      jet    1171   854.32   1.394e-05   1.783e-06    2.345e-02  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh               100098      jet    1171   854.19   1.539e-05   1.780e-06    5.445e-02  (seed 1)
+complex_sinh               100098      jet    1171   854.07   1.399e-05   1.564e-06    2.286e-02  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_part.csv
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/polyharmonic/exp_polyharmonic.py --dim 2 --orders 6 --bc-weights 0.01,1,10 --variants complex_sinh_autodiff --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_autodiff_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s/run seeds=[0, 1, 2] lr_schedule=cosine
+
+=== polyharm2d_o6  (d=2, order=6, sweep=6.0, terms=4) ===
+variant                    params       be   steps  ms/step        loss       L_int    rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff      100098 autograd     287  3495.57   3.646e-05   1.482e-05    8.710e-02  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff      100098 autograd     287  3496.49   5.016e-05   1.795e-05    1.301e-01  (seed 1)
+complex_sinh_autodiff      100098 autograd     287  3496.36   3.499e-05   1.327e-05    5.816e-02  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_autodiff_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/complex_sinh_autodiff_part.csv
+[complete] validated canonical bundle: /root/apolarity/experiments/results/jsc_v3/poly_d2_o6/poly_d2_o6
+[end] poly_d2_o6 2026-08-06T10:01:39+08:00

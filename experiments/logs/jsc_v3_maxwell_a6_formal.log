@@ -1,0 +1,35 @@
+[begin] maxwell_a6 2026-08-06T18:23:43+08:00
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/maxwell/exp_maxwell.py --sweeps 6 --bc-weight 0.01 --variants complex_sinh --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s seeds=[0, 1, 2] lr_schedule=cosine
+
+=== maxwell_a6 (a=6, |kappa^2|=362.3) ===
+variant                     rep  params  steps  ms/step       loss      L_int   rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            complex  100098  13696    73.02  1.168e-04  4.011e-07   8.958e-03  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh            complex  100098  13726    72.86  1.269e-04  2.089e-07   1.092e-02  (seed 1)
+complex_sinh            complex  100098  13714    72.92  1.085e-04  2.959e-07   7.934e-03  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_part.csv
+[run] /opt/apolarity-v3-venv/bin/python /root/apolarity/experiments/maxwell/exp_maxwell.py --sweeps 6 --bc-weight 0.01 --variants complex_sinh_autodiff --hidden 128 --depth 4 --seconds 1000.0 --seeds 3 --seed-start 0 --n-int 4096 --n-bc 512 --lr 0.001 --lr-schedule cosine --lr-final 0.0001 --history --history-every-steps 20 --history-eval-n 4096 --out /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_autodiff_part.csv
+device=cuda hidden=128 depth=4 budget=1000.0s seeds=[0, 1, 2] lr_schedule=cosine
+
+=== maxwell_a6 (a=6, |kappa^2|=362.3) ===
+variant                     rep  params  steps  ms/step       loss      L_int   rel_error
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff   complex  100098   9817   101.87  1.186e-04  3.935e-07   9.814e-03  (seed 0)
+/opt/apolarity-v3-venv/lib64/python3.12/site-packages/torch/nn/modules/module.py:1310: UserWarning: Complex modules are a new feature under active development whose design may change, and some modules might not work as expected when using complex tensors as parameters or buffers. Please file an issue at https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml if a complex module does not work as expected.
+  warnings.warn(
+complex_sinh_autodiff   complex  100098   9815   101.88  1.280e-04  6.651e-07   1.067e-02  (seed 1)
+complex_sinh_autodiff   complex  100098   9842   101.61  1.098e-04  7.158e-07   7.764e-03  (seed 2)
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_autodiff_part_history.json  (3 traces)
+
+[ok] wrote /root/apolarity/experiments/results/jsc_v3/maxwell_a6/complex_sinh_autodiff_part.csv
+[complete] validated canonical bundle: /root/apolarity/experiments/results/jsc_v3/maxwell_a6/maxwell_a6
+[end] maxwell_a6 2026-08-06T20:04:08+08:00

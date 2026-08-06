@@ -1,0 +1,52 @@
+{
+  "protocol_id": "jsc_v3",
+  "boundary_profile_id": "pow10_reasonable_v1",
+  "task": {
+    "family": "poly",
+    "task_id": "poly_d2_o2",
+    "dimension": 2,
+    "order": 2,
+    "sweep": 2,
+    "omega0": 6.283185307179586,
+    "fourier_sigma": 3.141592653589793,
+    "split_real_baselines": false,
+    "boundary_weights": [
+      0.1
+    ]
+  },
+  "methods": {
+    "complex_sinh": {
+      "method": "complex_sinh",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "native_complex"
+    },
+    "complex_sinh_autodiff": {
+      "method": "complex_sinh_autodiff",
+      "width": 128,
+      "real_dof": 100098,
+      "reference_real_dof": 100098,
+      "relative_dof_difference": 0.0,
+      "representation": "native_complex"
+    }
+  },
+  "git_sha": "a9e5d2ced8b8538a9d3351f98bf871bc6f3e80fd",
+  "git_dirty": false,
+  "smoke": false,
+  "estimated_runs": 6,
+  "estimated_training_seconds": 6000.0,
+  "history_schema": [
+    "elapsed_seconds",
+    "rel_error",
+    "loss",
+    "L_int"
+  ],
+  "row_metrics": [
+    "loss_last",
+    "L_int_last",
+    "L2_err",
+    "rel_error"
+  ]
+}

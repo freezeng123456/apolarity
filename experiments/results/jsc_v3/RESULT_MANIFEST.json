@@ -1,0 +1,133 @@
+{
+  "protocol_id": "jsc_v3",
+  "boundary_profile_id": "pow10_reasonable_v1",
+  "methods": [
+    "complex_sinh",
+    "complex_sinh_autodiff"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "budget_seconds": 1000.0,
+  "task_count": 9,
+  "row_count": 54,
+  "history_trace_count": 54,
+  "history_schema": [
+    "elapsed_seconds",
+    "rel_error",
+    "loss",
+    "L_int"
+  ],
+  "tasks": [
+    {
+      "task_id": "poly_d2_o2",
+      "family": "poly",
+      "setting": "d2_o2",
+      "boundary_weights": [
+        0.1
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "poly_d2_o4",
+      "family": "poly",
+      "setting": "d2_o4",
+      "boundary_weights": [
+        0.1,
+        10.0
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "poly_d2_o6",
+      "family": "poly",
+      "setting": "d2_o6",
+      "boundary_weights": [
+        0.01,
+        1.0,
+        10.0
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "chirp_a1",
+      "family": "chirp",
+      "setting": "a1",
+      "boundary_weights": [
+        1.0
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "chirp_a2",
+      "family": "chirp",
+      "setting": "a2",
+      "boundary_weights": [
+        0.1
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "chirp_a3",
+      "family": "chirp",
+      "setting": "a3",
+      "boundary_weights": [
+        0.01
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "maxwell_a2",
+      "family": "maxwell",
+      "setting": "a2",
+      "boundary_weights": [
+        0.1
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "maxwell_a4",
+      "family": "maxwell",
+      "setting": "a4",
+      "boundary_weights": [
+        0.1
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    },
+    {
+      "task_id": "maxwell_a6",
+      "family": "maxwell",
+      "setting": "a6",
+      "boundary_weights": [
+        0.01
+      ],
+      "rows": 6,
+      "histories": 6,
+      "validated": true
+    }
+  ],
+  "hardware": [
+    "NVIDIA H20; torch=2.5.1+cu121; cuda=12.1"
+  ],
+  "git_shas": [
+    "a9e5d2ced8b8538a9d3351f98bf871bc6f3e80fd"
+  ]
+}
