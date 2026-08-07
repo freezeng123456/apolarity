@@ -72,7 +72,7 @@ def build(key: str, items) -> Path:
         r"\footnotesize",
         rf"\caption{{{title}: mean $\pm$ sample standard deviation of the "
         r"relative $L^2$ error over five seeds after 1200\,s. The lowest "
-        r"mean in each row is bold.}}",
+        r"mean in each row is bold.}",
         rf"\label{{tab:jsc-v2-{label_key}}}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}l" + "c" * len(methods) + r"@{}}",
