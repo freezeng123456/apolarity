@@ -162,6 +162,8 @@ def train_one(
     *,
     seconds: float,
     smoke: bool,
+    train_seed: int = TRAIN_SEED,
+    eval_seed: int = EVAL_SEED,
 ) -> dict[str, Any]:
     if seconds <= 0:
         raise ValueError("seconds must be positive")
@@ -169,11 +171,19 @@ def train_one(
         raise RuntimeError("weight-search training requires CUDA")
     run_started_at = utc_now()
     device = torch.device("cuda")
-    torch.manual_seed(TRAIN_SEED)
-    torch.cuda.manual_seed_all(TRAIN_SEED)
+    torch.manual_seed(train_seed)
+    torch.cuda.manual_seed_all(train_seed)
     model, dtype, backend = build_search_model(task, method, device)
     bundle = make_loss_bundle(
-        task, model, dtype, backend, weights, device, smoke=smoke
+        task,
+        model,
+        dtype,
+        backend,
+        weights,
+        device,
+        smoke=smoke,
+        train_seed=train_seed,
+        eval_seed=eval_seed,
     )
     optimizer = torch.optim.Adam(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
@@ -276,8 +286,8 @@ def train_one(
         "weight_map": dict(zip(task.weight_names, weights)),
         "budget_seconds": seconds,
         "smoke": smoke,
-        "train_seed": TRAIN_SEED,
-        "eval_seed": EVAL_SEED,
+        "train_seed": train_seed,
+        "eval_seed": eval_seed,
         "started_at": run_started_at,
         "steps": steps,
         "training_seconds": training_seconds,

@@ -231,14 +231,16 @@ def make_poly_loss(
     n_bc: int,
     n_eval: int,
     history_eval_n: int,
+    train_seed: int = TRAIN_SEED,
+    eval_seed: int = EVAL_SEED,
 ) -> LossBundle:
     if len(weights) != task.weight_count:
         raise ValueError(f"{task.task_id} expects {task.weight_count} weights")
     m = task.order // 2
     scale = 2.0 * math.pi**2
 
-    train_gen = torch.Generator(device=device).manual_seed(TRAIN_SEED)
-    eval_gen = torch.Generator(device=device).manual_seed(EVAL_SEED)
+    train_gen = torch.Generator(device=device).manual_seed(train_seed)
+    eval_gen = torch.Generator(device=device).manual_seed(eval_seed)
     x_int = sample_interior(n_int, 2, device=device, generator=train_gen)
     x_bc = sample_boundary(n_bc, 2, device=device, generator=train_gen)
     x_eval = sample_interior(n_eval, 2, device=device, generator=eval_gen)
@@ -326,6 +328,8 @@ def make_ch_loss(
     n_mean_x: int,
     n_eval: int,
     history_eval_n: int,
+    train_seed: int = TRAIN_SEED,
+    eval_seed: int = EVAL_SEED,
 ) -> LossBundle:
     if len(weights) != 2:
         raise ValueError("Cahn-Hilliard expects [lambda_ic, mu_mean]")
@@ -334,8 +338,8 @@ def make_ch_loss(
     gamma2 = 1.0
     q = task.order // 2
 
-    train_gen = torch.Generator(device=device).manual_seed(TRAIN_SEED)
-    eval_gen = torch.Generator(device=device).manual_seed(EVAL_SEED)
+    train_gen = torch.Generator(device=device).manual_seed(train_seed)
+    eval_gen = torch.Generator(device=device).manual_seed(eval_seed)
     x_int = torch.empty(n_int, 2, device=device, dtype=torch.float64)
     x_int[:, 0].uniform_(0.0, 2.0 * math.pi, generator=train_gen)
     x_int[:, 1].uniform_(0.0, 1.0, generator=train_gen)
@@ -429,6 +433,8 @@ def make_loss_bundle(
     device: torch.device,
     *,
     smoke: bool,
+    train_seed: int = TRAIN_SEED,
+    eval_seed: int = EVAL_SEED,
 ) -> LossBundle:
     if smoke:
         n_int, n_constraint, n_eval, history_n = 128, 64, 512, 256
@@ -446,6 +452,8 @@ def make_loss_bundle(
             n_bc=n_constraint,
             n_eval=n_eval,
             history_eval_n=history_n,
+            train_seed=train_seed,
+            eval_seed=eval_seed,
         )
     return make_ch_loss(
         task,
@@ -460,6 +468,8 @@ def make_loss_bundle(
         n_mean_x=16 if smoke else 32,
         n_eval=n_eval,
         history_eval_n=history_n,
+        train_seed=train_seed,
+        eval_seed=eval_seed,
     )
 
 
