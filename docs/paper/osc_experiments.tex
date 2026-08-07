@@ -19,15 +19,16 @@ Protocol \texttt{jsc\_v2} uses a 1200-second wall-clock budget per
 \((\text{problem},\text{method},\text{seed})\), five seeds, four trainable
 hidden layers, 4096 fixed interior points, 512 fixed boundary points, paired
 per-seed collocation, and a common held-out set of 8192 points. Every hidden
-layer has literal width \(H=128\). Width is not a parameter-count constraint:
+layer has width \(H=128\). This shared-width control does not match trainable
+parameter counts:
 each complex parameter counts as two real degrees of freedom, frozen Fourier
 maps are excluded, and a split-real Maxwell model contains two width-128
 networks. The resulting counts are reported with each table.
 
 All methods use Adam with initial learning rate \(10^{-3}\), cosine decay to
 \(10^{-4}\), and the same residual normalization and boundary penalty within
-an atomic task. The four methods receive the same collocation points for a
-given seed. Complex \(\sinh\) uses complex128 parameters; real targets are
+a problem configuration. The four methods receive the same collocation points
+for a given seed. Complex \(\sinh\) uses complex128 parameters; real targets are
 fitted through its real output component, with a \(10^{-6}\) penalty on
 imaginary parameters. For Maxwell, the full complex output is fitted and each
 real baseline represents real and imaginary components with separate
@@ -54,13 +55,13 @@ differentiation. Accuracy is the held-out relative \(L^2\) error
 \label{eq:benchmark-l2}
 \end{equation}
 Tables report the arithmetic mean and sample standard deviation over five
-seeds; history panels show the geometric mean and seedwise range. An atomic
-task enters the manuscript only
-after a validator confirms all 20 method--seed rows, finite metrics, monotone
+seeds; history panels show the geometric mean and seedwise range. A
+configuration is reported only after automated checks confirm all 20
+method--seed rows, finite metrics, monotone
 histories, width and protocol metadata, and a fixed evaluation rule. All runs
-used an NVIDIA H20 GPU with CUDA 12.1; the stored bundles record PyTorch
-2.4.1 or 2.5.1, so throughput is compared within an atomic task rather than
-across tasks.
+used an NVIDIA H20 GPU with CUDA 12.1; the stored records specify PyTorch
+2.4.1 or 2.5.1, so throughput is compared within a configuration rather than
+across configurations.
 
 \subsection{Polyharmonic benchmark}
 \label{sec:bm:poly}
@@ -90,7 +91,7 @@ pure coordinate powers need one complex direction.
 \caption{Two-dimensional polyharmonic benchmark. Panel (a) shows the
 five-seed mean relative \(L^2\) error and seedwise range after 1200\,s.
 Panels (b) and (c) show error and normalized interior residual histories for
-the representative fourth-order task.}
+the representative fourth-order configuration.}
 \label{fig:jsc-v2-poly-d2}
 \end{figure}
 
@@ -98,7 +99,8 @@ the representative fourth-order task.}
 \centering
 \includegraphics[width=\linewidth]{fig_poly_d3.pdf}
 \caption{Three-dimensional polyharmonic benchmark, with the same convention
-as Fig.~\ref{fig:jsc-v2-poly-d2}. History panels use the fourth-order task.}
+as Fig.~\ref{fig:jsc-v2-poly-d2}. History panels use the fourth-order
+configuration.}
 \label{fig:jsc-v2-poly-d3}
 \end{figure}
 
@@ -154,7 +156,9 @@ not by themselves identify representation as the sole cause of the gap.
 \subsection{Time-harmonic Maxwell benchmark}
 \label{sec:bm:maxwell}
 
-The two-dimensional transverse-magnetic problem is represented by
+For a two-dimensional transverse-magnetic (\(\mathrm{TM}_z\)) mode, Maxwell's
+equations reduce to a scalar complex Helmholtz equation for the out-of-plane
+field \(E\):
 \begin{equation}
   \Delta E+\kappa^2E=f,
   \qquad
@@ -168,7 +172,7 @@ with \(\beta=0.2\), exact Dirichlet data, and
 f=\bigl[-2(a\pi)^2+\kappa^2\bigr]E_\star.
 \]
 Complex \(\sinh\) represents \(E\) natively; each real baseline uses a
-split real--imaginary pair of two width-128 networks.
+split real--imaginary pair of two \(H=128\) networks.
 
 \input{tables/jsc_v2_maxwell}
 
@@ -200,9 +204,9 @@ MscaleDNN subnets are slower. For Maxwell, each split-real baseline evaluates
 two networks, increasing its per-step cost. The polyharmonic row also shows
 the steep cost of propagating fourth-order jets through branched architectures.
 
-Across the 12 atomic tasks, Complex \(\sinh\) attains the smallest
+Across the 12 configurations, Complex \(\sinh\) attains the smallest
 five-seed mean error in every table. In 11 settings, the next-lowest mean is
 at least three times larger. The exception is the three-dimensional
-sixth-order polyharmonic task, where all methods are close to the
+sixth-order polyharmonic configuration, where all methods are close to the
 trivial-predictor error. This distinction is retained in the discussion rather
 than reducing the benchmark to an unqualified win count.

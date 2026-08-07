@@ -2,12 +2,12 @@
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Representative optimizer throughput: mean $\pm$ sample standard deviation of milliseconds per step over five seeds. Compare methods within a row; stored software versions differ between atomic tasks.}
+\caption{Representative optimizer throughput: mean $\pm$ sample standard deviation of milliseconds per step over five seeds. Compare methods within a row; stored software versions differ between problem configurations.}
 \label{tab:jsc-v2-throughput}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-task & Complex $\sinh$ & SIREN & mFF-PINN & MscaleDNN-2-sin \\
+configuration & Complex $\sinh$ & SIREN & mFF-PINN & MscaleDNN-2-sin \\
 \midrule
 Polyharmonic, $d=2$, $2m=4$ & $243.1\pm0.2$ & $243.7\pm0.2$ & $576.8\pm0.2$ & $729.7\pm0.4$ \\
 Radial chirp, $a=2$ & $70.7\pm0.2$ & $61.9\pm0.0$ & $145.2\pm0.1$ & $182.3\pm0.0$ \\

@@ -135,12 +135,14 @@ def build_throughput() -> Path:
         r"\caption{Representative optimizer throughput: mean $\pm$ sample "
         r"standard deviation of milliseconds per step over five seeds. "
         r"Compare methods within a row; stored software versions differ "
-        r"between atomic tasks.}",
+        r"between problem configurations.}",
         r"\label{tab:jsc-v2-throughput}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}lcccc@{}}",
         r"\toprule",
-        "task & " + " & ".join(HEAD[method] for method in results.METHODS) + r" \\",
+        "configuration & "
+        + " & ".join(HEAD[method] for method in results.METHODS)
+        + r" \\",
         r"\midrule",
     ]
     for task_id, label in selected.items():

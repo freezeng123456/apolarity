@@ -130,8 +130,9 @@ Waring rank (Section~\ref{sec:bridge}).
 \item The Carlini--Catalisano--Geramita theorem \cite{CCG2012} and a
 roots-of-unity filter give a closed-form schedule that attains the complex
 rank. Repeated-index patterns such as \((4,2)\) and \((2,2,2)\) require,
-respectively, 5 rather than 7 and 9 rather than 13 directions compared with
-coalesced real polarization.
+respectively, 5 rather than 6 and 9 rather than 13 directions compared with
+fully projectively consolidated real polarization. The simpler B2
+implementation retains 7 directions for \((4,2)\).
 \item We combine this schedule with Taylor-mode propagation through smooth
 multilayer perceptrons and a custom vector--Jacobian product. The resulting
 implementation is algebraically exact, differentiable with respect to model
@@ -261,11 +262,11 @@ A \emph{directional schedule} of length \(R\) for \(\dal\) is a finite
 collection \((c_{r},v_{r})_{r=1}^{R}\subset\R\times V\) such that
 \begin{equation}
 \dal u(x) \;=\; \sum_{r=1}^{R}c_{r}\,\Tp(x;v_{r}),
-\qquad \forall\, u\in C^{p}_{x}.
+\qquad \text{for every \(u\in C^p\) on a neighborhood of \(x\)}.
 \label{eq:dir-schedule}
 \end{equation}
 
-Because the schedule is required to hold for every \(u\in C^{p}_{x}\),
+Because the schedule is required to hold for every such \(u\),
 the \(p\)-jet of \(u\) at \(x\) may be prescribed arbitrarily on the
 active variables: for any coefficients \(q_{\beta}\), the polynomial
 \(\sum_{\beta}q_{\beta}\prod_{j}(y_{i_{j}}-x_{i_{j}})^{\beta_{j}}\)
@@ -294,8 +295,8 @@ Let \(R\in\N\), \(c_{r}\in\R\), \(v_{r}\in V\), \(r=1,\ldots,R\). The
 following are equivalent.
 \begin{enumerate}[label=\textup{(\arabic*)},leftmargin=*]
 \item (Directional schedule) \;
-\(\dal u(x)=\sum_{r=1}^{R}c_{r}\Tp(x;v_{r})\)\quad
-\(\forall\,u\in C^{p}_{x}\).
+\(\dal u(x)=\sum_{r=1}^{R}c_{r}\Tp(x;v_{r})\) for every
+\(u\in C^p\) near \(x\).
 \item (Polynomial identity in \(\R[z]_{p}\)) \;
 \(p!\,z^{a}=\sum_{r=1}^{R}c_{r}(v_{r}\!\cdot\!z)^{p}\).
 \end{enumerate}
@@ -378,9 +379,12 @@ The lower bound uses the complete-intersection apolar ideal
 Appendix~\ref{app:apolar-pairing} recalls the apolar interpretation. The
 upper bound is constructive.
 
+For \(m\ge1\), write \(U_m:=\{\zeta\in\C:\zeta^m=1\}\).
+
 \begin{theorem}[Roots-of-unity directional schedule]\label{thm:rou}
 Let \(m_{j}=a_{j}+1\) for \(j=1,\ldots,n\), and for each tuple
-\(\zeta=(\zeta_{1},\ldots,\zeta_{n})\) with \(\zeta_{j}^{m_{j}}=1\) define
+\(\zeta=(\zeta_{1},\ldots,\zeta_{n})\in
+U_{m_1}\times\cdots\times U_{m_n}\) define
 \begin{equation}
 v_{\zeta}=e_{i_{0}}+\sum_{j=1}^{n}\zeta_{j}e_{i_{j}},
 \qquad
@@ -388,7 +392,7 @@ c_{\zeta}=\frac{\nu!}{\prod_{j=1}^{n}m_{j}}\prod_{j=1}^{n}\zeta_{j}.
 \label{eq:rou-coeff}
 \end{equation}
 Then \(\dal u(x)=\sum_{\zeta}c_{\zeta}\,\Tp(x;v_{\zeta})\) for every
-\(u\in C^{p}_{x}\). The schedule has length
+\(u\in C^p\) near \(x\). The schedule has length
 \(\prod_{j=1}^{n}m_{j}=R_{\C}(z^{a})\) and is therefore length-optimal
 over \(\C\).
 \end{theorem}
@@ -492,36 +496,36 @@ attains the complex Waring-rank lower bound \(R_{\C}=9\)
 
 \subsection{Pattern taxonomy}
 
-Table~\ref{tab:patterns} lists the rank values for representative
-active-exponent patterns up to \(p=6\), comparing the complex Waring
-rank \(R_{\C}\) of Theorem~\ref{thm:CCG} with the post-antipodal
-polarization count \(2^{p-1}\), the latter being the direction count
-attainable by classical real polarization for a generic multi-index
-of order \(p\).
+Table~\ref{tab:patterns} lists representative counts up to \(p=6\).
+Backend B2 merges duplicate and antipodal integer directions.
+Projective consolidation additionally uses
+\(\Tp(x;\lambda v)=\lambda^p\Tp(x;v)\) to merge all proportional
+directions.
 
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{llrr}
+\begin{tabular}{llrrr}
 \toprule
-pattern & example multi-index & \(R_{\C}\) & polarization \\
+pattern & example multi-index & \(R_{\C}\) & \(R_{\mathrm{B2}}\) &
+\(R_{\mathrm{proj}}\) \\
 \midrule
-\((p)\)        & \(\partial_{1}^{p}u\)    & \(1\) & \(\le 2^{p-1}\) \\
-\((2,1)\)      & \(u_{112}\)              & \(3\) & \(3\) \\
-\((1,1,1)\)    & \(u_{123}\)              & \(4\) & \(4\) \\
-\((3,1)\)      & \(u_{1112}\)             & \(4\) & \(4\) \\
-\((2,2)\)      & \(u_{1122}\)             & \(\mathbf{3}\) & \(4\) \\
-\((2,1,1)\)    & \(u_{1123}\)             & \(6\) & \(6\) \\
-\((1,1,1,1)\)  & \(u_{1234}\)             & \(8\) & \(8\) \\
-\((4,2)\)      & \(u_{111122}\)           & \(\mathbf{5}\) & \(7\) \\
-\((2,2,2)\)    & \(u_{112233}\)           & \(\mathbf{9}\) & \(13\) \\
-\((1^{6})\)    & \(u_{123456}\)           & \(32\) & \(32\) \\
+\((p)\)        & \(\partial_{1}^{p}u\)    & \(1\) & \(\lceil p/2\rceil\) & \(1\) \\
+\((2,1)\)      & \(u_{112}\)              & \(3\) & \(3\) & \(3\) \\
+\((1,1,1)\)    & \(u_{123}\)              & \(4\) & \(4\) & \(4\) \\
+\((3,1)\)      & \(u_{1112}\)             & \(4\) & \(4\) & \(4\) \\
+\((2,2)\)      & \(u_{1122}\)             & \(\mathbf{3}\) & \(4\) & \(4\) \\
+\((2,1,1)\)    & \(u_{1123}\)             & \(6\) & \(6\) & \(6\) \\
+\((1,1,1,1)\)  & \(u_{1234}\)             & \(8\) & \(8\) & \(8\) \\
+\((4,2)\)      & \(u_{111122}\)           & \(\mathbf{5}\) & \(7\) & \(6\) \\
+\((2,2,2)\)    & \(u_{112233}\)           & \(\mathbf{9}\) & \(13\) & \(13\) \\
+\((1^{6})\)    & \(u_{123456}\)           & \(32\) & \(32\) & \(32\) \\
 \bottomrule
 \end{tabular}
-\caption{Bold entries mark patterns where the complex Waring schedule
-is strictly shorter than the polarization count. The square-free
-pattern \((1^{p})\) saturates the lower bound \(2^{p-1}\); the method
-of this paper offers no improvement there.}
+\caption{B2 is the implemented duplicate/antipodal coalescer;
+\(R_{\mathrm{proj}}\) additionally merges proportional directions. Bold
+complex ranks are strictly smaller than \(R_{\mathrm{proj}}\). The
+square-free pattern \((1^p)\) receives no reduction.}
 \label{tab:patterns}
 \end{table}
 
@@ -535,7 +539,7 @@ of this paper offers no improvement there.}
 Given a single direction \(v\), Theorem~\ref{thm:rou} reduces the problem
 to evaluating \(\Tp(x;v)\). We use forward-mode Taylor propagation
 \cite{Bettencourt2019,Griewank2008}, replacing each intermediate activation
-\(y\in\mathbb{K}^{B}\), \(\mathbb K\in\{\R,\C\}\), by a
+\(y\in\mathbb{K}^{B}\), \(\mathbb{K}\in\{\R,\C\}\), by a
 length-\((p+1)\) tuple \((y_{0},\ldots,y_{p})\)
 representing its truncated Taylor coefficients
 \(y_{k}=(1/k!)\,d^{k}y/d\tau^{k}|_{\tau=0}\).
@@ -549,7 +553,8 @@ y_{0}\;=\;W x_{0}+b,
 \qquad y_{k}\;=\;W x_{k}\quad (k\ge 1).
 \label{eq:jet-affine}
 \end{equation}
-The \(\tanh\) activation, with auxiliary jet \(z=1-y^{2}\), satisfies
+For \(\tanh\), initialize \(y_0=\tanh(x_0)\) and
+\(z_0=1-y_0^2\). The auxiliary jet \(z=1-y^2\) then satisfies
 \begin{equation}
 y_{k}\;=\;\frac{1}{k}\sum_{j=0}^{k-1}(k-j)\,z_{j}\,x_{k-j},
 \qquad
@@ -557,8 +562,8 @@ z_{k}\;=\;-\sum_{j=0}^{k}y_{j}\,y_{k-j},
 \qquad k\ge 1.
 \label{eq:jet-tanh}
 \end{equation}
-The \(\sinh\) activation, with auxiliary jet \(z=\cosh(x)\), satisfies
-the coupled recurrence
+For \(\sinh\), initialize \(y_0=\sinh(x_0)\) and
+\(z_0=\cosh(x_0)\). The coupled \(\sinh/\cosh\) recurrence is
 \begin{equation}
 y_{k}\;=\;\frac{1}{k}\sum_{j=0}^{k-1}(k-j)\,z_{j}\,x_{k-j},
 \qquad
@@ -587,7 +592,9 @@ g_{x}^{(m)}\;=\;\sum_{j=0}^{p-m}\overline{q_{j}}\,g_{y}^{(m+j)},
 \end{equation}
 where \(q_j\) is the \(j\)th Taylor coefficient of \(q\). This
 vector--Jacobian product avoids reverse differentiation through the
-intra-jet recurrence.
+intra-jet recurrence. Equation~\eqref{eq:jet-vjp} uses PyTorch's
+complex-gradient convention for a real-valued loss; the conjugation is the
+Hermitian adjoint of elementwise multiplication by \(q_j\).
 
 \subsection{Backends}\label{ssec:backends}
 
@@ -614,7 +621,9 @@ The classical antipodally merged polarization identity is
    \Tp\!\Big(x;\,\textstyle\sum_{r=1}^{p}\epsilon_{r}\,e_{i_{r}}\Big).
 \label{eq:polarization}
 \end{equation}
-After antipodal merging this yields at most \(2^{p-1}\) real directions.
+After merging duplicate and antipodal integer directions, B2 yields at most
+\(2^{p-1}\) real directions. It does not apply the additional projective
+normalization reported in Table~\ref{tab:patterns}.
 The directional Taylor coefficients \(\Tp(x;\,\cdot\,)\) are evaluated
 by the jet propagation of Section~\ref{sec:impl}.
 
@@ -632,9 +641,8 @@ itself acts on the complex directions natively.
 \subsection{The end-to-end algorithm}\label{ssec:algorithm}
 
 Algorithm~\ref{alg:waring-jet} summarizes the complete pipeline of
-backend (B3): given a smooth model \(u\) (an MLP whose primitives are
-covered by the jet rules \eqref{eq:jet-affine}--\eqref{eq:jet-sinh}), a
-point \(x\), and a multi-index \(\nu\) of order \(p\), it returns
+backend (B3): given a scalar MLP whose primitives admit the implemented
+complex jets, a point \(x\), and a multi-index \(\nu\) of order \(p\), it returns
 the value \(\dal u(x)\) without nested input differentiation. The
 implementation batches all schedule directions in one jet pass.
 Backend (B2) follows the same overall structure with the
@@ -646,7 +654,8 @@ Waring schedule (lines~3--7) replaced by the polarization schedule
 a batched Taylor jet.}
 \label{alg:waring-jet}
 \begin{algorithmic}[1]
-\REQUIRE smooth scalar field \(u\); point \(x\in\R^{d}\);
+\REQUIRE scalar MLP \(u\) built from supported analytic primitives;
+         point \(x\in\R^{d}\);
          multi-index \(\nu\) of order \(p\)
 \ENSURE  the value \(\dal u(x)\)
 \STATE relabel the active coordinates of \(\nu\) as
@@ -673,6 +682,13 @@ a batched Taylor jet.}
 \end{algorithmic}
 \end{algorithm}
 
+The schedule tensors depend on \(\nu\), the device, and the scalar type but
+not on the trainable parameters. The reference implementation constructs them
+at call entry and includes that work in measured throughput; fixed schedules
+can be cached by a caller. For a real model, conjugate pairing makes the result
+real in exact arithmetic. The implementation retains the complex tensor and
+the real component is selected only when the target PDE is real-valued.
+
 \begin{remark}\label{rem:correctness}
 By Theorem~\ref{thm:bridge} together with Theorem~\ref{thm:rou},
 Algorithm~\ref{alg:waring-jet} returns \(\dal u(x)\) algebraically exactly;
@@ -686,9 +702,12 @@ complex pure-power formula (Theorem~\ref{thm:CCG}).
 For a fixed direction, the Taylor jet stores \(p+1\) coefficient tensors
 per activation and applies each linear map to the stacked coefficients;
 there is no chain of nested reverse-mode differentiation through the
-input coordinates. The total value-evaluation cost of B3 is therefore
-proportional to \(R_{\C}(z^{a})\) batched directional jets, while
-B2 scales with the coalesced polarization count \(R_{\mathrm{pol}}\).
+input coordinates. Affine propagation is linear in \(p\), while the
+activation recurrences require
+\(\sum_{k=1}^p O(k)=O(p^2)\) elementwise products per scalar and direction.
+The total work and directional storage scale linearly with
+\(R_{\C}(z^{a})\) for B3 and with the implemented coalesced count
+\(R_{\mathrm{B2}}\) for B2.
 The rank reduction is an algebraic cost reduction; the realized
 wall-clock time also depends on complex arithmetic, batching,
 activation kernels, and whether parameter gradients are required.
@@ -698,7 +717,10 @@ The schedule coefficients are roots of unity multiplied by
 come from solving an ill-conditioned linear system. The method has no
 finite-difference step size and no Monte Carlo variance. Remaining
 errors are ordinary floating-point round-off from Taylor recurrences,
-complex arithmetic, and the final summation over directions.
+complex arithmetic, and the final summation over directions. Avoiding a
+linear solve does not eliminate cancellation, factorial scaling, or
+\(\sinh\) overflow; the present verification covers double precision through
+order six and is not a general conditioning study.
 
 % =========================================================
 \section{Implementation verification}
@@ -711,7 +733,7 @@ roots-of-unity coefficient filter is evaluated against every degree-four
 monomial in five variables for the active-exponent pattern \((2,1,1)\);
 the maximum admissible absolute coefficient error is \(10^{-12}\). The
 direction counts for all patterns in Table~\ref{tab:patterns} are also checked
-against the closed-form rank and the coalesced polarization construction.
+against the closed-form rank and the B2 coalescing implementation.
 
 Second, B2 and B3 are compared with B1 on real-parameter networks using
 \(\tanh\), sigmoid, \(\sin\), and \(\sinh\) activations. The tests cover the
@@ -813,7 +835,7 @@ need for operator-specific methods in broader contractions.
 \section*{Code and data availability}
 
 The implementation, executable verification tests, experiment configurations,
-validated per-seed result bundles, and table/figure generators are available in
+validated per-seed records, and table/figure generators are available in
 the public \href{https://github.com/freezeng123456/apolarity}{apolarity
 repository}. Each formal result records the protocol identifier, source
 commit, hardware and software environment, random seed, architecture metadata,
