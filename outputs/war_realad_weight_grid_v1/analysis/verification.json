@@ -1,68 +1,262 @@
 {
-  "snapshot_type": "deadline_stopped_partial_search",
-  "snapshot_created_at": "2026-08-07T01:49:02.920861+00:00",
-  "protocol_id": "war_realad_weight_grid_v1",
+  "candidate_rows": 497,
+  "expected_candidates": 497,
   "expected_runs": 994,
-  "completed_runs_at_stop": 313,
-  "remaining_runs_not_started_or_completed": 681,
-  "failures_seen": 0,
-  "result_json_files": 313,
-  "status_counts": {
-    "complete": 313
-  },
+  "generated_at": "2026-08-07T15:16:08.094312+00:00",
   "history_point_counts": {
-    "13": 313
+    "13": 994
   },
-  "json_metric_missing_count": 0,
-  "json_metric_missing_examples": [],
-  "text_log_summary_counts": {
-    "loss+rel_error": 307,
-    "no_json_summary": 1,
-    "no_loss+rel_error": 6
+  "log_final_metrics_source_counts": {
+    "candidate_json_top_level": 6,
+    "text_log_final_line": 988
   },
-  "text_log_missing_loss_or_rel_error_count": 6,
-  "text_log_missing_loss_or_rel_error_examples": [
-    "poly_d2_o2/points/point_002/real_tanh_autodiff.log",
-    "poly_d2_o2/points/point_002/war.log",
-    "poly_d2_o2/points/point_001/real_tanh_autodiff.log",
-    "poly_d2_o2/points/point_001/war.log",
-    "poly_d2_o2/points/point_000/real_tanh_autodiff.log",
-    "poly_d2_o2/points/point_000/war.log"
-  ],
-  "temporary_files": [],
+  "method_rows": 994,
   "per_task": {
     "cahn_hilliard_o4": {
-      "launched_candidates": 49,
-      "war_complete": 49,
+      "expected_candidates": 49,
+      "matrix_candidates": 49,
+      "paired_complete": true,
       "realad_complete": 49,
-      "paired_complete": 49
+      "realad_history_points": {
+        "13": 49
+      },
+      "war_complete": 49,
+      "war_history_points": {
+        "13": 49
+      }
     },
     "cahn_hilliard_o6": {
-      "launched_candidates": 49,
-      "war_complete": 49,
+      "expected_candidates": 49,
+      "matrix_candidates": 49,
+      "paired_complete": true,
       "realad_complete": 49,
-      "paired_complete": 49
+      "realad_history_points": {
+        "13": 49
+      },
+      "war_complete": 49,
+      "war_history_points": {
+        "13": 49
+      }
     },
     "poly_d2_o2": {
-      "launched_candidates": 7,
-      "war_complete": 7,
+      "expected_candidates": 7,
+      "matrix_candidates": 7,
+      "paired_complete": true,
       "realad_complete": 7,
-      "paired_complete": 7
+      "realad_history_points": {
+        "13": 7
+      },
+      "war_complete": 7,
+      "war_history_points": {
+        "13": 7
+      }
     },
     "poly_d2_o4": {
-      "launched_candidates": 49,
-      "war_complete": 49,
+      "expected_candidates": 49,
+      "matrix_candidates": 49,
+      "paired_complete": true,
       "realad_complete": 49,
-      "paired_complete": 49
+      "realad_history_points": {
+        "13": 49
+      },
+      "war_complete": 49,
+      "war_history_points": {
+        "13": 49
+      }
     },
     "poly_d2_o6": {
-      "launched_candidates": 3,
-      "war_complete": 3,
-      "realad_complete": 2,
-      "paired_complete": 2
+      "expected_candidates": 343,
+      "matrix_candidates": 343,
+      "paired_complete": true,
+      "realad_complete": 343,
+      "realad_history_points": {
+        "13": 343
+      },
+      "war_complete": 343,
+      "war_history_points": {
+        "13": 343
+      }
     }
   },
-  "remote_orchestrator_stopped": true,
-  "gpu_at_stop": "0% utilization / 0 MiB used",
-  "stop_reason": "nightly deadline window; no further 60-second cells dispatched"
+  "protocol_id": "war_realad_weight_grid_v1",
+  "ranking_data_rows": {
+    "cahn_hilliard_o4": {
+      "realad": 49,
+      "shared_geomean": 49,
+      "shared_minimax": 49,
+      "war": 49
+    },
+    "cahn_hilliard_o6": {
+      "realad": 49,
+      "shared_geomean": 49,
+      "shared_minimax": 49,
+      "war": 49
+    },
+    "poly_d2_o2": {
+      "realad": 7,
+      "shared_geomean": 7,
+      "shared_minimax": 7,
+      "war": 7
+    },
+    "poly_d2_o4": {
+      "realad": 49,
+      "shared_geomean": 49,
+      "shared_minimax": 49,
+      "war": 49
+    },
+    "poly_d2_o6": {
+      "realad": 343,
+      "shared_geomean": 343,
+      "shared_minimax": 343,
+      "war": 343
+    }
+  },
+  "raw_root": "results",
+  "remote_complete": true,
+  "remote_progress": {
+    "attempted_runs": 681,
+    "current_candidate_id": "point_342",
+    "current_method": "real_tanh_autodiff",
+    "current_task": "poly_d2_o6",
+    "elapsed_seconds": 43801.85629796982,
+    "estimated_remaining_seconds": 0.0,
+    "failures_seen_this_process": 0,
+    "processed_runs": 994,
+    "protocol_id": "war_realad_weight_grid_v1",
+    "resumed_complete_runs": 313,
+    "task_summary": {
+      "best_real_tanh_autodiff": {
+        "candidate_id": "point_068",
+        "candidate_index": 68,
+        "geometric_mean": 0.48666039724384336,
+        "max_error": 0.4872189083730692,
+        "mean_error": 0.48666071736142924,
+        "real_tanh_autodiff_rel_error": 0.4861025263497893,
+        "war_rel_error": 0.4872189083730692,
+        "weight_labels": [
+          "1e-2",
+          "1e-1",
+          "1e+2"
+        ],
+        "weight_map": {
+          "w_Delta2_u": 100.0,
+          "w_Delta_u": 0.1,
+          "w_u": 0.01
+        },
+        "weight_sum": 100.11,
+        "weights": [
+          0.01,
+          0.1,
+          100.0
+        ]
+      },
+      "best_shared_geomean": {
+        "candidate_id": "point_115",
+        "candidate_index": 115,
+        "geometric_mean": 0.22015061991615276,
+        "max_error": 0.6292340894264729,
+        "mean_error": 0.3531291789601602,
+        "real_tanh_autodiff_rel_error": 0.6292340894264729,
+        "war_rel_error": 0.0770242684938476,
+        "weight_labels": [
+          "1e-1",
+          "1e-1",
+          "1e+0"
+        ],
+        "weight_map": {
+          "w_Delta2_u": 1.0,
+          "w_Delta_u": 0.1,
+          "w_u": 0.1
+        },
+        "weight_sum": 1.2,
+        "weights": [
+          0.1,
+          0.1,
+          1.0
+        ]
+      },
+      "best_shared_minimax": {
+        "candidate_id": "point_068",
+        "candidate_index": 68,
+        "geometric_mean": 0.48666039724384336,
+        "max_error": 0.4872189083730692,
+        "mean_error": 0.48666071736142924,
+        "real_tanh_autodiff_rel_error": 0.4861025263497893,
+        "war_rel_error": 0.4872189083730692,
+        "weight_labels": [
+          "1e-2",
+          "1e-1",
+          "1e+2"
+        ],
+        "weight_map": {
+          "w_Delta2_u": 100.0,
+          "w_Delta_u": 0.1,
+          "w_u": 0.01
+        },
+        "weight_sum": 100.11,
+        "weights": [
+          0.01,
+          0.1,
+          100.0
+        ]
+      },
+      "best_war": {
+        "candidate_id": "point_220",
+        "candidate_index": 220,
+        "geometric_mean": 0.24900402659556434,
+        "max_error": 0.9995401934223066,
+        "mean_error": 0.530785860593801,
+        "real_tanh_autodiff_rel_error": 0.9995401934223066,
+        "war_rel_error": 0.06203152776529537,
+        "weight_labels": [
+          "1e+1",
+          "1e+0",
+          "1e+0"
+        ],
+        "weight_map": {
+          "w_Delta2_u": 1.0,
+          "w_Delta_u": 1.0,
+          "w_u": 10.0
+        },
+        "weight_sum": 12.0,
+        "weights": [
+          10.0,
+          1.0,
+          1.0
+        ]
+      },
+      "complete_runs": 686,
+      "expected_candidates": 343,
+      "expected_runs": 686,
+      "failed_runs": 0,
+      "missing_or_running_runs": 0,
+      "paired_complete_candidates": 343,
+      "protocol_id": "war_realad_weight_grid_v1",
+      "task_id": "poly_d2_o6",
+      "updated_at": "2026-08-07T14:33:26.825978+00:00"
+    },
+    "total_runs": 994,
+    "updated_at": "2026-08-07T14:33:26.826422+00:00"
+  },
+  "scope_tasks": [
+    "poly_d2_o2",
+    "poly_d2_o4",
+    "poly_d2_o6",
+    "cahn_hilliard_o4",
+    "cahn_hilliard_o6"
+  ],
+  "snapshot_type": "full_complete_search",
+  "status_counts": {
+    "complete": 994
+  },
+  "temporary_files": [],
+  "text_log_missing_loss_or_rel_error_count": 6,
+  "text_log_missing_loss_or_rel_error_examples": [
+    "results/poly_d2_o2/points/point_000/war.log",
+    "results/poly_d2_o2/points/point_000/real_tanh_autodiff.log",
+    "results/poly_d2_o2/points/point_001/war.log",
+    "results/poly_d2_o2/points/point_001/real_tanh_autodiff.log",
+    "results/poly_d2_o2/points/point_002/war.log",
+    "results/poly_d2_o2/points/point_002/real_tanh_autodiff.log"
+  ]
 }
