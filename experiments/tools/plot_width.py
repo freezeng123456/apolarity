@@ -119,16 +119,16 @@ def make_figure(key: str, items) -> Path:
                 axis.plot(grid, mean, color=color, linestyle=linestyle, label=label)
                 axis.fill_between(grid, lo, hi, color=color, alpha=0.12)
 
-    xlabel = "operator order" if key.startswith("poly_") else "sweep value a"
+    xlabel = r"operator order $2m$" if key.startswith("poly_") else r"parameter $a$"
     axes[0].set_xlabel(xlabel)
     axes[0].set_ylabel(r"relative $L^2$ error")
-    axes[0].set_title("(a) validated accuracy")
+    axes[0].set_title("(a) final error")
     axes[1].set_xlabel("training time (s)")
     axes[1].set_ylabel(r"relative $L^2$ error")
-    axes[1].set_title("(b) accuracy vs time")
+    axes[1].set_title("(b) error history")
     axes[2].set_xlabel("training time (s)")
     axes[2].set_ylabel("interior residual loss")
-    axes[2].set_title("(c) residual vs time")
+    axes[2].set_title("(c) residual history")
     for axis in axes:
         axis.set_yscale("log")
         axis.grid(True, alpha=0.25)

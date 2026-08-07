@@ -1,0 +1,20 @@
+% auto-generated from validated protocol_id=jsc_v2 bundles
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Time-harmonic Maxwell: mean $\pm$ sample standard deviation of the relative $L^2$ error over five seeds after 1200\,s. The lowest mean in each row is bold.}}
+\label{tab:jsc-v2-maxwell}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$a$ & Complex $\sinh$ & SIREN & mFF-PINN & MscaleDNN-2-sin \\
+\midrule
+2 & $\mathbf{4.21\pm1.57}\times10^{-3}$ & $1.00\pm0.00$ & $6.93\pm1.86\times10^{-1}$ & $1.09\pm0.06$ \\
+4 & $\mathbf{4.19\pm0.22}\times10^{-2}$ & $1.00\pm0.00$ & $1.06\pm0.11$ & $1.29\pm0.07$ \\
+6 & $\mathbf{1.20\pm0.17}\times10^{-1}$ & $1.00\pm0.00$ & $1.13\pm0.15$ & $1.34\pm0.04$ \\
+\bottomrule
+\end{tabular}
+}
+\par\smallskip
+\parbox{0.98\linewidth}{\scriptsize All methods use four hidden layers of width $H=128$. Trainable real degrees of freedom: Complex $\sinh$=100,098; SIREN=100,098; mFF-PINN=132,610; MscaleDNN-2-sin=300,294.}
+\end{table}

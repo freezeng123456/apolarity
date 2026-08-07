@@ -1,0 +1,20 @@
+% auto-generated from validated protocol_id=jsc_v2 bundles
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Polyharmonic, d=2: mean $\pm$ sample standard deviation of the relative $L^2$ error over five seeds after 1200\,s. The lowest mean in each row is bold.}}
+\label{tab:jsc-v2-poly-d2}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$2m$ & Complex $\sinh$ & SIREN & mFF-PINN & MscaleDNN-2-sin \\
+\midrule
+2 & $\mathbf{3.36\pm1.57}\times10^{-4}$ & $1.00\pm0.00$ & $4.88\pm2.73\times10^{-3}$ & $1.18\pm0.24\times10^{-2}$ \\
+4 & $\mathbf{8.02\pm1.86}\times10^{-3}$ & $1.00\pm0.00$ & $8.18\pm1.29\times10^{-1}$ & $5.74\pm0.45\times10^{-1}$ \\
+6 & $\mathbf{1.01\pm0.53}\times10^{-1}$ & $1.00\pm0.00$ & $1.00\pm0.02$ & $9.39\pm0.11\times10^{-1}$ \\
+\bottomrule
+\end{tabular}
+}
+\par\smallskip
+\parbox{0.98\linewidth}{\scriptsize All methods use four hidden layers of width $H=128$. Trainable real degrees of freedom: Complex $\sinh$=100,098; SIREN=50,049; mFF-PINN=66,305; MscaleDNN-2-sin=150,147.}
+\end{table}
