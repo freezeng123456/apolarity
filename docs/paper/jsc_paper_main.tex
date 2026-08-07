@@ -240,14 +240,16 @@ where \(\beta\) ranges over multi-indices on the active variables and
 \end{lemma}
 
 \begin{proof}
-By the symmetric multilinearity of \(D^{p}u(x)\) and the multinomial
-theorem,
-\[
-  D^{p}u(x)\Big[\textstyle\sum_{j}z_{j}e_{i_{j}},\ldots,
-                \sum_{j}z_{j}e_{i_{j}}\Big]
-  \;=\; \sum_{|\beta|=p}\frac{p!}{\beta!}\,z^{\beta}\,\partial^{\beta}u(x).
-\]
-Dividing by \(p!\) yields \eqref{eq:Qu-expand}.
+    Set $v(z) = \sum_{j = 0}^{n} z_j e_{i_j}$.
+    The symmetric $p$-linearity of $D^p u(x)$ and the multinomial theorem give
+    \begin{equation*}
+        \begin{aligned}
+            D^p u(x)\bigl[v(z), \ldots, v(z)\bigr] &= \sum_{|\beta| = p} \binom{p}{\beta} z^{\beta}\,\partial^{\beta}u(x) \\
+            &= \sum_{|\beta| = p} \frac{p!}{\beta!} z^{\beta}\,\partial^{\beta}u(x).
+        \end{aligned}
+    \end{equation*}
+    By definitions \eqref{eq:Tp-def} and \eqref{eq:Qu-def}, $Q_u(z) = D^p u(x)[v(z), \ldots, v(z)] \,/\, p!$.
+    Dividing the displayed multinomial expansion by $p!$ proves \eqref{eq:Qu-expand}.
 \end{proof}
 
 \begin{corollary}\label{cor:coef-extract}
@@ -303,33 +305,36 @@ following are equivalent.
 \end{theorem}
 
 \begin{proof}
-Write \(v_{r}=(v_{r,0},\ldots,v_{r,n})\) in active coordinates. By
-Lemma~\ref{lem:Qu-expand},
-\[
-  \Tp(x;v_{r})
-  =\sum_{|\beta|=p}\frac{\partial^{\beta}u(x)}{\beta!}\,v_{r}^{\beta}.
-\]
-Substituting this expansion into statement (1), and using that the
-order-\(p\) active jet of \(u\) at \(x\) can be prescribed arbitrarily,
-shows that (1) is equivalent to the finite-dimensional coefficient system
-\begingroup\renewcommand{\theHequation}{eqstar}
-\begin{equation}
-\sum_{r=1}^{R}c_{r}\,v_{r}^{\beta}
-\;=\; \nu!\,\delta_{a\beta},
-\qquad \forall\,\beta\in\Z_{\ge 0}^{n+1}\text{ with }|\beta|=p.
-\tag{$\star$}\label{eq:star}
-\end{equation}
-\endgroup
-On the other hand, expanding statement (2) gives
-\((v_{r}\!\cdot\!z)^{p}=\sum_{|\beta|=p}\binom{p}{\beta}v_{r}^{\beta}z^{\beta}\)
-and hence, after comparing coefficients of \(z^{\beta}\),
-\[
-\binom{p}{\beta}\sum_{r=1}^{R}c_{r}\,v_{r}^{\beta}
-\;=\; p!\,\delta_{a\beta},\quad\forall\,|\beta|=p.
-\]
-Using \(p!/\binom{p}{\beta}=\beta!\) and
-\(\beta!\,\delta_{a\beta}=\nu!\,\delta_{a\beta}\), this is
-exactly \eqref{eq:star}. Thus (1) and (2) are equivalent.
+    Write $v_r = (v_{r,0}, \ldots, v_{r,n})$ in active coordinates.
+    Lemma~\ref{lem:Qu-expand} gives
+    \begin{equation*}
+        \Tp(x; v_r) = \sum_{|\beta| = p} \frac{\partial^{\beta}u(x)}{\beta!} v_r^{\beta}.
+    \end{equation*}
+    Therefore, the right-hand side of the directional-schedule identity is
+    \begin{equation*}
+        \sum_{r = 1}^{R} c_r \Tp(x; v_r) = \sum_{|\beta| = p} \frac{\partial^{\beta}u(x)}{\beta!} \left(\sum_{r = 1}^{R} c_r v_r^{\beta}\right).
+    \end{equation*}
+    The order-$p$ derivatives $(\partial^{\beta}u(x))_{|\beta| = p}$ can be prescribed independently by choosing a polynomial with the desired $p$-jet at $x$.
+    Since the target is $\dal u(x) = \partial^a u(x)$ in active coordinates, the directional-schedule identity holds for every $u$ if and only if
+    \begingroup
+    \renewcommand{\theHequation}{eqstar}
+    \begin{equation}\label{eq:star}
+        \sum_{r = 1}^{R} c_r v_r^{\beta} = \nu!\,\delta_{a\beta}, \quad |\beta| = p.
+        \tag{$\star$}
+    \end{equation}
+    \endgroup
+    It remains to show that the polynomial identity gives the same coefficient conditions.
+    Expanding its right-hand side yields
+    \begin{equation*}
+        \sum_{r = 1}^{R} c_r (v_r \mathbin{\cdot} z)^p = \sum_{|\beta| = p} \binom{p}{\beta} \left(\sum_{r = 1}^{R} c_r v_r^{\beta}\right) z^{\beta}.
+    \end{equation*}
+    Hence $p! z^a = \sum_{r = 1}^{R} c_r (v_r \mathbin{\cdot} z)^p$ holds if and only if
+    \begin{equation*}
+        \binom{p}{\beta} \sum_{r = 1}^{R} c_r v_r^{\beta} = p!\,\delta_{a\beta}, \quad |\beta| = p.
+    \end{equation*}
+    Dividing by $\binom{p}{\beta}$ gives $\sum_{r = 1}^{R} c_r v_r^{\beta} = \beta!\,\delta_{a\beta}$.
+    Because $\beta!\,\delta_{a\beta} = \nu!\,\delta_{a\beta}$, this is exactly \eqref{eq:star}.
+    Thus the directional-schedule identity and the polynomial identity are equivalent.
 \end{proof}
 
 \begin{definition}[Waring rank]\label{def:waring-rank}
@@ -850,47 +855,69 @@ completed steps, and evaluation rule.
 
 \subsection{Roots-of-unity filter}\label{app:rou-filter}
 \begin{lemma}\label{lem:rou-filter}
-For any positive integer \(m\) and integer \(k\),
-\(\sum_{\zeta:\,\zeta^{m}=1}\zeta^{k}=m\,\mathbf{1}_{\{m\mid k\}}\).
+    For every positive integer $m$ and every integer $k$,
+    \begin{equation*}
+        \sum_{\zeta \in U_m} \zeta^k = m\,\mathbf{1}_{\{m \mid k\}}.
+    \end{equation*}
 \end{lemma}
 \begin{proof}
-If \(m\mid k\) every term is \(1\); otherwise the sum is a non-trivial
-geometric series in the primitive \(m\)-th root of unity, which sums to
-zero.
+    Let $\omega = \exp(2\pi\mathrm{i} / m)$.
+    Every element of $U_m$ is $\omega^{\ell}$ for a unique $\ell \in \{0, \ldots, m - 1\}$, so
+    \begin{equation*}
+        \sum_{\zeta \in U_m} \zeta^k = \sum_{\ell = 0}^{m - 1} (\omega^k)^{\ell}.
+    \end{equation*}
+    If $m \mid k$, then $\omega^k = 1$, and the sum equals $m$.
+    If $m \nmid k$, then $\omega^k \ne 1$, and the finite geometric-series formula gives
+    \begin{equation*}
+        \sum_{\ell = 0}^{m - 1} (\omega^k)^{\ell} = \frac{1 - \omega^{km}}{1 - \omega^k} = 0,
+    \end{equation*}
+    because $\omega^m = 1$.
+    This proves the stated identity.
 \end{proof}
 
 \subsection{Proof of Theorem~\ref{thm:rou}}\label{app:rou-proof}
-We verify condition (2) of Theorem~\ref{thm:bridge}: namely that the
-schedule \eqref{eq:rou-coeff} satisfies
-\(p!\,z^{a}=\sum_{\zeta}c_{\zeta}(v_{\zeta}\!\cdot\!z)^{p}\) in
-\(\C[z]_{p}\).
+\begin{proof}
+    We use the standard conventions that an empty product equals $1$ and that a Cartesian product over an empty index set contains one empty tuple.
+    These conventions include the case $n = 0$, for which the construction has one direction.
+    By Remark~\ref{rem:complex-extension} and Theorem~\ref{thm:bridge}, it is enough to prove the polynomial identity
+    \begin{equation}\label{eq:rou-polynomial-identity}
+        \sum_{\zeta \in U_{m_1} \times \cdots \times U_{m_n}} c_{\zeta} (v_{\zeta} \mathbin{\cdot} z)^p = p! z^a.
+    \end{equation}
+    Fix $\beta \in \Z_{\ge 0}^{n + 1}$ with $|\beta| = p$, and denote the coefficient of $z^{\beta}$ on the left-hand side of \eqref{eq:rou-polynomial-identity} by $C_{\beta}$.
+    Using the definitions of $c_{\zeta}$ and $v_{\zeta}$ in \eqref{eq:rou-coeff}, followed by the multinomial theorem, gives
+    \begin{equation*}
+        \begin{aligned}
+            C_{\beta} &= \frac{\nu!}{\prod_{j = 1}^{n} m_j} \binom{p}{\beta} \sum_{\zeta_1 \in U_{m_1}} \cdots \sum_{\zeta_n \in U_{m_n}} \prod_{j = 1}^{n} \zeta_j^{\beta_j + 1} \\
+            &= \frac{\nu!}{\prod_{j = 1}^{n} m_j} \binom{p}{\beta} \prod_{j = 1}^{n} \left(\sum_{\zeta_j \in U_{m_j}} \zeta_j^{\beta_j + 1}\right).
+        \end{aligned}
+    \end{equation*}
+    Lemma~\ref{lem:rou-filter} shows that the $j$th factor is nonzero if and only if $m_j \mid \beta_j + 1$.
+    Since $m_j = a_j + 1$, this condition is equivalent to $\beta_j \equiv a_j \pmod{m_j}$.
+    Thus, for each $j = 1, \ldots, n$, there is an integer $t_j \ge 0$ such that
+    \begin{equation*}
+        \beta_j = a_j + t_j m_j.
+    \end{equation*}
+    The degree constraint $|\beta| = p = \sum_{j = 0}^{n} a_j$ then gives
+    \begin{equation*}
+        \beta_0 = a_0 - \sum_{j = 1}^{n} t_j m_j.
+    \end{equation*}
+    If some $t_j$ were positive, then $m_j = a_j + 1 \ge a_0 + 1$, and consequently $\beta_0 \le a_0 - m_j < 0$, contradicting $\beta_0 \ge 0$.
+    Hence every $t_j$ is zero, so $\beta_j = a_j$ for $j = 1, \ldots, n$, and the degree constraint also gives $\beta_0 = a_0$.
+    Therefore, $C_{\beta} = 0$ whenever $\beta \ne a$.
 
-Expanding \((v_{\zeta}\!\cdot\!z)^{p}\) by the multinomial theorem and
-collecting the coefficient of \(z^{\beta}\) (with \(|\beta|=p\)):
-\[
-[z^{\beta}]\sum_{\zeta}c_{\zeta}(v_{\zeta}\!\cdot\!z)^{p}
-=\frac{\nu!}{\prod_{j=1}^{n}m_{j}}\binom{p}{\beta}
- \prod_{j=1}^{n}\!\Big(\sum_{\zeta_{j}^{m_{j}}=1}\zeta_{j}^{1+\beta_{j}}\Big).
-\]
-By Lemma~\ref{lem:rou-filter}, each inner sum equals \(m_{j}\) iff
-\(m_{j}\mid 1+\beta_{j}\), i.e.\ \(\beta_{j}\equiv a_{j}\pmod{m_{j}}\),
-and equals zero otherwise.
-
-A short counting argument shows that the unique feasible joint assignment
-is \(\beta=a\). Indeed, the congruence forces
-\(\beta_{j}=a_{j}+t_{j}(a_{j}+1)\) for \(j\ge 1\) with
-\(t_{j}\ge 0\). If some \(t_{j}>0\), then
-\[
-\beta_{0}
-=a_{0}-\sum_{j=1}^{n}t_{j}(a_{j}+1)
-<0,
-\]
-because \(a_{j}\ge a_{0}\), impossible. Hence all \(t_{j}=0\) and
-\(\beta=a\). With \(\beta=a\) all the \(m_{j}\) factors cancel
-and the leading constant becomes
-\(\nu!\binom{p}{a}=p!\), giving
-\([z^{a}]\sum_{\zeta}c_{\zeta}(v_{\zeta}\!\cdot\!z)^{p}=p!\) and
-all other coefficients vanish. \qed
+    For $\beta = a$, every roots-of-unity sum equals $m_j$, and the product cancels the denominator:
+    \begin{equation*}
+        C_a = \nu! \binom{p}{a} = \left(\prod_{j = 0}^{n} a_j!\right) \frac{p!}{\prod_{j = 0}^{n} a_j!} = p!.
+    \end{equation*}
+    The left-hand side of \eqref{eq:rou-polynomial-identity} therefore has coefficient $p!$ at $z^a$ and coefficient zero at every other degree-$p$ monomial.
+    This proves \eqref{eq:rou-polynomial-identity}, and Theorem~\ref{thm:bridge} yields the stated directional schedule.
+    Finally, the schedule contains
+    \begin{equation*}
+        \left|U_{m_1} \times \cdots \times U_{m_n}\right| = \prod_{j = 1}^{n} m_j = R_{\C}(z^a)
+    \end{equation*}
+    directions, where the last equality is Theorem~\ref{thm:CCG}.
+    Hence the schedule is length-optimal over $\C$.
+\end{proof}
 
 \subsection{Apolar pairing alternative}\label{app:apolar-pairing}
 The Waring rank \(R_{\C}(F)\) of a homogeneous polynomial \(F\in\C[z]_{p}\)
