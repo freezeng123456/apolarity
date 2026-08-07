@@ -72,8 +72,11 @@ For \(d\in\{2,3\}\), let
   \Delta^m u_\star=(-d\pi^2)^m u_\star
   \quad\text{in }(-1,1)^d.
 \end{equation}
-We use orders \(2m\in\{2,4,6\}\) and Navier boundary conditions
-\(\Delta^j u=0\), \(j=0,\ldots,m-1\). Expanding \(\Delta^m\) produces
+We use orders \(2m\in\{2,4,6\}\) and enforce the Navier targets
+\(u=u_\star\) and
+\(\Delta^j u=(-d\pi^2)^j u_\star\), \(j=1,\ldots,m-1\), on the boundary;
+all these targets vanish for the chosen \(u_\star\). Expanding
+\(\Delta^m\) produces
 \(\binom{d+m-1}{m}\) monomial terms. Each is evaluated independently; mixed
 terms such as \(\partial_x^2\partial_y^2 u\) use the Waring schedule, while
 pure coordinate powers need one complex direction.
