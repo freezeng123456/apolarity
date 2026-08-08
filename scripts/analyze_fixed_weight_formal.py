@@ -134,7 +134,7 @@ def main() -> int:
         f"- Seeds: `{manifest['seeds']}`",
         f"- Completed cells: `{verification['complete_runs']}/{verification['expected_runs']}`",
         "- Every final history point contains `loss` and `rel_error`.",
-        "- `analysis/final_metrics.*` is the canonical supplement generated from each atomic result JSON; raw logs are preserved unchanged.",
+        "- `analysis/final_metrics.*` is the canonical supplement generated from each atomic result JSON; original log lines are preserved and any appended final-metrics line is derived from that JSON.",
         "",
     ]
     for task in TASK_ORDER:

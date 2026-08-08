@@ -5,7 +5,7 @@
 - Seeds: `[0, 1, 2, 3, 4]`
 - Completed cells: `50/50`
 - Every final history point contains `loss` and `rel_error`.
-- `analysis/final_metrics.*` is the canonical supplement generated from each atomic result JSON; raw logs are preserved unchanged.
+- `analysis/final_metrics.*` is the canonical supplement generated from each atomic result JSON; original log lines are preserved and any appended final-metrics line is derived from that JSON.
 
 ## `poly_d2_o2` — weights `[1.0]`
 
