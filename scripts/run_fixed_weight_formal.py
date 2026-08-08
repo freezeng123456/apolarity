@@ -438,6 +438,7 @@ def run_orchestrator(args: argparse.Namespace) -> int:
                     command = worker_command(task_name, method, FIXED_WEIGHTS[task_name], seed, args.eval_seed, args.seconds, output, smoke=False)
                     with log.open("a") as handle:
                         handle.write(f"\n# attempt={attempt} started_at={utc_now()}\n")
+                        handle.flush()
                         completed_proc = subprocess.run(command, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT, timeout=max(1800.0, args.seconds * 2.0 + 300.0), check=False)
                     if completed_proc.returncode == 0 and complete_formal_result(output, task=task_name, method=method, seed=seed, seconds=args.seconds):
                         break
