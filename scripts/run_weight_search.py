@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Run and resume the exhaustive WAR/real-autodiff loss-weight search.
+"""Run and resume the Poly WAR/real-autodiff loss-weight search.
 
 Examples
 --------
-Smoke every task/method without entering the ranked grid::
+Smoke the three active Poly tasks without entering the ranked grid::
 
     python scripts/run_weight_search.py smoke --seconds 5
 
-Run the complete 497-vector grid (994 method runs) and resume safely::
+Run the complete Poly grid and resume safely::
 
     python scripts/run_weight_search.py orchestrate --seconds 60 --resume
 
@@ -28,6 +28,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 import time
 import traceback
 from collections.abc import Iterable
@@ -45,15 +46,18 @@ for path in (str(COMMON), str(SRC)):
         sys.path.insert(0, path)
 
 from weight_search import (
+    COMPLEX_DTYPE,
     DEPTH,
     EVAL_SEED,
     GRID_VALUES,
     HIDDEN,
     HISTORY_INTERVAL_SECONDS,
+    INIT_MODE,
     LEARNING_RATE,
     LEARNING_RATE_FINAL,
     METHODS,
     PROTOCOL_ID,
+    REAL_DTYPE,
     TASKS,
     TRAIN_SEED,
     SearchTask,
@@ -63,13 +67,14 @@ from weight_search import (
     tensor_components_to_float,
 )
 
-DEFAULT_RESULT_ROOT = ROOT / "experiments" / "results" / PROTOCOL_ID
+DEFAULT_RESULT_ROOT = ROOT / "outputs" / "search" / "polyharmonic-weight-search-v1"
+DEFAULT_ACTIVE_TASKS = "poly_d2_o2,poly_d2_o4,poly_d2_o6"
 TASK_ORDER = (
     "poly_d2_o2",
     "poly_d2_o4",
+    "poly_d2_o6",
     "cahn_hilliard_o4",
     "cahn_hilliard_o6",
-    "poly_d2_o6",
 )
 
 
@@ -536,8 +541,26 @@ def root_manifest(tasks: Iterable[SearchTask], seconds: float, smoke: bool) -> d
         "grid_type": "complete_ordered_cartesian_product",
         "methods": list(METHODS),
         "architecture": {
-            "war": {"representation": "native_complex", "activation": "sinh", "backend": "waring_complex_jet", "hidden": HIDDEN, "depth": DEPTH},
-            "real_tanh_autodiff": {"representation": "real", "activation": "tanh", "backend": "direct_autodiff", "hidden": HIDDEN, "depth": DEPTH},
+            "war": {
+                "representation": "native_complex",
+                "activation": "sinh",
+                "backend": "waring_complex_jet",
+                "hidden": HIDDEN,
+                "depth": DEPTH,
+                "init_mode": INIT_MODE,
+                "frequency_initialization": "disabled",
+                "parameter_dtype": str(COMPLEX_DTYPE),
+            },
+            "real_tanh_autodiff": {
+                "representation": "real",
+                "activation": "tanh",
+                "backend": "direct_autodiff",
+                "hidden": HIDDEN,
+                "depth": DEPTH,
+                "init_mode": INIT_MODE,
+                "frequency_initialization": "disabled",
+                "parameter_dtype": str(REAL_DTYPE),
+            },
         },
         "tasks": [{
             "task_id": task.task_id,
@@ -552,6 +575,10 @@ def root_manifest(tasks: Iterable[SearchTask], seconds: float, smoke: bool) -> d
         "nominal_training_seconds": candidate_count * len(METHODS) * seconds,
         "train_seed": TRAIN_SEED,
         "eval_seed": EVAL_SEED,
+        "input_features": {
+            "poly": "raw_coordinates",
+            "cahn_hilliard": "periodic_embedding_shared_by_methods",
+        },
         "learning_rate": LEARNING_RATE,
         "learning_rate_final": LEARNING_RATE_FINAL,
         "lr_schedule": "wall_clock_cosine",
@@ -606,41 +633,60 @@ def worker_command(
 
 def run_smoke(args: argparse.Namespace) -> int:
     tasks = selected_tasks(args.tasks)
-    root = (args.output_root or DEFAULT_RESULT_ROOT / "_smoke").resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    atomic_write_json(root / "manifest.json", root_manifest(tasks, args.seconds, True))
+    conclusion = (
+        args.conclusion or DEFAULT_RESULT_ROOT / "SMOKE_CONCLUSION.json"
+    ).resolve()
     failures = 0
-    for task in tasks:
-        for method in METHODS:
-            output = root / task.task_id / f"{method}.json"
-            log = root / task.task_id / f"{method}.log"
-            output.parent.mkdir(parents=True, exist_ok=True)
-            command = worker_command(
-                task, method, task.center_weights, output, args.seconds, smoke=True
-            )
-            print(f"[smoke] {task.task_id} {method} weights={task.center_weights}", flush=True)
-            with log.open("w") as handle:
-                completed = subprocess.run(
-                    command,
-                    cwd=ROOT,
-                    stdout=handle,
-                    stderr=subprocess.STDOUT,
-                    timeout=max(300.0, args.seconds * 20.0),
-                    check=False,
+    cells: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory(prefix="apolarity-poly-search-smoke-") as raw:
+        raw_root = Path(raw)
+        for task in tasks:
+            for method in METHODS:
+                output = raw_root / task.task_id / f"{method}.json"
+                log = raw_root / task.task_id / f"{method}.log"
+                output.parent.mkdir(parents=True, exist_ok=True)
+                command = worker_command(
+                    task, method, task.center_weights, output, args.seconds, smoke=True
                 )
-            if completed.returncode != 0 or not result_complete(output):
-                failures += 1
-                print(f"[smoke-failed] see {log}", flush=True)
-            else:
-                result = load_result(output) or {}
                 print(
-                    f"[smoke-ok] steps={result.get('steps')} "
-                    f"rel_error={result.get('rel_error'):.6g}",
+                    f"[smoke] {task.task_id} {method} weights={task.center_weights}",
                     flush=True,
                 )
-    write_checksums(root)
-    marker = "SMOKE_COMPLETE" if failures == 0 else "SMOKE_COMPLETE_WITH_FAILURES"
-    atomic_write_text(root / marker, f"failures={failures}\n")
+                with log.open("w") as handle:
+                    completed = subprocess.run(
+                        command,
+                        cwd=ROOT,
+                        stdout=handle,
+                        stderr=subprocess.STDOUT,
+                        timeout=max(300.0, args.seconds * 20.0),
+                        check=False,
+                    )
+                result = load_result(output) or {}
+                passed = completed.returncode == 0 and result_complete(output)
+                if not passed:
+                    failures += 1
+                cells.append({
+                    "task_id": task.task_id,
+                    "method": method,
+                    "weights": list(task.center_weights),
+                    "status": result.get("status", "missing"),
+                    "passed": passed,
+                    "returncode": completed.returncode,
+                    "steps": result.get("steps"),
+                    "loss": result.get("loss"),
+                    "rel_error": result.get("rel_error"),
+                    "peak_mb": result.get("peak_mb"),
+                    "log_tail": log.read_text().splitlines()[-20:] if not passed else [],
+                })
+    atomic_write_json(conclusion, {
+        "protocol_id": PROTOCOL_ID,
+        "generated_at": utc_now(),
+        "seconds_per_cell": args.seconds,
+        "passed": failures == 0,
+        "failure_count": failures,
+        "raw_artifacts_retained": False,
+        "cells": cells,
+    })
     return 0 if failures == 0 else 1
 
 
@@ -794,20 +840,20 @@ def build_parser() -> argparse.ArgumentParser:
     worker.set_defaults(func=run_worker)
 
     smoke = subparsers.add_parser("smoke", help="smoke all selected tasks and methods")
-    smoke.add_argument("--tasks", default="all")
+    smoke.add_argument("--tasks", default=DEFAULT_ACTIVE_TASKS)
     smoke.add_argument("--seconds", type=float, default=5.0)
-    smoke.add_argument("--output-root", type=Path)
+    smoke.add_argument("--conclusion", type=Path)
     smoke.set_defaults(func=run_smoke)
 
     orchestrate = subparsers.add_parser("orchestrate", help="run the exhaustive grid")
-    orchestrate.add_argument("--tasks", default="all")
+    orchestrate.add_argument("--tasks", default=DEFAULT_ACTIVE_TASKS)
     orchestrate.add_argument("--seconds", type=float, default=60.0)
     orchestrate.add_argument("--output-root", type=Path)
     orchestrate.add_argument("--resume", action="store_true")
     orchestrate.set_defaults(func=run_orchestrator)
 
     summarize = subparsers.add_parser("summarize", help="rebuild rankings from raw results")
-    summarize.add_argument("--tasks", default="all")
+    summarize.add_argument("--tasks", default=DEFAULT_ACTIVE_TASKS)
     summarize.add_argument("--output-root", type=Path)
     summarize.set_defaults(func=run_summarize)
     return parser

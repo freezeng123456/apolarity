@@ -1,10 +1,11 @@
 """Core models and losses for the WAR versus real-autodiff weight search.
 
-The search deliberately lives outside the frozen ``jsc_v3`` protocol.  It
-compares the proposed native-complex sinh network using Waring/Taylor jets
-against a literal-width-matched real tanh network using nested coordinate
-autodiff.  Every loss component is returned separately so the grid runner can
-persist auditable real-time traces.
+The current Poly path compares the proposed native-complex sinh network using
+Waring/Taylor jets against a literal-width-matched real tanh network using
+nested coordinate autodiff.  Every loss component is returned separately so
+the grid runner can persist auditable real-time traces.  The one-dimensional
+periodic Cahn--Hilliard branch remains only for historical result compatibility;
+the active two-dimensional CH protocol lives in ``cahn_hilliard_2d/problem.py``.
 """
 
 from __future__ import annotations
@@ -16,7 +17,6 @@ from dataclasses import dataclass
 import torch
 from osc_common import (
     build_plain,
-    complex_freq_init_,
     deriv_alpha,
     laplacian_power_terms,
     n_params,
@@ -28,7 +28,14 @@ from torch import Tensor, nn
 
 from apolarity.taylor_jet import TaylorJet, jet_forward_sequential, jet_sin
 
-PROTOCOL_ID = "war_realad_weight_grid_v1"
+# This protocol deliberately removes the task-aware frequency initialization
+# used by the historical weight grid.  Both methods now start from the same
+# Xavier-class initialization family; the old result tree remains valid under
+# its original protocol id.
+PROTOCOL_ID = "war_realad_weight_grid_common_xavier_fp32_v1"
+INIT_MODE = "common_xavier"
+REAL_DTYPE = torch.float32
+COMPLEX_DTYPE = torch.complex64
 GRID_VALUES = (1e-3, 1e-2, 1e-1, 1.0, 1e1, 1e2, 1e3)
 METHODS = ("war", "real_tanh_autodiff")
 HIDDEN = 128
@@ -51,6 +58,32 @@ class SearchTask:
     @property
     def weight_count(self) -> int:
         return len(self.weight_names)
+
+
+def _common_xavier_init_(net: nn.Sequential) -> None:
+    """Initialize real and native-complex MLPs from one Xavier family.
+
+    ``torch.nn.Linear`` does not provide a method-comparable initialization for
+    a complex network.  We therefore draw independent Xavier-uniform real and
+    imaginary parts and divide each by ``sqrt(2)`` so their summed variance
+    matches the real baseline.  Biases are zero for both representations.
+    """
+    with torch.no_grad():
+        for layer in net:
+            if not isinstance(layer, nn.Linear):
+                continue
+            if layer.weight.dtype.is_complex:
+                real = torch.empty_like(layer.weight.real)
+                imag = torch.empty_like(layer.weight.real)
+                nn.init.xavier_uniform_(real)
+                nn.init.xavier_uniform_(imag)
+                layer.weight.copy_(torch.complex(real, imag) / math.sqrt(2.0))
+                if layer.bias is not None:
+                    layer.bias.zero_()
+            else:
+                nn.init.xavier_uniform_(layer.weight)
+                if layer.bias is not None:
+                    layer.bias.zero_()
 
 
 TASKS: dict[str, SearchTask] = {
@@ -145,15 +178,11 @@ def build_search_model(
     if method not in METHODS:
         raise ValueError(f"unknown method {method!r}")
     is_war = method == "war"
-    dtype = torch.complex128 if is_war else torch.float64
+    dtype = COMPLEX_DTYPE if is_war else REAL_DTYPE
     activation = "sinh" if is_war else "tanh"
     input_dim = 2 if task.family == "poly" else 3
     net = build_plain(input_dim, hidden, depth, dtype, activation, out=1)
-    if is_war:
-        # Poly uses the established frequency-matched initialization.  The CH
-        # input is already periodic and contains its fundamental harmonics.
-        omega0 = 2.0 * math.pi if task.family == "poly" else 2.0
-        complex_freq_init_(net, omega0)
+    _common_xavier_init_(net)
     model: nn.Module = (
         net if task.family == "poly" else PeriodicEmbeddedMLP(net)
     )
@@ -162,6 +191,7 @@ def build_search_model(
 
 
 def model_metadata(model: nn.Module, method: str) -> dict[str, object]:
+    parameter_dtype = next(model.parameters()).dtype
     return {
         "method": method,
         "representation": "native_complex" if method == "war" else "real",
@@ -172,6 +202,9 @@ def model_metadata(model: nn.Module, method: str) -> dict[str, object]:
         "hidden": HIDDEN,
         "depth": DEPTH,
         "real_dof": n_params(model),
+        "init_mode": INIT_MODE,
+        "frequency_initialization": "disabled",
+        "parameter_dtype": str(parameter_dtype),
     }
 
 
@@ -190,7 +223,7 @@ def _imaginary_regularizer(model: nn.Module, device: torch.device) -> Tensor:
         if parameter.requires_grad and parameter.dtype.is_complex
     ]
     if not terms:
-        return torch.zeros((), dtype=torch.float64, device=device)
+        return torch.zeros((), dtype=REAL_DTYPE, device=device)
     return 1e-6 * sum(terms)
 
 
@@ -249,10 +282,13 @@ def make_poly_loss(
     def exact(x: Tensor) -> Tensor:
         return torch.sin(math.pi * x).prod(dim=-1)
 
-    source = (((-scale) ** m) * exact(x_int)).detach()
-    bc_targets = [(((-scale) ** j) * exact(x_bc)).detach() for j in range(m)]
-    eval_target = exact(x_eval).detach()
-    history_target = exact(x_hist).detach()
+    source = (((-scale) ** m) * exact(x_int)).detach().to(REAL_DTYPE)
+    bc_targets = [
+        (((-scale) ** j) * exact(x_bc)).detach().to(REAL_DTYPE)
+        for j in range(m)
+    ]
+    eval_target = exact(x_eval).detach().to(REAL_DTYPE)
+    history_target = exact(x_hist).detach().to(REAL_DTYPE)
     xi = x_int.to(dtype)
     xb = x_bc.to(dtype)
 
@@ -260,7 +296,7 @@ def make_poly_loss(
         interior = _laplacian_power(model, xi, m, backend)
         l_pde = torch.mean(((interior - source) / (scale**m)) ** 2)
         components: dict[str, Tensor] = {"L_PDE": l_pde}
-        weighted_bc = torch.zeros((), dtype=torch.float64, device=device)
+        weighted_bc = torch.zeros((), dtype=REAL_DTYPE, device=device)
         for j, (weight, target) in enumerate(zip(weights, bc_targets)):
             pred = _laplacian_power(model, xb, j, backend)
             denominator = scale**j
@@ -283,6 +319,9 @@ def make_poly_loss(
         metadata={
             "domain": "[-1,1]^2",
             "exact_solution": "sin(pi*x1)*sin(pi*x2)",
+            "training_real_dtype": str(REAL_DTYPE),
+            "war_parameter_dtype": str(COMPLEX_DTYPE),
+            "autodiff_parameter_dtype": str(REAL_DTYPE),
             "boundary_component_order": ["u", "Delta_u", "Delta2_u"][:m],
             "pde_normalization": scale**m,
             "boundary_normalization": [scale**j for j in range(m)],
@@ -340,18 +379,18 @@ def make_ch_loss(
 
     train_gen = torch.Generator(device=device).manual_seed(train_seed)
     eval_gen = torch.Generator(device=device).manual_seed(eval_seed)
-    x_int = torch.empty(n_int, 2, device=device, dtype=torch.float64)
+    x_int = torch.empty(n_int, 2, device=device, dtype=REAL_DTYPE)
     x_int[:, 0].uniform_(0.0, 2.0 * math.pi, generator=train_gen)
     x_int[:, 1].uniform_(0.0, 1.0, generator=train_gen)
-    x_ic = torch.empty(n_ic, 2, device=device, dtype=torch.float64)
+    x_ic = torch.empty(n_ic, 2, device=device, dtype=REAL_DTYPE)
     x_ic[:, 0].uniform_(0.0, 2.0 * math.pi, generator=train_gen)
     x_ic[:, 1] = 0.0
 
-    mean_t = torch.empty(n_mean_t, device=device, dtype=torch.float64).uniform_(
+    mean_t = torch.empty(n_mean_t, device=device, dtype=REAL_DTYPE).uniform_(
         0.0, 1.0, generator=train_gen
     )
     mean_x = (
-        torch.arange(n_mean_x, device=device, dtype=torch.float64)
+        torch.arange(n_mean_x, device=device, dtype=REAL_DTYPE)
         * (2.0 * math.pi / n_mean_x)
     )
     mean_x_grid, mean_t_grid = torch.meshgrid(mean_x, mean_t, indexing="ij")
@@ -359,7 +398,7 @@ def make_ch_loss(
         [mean_x_grid.T.reshape(-1), mean_t_grid.T.reshape(-1)], dim=-1
     )
 
-    x_eval = torch.empty(n_eval, 2, device=device, dtype=torch.float64)
+    x_eval = torch.empty(n_eval, 2, device=device, dtype=REAL_DTYPE)
     x_eval[:, 0].uniform_(0.0, 2.0 * math.pi, generator=eval_gen)
     x_eval[:, 1].uniform_(0.0, 1.0, generator=eval_gen)
     x_hist = x_eval[: min(history_eval_n, n_eval)]
@@ -409,6 +448,9 @@ def make_ch_loss(
         metadata={
             "domain": "x in [0,2*pi), t in [0,1]",
             "exact_solution": "exp(-t)*cos(2*x)",
+            "training_real_dtype": str(REAL_DTYPE),
+            "war_parameter_dtype": str(COMPLEX_DTYPE),
+            "autodiff_parameter_dtype": str(REAL_DTYPE),
             "periodic_embedding": ["cos(x)", "sin(x)", "t"],
             "gamma1": gamma1,
             "gamma2": gamma2,
@@ -478,14 +520,17 @@ def tensor_components_to_float(components: dict[str, Tensor]) -> dict[str, float
 
 
 __all__ = [
+    "COMPLEX_DTYPE",
     "DEPTH",
     "EVAL_SEED",
     "GRID_VALUES",
     "HIDDEN",
     "HISTORY_INTERVAL_SECONDS",
+    "INIT_MODE",
     "LEARNING_RATE",
     "LEARNING_RATE_FINAL",
     "METHODS",
+    "REAL_DTYPE",
     "PROTOCOL_ID",
     "TASKS",
     "TRAIN_SEED",

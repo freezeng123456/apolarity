@@ -47,12 +47,12 @@ def test_periodic_embedding_waring_matches_direct_physical_derivatives():
         task, "war", torch.device("cpu"), hidden=6, depth=2
     )
     points = torch.tensor(
-        [[0.2, 0.1], [1.1, 0.7]], dtype=torch.complex128
+        [[0.2, 0.1], [1.1, 0.7]], dtype=torch.complex64
     )
     for alpha in ((0,), (1,), (0, 0), (0, 0, 0, 0)):
         war = deriv_alpha(model, points, alpha, backend="waring_complex_jet")
         direct = deriv_alpha(model, points, alpha, backend="direct_autodiff")
-        torch.testing.assert_close(war, direct, rtol=2e-8, atol=2e-9)
+        torch.testing.assert_close(war, direct, rtol=5e-4, atol=5e-5)
 
 
 def _exact_partial(points: torch.Tensor, coordinate: int, repeats: int) -> torch.Tensor:
