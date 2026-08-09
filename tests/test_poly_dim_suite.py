@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "poly_dim_suite", ROOT / "scripts" / "run_poly_dim_suite.py"
+    "poly_dim_suite", ROOT / "experiments" / "archived" / "scripts" / "run_poly_dim_suite.py"
 )
 suite = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

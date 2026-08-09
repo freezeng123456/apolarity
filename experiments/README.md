@@ -10,71 +10,82 @@ One PDE family is kept per subfolder:
   data/             # currently empty
 ```
 
-All `experiments/*/data/` directories have been cleared. There are currently no
-formal results, and all paper figures and tables are **TBD**.
+All `experiments/*/data/` directories have been cleared. The active paper
+scope is limited to the three formal problem families below. Other families,
+auxiliary result bundles, and non-formal runners are kept under
+`experiments/archived/` and are not part of the active inventory.
 
 ## Families
 
 | folder | family | status |
 |---|---|---|
-| `polyharmonic/` | Poly, \(d=2,3\), order \(2,4,6\) | formal `jsc_v2` |
-| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v2` |
-| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v2` |
-| `helmholtz/` | high-wavenumber Helmholtz (+ anisotropic) | diagnostic only |
-| `helmholtz_vc/` | variable-coefficient Helmholtz | diagnostic only |
-| `plate_beam/` | Kirchhoff plate / Euler–Bernoulli beam | diagnostic only |
-| `kdv/` | linearized KdV / dispersive wave | diagnostic only |
-| `cahn_hilliard/` | Cahn–Hilliard | diagnostic only |
-| `nls/` | cubic nonlinear Schrödinger | diagnostic only |
-| `core_method/` | derivative and training diagnostics | diagnostic only |
+| `polyharmonic/` | Poly, \(d=2\), order \(2,4,6\) | formal `jsc_v3` (pow10 weights) |
+| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v3` (pow10 weights) |
+| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v3` (pow10 weights) |
 
-Historical or archived runners and every family-local `run.sh` are retained
-only for implementation diagnosis. They do not implement the formal evidence
-pipeline, and their outputs cannot be cited as paper evidence.
+The other families are archived in `experiments/archived/other_families/`.
+Their historical runners and outputs are retained only for diagnosis; they do
+not implement the active formal evidence pipeline and cannot be cited as part
+of the active paper inventory.
 
-## Frozen formal methods and literal width
+## Frozen v3 methods and literal width
 
 The only formal comparison contains:
 
 - `complex_sinh` (Complex Sinh);
-- SIREN;
-- mFF-PINN;
-- MscaleDNN-2-sin.
+- `complex_sinh_autodiff` (the same Complex Sinh network with direct nested coordinate autodiff).
 
-Every formal method uses literal hidden width \(H=128\). Trainable real degrees
-of freedom are recorded separately (each complex parameter counts as two real
-degrees of freedom), but they do not change the width. Maxwell counts both
-split-real \(H=128\) baseline networks. Any formal output with a width other
-than 128 is rejected.
+Both methods use literal hidden width \(H=128\), identical initialization,
+collocation, seeds, loss weights, and wall-clock budget. Only the derivative
+backend changes. Trainable real degrees of freedom are recorded separately;
+both methods use the same native-complex network and any formal output with a
+width other than 128 is rejected.
 
-## The only formal protocol: `jsc_v2`
+## Frozen v2 results and pending v3 protocol
 
-The complete preregistered grid is:
+The completed 1200-second results under `experiments/results/jsc_v2/` are
+retained as the fixed-`bc_weight=100` historical bundle. They are not mixed with
+the next run because the boundary loss profile is changing.
 
-- Poly: \(d\in\{2,3\}\) and order \(\in\{2,4,6\}\); \(d=3\), order 6 is a
-  required setting;
+The next formal run is `jsc_v3`, with the archived-search-informed
+`pow10_reasonable_v1` boundary profile. The profile is frozen in
+`experiments/common/boundary_weights.py` and includes:
+
+```text
+Poly d2/o2 [0.1], d2/o4 [0.1, 10], d2/o6 [0.01, 1, 10]
+Chirp a1/a2/a3 [1], [0.1], [0.01]
+Maxwell a2/a4/a6 [0.1], [0.1], [0.01]
+```
+
+No `jsc_v3` training has been launched yet.
+
+## The compact v3 task grid
+
+The compact v3 grid is:
+
+- Poly: \(d=2\), order \(\in\{2,4,6\}\);
 - Chirp: \(a\in\{1,2,3\}\);
 - Maxwell: \(a\in\{2,4,6\}\).
 
 Formal tasks must be launched one setting at a time:
 
 ```bash
-bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh poly --dim 2 --order 6
 bash scripts/run_jsc_main3.sh chirp --sweep 2
 bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
 
-These are three independent examples, not a batch command. The canonical
-outputs live under `experiments/results/jsc_v2/<task_id>/`. Every formal bundle
+These are three independent examples, not a batch command. The v3 canonical
+outputs will live under `experiments/results/jsc_v3/<task_id>/`. Every formal bundle
 must pass the validator before it can be consumed:
 
 ```bash
 python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v2/poly_d3_o6
+  experiments/results/jsc_v3/poly_d2_o6
 ```
 
-`validate_jsc_results.py` checks the protocol metadata, the four methods, the
-five seeds, unique keys, literal \(H=128\), finite metrics, and history traces.
-Figure and table builders accept only validated
-`protocol_id=jsc_v2` bundles. Since no formal bundle currently exists, their
-paper outputs remain **TBD**.
+`validate_jsc_results.py` checks the protocol metadata, the boundary profile, the
+two methods, the three seeds, unique keys, literal \(H=128\), finite loss and
+relative-error metrics, and four-column history traces. Figure and table builders
+for the next run must accept only validated `protocol_id=jsc_v3` bundles. The old
+v2 figure remains a historical record until v3 results are available.

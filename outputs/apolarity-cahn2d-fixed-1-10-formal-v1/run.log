@@ -1,0 +1,22 @@
+nohup: ignoring input
+{"engine_protocol_id": "cahn_hilliard_2d_natural_bc_common_sinh_fp32_v1", "event": "FORMAL_START_OR_RESUME", "git": {"branch": "", "dirty": false, "sha": "e2e781f4a4074d5ba5d810118b1097f2a9353d8f"}, "hardware": {"cuda_available": true, "cuda_device_index": 0, "cuda_device_name": "NVIDIA H20", "cuda_runtime": "12.8", "cuda_total_memory_bytes": 102010650624, "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher", "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]", "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python", "torch": "2.10.0+cu128"}, "methods": ["war", "real_sinh_autodiff"], "protocol_id": "cahn_hilliard_2d_fixed_weights_formal_v1", "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python", "sample_counts": {"history_eval_n": 4096, "n_bc": 2048, "n_eval": 32768, "n_ic": 1024, "n_int": 4096}, "seconds_per_method_seed": 1200.0, "seeds": [0, 1, 2, 3, 4], "tasks": ["cahn_hilliard_2d_o4", "cahn_hilliard_2d_o6"], "weights": {"cahn_hilliard_2d_o4": [1.0, 10.0], "cahn_hilliard_2d_o6": [1.0, 10.0]}}
+[run 1/20] cahn_hilliard_2d_o4 seed=0 war status=complete loss=1.6418679251728463e-06 rel_error=0.0013887746026739478
+[run 2/20] cahn_hilliard_2d_o4 seed=0 real_sinh_autodiff status=complete loss=0.0006711476016789675 rel_error=0.03596854954957962
+[run 3/20] cahn_hilliard_2d_o4 seed=1 war status=complete loss=6.389793725247728e-07 rel_error=0.0012602893402799964
+[run 4/20] cahn_hilliard_2d_o4 seed=1 real_sinh_autodiff status=complete loss=0.0003143491339869797 rel_error=0.023483946919441223
+[run 5/20] cahn_hilliard_2d_o4 seed=2 war status=complete loss=1.412177698512096e-05 rel_error=0.0032979119569063187
+[run 6/20] cahn_hilliard_2d_o4 seed=2 real_sinh_autodiff status=complete loss=0.0006211423315107822 rel_error=0.03861898183822632
+[run 7/20] cahn_hilliard_2d_o4 seed=3 war status=complete loss=2.2898041152075166e-06 rel_error=0.0031726150773465633
+[run 8/20] cahn_hilliard_2d_o4 seed=3 real_sinh_autodiff status=complete loss=0.00037176429759711027 rel_error=0.021100882440805435
+[run 9/20] cahn_hilliard_2d_o4 seed=4 war status=complete loss=3.7098029679327738e-06 rel_error=0.0019987893756479025
+[run 10/20] cahn_hilliard_2d_o4 seed=4 real_sinh_autodiff status=complete loss=0.0007733840029686689 rel_error=0.038713861256837845
+[run 11/20] cahn_hilliard_2d_o6 seed=0 war status=complete loss=8.269451427622698e-06 rel_error=0.006138340570032597
+[run 12/20] cahn_hilliard_2d_o6 seed=0 real_sinh_autodiff status=complete loss=0.032661862671375275 rel_error=0.605411171913147
+[run 13/20] cahn_hilliard_2d_o6 seed=1 war status=complete loss=6.2268741203297395e-06 rel_error=0.00744782155379653
+[run 14/20] cahn_hilliard_2d_o6 seed=1 real_sinh_autodiff status=complete loss=0.05978904291987419 rel_error=0.31464630365371704
+[run 15/20] cahn_hilliard_2d_o6 seed=2 war status=complete loss=6.794526598241646e-06 rel_error=0.00619813846424222
+[run 16/20] cahn_hilliard_2d_o6 seed=2 real_sinh_autodiff status=complete loss=0.03684939071536064 rel_error=0.63149493932724
+[run 17/20] cahn_hilliard_2d_o6 seed=3 war status=complete loss=2.370011861785315e-05 rel_error=0.0055963462218642235
+[run 18/20] cahn_hilliard_2d_o6 seed=3 real_sinh_autodiff status=complete loss=0.04487050324678421 rel_error=0.3892945945262909
+[run 19/20] cahn_hilliard_2d_o6 seed=4 war status=complete loss=5.815149961563293e-06 rel_error=0.004817628767341375
+[run 20/20] cahn_hilliard_2d_o6 seed=4 real_sinh_autodiff status=complete loss=0.04102310538291931 rel_error=0.615308403968811

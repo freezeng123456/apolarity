@@ -1,0 +1,98 @@
+{
+  "architecture": {
+    "capacity_note": "literal layer shapes are matched; native complex parameters contain two real scalar degrees of freedom",
+    "real_sinh_autodiff": {
+      "backend": "direct_autodiff",
+      "parameter_dtype": "torch.float32",
+      "parameter_elements": 50177,
+      "real_dof": 50177
+    },
+    "shared": {
+      "activation": "sinh",
+      "depth": 4,
+      "hidden": 128,
+      "init": "common_xavier",
+      "input": "affine-normalized raw (x,y,t)",
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "backend": "waring_complex_jet",
+      "parameter_dtype": "torch.complex64",
+      "parameter_elements": 50177,
+      "real_dof": 100354
+    }
+  },
+  "candidate_count": 98,
+  "created_at": "2026-08-09T03:18:58.554943+00:00",
+  "git": {
+    "branch": "agent/apolarity-cahn2d-run-v1",
+    "dirty": false,
+    "sha": "74a21bfca4dfab46247fa4ad2f46e112c580963f"
+  },
+  "gradient_clip": 10.0,
+  "grid_type": "complete_ordered_cartesian_product",
+  "grid_values": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "history_interval_seconds": 5.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "method_run_count": 196,
+  "methods": [
+    "war",
+    "real_sinh_autodiff"
+  ],
+  "nominal_training_seconds": 11760.0,
+  "protocol_id": "cahn_hilliard_2d_natural_bc_common_sinh_fp32_v1",
+  "sample_overrides": {
+    "history_eval_n": 1024,
+    "n_bc": 512,
+    "n_eval": 4096,
+    "n_ic": 256,
+    "n_int": 512
+  },
+  "seconds_per_method_run": 60.0,
+  "serial_single_gpu": true,
+  "smoke": false,
+  "tasks": [
+    {
+      "candidate_count": 49,
+      "eta_q": 0.01,
+      "order": 4,
+      "q": 2,
+      "task_id": "cahn_hilliard_2d_o4",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    },
+    {
+      "candidate_count": 49,
+      "eta_q": -0.01,
+      "order": 6,
+      "q": 3,
+      "task_id": "cahn_hilliard_2d_o6",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    }
+  ]
+}

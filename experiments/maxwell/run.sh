@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch exactly one preregistered jsc_v2 Maxwell task.
+# Launch exactly one preregistered jsc_v3 Maxwell task.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

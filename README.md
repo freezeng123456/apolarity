@@ -38,15 +38,17 @@ src/apolarity/
   operators.py       # single_monomial_partial entry point
 experiments/
   common/            # shared harness (osc_common.py)
-  tools/             # jsc_v2-only figure and LaTeX-table builders
-  <family>/          # one PDE family each: exp_*.py + run.sh + README.md + data/
-  core_method/       # implementation diagnostics
-  archived/          # historical implementation diagnostics
+  tools/             # historical jsc_v2 figure and LaTeX-table builders
+  polyharmonic/      # active Polyharmonic family
+  chirp/             # active radial-chirp family
+  maxwell/           # active Maxwell family
+  results/jsc_v2/    # historical validated formal bundles
+  archived/          # other families, auxiliary results, and historical runners
 docs/
   beamer/  apolarity_report_zh.tex
   paper/   jsc_paper_main.tex
 scripts/
-  run_jsc_main3.sh                    # launch exactly one jsc_v2 setting
+  run_jsc_main3.sh                    # launch exactly one jsc_v3 setting
   validate_jsc_results.py             # validate one atomic result bundle
 tests/
 ```
@@ -55,32 +57,33 @@ See `experiments/README.md` for the frozen experiment protocol.
 
 ## Experiment status
 
-All `experiments/*/data/` directories have been cleared. There are currently no
-formal experiment results. Paper figures and tables are **TBD** and must not be
-inferred from historical outputs.
+All `experiments/*/data/` directories have been cleared. The active experiment
+scope is limited to Polyharmonic, Chirp, and Maxwell. Their historical validated
+bundles live under `experiments/results/jsc_v2/`; current v3 output is under
+`experiments/results/jsc_v3/`. All other experiment families,
+auxiliary result bundles, and historical runners are under
+`experiments/archived/` and are not part of the active paper inventory.
 
-The only formal methods are:
+The compact v3 formal methods are:
 
 - `complex_sinh` (Complex Sinh, the proposed method);
-- SIREN;
-- mFF-PINN;
-- MscaleDNN-2-sin.
+- `complex_sinh_autodiff` (the same network with direct nested coordinate autodiff).
 
-The only formal protocol is `jsc_v2`. Every formal method uses the same literal
-hidden width \(H=128\) and the same wall-clock budget. Trainable real degrees of
-freedom are recorded for transparency but are not used to rescale widths.
-\(H=64\) is neither run nor discussed.
+The current formal protocol is `jsc_v3`. Both lines use the same literal hidden
+width \(H=128\), initialization, loss weights, 1000-second budget, and three
+seeds; only the derivative backend changes. Trainable real degrees of freedom
+are recorded for transparency and \(H=64\) is not used.
 
 The preregistered settings are:
 
-- Poly: \(d\in\{2,3\}\), operator order \(2,4,6\), including \(d=3\), order 6;
+- Poly: \(d=2\), operator order \(2,4,6\);
 - Chirp: \(a\in\{1,2,3\}\);
 - Maxwell: \(a\in\{2,4,6\}\).
 
 Launch exactly one setting through `scripts/run_jsc_main3.sh`:
 
 ```bash
-bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
+bash scripts/run_jsc_main3.sh poly --dim 2 --order 6
 bash scripts/run_jsc_main3.sh chirp --sweep 2
 bash scripts/run_jsc_main3.sh maxwell --sweep 4
 ```
@@ -91,12 +94,12 @@ launch. A formal output bundle is admissible only after
 
 ```bash
 python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v2/poly_d3_o6
+  experiments/results/jsc_v3/poly_d2_o6
 ```
 
-Historical or archived runners, every family-local `run.sh`, and scripts under
-`experiments/core_method/` are retained only for implementation diagnosis.
-Their outputs are not paper evidence.
+Historical or archived runners, every family-local `run.sh`, and all material
+under `experiments/archived/` are retained only for implementation diagnosis.
+Their outputs are not part of the active paper evidence.
 
 ## API
 

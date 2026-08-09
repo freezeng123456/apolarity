@@ -34,13 +34,15 @@ import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "common"))
 from osc_common import LinearProblem, laplacian_power_terms, run_linear_suite, default_argparser
+from boundary_weights import parse_weights, weights_for
 
 
 def _u_product(x):
     return torch.sin(math.pi * x).prod(dim=-1)
 
 
-def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None):
+def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None,
+                  bc_weights=None):
     if dim < 1:
         raise ValueError("dim must be positive")
     S, u_exact = dim * math.pi ** 2, _u_product
@@ -53,26 +55,44 @@ def make_problems(orders=(2, 4, 6, 8), dim=2, omega0=None, sigma=None):
             raise ValueError("polyharmonic orders must be positive even integers")
         m = order // 2
         lam = (-S) ** m                      # Delta^m u = (-S)^m u
+        if bc_weights is None:
+            try:
+                component_weights = weights_for(f"poly_d{dim}_o{order}")
+            except ValueError:
+                # Keep the historical diagnostic orders (e.g. order 8) usable;
+                # the frozen active profile covers only jsc_v3's order 2/4/6 grid.
+                component_weights = None
+        else:
+            component_weights = tuple(bc_weights)
+        if component_weights is not None and len(component_weights) != m:
+            raise ValueError(
+                f"Poly order {order} expects {m} boundary weights "
+                f"[u, Delta u, ...], got {len(component_weights)}"
+            )
         probs.append(LinearProblem(
             name=f"polyharm{dim}d_o{order}", d=dim, order=order,
             terms=laplacian_power_terms(dim, m), zeroth=0.0,
             u_exact=u_exact, source_f=(lambda lam=lam, u=u_exact: (lambda x: lam * u(x)))(),
             res_scale=S ** m, S=S, bc_lap_powers=tuple(range(1, m)),
             sweep=float(order),
+            bc_weights=component_weights,
             extra={"omega0": om, "fourier_sigma": fs},
         ))
     return probs
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=120.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--orders", default="2,4,6,8")
     ap.add_argument("--dim", type=int, default=2)
     ap.add_argument("--omega0", type=float, default=None)
     ap.add_argument("--sigma", type=float, default=None)
+    ap.add_argument("--bc-weights", default="",
+                    help="comma-separated powers-of-ten weights [u, Delta u, ...]")
     args = ap.parse_args()
     orders = [int(s) for s in args.orders.split(",") if s]
     variants = [v for v in args.variants.split(",") if v]
+    bc_weights = parse_weights(args.bc_weights) if args.bc_weights else None
     default_out = f"results/polyharmonic{args.dim}d.csv"
-    run_linear_suite(make_problems(orders, args.dim, args.omega0, args.sigma),
+    run_linear_suite(make_problems(orders, args.dim, args.omega0, args.sigma, bc_weights),
                      variants, args, args.out or default_out)

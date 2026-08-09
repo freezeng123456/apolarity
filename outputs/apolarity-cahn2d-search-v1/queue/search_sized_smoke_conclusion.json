@@ -1,0 +1,85 @@
+{
+  "cell_count": 4,
+  "cells": [
+    {
+      "loss": 0.7087290287017822,
+      "mass_drift_max_abs": 0.0035444111563265324,
+      "mass_drift_rms": 0.002304772613570094,
+      "method": "war",
+      "ms_per_step": 39.06875316585813,
+      "peak_mb": 303.99755859375,
+      "rel_error": 0.9808030128479004,
+      "status": "complete",
+      "steps": 77,
+      "task_id": "cahn_hilliard_2d_o4"
+    },
+    {
+      "loss": 0.678229808807373,
+      "mass_drift_max_abs": 0.01001126877963543,
+      "mass_drift_rms": 0.0062430063262581825,
+      "method": "real_sinh_autodiff",
+      "ms_per_step": 63.40487472092112,
+      "peak_mb": 325.65673828125,
+      "rel_error": 0.9947614073753357,
+      "status": "complete",
+      "steps": 48,
+      "task_id": "cahn_hilliard_2d_o4"
+    },
+    {
+      "loss": 0.5900565981864929,
+      "mass_drift_max_abs": 0.008555701933801174,
+      "mass_drift_rms": 0.005283267702907324,
+      "method": "war",
+      "ms_per_step": 78.53797288277211,
+      "peak_mb": 796.0908203125,
+      "rel_error": 1.0047211647033691,
+      "status": "complete",
+      "steps": 39,
+      "task_id": "cahn_hilliard_2d_o6"
+    },
+    {
+      "loss": 0.7389063835144043,
+      "mass_drift_max_abs": 0.14167557656764984,
+      "mass_drift_rms": 0.10496512055397034,
+      "method": "real_sinh_autodiff",
+      "ms_per_step": 524.1599458580216,
+      "peak_mb": 1607.5947265625,
+      "rel_error": 1.1033012866973877,
+      "status": "complete",
+      "steps": 6,
+      "task_id": "cahn_hilliard_2d_o6"
+    }
+  ],
+  "completed_at": "2026-08-09T03:18:53.102555+00:00",
+  "failure_count": 0,
+  "git": {
+    "branch": "agent/apolarity-cahn2d-run-v1",
+    "dirty": false,
+    "sha": "74a21bfca4dfab46247fa4ad2f46e112c580963f"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "interpretation": "startup/finite-gradient/data-pipeline gate only; not a formal accuracy result and not eligible for paper statistics",
+  "kind": "ephemeral_cuda_smoke_conclusion",
+  "methods": [
+    "war",
+    "real_sinh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "cahn_hilliard_2d_natural_bc_common_sinh_fp32_v1",
+  "raw_artifacts_retained": false,
+  "seconds_per_cell": 3.0,
+  "tasks": [
+    "cahn_hilliard_2d_o4",
+    "cahn_hilliard_2d_o6"
+  ]
+}

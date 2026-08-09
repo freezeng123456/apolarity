@@ -24,6 +24,7 @@ import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "common"))
 from osc_common import LinearProblem, run_linear_suite, default_argparser
+from boundary_weights import parse_weights, weights_for
 
 
 def _phi(a, x):
@@ -48,15 +49,24 @@ def _source(a):
     return f
 
 
-def make_problems(sweeps=(2, 4, 6, 8)):
+def make_problems(sweeps=(2, 4, 6, 8), bc_weight=None):
     probs = []
     for a in sweeps:
         ap = a * math.pi
+        if bc_weight is None:
+            try:
+                weight = weights_for(f"chirp_a{a}")[0]
+            except ValueError:
+                # Keep the historical diagnostic sweeps outside jsc_v3 usable.
+                weight = 100.0
+        else:
+            weight = float(bc_weight)
         probs.append(LinearProblem(
             name=f"chirp_a{a}", d=2, order=2,
             terms=[(-1.0, (0, 0)), (-1.0, (1, 1))], zeroth=1.0,   # -Delta u + u
             u_exact=_u(a), source_f=_source(a),
             res_scale=2.0 * ap ** 2, S=2.0 * ap ** 2, bc_lap_powers=(), sweep=float(a),
+            bc_weight=weight,
             extra={"omega0": max(10.0, 2.0 * math.pi * a),
                    "fourier_sigma": max(2.0, math.pi * a)},
         ))
@@ -64,10 +74,13 @@ def make_problems(sweeps=(2, 4, 6, 8)):
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=80.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--sweeps", default="1,2,3")
+    ap.add_argument("--bc-weight", default=None,
+                    help="scalar powers-of-ten Dirichlet weight")
     args = ap.parse_args()
     sweeps = [int(s) for s in args.sweeps.split(",") if s]
     variants = [v for v in args.variants.split(",") if v]
-    run_linear_suite(make_problems(sweeps), variants, args,
+    bc_weight = None if args.bc_weight is None else parse_weights(args.bc_weight)[0]
+    run_linear_suite(make_problems(sweeps, bc_weight), variants, args,
                      args.out or "results/chirp.csv")

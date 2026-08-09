@@ -20,6 +20,7 @@ Run:
 from __future__ import annotations
 
 import math
+import json
 
 import torch
 
@@ -28,6 +29,7 @@ import sys as _sys
 _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "common"))
 from osc_common import (OMEGA0, n_params, train_eval, write_rows, JET_VARIANTS,
                         default_argparser, sched_kwargs, make_complex_field)
+from boundary_weights import parse_weights, weights_for
 
 BETA = 0.2  # loss tangent -> complex permittivity -> complex-valued field
 
@@ -56,7 +58,7 @@ def _sample_bc(B, device, gen=None):
     return x
 
 
-def run(sweeps, variants, args):
+def run(sweeps, variants, args, bc_weight=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     sk = sched_kwargs(args)
     seed_start = getattr(args, "seed_start", 0)
@@ -66,6 +68,7 @@ def run(sweeps, variants, args):
     rows = []
     for a in sweeps:
         name = f"maxwell_a{a}"
+        weight = weights_for(name)[0] if bc_weight is None else float(bc_weight)
         ap = a * math.pi
         kappa2 = (ap ** 2) * (1.0 + 1j * BETA)
         lam = (-2.0 * ap ** 2) + kappa2          # f = (Delta + kappa^2) E = lam * E
@@ -77,8 +80,8 @@ def run(sweeps, variants, args):
         eval_r = _sample(8192, device, g)
         eval_r_hist = eval_r[: min(getattr(args, "history_eval_n", 4096), eval_r.shape[0])]
         print(f"\n=== {name} (a={a}, |kappa^2|={abs(kappa2):.1f}) ===", flush=True)
-        print(f"{'variant':<16}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
-              f"{'L_int':>11}{'L2_err':>12}", flush=True)
+        print(f"{'variant':<24}{'rep':>7}{'params':>8}{'steps':>7}{'ms/step':>9}"
+              f"{'loss':>11}{'L_int':>11}{'rel_error':>12}", flush=True)
         for seed in seed_ids:
             train_gen = torch.Generator(device=device).manual_seed(seed)
             x_int = _sample(args.n_int, device, train_gen)
@@ -98,7 +101,7 @@ def run(sweeps, variants, args):
                     L_int = ((r.abs() / res_scale) ** 2).mean()
                     u_b = field.pred(x_bc)
                     L_bc = ((u_b - bc_t).abs() ** 2).mean()
-                    loss = L_int + 100.0 * L_bc
+                    loss = L_int + weight * L_bc
                     if is_complex:
                         loss = loss + 1e-6 * sum((p.imag ** 2).mean()
                                                  for p in module.parameters() if p.requires_grad)
@@ -129,11 +132,15 @@ def run(sweeps, variants, args):
                              "hidden": args.hidden, "depth": args.depth,
                              "budget_seconds": args.seconds, "n_int": args.n_int,
                              "n_bc": args.n_bc, "lr": args.lr,
+                             "boundary_weights": json.dumps([weight]),
+                             "bc_weight": weight,
                              "lr_schedule": sk["lr_schedule"], "omega0": omega0,
                              "fourier_sigma": sigma,
                              "collocation": "paired_seed_v1", **m})
-                print(f"{v:<16}{rep:>7}{n_params(module):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
-                      f"{m['L_int_last']:>11.2e}{m['L2_err']:>12.3e}  (seed {seed})", flush=True)
+                rows[-1]["rel_error"] = rows[-1]["L2_err"]
+                print(f"{v:<24}{rep:>7}{n_params(module):>8}{m['steps']:>7}{m['ms_per_step']:>9.2f}"
+                      f"{m['loss_last']:>11.3e}{m['L_int_last']:>11.3e}"
+                      f"{m['rel_error']:>12.3e}  (seed {seed})", flush=True)
                 del field, module, loss_fn, eval_fn, history_eval_fn
                 if device.type == "cuda":
                     torch.cuda.empty_cache()
@@ -143,9 +150,12 @@ def run(sweeps, variants, args):
 
 
 if __name__ == "__main__":
-    ap = default_argparser(seconds=80.0)
+    ap = default_argparser(seconds=1000.0)
     ap.add_argument("--sweeps", default="2,4,6")
+    ap.add_argument("--bc-weight", default=None,
+                    help="scalar powers-of-ten Dirichlet weight")
     args = ap.parse_args()
     sweeps = [int(s) for s in args.sweeps.split(",") if s]
     variants = [v for v in (args.variants.split(",") if args.variants else [])]
-    run(sweeps, variants, args)
+    bc_weight = None if args.bc_weight is None else parse_weights(args.bc_weight)[0]
+    run(sweeps, variants, args, bc_weight)

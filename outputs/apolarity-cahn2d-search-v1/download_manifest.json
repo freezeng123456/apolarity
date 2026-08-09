@@ -1,0 +1,50 @@
+{
+  "bundle_id": "apolarity-cahn2d-search-v1",
+  "downloaded_at_utc": "2026-08-09T08:01:19Z",
+  "remote_clean_run_commit": "74a21bf",
+  "remote_queue_root": "/root/apolarity-cahn2d-queue-v1",
+  "remote_search_root": "/root/apolarity-cahn2d-weight-search-v1",
+  "queue_pid_recorded": 396958,
+  "protocol": "cahn_hilliard_2d_natural_bc_common_sinh_fp32_v1",
+  "formal_ch_run_started": false,
+  "search": {
+    "tasks": [
+      "cahn_hilliard_2d_o4",
+      "cahn_hilliard_2d_o6"
+    ],
+    "candidate_grid_per_task": 49,
+    "method_runs": 196,
+    "seconds_per_method_run": 60,
+    "methods": [
+      "war",
+      "real_sinh_autodiff"
+    ],
+    "dtype": {
+      "war": "complex64",
+      "real_sinh_autodiff": "float32"
+    },
+    "sample_overrides": {
+      "n_int": 512,
+      "n_ic": 256,
+      "n_bc": 512,
+      "n_eval": 4096,
+      "history_eval_n": 1024
+    }
+  },
+  "smoke": {
+    "basic_cells": 4,
+    "search_sized_cells": 4,
+    "seconds_per_cell": 3,
+    "both_passed": true,
+    "raw_smoke_bundle_retained": false
+  },
+  "integrity": {
+    "remote_search_sha256_verified": true,
+    "local_search_sha256_verified": true,
+    "complete_results": 196,
+    "failed_results": 0,
+    "finite_metrics_and_history": true,
+    "old_logs_supplemented_from_atomic_json": 76,
+    "new_logs_with_final_metrics": 120
+  }
+}

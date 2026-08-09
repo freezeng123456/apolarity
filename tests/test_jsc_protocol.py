@@ -14,6 +14,7 @@ sys.path.insert(0, str(COMMON))
 sys.path.insert(0, str(SCRIPTS))
 
 from protocol import (  # noqa: E402
+    BOUNDARY_PROFILE_ID,
     BUDGET_SECONDS,
     COLLOCATION_PROTOCOL,
     DEPTH,
@@ -31,23 +32,29 @@ from protocol import (  # noqa: E402
 from validate_jsc_results import validate_task_directory  # noqa: E402
 
 
-def test_preregistered_grid_has_twelve_atomic_tasks_and_required_poly_case():
+def test_preregistered_grid_has_nine_atomic_tasks_and_requested_poly_cases():
     tasks = all_tasks()
-    assert len(tasks) == 12
-    assert len({task.task_id for task in tasks}) == 12
-    assert sum(task.family == "poly" for task in tasks) == 6
+    assert len(tasks) == 9
+    assert len({task.task_id for task in tasks}) == 9
+    assert sum(task.family == "poly" for task in tasks) == 3
     assert sum(task.family == "chirp" for task in tasks) == 3
     assert sum(task.family == "maxwell" for task in tasks) == 3
-    assert any(
-        task.family == "poly" and task.dimension == 3 and task.order == 6
-        for task in tasks
-    )
+    assert {task.task_id for task in tasks if task.family == "poly"} == {
+        "poly_d2_o2", "poly_d2_o4", "poly_d2_o6"
+    }
+
+
+def test_v3_uses_two_backends_three_seeds_and_1000_seconds():
+    assert FORMAL_METHODS == ("complex_sinh", "complex_sinh_autodiff")
+    assert SEEDS == (0, 1, 2)
+    assert BUDGET_SECONDS == 1000.0
 
 
 @pytest.mark.parametrize(
     ("family", "kwargs"),
     [
         ("poly", {"dimension": 2, "order": 8}),
+        ("poly", {"dimension": 3, "order": 2}),
         ("poly", {"dimension": 2, "order": 4, "sweep": 4}),
         ("chirp", {"sweep": 4}),
         ("maxwell", {"sweep": 3}),
@@ -75,6 +82,8 @@ def test_protocol_architecture_tables_use_literal_width_128(family, kwargs):
 def _row(method: str, seed: int, width: int, real_dof: int, reference: int) -> dict:
     return {
         "protocol_id": PROTOCOL_ID,
+        "boundary_profile_id": BOUNDARY_PROFILE_ID,
+        "boundary_weights": "[0.1]",
         "git_sha": "a" * 40,
         "git_dirty": False,
         "task_id": "poly_d2_o2",
@@ -91,7 +100,7 @@ def _row(method: str, seed: int, width: int, real_dof: int, reference: int) -> d
         "real_dof": real_dof,
         "reference_real_dof": reference,
         "relative_dof_difference": abs(real_dof - reference) / reference,
-        "representation": "native_complex" if method == "complex_sinh" else "real",
+        "representation": "native_complex" if method.startswith("complex_sinh") else "real",
         "collocation": COLLOCATION_PROTOCOL,
         "evaluation_protocol": EVALUATION_PROTOCOL,
         "frequency_initialization": "{}",
@@ -111,8 +120,10 @@ def _row(method: str, seed: int, width: int, real_dof: int, reference: int) -> d
         "hardware": "test",
         "steps": 10,
         "ms_per_step": 1.0,
+        "loss_last": 0.3,
         "L_int_last": 0.1,
         "L2_err": 0.2,
+        "rel_error": 0.2,
         "nan": False,
     }
 
@@ -126,10 +137,12 @@ def _write_fake_bundle(task_dir: Path, *, bad_width: bool = False) -> None:
         histories = [
             {
                 "protocol_id": PROTOCOL_ID,
+                "boundary_profile_id": BOUNDARY_PROFILE_ID,
+                "boundary_weights": [0.1],
                 "task_id": "poly_d2_o2",
                 "variant": method,
                 "seed": seed,
-                "history": [[0.0, 1.0, 1.0], [1200.0, 0.2, 0.1]],
+                "history": [[0.0, 1.0, 0.8, 1.0], [1000.0, 0.2, 0.3, 0.1]],
             }
             for seed in SEEDS
         ]
@@ -140,7 +153,7 @@ def test_validator_merges_only_complete_five_seed_bundle(tmp_path: Path):
     _write_fake_bundle(tmp_path)
     output = validate_task_directory(tmp_path)
     rows = json.loads(output.with_suffix(".json").read_text())
-    assert len(rows) == 20
+    assert len(rows) == 10
     assert (tmp_path / "VALIDATED").exists()
     assert {row["variant"] for row in rows} == set(FORMAL_METHODS)
 

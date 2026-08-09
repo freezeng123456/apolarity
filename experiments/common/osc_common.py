@@ -351,7 +351,11 @@ JET_VARIANTS = {
     "complex_sinh", "complex_sinh_noinit", "tanh",
     "siren", "fourier", "mscale", "mscale5",
 }
-COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit"}
+# ``complex_sinh_autodiff`` intentionally shares the proposed model and
+# initialization with ``complex_sinh``; only its coordinate-derivative backend
+# changes to direct nested autodiff.
+AUTODIFF_VARIANTS = {"complex_sinh_autodiff"}
+COMPLEX_VARIANTS = {"complex_sinh", "complex_sinh_noinit", *AUTODIFF_VARIANTS}
 
 
 def variant_width(variant: str, H: int, mult: float = 1.0) -> int:
@@ -373,7 +377,7 @@ def build_model(variant: str, d: int, H: int, depth: int, *, out: int = 1,
     interpreted in standardized coordinates without an extra ``2*pi``.
     """
     He = variant_width(variant, H, real_width_mult)
-    if variant == "complex_sinh":
+    if variant in {"complex_sinh", "complex_sinh_autodiff"}:
         net = build_plain(d, H, depth, torch.complex128, "sinh", out=out)
         complex_freq_init_(net, omega0)
         return net, torch.complex128
@@ -456,6 +460,7 @@ def formal_architecture_specs(
     split_real_baselines: bool = False,
     omega0: float = OMEGA0,
     fourier_sigma: float = 2.0,
+    variants: tuple[str, ...] | None = None,
 ) -> dict[str, ArchitectureSpec]:
     """Build the fixed-literal-width four-method architecture table.
 
@@ -472,10 +477,11 @@ def formal_architecture_specs(
         fourier_sigma=fourier_sigma,
     )
     specs: dict[str, ArchitectureSpec] = {}
-    for variant in FORMAL_VARIANTS:
+    selected_variants = FORMAL_VARIANTS if variants is None else variants
+    for variant in selected_variants:
         representation = (
             "native_complex"
-            if variant == "complex_sinh"
+            if variant in COMPLEX_VARIANTS
             else ("split_real" if split_real_baselines else "real")
         )
         dof = architecture_real_dof(
@@ -506,15 +512,23 @@ def predict(model: nn.Module, x: Tensor) -> Tensor:
     return out
 
 
-def deriv_alpha(model: nn.Module, x: Tensor, alpha: tuple[int, ...]) -> Tensor:
+def deriv_alpha(
+    model: nn.Module,
+    x: Tensor,
+    alpha: tuple[int, ...],
+    *,
+    backend: str | None = None,
+) -> Tensor:
     """Single-monomial partial d^alpha for a scalar-output model.
 
     Uses the complex Waring + Taylor-jet backend where supported and nested
-    coordinate autodiff for the Cauchy net.
+    coordinate autodiff for the Cauchy net.  A caller can request the direct
+    autodiff backend explicitly for a same-architecture control.
     """
-    if isinstance(model, CauchyNet):
-        return single_monomial_partial(model.net, x, alpha, backend="direct_autodiff")
-    return single_monomial_partial(model, x, alpha, backend="waring_complex_jet")
+    if backend is None:
+        backend = "direct_autodiff" if isinstance(model, CauchyNet) else "waring_complex_jet"
+    target = model.net if isinstance(model, CauchyNet) else model
+    return single_monomial_partial(target, x, alpha, backend=backend)
 
 
 # ---------------------------------------------------------------------------
@@ -523,15 +537,18 @@ def deriv_alpha(model: nn.Module, x: Tensor, alpha: tuple[int, ...]) -> Tensor:
 # two independent real nets (Re, Im), each at the same literal width H.
 # ---------------------------------------------------------------------------
 class ComplexField:
-    def __init__(self, model, mdt):
+    def __init__(self, model, mdt, derivative_backend: str = "waring_complex_jet"):
         self.model, self.mdt = model, mdt
+        self.derivative_backend = derivative_backend
         self.module = model
 
     def pred(self, x):
         return predict(self.model, x.to(self.mdt)).squeeze(-1)
 
     def deriv(self, x, alpha):
-        return deriv_alpha(self.model, x.to(self.mdt), alpha).squeeze(-1)
+        return deriv_alpha(
+            self.model, x.to(self.mdt), alpha, backend=self.derivative_backend
+        ).squeeze(-1)
 
 
 class SplitRealField:
@@ -550,7 +567,8 @@ class SplitRealField:
 def make_complex_field(variant, d, H, depth, device, *, omega0=OMEGA0, sigma=2.0):
     if variant.startswith("complex"):
         m, mdt = build_model(variant, d, H, depth, out=1, omega0=omega0, fourier_sigma=sigma)
-        return ComplexField(m.to(device), mdt), True
+        backend = "direct_autodiff" if variant in AUTODIFF_VARIANTS else "waring_complex_jet"
+        return ComplexField(m.to(device), mdt, backend), True
     re, _ = build_model(variant, d, H, depth, out=1, omega0=omega0,
                         fourier_sigma=sigma, real_width_mult=1.0)
     im, _ = build_model(variant, d, H, depth, out=1, omega0=omega0,
@@ -642,11 +660,11 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
     same schedule is applied to every architecture, so the comparison stays fair.
 
     record_history: if True, every history_every_steps training steps record
-    (training-elapsed, rel L2, interior loss).  Periodic and final eval wall time
-    is tracked in eval_accum and excluded from the training budget (elapsed and
-    ms/step), so every run receives the same training-time budget.  history_eval_fn,
-    if given, is used for periodic snapshots; eval_fn is always used for the final
-    reported rel L2.
+    (training-elapsed, rel L2, total loss, interior loss).  Periodic and final
+    eval wall time is tracked in eval_accum and excluded from the training budget
+    (elapsed and ms/step), so every run receives the same training-time budget.
+    history_eval_fn, if given, is used for periodic snapshots; eval_fn is always
+    used for the final reported rel L2.
     """
     if lr_final is None:
         lr_final = lr * 0.1  # gentle floor: cosine helps high-order but a too-low
@@ -660,7 +678,8 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
             opt.step()
     except Exception as e:  # noqa: BLE001
         return {"steps": 0, "ms_per_step": float("nan"), "peak_mb": float("nan"),
-                "L_int_last": float("nan"), "L2_err": float("inf"), "nan": True,
+                "L_int_last": float("nan"), "loss_last": float("nan"),
+                "L2_err": float("inf"), "rel_error": float("inf"), "nan": True,
                 "error": repr(e)[:200]}
 
     if device.type == "cuda":
@@ -668,6 +687,7 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
         torch.cuda.synchronize()
     t0 = time.perf_counter()
     steps, losses, nan_hit = 0, [], False
+    total_losses: list[float] = []
     history, eval_accum = [], 0.0
     snap_eval = history_eval_fn if history_eval_fn is not None else eval_fn
     while True:
@@ -685,6 +705,8 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
         opt.step()
         steps += 1
         losses.append(L_int)
+        total_loss = float(loss.detach().item())
+        total_losses.append(total_loss)
         if not math.isfinite(L_int):
             nan_hit = True
             break
@@ -692,7 +714,9 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
             te = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.synchronize()
-            history.append([round(elapsed, 3), float(snap_eval()), float(L_int)])
+            history.append([
+                round(elapsed, 3), float(snap_eval()), total_loss, float(L_int)
+            ])
             eval_accum += time.perf_counter() - te
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -702,13 +726,18 @@ def train_eval(model, model_dtype, loss_fn, eval_fn, *, seconds, lr, device,
     if record_history:
         eval_accum += time.perf_counter() - te
     peak = torch.cuda.max_memory_allocated(device) / 2 ** 20 if device.type == "cuda" else float("nan")
+    rel_error = err
+    loss_last = total_losses[-1] if total_losses else float("nan")
     out = {"steps": steps, "ms_per_step": 1000.0 * elapsed / max(1, steps),
            "peak_mb": peak,
            "L_int_last": sum(losses[-20:]) / max(1, min(20, len(losses))) if losses else float("nan"),
-           "L2_err": err, "nan": nan_hit}
+           "loss_last": loss_last,
+           "L2_err": err, "rel_error": rel_error, "nan": nan_hit}
     if record_history:
-        history.append([round(elapsed, 3), float(err),
-                        losses[-1] if losses else float("nan")])
+        history.append([
+            round(elapsed, 3), float(err), loss_last,
+            losses[-1] if losses else float("nan")
+        ])
         out["history"] = history
     return out
 
@@ -731,10 +760,21 @@ class LinearProblem:
     box: tuple[float, float] = (-1.0, 1.0)
     sweep: float = 0.0          # the swept parameter value (k, mode, ...), for plots
     bc_weight: float = 100.0
+    # When set, entries are ordered as [u, Delta u, Delta^2 u, ...] and are
+    # applied component-wise.  ``bc_weight`` remains the backwards-compatible
+    # scalar path for legacy experiments.
+    bc_weights: tuple[float, ...] | None = None
     extra: dict = field(default_factory=dict)
 
 
-def linear_loss_factory(prob: LinearProblem, x_int, x_bc, model_dtype):
+def linear_loss_factory(
+    prob: LinearProblem,
+    x_int,
+    x_bc,
+    model_dtype,
+    *,
+    derivative_backend: str | None = None,
+):
     complex_params = model_dtype.is_complex
     xi = x_int.to(model_dtype)
     xb = x_bc.to(model_dtype)
@@ -748,7 +788,7 @@ def linear_loss_factory(prob: LinearProblem, x_int, x_bc, model_dtype):
     def loss_fn(model):
         res = None
         for coeff, alpha in prob.terms:
-            t = deriv_alpha(model, xi, alpha).real
+            t = deriv_alpha(model, xi, alpha, backend=derivative_backend).real
             res = coeff * t if res is None else res + coeff * t
         if zeroth_call:
             res = res + z_int * predict(model, xi).real
@@ -757,16 +797,24 @@ def linear_loss_factory(prob: LinearProblem, x_int, x_bc, model_dtype):
         L_int = (((res - f) / prob.res_scale) ** 2).mean()
 
         u_bc = predict(model, xb).real
-        L_bc = ((u_bc - bc_t) ** 2).mean()
+        bc_terms = [((u_bc - bc_t) ** 2).mean()]
         for j in prob.bc_lap_powers:
             lap = None
             for coeff, alpha in laplacian_power_terms(prob.d, j):
-                t = deriv_alpha(model, xb, alpha).real
+                t = deriv_alpha(model, xb, alpha, backend=derivative_backend).real
                 lap = coeff * t if lap is None else lap + coeff * t
             tgt = ((-prob.S) ** j) * prob.u_exact(x_bc).unsqueeze(-1)
-            L_bc = L_bc + (((lap - tgt) / (prob.S ** j)) ** 2).mean()
+            bc_terms.append((((lap - tgt) / (prob.S ** j)) ** 2).mean())
 
-        loss = L_int + prob.bc_weight * L_bc
+        if prob.bc_weights is None:
+            loss = L_int + prob.bc_weight * sum(bc_terms)
+        else:
+            if len(prob.bc_weights) != len(bc_terms):
+                raise ValueError(
+                    f"{prob.name}: expected {len(bc_terms)} boundary weights, "
+                    f"got {len(prob.bc_weights)}"
+                )
+            loss = L_int + sum(weight * term for weight, term in zip(prob.bc_weights, bc_terms))
         if complex_params:
             loss = loss + 1e-6 * sum((p.imag ** 2).mean()
                                      for p in model.parameters() if p.requires_grad)
@@ -787,8 +835,8 @@ def run_linear_suite(problems, variants, args, out_csv: str):
     for prob in problems:
         print(f"\n=== {prob.name}  (d={prob.d}, order={prob.order}, "
               f"sweep={prob.sweep}, terms={len(prob.terms)}) ===", flush=True)
-        print(f"{'variant':<20} {'params':>8} {'be':>8} {'steps':>7} {'ms/step':>8} "
-              f"{'peakMB':>7} {'L_int':>10} {'L2_err':>11}", flush=True)
+        print(f"{'variant':<24} {'params':>8} {'be':>8} {'steps':>7} {'ms/step':>8} "
+              f"{'loss':>11} {'L_int':>11} {'rel_error':>12}", flush=True)
         g = torch.Generator(device=device).manual_seed(12345)
         lo, hi = prob.box
         eval_r = torch.empty(8192, prob.d, device=device, dtype=torch.float64).uniform_(lo, hi, generator=g)
@@ -809,7 +857,14 @@ def run_linear_suite(problems, variants, args, out_csv: str):
                 model, mdt = build_model(v, prob.d, args.hidden, args.depth,
                                          omega0=om, fourier_sigma=fs)
                 model = model.to(device)
-                lf = linear_loss_factory(prob, x_int, x_bc, mdt)
+                derivative_backend = (
+                    "direct_autodiff"
+                    if v in AUTODIFF_VARIANTS else None
+                )
+                lf = linear_loss_factory(
+                    prob, x_int, x_bc, mdt,
+                    derivative_backend=derivative_backend,
+                )
 
                 def eval_fn():
                     with torch.no_grad():
@@ -828,18 +883,23 @@ def run_linear_suite(problems, variants, args, out_csv: str):
                 m = train_eval(model, mdt, lambda: lf(model), eval_fn,
                                seconds=args.seconds, lr=args.lr, device=device,
                                history_eval_fn=history_eval_fn, **sk)
+                weights = prob.bc_weights
+                if weights is None:
+                    weights = (prob.bc_weight,) * (1 + len(prob.bc_lap_powers))
                 row = {"problem": prob.name, "order": prob.order, "sweep": prob.sweep,
                        "variant": v, "seed": seed, "params": n_params(model),
                        "backend": "jet" if v in JET_VARIANTS else "autograd",
                        "hidden": args.hidden, "depth": args.depth,
                        "budget_seconds": args.seconds, "n_int": args.n_int,
                        "n_bc": args.n_bc, "lr": args.lr,
+                       "boundary_weights": json.dumps(list(weights)),
                        "lr_schedule": sk["lr_schedule"], "omega0": om,
                        "fourier_sigma": fs, "collocation": "paired_seed_v1", **m}
+                row["rel_error"] = row["L2_err"]
                 rows.append(row)
-                print(f"{v:<20} {row['params']:>8} {row['backend']:>8} {m['steps']:>7} "
-                      f"{m['ms_per_step']:>8.2f} {m['peak_mb']:>7.0f} "
-                      f"{m['L_int_last']:>10.2e} {m['L2_err']:>11.3e}  (seed {seed})",
+                print(f"{v:<24} {row['params']:>8} {row['backend']:>8} {m['steps']:>7} "
+                      f"{m['ms_per_step']:>8.2f} {m['loss_last']:>11.3e} "
+                      f"{m['L_int_last']:>11.3e} {m['rel_error']:>12.3e}  (seed {seed})",
                       flush=True)
                 # High-dimensional operator sums can use most of GPU memory.
                 # Release per-run closures and cached blocks before constructing
@@ -907,7 +967,7 @@ def default_argparser(seconds=80.0, n_int=4096, n_bc=512):
     ap.add_argument("--seed-start", type=int, default=0,
                     help="first seed index (inclusive); runs seed-start .. seed-start+seeds-1")
     ap.add_argument("--variants",
-                    default="complex_sinh,fourier,siren,mscale")
+                    default="complex_sinh,complex_sinh_autodiff")
     ap.add_argument("--out", default="")
     return ap
 
