@@ -1,0 +1,102 @@
+{
+  "cell_count": 4,
+  "cells": [
+    {
+      "loss": 0.7155434489250183,
+      "mass_drift_rms": 0.001007794518955052,
+      "method": "war",
+      "passed": true,
+      "peak_mb": 1614.21337890625,
+      "rel_error": 0.9992325901985168,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 68,
+      "task_id": "cahn_hilliard_2d_o4",
+      "wall_seconds": 13.29735329002142
+    },
+    {
+      "loss": 0.7083911299705505,
+      "mass_drift_rms": 0.004436248913407326,
+      "method": "real_sinh_autodiff",
+      "passed": true,
+      "peak_mb": 1903.25830078125,
+      "rel_error": 0.9928646683692932,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 43,
+      "task_id": "cahn_hilliard_2d_o4",
+      "wall_seconds": 12.497385401278734
+    },
+    {
+      "loss": 0.6352620124816895,
+      "mass_drift_rms": 0.014315569773316383,
+      "method": "war",
+      "passed": true,
+      "peak_mb": 4521.1201171875,
+      "rel_error": 1.0033764839172363,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 27,
+      "task_id": "cahn_hilliard_2d_o6",
+      "wall_seconds": 16.916567975655198
+    },
+    {
+      "loss": 0.6824923753738403,
+      "mass_drift_rms": 0.0820443257689476,
+      "method": "real_sinh_autodiff",
+      "passed": true,
+      "peak_mb": 10697.3017578125,
+      "rel_error": 1.1656798124313354,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 6,
+      "task_id": "cahn_hilliard_2d_o6",
+      "wall_seconds": 13.289927452802658
+    }
+  ],
+  "conclusion": "full-scale CUDA startup/finite-gradient/data-pipeline gate only; not a formal accuracy result",
+  "created_at": "2026-08-09T08:45:25.406645+00:00",
+  "engine_protocol_id": "cahn_hilliard_2d_natural_bc_common_sinh_fp32_v1",
+  "failure_count": 0,
+  "fixed_weights": {
+    "cahn_hilliard_2d_o4": [
+      1.0,
+      10.0
+    ],
+    "cahn_hilliard_2d_o6": [
+      1.0,
+      10.0
+    ]
+  },
+  "git": {
+    "branch": "",
+    "dirty": false,
+    "sha": "e2e781f4a4074d5ba5d810118b1097f2a9353d8f"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "methods": [
+    "war",
+    "real_sinh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "cahn_hilliard_2d_fixed_weights_formal_v1",
+  "raw_artifacts_retained": false,
+  "sample_counts": {
+    "history_eval_n": 4096,
+    "n_bc": 2048,
+    "n_eval": 32768,
+    "n_ic": 1024,
+    "n_int": 4096
+  },
+  "seconds_per_cell": 3.0
+}
