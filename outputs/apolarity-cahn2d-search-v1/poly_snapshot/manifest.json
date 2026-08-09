@@ -1,0 +1,119 @@
+{
+  "architecture": {
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "depth": 4,
+      "frequency_initialization": "disabled",
+      "hidden": 128,
+      "init_mode": "common_xavier",
+      "parameter_dtype": "torch.float32",
+      "representation": "real"
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "depth": 4,
+      "frequency_initialization": "disabled",
+      "hidden": 128,
+      "init_mode": "common_xavier",
+      "parameter_dtype": "torch.complex64",
+      "representation": "native_complex"
+    }
+  },
+  "created_at": "2026-08-08T17:08:44.946623+00:00",
+  "engine_protocol_id": "war_realad_weight_grid_common_xavier_fp32_v1",
+  "eval_seed": 54321,
+  "git": {
+    "branch": "agent/apolarity-overnight-results",
+    "dirty": true,
+    "sha": "00113c16a4596e41871da6f5b00c43e968d63b8f"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "torch": "2.10.0+cu128"
+  },
+  "history_required_fields": [
+    "elapsed_seconds",
+    "step",
+    "rel_error",
+    "loss"
+  ],
+  "method_seed_run_count": 30,
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 36000.0,
+  "protocol_id": "war_realad_fixed_weights_common_xavier_fp32_v1",
+  "seconds_per_method_seed": 1200.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "serial_single_gpu": true,
+  "smoke": false,
+  "task_count": 3,
+  "tasks": [
+    {
+      "family": "poly",
+      "order": 2,
+      "task_id": "poly_d2_o2",
+      "weight_labels": [
+        "1e+0"
+      ],
+      "weight_names": [
+        "w_u"
+      ],
+      "weights": [
+        1.0
+      ]
+    },
+    {
+      "family": "poly",
+      "order": 4,
+      "task_id": "poly_d2_o4",
+      "weight_labels": [
+        "1e+0",
+        "1e+0"
+      ],
+      "weight_names": [
+        "w_u",
+        "w_Delta_u"
+      ],
+      "weights": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "family": "poly",
+      "order": 6,
+      "task_id": "poly_d2_o6",
+      "weight_labels": [
+        "1e+1",
+        "1e+0",
+        "1e+0"
+      ],
+      "weight_names": [
+        "w_u",
+        "w_Delta_u",
+        "w_Delta2_u"
+      ],
+      "weights": [
+        10.0,
+        1.0,
+        1.0
+      ]
+    }
+  ]
+}

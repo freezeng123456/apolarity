@@ -699,6 +699,10 @@ def _run_subprocess(command: list[str], log: Path, timeout: float) -> int:
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("a") as handle:
         handle.write(f"\n# started_at={utc_now()}\n")
+        # Flush the parent-side buffer before the child writes directly to the
+        # shared descriptor; otherwise the metadata line can be flushed after
+        # the child's final JSON record and cease to be the log's last line.
+        handle.flush()
         completed = subprocess.run(
             command,
             cwd=ROOT,

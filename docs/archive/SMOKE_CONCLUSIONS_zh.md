@@ -16,7 +16,7 @@ WAR 混合高阶导数与直接 autodiff 一致；两种方法的 loss、梯度�
 均为有限值；输入维数固定为 3 且没有三角特征。
 
 这只是公式、导数和数据管线的数值门禁。H20 CUDA smoke、峰值显存与每步
-速度仍待当前 Polyharmonic 正式任务释放 GPU 后验证，不构成正式实验结果。
+速度的实际审核结论见文末 2026-08-09 节；它们同样不构成正式实验结果。
 
 ## 当前 `complex64/float32` Poly smoke
 
@@ -49,3 +49,20 @@ autodiff=`float32`，每个 cell 5 秒，seed 0。
 
 以上结论只用于说明“入口和数据管线曾经通过短时检查”，不用于证明某个
 方法优于另一个方法。
+
+## 2026-08-09 二维 Cahn--Hilliard H20 队列 smoke 审核
+
+本次队列在 Polyharmonic `FORMAL_COMPLETE` 且 GPU 连续三次空闲确认后，按批准
+顺序完成了两阶段 CUDA smoke：
+
+1. 基础规模：CH4/CH6 × WAR/real_sinh_autodiff，共 4 个 cell、每个 3 秒；
+2. 搜索规模：`n_int=512, n_ic=256, n_bc=512, n_eval=4096,
+   history_eval_n=1024`，同样 4 个 cell、每个 3 秒。
+
+两阶段均为 `passed=true`、`failure_count=0`，四个 cell 的 loss、rel_error、
+peak memory 和梯度路径均为有限值；搜索规模 smoke 的峰值显存最高约
+1608 MiB（CH6 实数 autodiff），没有 OOM 或 NaN。原始 smoke 目录未保留，
+交付包只保留 `basic_smoke_conclusion.json` 与
+`search_sized_smoke_conclusion.json` 两份结论 JSON。两阶段 smoke 仍只是
+CUDA 启动、有限性和数据管线门禁，不进入论文统计；随后运行的 196 个
+60 秒搜参 cell 才是本次可分析的权重搜索结果。
