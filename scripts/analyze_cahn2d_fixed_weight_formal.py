@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Audit, summarize, and plot the fixed-weight 2D Cahn--Hilliard formal run."""
+"""Audit, summarize, and plot the fixed-weight 2D Cahn--Hilliard formal run.
+
+Project policy: run this plot-producing script only on the development server
+or a T4 host, never through a workspace built-in image-generation facility.
+"""
 
 from __future__ import annotations
 

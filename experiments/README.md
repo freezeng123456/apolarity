@@ -1,91 +1,47 @@
 # Experiments
 
-One PDE family is kept per subfolder:
+当前可进入论文主结果的实验只有二维 Polyharmonic 和二维 Cahn–Hilliard。
+本目录存问题实现，正式 runner 在仓库根目录的 `scripts/`，结果统一进入
+`outputs/`；不再把正式结果写回 family 的 `data/` 或 `experiments/results/`。
 
-```
-<family>/
-  exp_<name>.py     # the experiment (imports the shared harness ../common/osc_common.py)
-  run.sh            # historical/family diagnostic launcher; not a formal runner
-  README.md         # problem, literature source, current protocol status
-  data/             # currently empty
-```
+## 当前问题族
 
-All `experiments/*/data/` directories have been cleared. The active paper
-scope is limited to the three formal problem families below. Other families,
-auxiliary result bundles, and non-formal runners are kept under
-`experiments/archived/` and are not part of the active inventory.
+| 目录 | 物理输入 | 任务 | 当前正式协议 |
+|---|---|---|---|
+| `polyharmonic/` | `(x,y)` | order 2/4/6 | WAR complex64+sinh vs real float32+tanh AD；common Xavier；1200 s；5 seeds |
+| `cahn_hilliard_2d/` | `(x,y,t)` | CH4/CH6 | WAR complex64+sinh vs real float32+sinh AD；仿射输入；1200 s；5 seeds |
 
-## Families
+Poly 与 CH 的实数激活函数是两条不同的冻结协议，不应在汇总时误写成相同
+网络。两者都关闭任务感知频率初始化；CH 的解析解包含 cosine，但网络输入没有
+sin/cos/Fourier 特征。
 
-| folder | family | status |
-|---|---|---|
-| `polyharmonic/` | Poly, \(d=2\), order \(2,4,6\) | formal `jsc_v3` (pow10 weights) |
-| `chirp/` | non-separable radial chirp, \(a=1,2,3\) | formal `jsc_v3` (pow10 weights) |
-| `maxwell/` | time-harmonic Maxwell, \(a=2,4,6\) | formal `jsc_v3` (pow10 weights) |
-
-The other families are archived in `experiments/archived/other_families/`.
-Their historical runners and outputs are retained only for diagnosis; they do
-not implement the active formal evidence pipeline and cannot be cited as part
-of the active paper inventory.
-
-## Frozen v3 methods and literal width
-
-The only formal comparison contains:
-
-- `complex_sinh` (Complex Sinh);
-- `complex_sinh_autodiff` (the same Complex Sinh network with direct nested coordinate autodiff).
-
-Both methods use literal hidden width \(H=128\), identical initialization,
-collocation, seeds, loss weights, and wall-clock budget. Only the derivative
-backend changes. Trainable real degrees of freedom are recorded separately;
-both methods use the same native-complex network and any formal output with a
-width other than 128 is rejected.
-
-## Frozen v2 results and pending v3 protocol
-
-The completed 1200-second results under `experiments/results/jsc_v2/` are
-retained as the fixed-`bc_weight=100` historical bundle. They are not mixed with
-the next run because the boundary loss profile is changing.
-
-The next formal run is `jsc_v3`, with the archived-search-informed
-`pow10_reasonable_v1` boundary profile. The profile is frozen in
-`experiments/common/boundary_weights.py` and includes:
-
-```text
-Poly d2/o2 [0.1], d2/o4 [0.1, 10], d2/o6 [0.01, 1, 10]
-Chirp a1/a2/a3 [1], [0.1], [0.01]
-Maxwell a2/a4/a6 [0.1], [0.1], [0.01]
-```
-
-No `jsc_v3` training has been launched yet.
-
-## The compact v3 task grid
-
-The compact v3 grid is:
-
-- Poly: \(d=2\), order \(\in\{2,4,6\}\);
-- Chirp: \(a\in\{1,2,3\}\);
-- Maxwell: \(a\in\{2,4,6\}\).
-
-Formal tasks must be launched one setting at a time:
+## 当前正式入口
 
 ```bash
-bash scripts/run_jsc_main3.sh poly --dim 2 --order 6
-bash scripts/run_jsc_main3.sh chirp --sweep 2
-bash scripts/run_jsc_main3.sh maxwell --sweep 4
+# Poly：固定权重，5 seeds × 3 tasks × 2 methods
+python scripts/run_poly_fixed_weight_formal.py orchestrate \
+  --seconds 1200 --seeds 5 --resume
+
+# 二维 CH：固定 (lambda_ic, lambda_bc)=(1,10)
+python scripts/run_cahn2d_fixed_weight_formal.py orchestrate \
+  --seconds 1200 --seeds 5 --resume
 ```
 
-These are three independent examples, not a batch command. The v3 canonical
-outputs will live under `experiments/results/jsc_v3/<task_id>/`. Every formal bundle
-must pass the validator before it can be consumed:
+正式运行前的 smoke 必须通过，但 raw smoke 只存在于临时目录，退出后删除；
+正式 JSON/log/history 不受影响。
 
-```bash
-python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v3/poly_d2_o6
-```
+## 代码分层
 
-`validate_jsc_results.py` checks the protocol metadata, the boundary profile, the
-two methods, the three seeds, unique keys, literal \(H=128\), finite loss and
-relative-error metrics, and four-column history traces. Figure and table builders
-for the next run must accept only validated `protocol_id=jsc_v3` bundles. The old
-v2 figure remains a historical record until v3 results are available.
+- `common/osc_common.py`：共享 MLP、采样、直接 AD 与 jet 入口；
+- `common/weight_search.py`：当前 Poly common-Xavier 训练内核；其中保留的旧
+  1D 周期 CH 分支只为历史结果和回归测试兼容，不属于当前二维 CH 证据；
+- 旧 `exp_polyharmonic.py` 与 JSC task registry 已移到
+  `archived/jsc_v3/`，不得用于重建当前结果；
+- `cahn_hilliard_2d/problem.py`：二维 CH 制造解、源项、自然边界和 loss；
+- `archived/`：旧 JSC、Chirp、Maxwell、其他 PDE、历史 runner 和结果。
+
+## 归档边界
+
+`experiments/archived/` 可以用于追溯旧设计和权重选择，但其中的 double 结果、
+频率初始化结果、旧 baseline 套件和 JSC 图表不能与当前 float32/complex64
+正式结果拼接。当前数据清单以 `outputs/README.md` 为准。

@@ -1,43 +1,62 @@
 # Polyharmonic order sweep
 
-**Problem.** Controlled order axis at fixed frequency.
-- \(d\)D: \(\Delta^m u=(-d\pi^2)^m u\) on \((-1,1)^d\),
-  \(u=\prod_{i=1}^d\sin(\pi x_i)\).
-- 1D: \(d^{2m}u/dx^{2m}=(-\pi^2)^m u\) on \((-1,1)\), \(u=\sin\pi x\).
-Navier (simply-supported) BCs: \(\Delta^j u=0\), \(j=0..m-1\). Only the operator
-**order** changes across the sweep — no frequency confound.
+## 方程与解析解
 
-**Source.** Vahab 2022 (high-order generalization of the biharmonic benchmark).
+在 `(-1,1)^2` 上使用
 
-**Formal `jsc_v3` grid.** \(d=2\), order
-\(2m\in\{2,4,6\}\). The frozen initialization is \(\omega_0=2\pi\) and
-\(\sigma=\pi\). An order-\(m\) operator amplifies initialization frequency like
-\(\omega^m\), so the initialization must remain part of the protocol.
-
-## Formal comparison
-
-The next formal run uses `pow10_reasonable_v1` boundary weights under
-`protocol_id=jsc_v3`; the exact per-setting vectors are frozen in
-`experiments/common/boundary_weights.py`. The only formal methods are
-`complex_sinh` and `complex_sinh_autodiff`: the same native-complex network is
-run once with the jet backend and once with direct nested coordinate autodiff.
-Both use literal hidden width \(H=128\) and the same wall-clock budget.
-
-## Current outputs
-
-`data/` is empty. The completed fixed-`bc_weight=100` `jsc_v2` bundle is kept as
-historical evidence under `experiments/results/jsc_v2/`; no `jsc_v3` Poly result
-has been launched yet, so the new Poly paper figures and tables are **TBD**.
-
-## Launch one formal setting
-
-```bash
-bash scripts/run_jsc_main3.sh poly --dim 3 --order 6
-python scripts/validate_jsc_results.py \
-  experiments/results/jsc_v3/poly_d2_o6
+```text
+u(x,y) = sin(pi*x) sin(pi*y),
+Delta^m u = (-2*pi^2)^m u,
 ```
 
-Choose exactly one allowed `--dim` and one allowed `--order` per launch. The
-family-local `run.sh`, historical 1D/width-study commands, and archived runners
-are implementation diagnostics only; their outputs cannot be used as paper
-evidence.
+其中 `m=1,2,3`，对应 `poly_d2_o2/o4/o6`。Navier 边界分量为
+`u, Delta u, ..., Delta^(m-1)u`；训练代码按解析特征值归一化 PDE 与各边界
+分量，避免只因导数阶数增加而产生量纲爆炸。
+
+## 冻结正式设置
+
+| task | 边界分量 | 权重 |
+|---|---|---|
+| `poly_d2_o2` | `u` | `[1]` |
+| `poly_d2_o4` | `u, Delta u` | `[1,1]` |
+| `poly_d2_o6` | `u, Delta u, Delta^2 u` | `[10,1,1]` |
+
+- WAR：native complex64、sinh、Waring/Taylor jet；
+- 实数基线：float32、**tanh**、direct autodiff；
+- 两者：hidden=128、四个隐藏层、common Xavier、原始 `(x,y)` 输入；
+- 不使用 sin/cos/Fourier 输入，不使用频率匹配或任务感知频率初始化；
+- `n_int=4096`、`n_boundary=512`、最终 `n_eval=8192`；
+- seeds 0–4，每方法每 seed 1200 秒，单 GPU 严格串行；
+- history 每约 5 秒记录 time、step、learning rate、loss 和 rel_error。
+
+旧 `exp_polyharmonic.py` 已移到 `experiments/archived/jsc_v3/`；其中存在的旧
+频率参数不是当前正式协议。当前结果必须由
+`scripts/run_poly_fixed_weight_formal.py` 及其来源快照解释。
+
+## 当前结果
+
+完整 30/30 原始包位于
+`outputs/current/polyharmonic-common-xavier-fp32-formal-v1/`。
+
+五 seed 最终相对误差均值：
+
+| task | WAR | real tanh AD |
+|---|---:|---:|
+| o2 | `1.512e-4` | `5.860e-4` |
+| o4 | `2.972e-3` | `2.073e-3` |
+| o6 | `1.0000` | `0.9966` |
+
+o6 两条曲线都没有学到目标解，应作为当前设置的失败结果如实保留。
+
+## 运行与复核
+
+```bash
+python scripts/run_poly_fixed_weight_formal.py smoke --seconds 5
+python scripts/run_poly_fixed_weight_formal.py orchestrate \
+  --seconds 1200 --seeds 5 --resume
+python scripts/analyze_poly_fixed_weight_formal.py \
+  outputs/current/polyharmonic-common-xavier-fp32-formal-v1
+```
+
+Smoke raw 使用临时目录，不进入 Git；正式结果通过原始与交付两层 SHA-256
+校验。
