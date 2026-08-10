@@ -1,0 +1,69 @@
+{
+  "cell_count": 2,
+  "cells": [
+    {
+      "loss": 1.3225808143615723,
+      "method": "war",
+      "ms_per_step": 84.17873964127567,
+      "passed": true,
+      "peak_mb": 1972.509765625,
+      "rel_error": 0.9441499710083008,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 36,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "wall_seconds": 20.403648421168327
+    },
+    {
+      "loss": 1.3126721382141113,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 504.8960183436672,
+      "passed": true,
+      "peak_mb": 4984.68310546875,
+      "rel_error": 0.9266911149024963,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 6,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "wall_seconds": 16.868228178471327
+    }
+  ],
+  "conclusion": "full-size CUDA startup, finite-gradient, loss and data-pipeline gate only; not an accuracy result",
+  "created_at": "2026-08-10T04:55:48.555342+00:00",
+  "engine_protocol_id": "strain_gradient_plate_2d_o6_common_xavier_fp32_v1",
+  "failure_count": 0,
+  "git": {
+    "branch": "agent/sixth-order-plate",
+    "dirty": false,
+    "sha": "e01767452143ea29e39a659e82256fb861226ff4"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "strain_gradient_plate_2d_o6_screen_v1",
+  "raw_artifacts_retained": false,
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_cell": 3.0,
+  "tasks": [
+    "strain_gradient_plate_2d_o6"
+  ]
+}

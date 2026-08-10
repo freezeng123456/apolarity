@@ -1,0 +1,33 @@
+{
+  "engine_protocol_id": "strain_gradient_plate_2d_o6_common_xavier_fp32_v1",
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "protocol_id": "strain_gradient_plate_2d_o6_screen_v1",
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_seed": 120.0,
+  "seeds": [
+    0
+  ],
+  "stage": "pilot",
+  "task": "strain_gradient_plate_2d_o6",
+  "task_spec": {
+    "family": "dynamic_strain_gradient_kirchhoff_plate",
+    "input_dim": 3,
+    "order": 6,
+    "spatial_dim": 2,
+    "task_id": "strain_gradient_plate_2d_o6",
+    "uniqueness_basis": "linear damped gradient-elastic Kirchhoff plate with homogeneous u, normal-derivative and second-normal-derivative traces plus displacement/velocity initial data; the coercive H3 plate energy and damping give uniqueness by the standard energy estimate",
+    "weights": {
+      "lambda_bc": 10.0,
+      "lambda_ic": 10.0
+    }
+  }
+}
