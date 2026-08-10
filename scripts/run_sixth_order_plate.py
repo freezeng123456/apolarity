@@ -10,14 +10,18 @@ published results remain unchanged.
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import run_high_order_candidate_screen as runner
 
 from experiments.sixth_order_plate import problem
 
-
-ROOT = Path(__file__).resolve().parents[1]
 
 runner.TASKS = problem.TASKS
 runner.TASK_ORDER = problem.TASK_ORDER
