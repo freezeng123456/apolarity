@@ -60,7 +60,9 @@ from problem import (  # noqa: E402
 )
 
 
-DEFAULT_ROOT = ROOT / "outputs" / PROTOCOL_ID
+DEFAULT_ROOT = (
+    ROOT / "outputs" / "search" / "cahn-hilliard-2d-weight-search-v1" / "search"
+)
 TASK_ORDER = ("cahn_hilliard_2d_o4", "cahn_hilliard_2d_o6")
 GRAD_CLIP = 10.0
 

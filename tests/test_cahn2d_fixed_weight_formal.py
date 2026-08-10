@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
-MODULE_PATH = SCRIPTS / "run_fixed_weight_formal.py"
-SPEC = importlib.util.spec_from_file_location("run_fixed_weight_formal", MODULE_PATH)
+MODULE_PATH = SCRIPTS / "run_cahn2d_fixed_weight_formal.py"
+SPEC = importlib.util.spec_from_file_location("run_cahn2d_fixed_weight_formal", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 formal = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(formal)
