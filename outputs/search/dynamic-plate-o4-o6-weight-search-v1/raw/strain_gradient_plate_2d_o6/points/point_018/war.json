@@ -1,0 +1,242 @@
+{
+  "budget_seconds": 60.0,
+  "completed_at": "2026-08-10T09:30:10.021096+00:00",
+  "components": {
+    "L_BC": 1.616504232515581e-05,
+    "L_BC_normal_first": 5.139833774592262e-06,
+    "L_BC_normal_second": 7.341957370954333e-07,
+    "L_BC_value": 4.262109723640606e-05,
+    "L_IC": 0.05309530720114708,
+    "L_IC_value": 0.1059541255235672,
+    "L_IC_velocity": 0.0002364911197219044,
+    "L_PDE": 0.9398598670959473,
+    "loss": 0.9453310370445251,
+    "weighted_L_BC": 0.00016165041597560048,
+    "weighted_L_IC": 0.00530953099951148
+  },
+  "eval_seed": 68421,
+  "evaluation_seconds": 0.001313893124461174,
+  "family": "dynamic_strain_gradient_kirchhoff_plate",
+  "git": {
+    "branch": "agent/sixth-order-plate",
+    "dirty": false,
+    "sha": "adde41ff9be87d87b88bc1338af66c02422db4c5"
+  },
+  "gradient_clip": 10.0,
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "torch": "2.10.0+cu128"
+  },
+  "history": [
+    {
+      "L_BC": 0.009493947960436344,
+      "L_BC_normal_first": 0.00403676787391305,
+      "L_BC_normal_second": 8.82009487668256e-07,
+      "L_BC_value": 0.02444419264793396,
+      "L_IC": 0.051869288086891174,
+      "L_IC_value": 0.10100291669368744,
+      "L_IC_velocity": 0.0027356576174497604,
+      "L_PDE": 0.9211232662200928,
+      "elapsed_seconds": 0.0,
+      "grad_norm": null,
+      "learning_rate": 0.001,
+      "loss": 1.0212496519088745,
+      "rel_error": 0.9886775612831116,
+      "step": 0,
+      "weighted_L_BC": 0.09493947774171829,
+      "weighted_L_IC": 0.005186928901821375
+    },
+    {
+      "L_BC": 1.2103855624445714e-05,
+      "L_BC_normal_first": 8.319944981849403e-07,
+      "L_BC_normal_second": 1.379238767640345e-07,
+      "L_BC_value": 3.5341647162567824e-05,
+      "L_IC": 0.05792131647467613,
+      "L_IC_value": 0.11579159647226334,
+      "L_IC_velocity": 5.1037448429269716e-05,
+      "L_PDE": 0.9190698266029358,
+      "elapsed_seconds": 20.036997,
+      "grad_norm": 0.004320984240621328,
+      "learning_rate": 0.0007756742676647507,
+      "loss": 0.924983024597168,
+      "rel_error": 0.9847137928009033,
+      "step": 283,
+      "weighted_L_BC": 0.00012103855260647833,
+      "weighted_L_IC": 0.005792131647467613
+    },
+    {
+      "L_BC": 1.089794204744976e-05,
+      "L_BC_normal_first": 3.883907993440516e-06,
+      "L_BC_normal_second": 5.417180659605947e-07,
+      "L_BC_value": 2.8268201276659966e-05,
+      "L_IC": 0.0567278191447258,
+      "L_IC_value": 0.11334900557994843,
+      "L_IC_velocity": 0.00010663304419722408,
+      "L_PDE": 0.9059146642684937,
+      "elapsed_seconds": 40.069351,
+      "grad_norm": 0.007635069079697132,
+      "learning_rate": 0.00032501027482095634,
+      "loss": 0.9116963744163513,
+      "rel_error": 0.9847521185874939,
+      "step": 567,
+      "weighted_L_BC": 0.00010897942411247641,
+      "weighted_L_IC": 0.005672782193869352
+    },
+    {
+      "L_BC": 1.529168730485253e-05,
+      "L_BC_normal_first": 5.463490197143983e-06,
+      "L_BC_normal_second": 7.730728839305812e-07,
+      "L_BC_value": 3.96384930354543e-05,
+      "L_IC": 0.05930069461464882,
+      "L_IC_value": 0.11836415529251099,
+      "L_IC_velocity": 0.00023723187041468918,
+      "L_PDE": 0.8940629959106445,
+      "elapsed_seconds": 60.031,
+      "grad_norm": 0.004985070321708918,
+      "learning_rate": 0.00010000088182811093,
+      "loss": 0.9001460075378418,
+      "rel_error": 0.9821574091911316,
+      "step": 850,
+      "weighted_L_BC": 0.00015291688032448292,
+      "weighted_L_IC": 0.0059300693683326244
+    }
+  ],
+  "history_schema": {
+    "required": [
+      "elapsed_seconds",
+      "step",
+      "learning_rate",
+      "grad_norm",
+      "loss",
+      "rel_error",
+      "L_PDE",
+      "L_BC"
+    ],
+    "x_axis": "training wall time excluding evaluation"
+  },
+  "initial_components": {
+    "L_BC": 0.009493947960436344,
+    "L_BC_normal_first": 0.00403676787391305,
+    "L_BC_normal_second": 8.82009487668256e-07,
+    "L_BC_value": 0.02444419264793396,
+    "L_IC": 0.051869288086891174,
+    "L_IC_value": 0.10100291669368744,
+    "L_IC_velocity": 0.0027356576174497604,
+    "L_PDE": 0.9211232662200928,
+    "loss": 1.0212496519088745,
+    "weighted_L_BC": 0.09493947774171829,
+    "weighted_L_IC": 0.005186928901821375
+  },
+  "initial_metrics": {
+    "rel_error": 0.9886775612831116
+  },
+  "last_grad_norm_before_clip": 0.004985070321708918,
+  "learning_rate_final_target": 0.0001,
+  "learning_rate_initial": 0.001,
+  "learning_rate_last": 0.00010000088182811093,
+  "loss": 0.9453310370445251,
+  "method": "war",
+  "metrics": {
+    "rel_error": 0.982640266418457
+  },
+  "model": {
+    "activation": "sinh",
+    "depth": 4,
+    "derivative_backend": "waring_complex_jet",
+    "frequency_initialization": "disabled",
+    "hidden": 128,
+    "init_mode": "common_xavier",
+    "input_transform": "affine_only",
+    "literal_layer_shape_matched": true,
+    "method": "war",
+    "parameter_dtype": "torch.complex64",
+    "parameter_elements": 50177,
+    "real_dof": 100354,
+    "representation": "native_complex",
+    "trigonometric_input_features": false
+  },
+  "ms_per_step": 70.6251604920801,
+  "order": 6,
+  "peak_mb": 1972.509765625,
+  "problem": {
+    "boundary_type": "homogeneous u, first normal derivative and second normal derivative on every spatial face",
+    "coordinates": [
+      "x",
+      "y",
+      "t"
+    ],
+    "damping": 0.1,
+    "domain_highs": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "domain_lows": [
+      -1.0,
+      -1.0,
+      0.0
+    ],
+    "equation": "u_tt + 0.1*u_t + Delta_xy^2*u - 0.25*Delta_xy^3*u = f",
+    "family": "dynamic_strain_gradient_kirchhoff_plate",
+    "frequency_initialization": false,
+    "history_eval_n": 2048,
+    "input_transform": "affine_only",
+    "internal_length": 0.5,
+    "manufactured_solution": true,
+    "manufactured_spatial_profile": "(1-x^2)^3*(1-y^2)^3",
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048,
+    "order": 6,
+    "physical_input_dim": 3,
+    "residual_scale": 500.0,
+    "sample_policy": "resample_each_training_step",
+    "spatial_dim": 2,
+    "task_id": "strain_gradient_plate_2d_o6",
+    "time_omega": 3.141592653589793,
+    "trigonometric_input_features": false,
+    "underlying_problem_protocol_id": "strain_gradient_plate_2d_o6_common_xavier_fp32_v1",
+    "uniqueness_basis": "linear damped gradient-elastic Kirchhoff plate with homogeneous u, normal-derivative and second-normal-derivative traces plus displacement/velocity initial data; the coercive H3 plate energy and damping give uniqueness by the standard energy estimate",
+    "weight_search_protocol_id": "dynamic_plate_o4_o6_shared_weight_grid_fp32_v1",
+    "weights": {
+      "lambda_bc": 10.0,
+      "lambda_ic": 0.1
+    }
+  },
+  "protocol_id": "dynamic_plate_o4_o6_shared_weight_grid_fp32_v1",
+  "rel_error": 0.982640266418457,
+  "screen_protocol_id": "dynamic_plate_o4_o6_shared_weight_grid_fp32_v1",
+  "search_protocol_id": "dynamic_plate_o4_o6_shared_weight_grid_fp32_v1",
+  "search_sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "smoke": false,
+  "spatial_dim": 2,
+  "stage": "weight_search",
+  "started_at": "2026-08-10T09:29:06.040566+00:00",
+  "status": "complete",
+  "steps": 850,
+  "task_id": "strain_gradient_plate_2d_o6",
+  "train_seed": 42,
+  "training_seconds": 60.031386418268085,
+  "underlying_problem_protocol_id": "strain_gradient_plate_2d_o6_common_xavier_fp32_v1",
+  "weight_map": {
+    "lambda_bc": 10.0,
+    "lambda_ic": 0.1
+  },
+  "weights": [
+    0.1,
+    10.0
+  ]
+}

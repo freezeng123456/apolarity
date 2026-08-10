@@ -1,0 +1,140 @@
+{
+  "architecture": {
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "parameter_dtype": "torch.float32",
+      "parameter_elements": 50177,
+      "real_dof": 50177,
+      "representation": "real"
+    },
+    "shared": {
+      "depth": 4,
+      "frequency_initialization": false,
+      "hidden": 128,
+      "init_mode": "common_xavier",
+      "input": "affine-normalized raw (x,y,t)",
+      "literal_layer_shape_matched": true,
+      "physical_input_dim": 3,
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "parameter_dtype": "torch.complex64",
+      "parameter_elements": 50177,
+      "real_dof": 100354,
+      "representation": "native_complex"
+    }
+  },
+  "candidate_count": 98,
+  "created_at": "2026-08-10T06:51:07.701599+00:00",
+  "eval_seed": 68421,
+  "git": {
+    "branch": "agent/sixth-order-plate",
+    "dirty": false,
+    "sha": "adde41ff9be87d87b88bc1338af66c02422db4c5"
+  },
+  "gradient_clip": 10.0,
+  "grid_labels": [
+    "1e-3",
+    "1e-2",
+    "1e-1",
+    "1e+0",
+    "1e+1",
+    "1e+2",
+    "1e+3"
+  ],
+  "grid_type": "complete_ordered_cartesian_product",
+  "grid_values": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "torch": "2.10.0+cu128"
+  },
+  "history_interval_seconds": 20.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "lr_schedule": "wall_clock_cosine",
+  "method_order_policy": "WAR first on even candidate indices; real AD first on odd indices",
+  "method_run_count": 196,
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 11760.0,
+  "protocol_id": "dynamic_plate_o4_o6_shared_weight_grid_fp32_v1",
+  "retry_policy": {
+    "max_retries_after_initial_attempt": 1,
+    "preserve_attempt_json_and_log": true,
+    "same_protocol_only": true
+  },
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_task_weight_method": 60.0,
+  "selection_outputs": [
+    "shared_minimax",
+    "shared_geometric_mean",
+    "war_specific",
+    "real_tanh_autodiff_specific"
+  ],
+  "serial_single_gpu": true,
+  "smoke": false,
+  "tasks": [
+    {
+      "candidate_count": 49,
+      "center_weights": [
+        10.0,
+        10.0
+      ],
+      "family": "dynamic_kirchhoff_love_plate",
+      "order": 4,
+      "residual_scale": 100.0,
+      "spatial_dim": 2,
+      "task_id": "dynamic_plate_2d_o4",
+      "underlying_problem_protocol_id": "high_order_candidate_common_xavier_fp32_v1",
+      "uniqueness_basis": "linear damped plate with clamped boundary and displacement/velocity initial data; the standard energy estimate gives uniqueness",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    },
+    {
+      "candidate_count": 49,
+      "center_weights": [
+        10.0,
+        10.0
+      ],
+      "family": "dynamic_strain_gradient_kirchhoff_plate",
+      "order": 6,
+      "residual_scale": 500.0,
+      "spatial_dim": 2,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "underlying_problem_protocol_id": "strain_gradient_plate_2d_o6_common_xavier_fp32_v1",
+      "uniqueness_basis": "linear damped gradient-elastic Kirchhoff plate with homogeneous u, normal-derivative and second-normal-derivative traces plus displacement/velocity initial data; the coercive H3 plate energy and damping give uniqueness by the standard energy estimate",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    }
+  ],
+  "train_seed": 42
+}
