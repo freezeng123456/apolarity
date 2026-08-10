@@ -1076,7 +1076,9 @@ def run_orchestrate(args: argparse.Namespace) -> int:
         "elapsed_wall_seconds": time.time() - started,
         "updated_at": utc_now(),
     })
-    write_checksums(root)
+    # ``run.log`` is normally the orchestrator's redirected stdout.  Emit the
+    # terminal record before hashing so the checksum covers the true final log
+    # rather than the log immediately before ``ORCHESTRATOR_FINAL``.
     print(json.dumps({
         "event": "ORCHESTRATOR_FINAL",
         "all_complete": all_complete,
@@ -1085,6 +1087,7 @@ def run_orchestrate(args: argparse.Namespace) -> int:
         "failures": failures,
         "marker": marker if all_complete else None,
     }, sort_keys=True), flush=True)
+    write_checksums(root)
     return 0 if all_complete else 2
 
 

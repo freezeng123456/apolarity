@@ -1,0 +1,35 @@
+{
+  "engine_protocol_id": "high_order_candidate_common_xavier_fp32_v1",
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "protocol_id": "high_order_candidate_screen_v1",
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_seed": 600.0,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "stage": "pilot",
+  "task": "zk_2d_o3",
+  "task_spec": {
+    "family": "zakharov_kuznetsov",
+    "input_dim": 3,
+    "order": 3,
+    "spatial_dim": 2,
+    "task_id": "zk_2d_o3",
+    "uniqueness_basis": "smooth periodic forced ZK initial-value problem; uniqueness follows from the established well-posedness theory in the smooth class",
+    "weights": {
+      "lambda_bc": 10.0,
+      "lambda_ic": 10.0
+    }
+  }
+}

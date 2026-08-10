@@ -2,9 +2,10 @@
 
 `apolarity` 是一个面向神经网络高阶偏导的确定性后端：先用单项式的 Waring
 分解得到复方向，再以 Taylor-mode 自动微分计算一个固定 multi-index 的精确
-偏导。当前论文实验只保留两个问题族：二维 Polyharmonic 与二维
-Cahn–Hilliard；旧 JSC、Chirp、Maxwell、double 协议和其他诊断实验全部进入
-archive，不再与当前结果混用。
+偏导。当前论文实验保留三个问题族：二维 Polyharmonic、二维
+Cahn–Hilliard，以及新增的二维三阶 Zakharov–Kuznetsov（ZK）；旧 JSC、
+Chirp、Maxwell、double 协议和其他诊断实验全部进入 archive，不再与当前结果
+混用。
 
 ## 当前实验口径
 
@@ -12,6 +13,7 @@ archive，不再与当前结果混用。
 |---|---|---|---|---|
 | Polyharmonic | `d2/o2`, `d2/o4`, `d2/o6` | complex64 + sinh + Waring jet | float32 + **tanh** + direct AD | common Xavier；原始 `(x,y)`；无频率初始化 |
 | Cahn–Hilliard 2D | CH4, CH6 | complex64 + sinh + Waring jet | float32 + sinh + direct AD | common Xavier；仿射 `(x,y,t)`；无三角特征 |
+| Zakharov–Kuznetsov 2D | `zk_2d_o3` | complex64 + sinh + Waring jet | float32 + **tanh** + direct AD | common Xavier；仿射 `(x,y,t)`；周期 trace loss；无三角特征 |
 
 两条协议的实数激活不同，这是各自已经运行并冻结的设置：Poly 的实数基线
 继续使用 `tanh`，本次整理没有把它改成 `sinh`。两种方法按相同字面层形状
@@ -24,7 +26,9 @@ archive，不再与当前结果混用。
 |---|---:|---|
 | `outputs/current/polyharmonic-common-xavier-fp32-formal-v1/` | 30/30；5 seeds × 3 tasks × 2 methods | o2：WAR 5/5 seed 更优；o4：AD 3/5 更优；o6 两者均约 1，当前设置失败 |
 | `outputs/current/cahn-hilliard-2d-fixed-1-10-formal-v1/` | 20/20；5 seeds × 2 tasks × 2 methods | WAR 在 CH4/CH6 均为 5/5 seed 更优 |
+| `outputs/current/high-order-zk2d-formal-v1/` | 10/10；5 seeds × 1 task × 2 methods | WAR 5/5 seed 更优；mean rel_error 0.0150 对 0.0293 |
 | `outputs/search/cahn-hilliard-2d-weight-search-v1/` | 196/196；98 vectors × 2 methods | 完整二维权重搜索与 Top-10 排名 |
+| `outputs/search/high-order-candidate-pilot-v1/` | 24/24；4 tasks × 3 seeds × 2 methods | ZK-2D 与动态板通过门槛；按冻结规则选择 ZK-2D 正式复跑 |
 
 Poly 完整包含 30 份原始方法 JSON、30 份日志、15 份 seed 配置，以及
 `summary`、`manifest`、rankings 和校验和。实时 accuracy/loss history 直接嵌在
@@ -39,6 +43,7 @@ experiments/
   common/                              当前共享模型、导数与 Poly 训练内核
   polyharmonic/                        当前 Poly 问题说明；旧 family runner 仅作诊断
   cahn_hilliard_2d/                    当前二维 CH 方程、边界与 loss 实现
+  high_order_candidates/               三阶 ZK、四阶动态板/Swift–Hohenberg 候选
   archived/                            JSC、Chirp、Maxwell、历史 family 与 runner
 scripts/
   run_poly_fixed_weight_formal.py      Poly 30-cell 正式 runner（实数基线为 tanh）
@@ -46,6 +51,8 @@ scripts/
   run_cahn2d_weight_search.py          二维 CH 196-cell 搜参 runner
   run_cahn2d_fixed_weight_formal.py    二维 CH 20-cell 正式 runner
   analyze_cahn2d_fixed_weight_formal.py
+  run_high_order_candidate_screen.py    高阶 PDE smoke/pilot/formal 串行 runner
+  analyze_high_order_candidate_results.py
 outputs/
   current/                             当前正式证据
   search/                              当前搜参证据
@@ -84,6 +91,15 @@ shasum -a 256 -c SHA256SUMS
 python /path/to/apolarity/scripts/analyze_cahn2d_fixed_weight_formal.py .
 ```
 
+高阶 PDE pilot 与 ZK 正式包同样分别保留 raw checksum；下面的分析命令会生成
+图片，因此只允许在开发服务器或 T4 执行：
+
+```bash
+python /path/to/apolarity/scripts/analyze_high_order_candidate_results.py \
+  outputs/search/high-order-candidate-pilot-v1 \
+  outputs/current/high-order-zk2d-formal-v1
+```
+
 Smoke 只做 CUDA、有限值和数据管线门禁。新的 runner 使用临时目录并只保留
 结论；raw smoke 不进入 Git。历史 smoke 的原始文件已删除，审计结论保存在
 `docs/archive/SMOKE_CONCLUSIONS_zh.md`。
@@ -105,5 +121,6 @@ float32/complex64 协议。
 
 仓库以原始 JSON/CSV/history 为事实来源。按项目约定，新增论文图只能在开发
 服务器或 T4 环境生成，不能使用 Codex 工作区内置图片生成能力。当前 Poly
-交付没有生成新图；CH 目录中的现有图来自服务器分析环境。旧论文和旧图已移到
-`docs/archive/`，当前论文入口见 `docs/paper/README.md`。
+交付没有生成新图；CH 与 ZK 目录中的图均来自服务器分析环境，并附生成脚本和
+曲线 CSV。旧论文和旧图已移到 `docs/archive/`，当前论文入口见
+`docs/paper/README.md`。

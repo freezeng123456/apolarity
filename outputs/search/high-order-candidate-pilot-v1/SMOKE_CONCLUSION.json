@@ -1,0 +1,150 @@
+{
+  "cell_count": 8,
+  "cells": [
+    {
+      "loss": 0.8977252840995789,
+      "method": "war",
+      "ms_per_step": 27.56411014893733,
+      "passed": true,
+      "peak_mb": 499.498046875,
+      "rel_error": 0.9763199687004089,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 109,
+      "task_id": "zk_2d_o3",
+      "wall_seconds": 11.646425325423479
+    },
+    {
+      "loss": 0.7068712711334229,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 25.963140555239956,
+      "passed": true,
+      "peak_mb": 306.62890625,
+      "rel_error": 0.7760240435600281,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 116,
+      "task_id": "zk_2d_o3",
+      "wall_seconds": 11.453766718506813
+    },
+    {
+      "loss": 0.296111524105072,
+      "method": "war",
+      "ms_per_step": 36.2620584621846,
+      "passed": true,
+      "peak_mb": 680.75390625,
+      "rel_error": 1.0025838613510132,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 83,
+      "task_id": "zk_3d_o3",
+      "wall_seconds": 11.346609685570002
+    },
+    {
+      "loss": 0.3242722749710083,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 36.81768956253441,
+      "passed": true,
+      "peak_mb": 386.2939453125,
+      "rel_error": 1.0347856283187866,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 82,
+      "task_id": "zk_3d_o3",
+      "wall_seconds": 13.552871534600854
+    },
+    {
+      "loss": 0.5357181429862976,
+      "method": "war",
+      "ms_per_step": 30.001931581646204,
+      "passed": true,
+      "peak_mb": 599.77880859375,
+      "rel_error": 0.8612154722213745,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 100,
+      "task_id": "dynamic_plate_2d_o4",
+      "wall_seconds": 11.245073536410928
+    },
+    {
+      "loss": 0.5539431571960449,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 53.088041512589704,
+      "passed": true,
+      "peak_mb": 738.71044921875,
+      "rel_error": 0.8148620128631592,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 57,
+      "task_id": "dynamic_plate_2d_o4",
+      "wall_seconds": 11.645987790077925
+    },
+    {
+      "loss": 0.024426260963082314,
+      "method": "war",
+      "ms_per_step": 28.309072666573076,
+      "passed": true,
+      "peak_mb": 643.171875,
+      "rel_error": 1.002148985862732,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 106,
+      "task_id": "swift_hohenberg_2d_o4",
+      "wall_seconds": 11.252879198640585
+    },
+    {
+      "loss": 0.024134207516908646,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 48.993503013926166,
+      "passed": true,
+      "peak_mb": 768.478515625,
+      "rel_error": 0.9999992251396179,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 62,
+      "task_id": "swift_hohenberg_2d_o4",
+      "wall_seconds": 11.537035375833511
+    }
+  ],
+  "conclusion": "full-size CUDA startup, finite-gradient, loss and data-pipeline gate only; not an accuracy result",
+  "created_at": "2026-08-09T18:40:01.061434+00:00",
+  "engine_protocol_id": "high_order_candidate_common_xavier_fp32_v1",
+  "failure_count": 0,
+  "git": {
+    "branch": "agent/highorder-candidate-pilot",
+    "dirty": false,
+    "sha": "20a8cd652e921d6337ff07aeaf5d0824a8cd4620"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "high_order_candidate_screen_v1",
+  "raw_artifacts_retained": false,
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_cell": 3.0,
+  "tasks": [
+    "zk_2d_o3",
+    "zk_3d_o3",
+    "dynamic_plate_2d_o4",
+    "swift_hohenberg_2d_o4"
+  ]
+}

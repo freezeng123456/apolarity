@@ -25,6 +25,17 @@ The comparison is frozen to:
 - no Fourier/periodic embedding and no frequency-aware initialization.
 
 Periodic conditions are enforced by paired trace losses rather than by putting
-`sin` or `cos` in the network input.  Candidate results are screening evidence,
-not paper evidence, until a task is selected and rerun under a frozen five-seed
-formal protocol.
+`sin` or `cos` in the network input.
+
+The completed 600-second pilot is stored under
+`outputs/search/high-order-candidate-pilot-v1/`.  The 2D ZK and dynamic-plate
+tasks passed the frozen trainability gate; 3D ZK and Swift–Hohenberg converged
+to relative error near one under both methods.  The predeclared preference for
+a trainable ZK problem distinct from the existing Poly/CH families selected
+`zk_2d_o3` for the independent five-seed, 1200-second formal rerun.
+
+The completed formal bundle is
+`outputs/current/high-order-zk2d-formal-v1/`.  WAR obtained lower final relative
+error on all five paired seeds (mean 0.0150 versus 0.0293 for real AD).  The
+bundle contains raw JSON/log/history, checksums, aggregate CSVs, and figures
+generated on the H20 server by the committed analysis script.

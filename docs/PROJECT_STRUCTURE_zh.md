@@ -26,6 +26,9 @@ experiments/polyharmonic/
 
 experiments/cahn_hilliard_2d/problem.py
     二维 (x,y,t) CH4/CH6、制造源、自然无通量边界和 loss
+
+experiments/high_order_candidates/problem.py
+    二/三维 ZK、二维动态板与 Swift–Hohenberg；共同候选筛选内核
 ```
 
 二维 CH 的当前实现独立于 `weight_search.py` 中保留的旧一维周期 CH 兼容
@@ -42,6 +45,8 @@ experiments/cahn_hilliard_2d/problem.py
 | `scripts/run_cahn2d_weight_search.py` | 二维 CH 98 vectors × 2 methods × 60 s | `outputs/search/` |
 | `scripts/run_cahn2d_fixed_weight_formal.py` | 二维 CH 2 tasks × 2 methods × 5 seeds × 1200 s | `outputs/current/` |
 | `scripts/analyze_cahn2d_fixed_weight_formal.py` | CH 正式结果统计与图表数据 | 同一结果包的 `analysis/` |
+| `scripts/run_high_order_candidate_screen.py` | 4 个高阶 PDE 的 pilot，以及选定 task 的 formal | `outputs/search/` / `outputs/current/` |
+| `scripts/analyze_high_order_candidate_results.py` | 同时验收 pilot/formal，生成逐点 CSV、统计与服务器图 | ZK 正式包的 `analysis/` |
 
 正式 runner 逐 cell 原子写 JSON，失败证据进入 `attempts/`，`--resume` 只跳过
 协议匹配且完整的 cell。文本日志末行同时保留 loss 与 rel_error。Smoke 使用
@@ -55,13 +60,16 @@ outputs/search/    60 秒权重搜索与排名
 outputs/archive/   历史 double 协议
 ```
 
-当前正式证据有两包：
+当前正式证据有三包：
 
 1. Poly 30/30：每个方法 JSON 内嵌 241 个 history 点；实数基线为 tanh；
 2. CH2D 20/20：CH4/CH6 固定 `(lambda_ic,lambda_bc)=(1,10)`；实数基线为
-   sinh。
+   sinh；
+3. ZK2D 10/10：三阶周期初值问题，WAR=complex64+sinh、实数 AD=float32+tanh，
+   5 seeds × 1200 秒；WAR 5/5 seed 更优。
 
-CH 权重搜索 196/196 位于 `outputs/search/`。旧 JSC（包括旧 Poly family
+CH 权重搜索 196/196 与高阶 PDE pilot 24/24 位于 `outputs/search/`。后者仅作
+候选选择；正式 ZK 统计完全来自独立的 1200 秒结果。旧 JSC（包括旧 Poly family
 入口）、Chirp、Maxwell 和其他
 PDE 结果位于 `experiments/archived/`。不同协议、dtype、输入表示或激活的结果
 不能拼接成一个方法均值。
@@ -86,7 +94,8 @@ Poly 结果 manifest 如实记录 `git dirty=true`。为了让这批数据仍可
 
 原始 JSON/history 是唯一事实来源。新增论文图必须在开发服务器或 T4 环境用
 可审计脚本生成，并同时提交曲线 CSV 与生成 manifest。不得使用 Codex 工作区
-内置图片生成能力。当前 Poly 整理只生成 JSON/CSV/Markdown，没有生成图片。
+内置图片生成能力。当前 Poly 整理只生成 JSON/CSV/Markdown；CH 与 ZK 图由
+服务器 Python/Matplotlib 生成，并与逐点曲线 CSV、生成脚本和校验和一同提交。
 
 ## 8. 推荐阅读顺序
 
