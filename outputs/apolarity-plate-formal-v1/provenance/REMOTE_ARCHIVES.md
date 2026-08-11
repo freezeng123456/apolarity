@@ -6,11 +6,13 @@
 |---|---|---:|---|
 | `apolarity-dynamic-plate-o4-formal-v1.tar.gz` | `a850beb53b3557badead8a4becb13f5c62e235b9808853103ae4c7255dd9c36f` | 230433 | `a850beb53b3557badead8a4becb13f5c62e235b9808853103ae4c7255dd9c36f` |
 | `apolarity-strain-gradient-plate-o6-formal-v1.tar.gz` | `01aca9fe0280d0a436c997937ecc058018d8733672c27cca36f4a7e5549f2f9e` | 150250 | `01aca9fe0280d0a436c997937ecc058018d8733672c27cca36f4a7e5549f2f9e` |
+| `apolarity-strain-gradient-plate-o6-formal-v2.tar.gz` | `e88f39867961e35ffcfc555e93472d804dfd5588a666a025a28b364e615205b5` | 247959 | `e88f39867961e35ffcfc555e93472d804dfd5588a666a025a28b364e615205b5` |
 | `apolarity-plate-formal-smoke-v1.tar.gz` | `881546588d894d99e7cb469e1ef2f1266411f3670405359e078ddc208f326140` | 1444 | `881546588d894d99e7cb469e1ef2f1266411f3670405359e078ddc208f326140` |
 
 远端原始结果根目录：
 
 - `/root/apolarity-dynamic-plate-o4-formal-v1`
-- `/root/apolarity-strain-gradient-plate-o6-formal-v1`
+- `/root/apolarity-strain-gradient-plate-o6-formal-v1`（原始 3-seed 版本）
+- `/root/apolarity-strain-gradient-plate-o6-formal-v2`（补齐 seed 3、4 的 5-seed 版本，当前发布目录采用此版本）
 
 服务器端目录中的 `SHA256SUMS` 在本地解包后逐项校验通过；发布目录另有递归有限性、完成数和日志末行检查。

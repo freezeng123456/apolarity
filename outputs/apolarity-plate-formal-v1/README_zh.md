@@ -16,7 +16,7 @@
 | task | 固定权重 | seed 数 | 方法 cell 数 | 状态 | 失败 |
 |---|---:|---:|---:|---|---:|
 | `dynamic_plate_2d_o4` | `(lambda_ic, lambda_bc)=(0.1, 1.0)` | 5 | 10 | `FORMAL_COMPLETE` | 0 |
-| `strain_gradient_plate_2d_o6` | `(lambda_ic, lambda_bc)=(10.0, 10.0)` | 3 | 6 | `FORMAL_COMPLETE` | 0 |
+| `strain_gradient_plate_2d_o6` | `(lambda_ic, lambda_bc)=(10.0, 10.0)` | 5 | 10 | `FORMAL_COMPLETE` | 0 |
 
 ## 正式结果摘要
 
@@ -26,16 +26,20 @@
 |---|---:|---:|---:|---:|
 | dynamic o4 / WAR | `0.001674 ± 0.000533` | `7.632e-7 ± 3.726e-7` | `28.84 ± 0.61` | `599.8 MB` |
 | dynamic o4 / real AD | `0.011657 ± 0.002406` | `9.064e-6 ± 1.426e-6` | `50.56 ± 2.57` | `738.7 MB` |
-| strain-gradient o6 / WAR | `0.004480 ± 0.001399` | `3.323e-5 ± 1.626e-5` | `69.88 ± 0.27` | `1972.5 MB` |
-| strain-gradient o6 / real AD | `0.324967 ± 0.080417` | `3.437e-2 ± 1.384e-2` | `398.26 ± 0.56` | `4984.7 MB` |
+| strain-gradient o6 / WAR | `0.005523 ± 0.002794` | `5.590e-5 ± 5.102e-5` | `69.89 ± 0.21` | `1972.5 MB` |
+| strain-gradient o6 / real AD | `0.311209 ± 0.061776` | `3.045e-2 ± 1.125e-2` | `396.51 ± 2.43` | `4984.7 MB` |
 
-WAR 在动态板四阶的 5/5 个 seed、应变梯度板六阶的 3/3 个 seed 上均取得较低的最终相对误差；逐 seed 的胜负、几何平均误差和最大误差见各 task 目录下的 `paired.csv` 与 `summary.json`。
+WAR 在动态板四阶的 5/5 个 seed、应变梯度板六阶的 5/5 个 seed 上均取得较低的最终相对误差。六阶任务补齐 seed 3、4 后，WAR 仍在 5/5 个 seed 上胜过实数 AD；逐 seed 的胜负、几何平均误差和最大误差见各 task 目录下的 `paired.csv` 与 `summary.json`。
+
+## 五 seed 结论
+
+在这两个固定权重、固定 1200 秒预算的正式实验中，WAR 的结论是一致的：动态板四阶和应变梯度板六阶均为 5/5 seed 胜出。按中位数比较，WAR 的 `rel_error` 分别为 `1.597e-3` 和 `4.956e-3`，实数 AD 分别为 `1.219e-2` 和 `3.031e-1`；因此六阶任务中的差距尤其明显。WAR 的单步时间约为实数 AD 的 0.57 倍（动态四阶）和 0.18 倍（六阶），峰值显存也更低。这个结论支持“在相同网络、采样、初始化、输入表示和时间预算下，WAR 在这两个高阶板 PDE 上更稳定、更快”的实验性表述，但仍应明确它对应当前两个已选定权重，不等同于对所有权重的全局最优性结论。
 
 ## 完整性复核
 
 - 两个 task 的远端 `SHA256SUMS` 均在本地逐项通过。
 - `dynamic_plate_2d_o4`：10/10 cell 完成，22 个 JSON，10 个方法日志。
-- `strain_gradient_plate_2d_o6`：6/6 cell 完成，16 个 JSON，6 个方法日志。
+- `strain_gradient_plate_2d_o6`：10/10 cell 完成，22 个 JSON，10 个方法日志。
 - 所有 JSON 数值递归检查为有限值；每个方法日志末行同时包含 `loss` 和 `rel_error`。
 - `smoke/SMOKE_CONCLUSION.json` 保留服务器端 4/4 smoke 通过结论；smoke 原始小文件不参与正式统计。
 - 服务器归档及其哈希记录见 `provenance/REMOTE_ARCHIVES.md`；对应归档副本也保留在 `provenance/`，便于复核原始目录结构。

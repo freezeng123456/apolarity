@@ -3,14 +3,16 @@
   "candidate_ranking": [
     "strain_gradient_plate_2d_o6"
   ],
-  "complete_runs": 6,
+  "complete_runs": 10,
   "engine_protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
-  "expected_runs": 6,
+  "expected_runs": 10,
   "protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
   "seeds": [
     0,
     1,
-    2
+    2,
+    3,
+    4
   ],
   "task_summaries": [
     {
@@ -23,22 +25,22 @@
       },
       "ad_over_war_step_time": {
         "max": 5.727796965510926,
-        "mean": 5.698894007967621,
-        "median": 5.69345788030583,
-        "min": 5.675427178086109,
-        "std": 0.026604741526588642
+        "mean": 5.673544344155468,
+        "median": 5.675427178086109,
+        "min": 5.623028522821747,
+        "std": 0.040457483516886605
       },
       "ad_seed_wins": 0,
-      "expected_seed_count": 3,
+      "expected_seed_count": 5,
       "family": "dynamic_strain_gradient_kirchhoff_plate",
       "order": 6,
-      "paired_complete_seed_count": 3,
+      "paired_complete_seed_count": 5,
       "real_tanh_autodiff_rel_error": {
         "max": 0.4140521287918091,
-        "mean": 0.3249672055244446,
+        "mean": 0.31120907664299013,
         "median": 0.3031123876571655,
         "min": 0.25773710012435913,
-        "std": 0.08041655205761672
+        "std": 0.06177566861423687
       },
       "screen_pass": true,
       "screen_rank": 1,
@@ -97,36 +99,72 @@
           "war_peak_mb": 1972.509765625,
           "war_rel_error": 0.004955848213285208,
           "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.5270765155828405,
+          "ad_over_war_step_time": 5.64801117405273,
+          "geometric_mean_error": 0.05635312425947107,
+          "max_error": 0.3119218647480011,
+          "real_tanh_autodiff_loss": 0.026562707498669624,
+          "real_tanh_autodiff_ms_per_step": 394.08394474064096,
+          "real_tanh_autodiff_peak_mb": 4984.68310546875,
+          "real_tanh_autodiff_rel_error": 0.3119218647480011,
+          "seed": 3,
+          "status": "complete",
+          "task_id": "strain_gradient_plate_2d_o6",
+          "war_loss": 0.00014479851233772933,
+          "war_ms_per_step": 69.77393149487452,
+          "war_peak_mb": 1972.509765625,
+          "war_rel_error": 0.010180993936955929,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.5270765155828405,
+          "ad_over_war_step_time": 5.623028522821747,
+          "geometric_mean_error": 0.032786248469091124,
+          "max_error": 0.2692219018936157,
+          "real_tanh_autodiff_loss": 0.022574128583073616,
+          "real_tanh_autodiff_ms_per_step": 393.68904600205207,
+          "real_tanh_autodiff_peak_mb": 4984.68310546875,
+          "real_tanh_autodiff_rel_error": 0.2692219018936157,
+          "seed": 4,
+          "status": "complete",
+          "task_id": "strain_gradient_plate_2d_o6",
+          "war_loss": 3.500379898468964e-05,
+          "war_ms_per_step": 70.01370247442584,
+          "war_peak_mb": 1972.509765625,
+          "war_rel_error": 0.003992758691310883,
+          "winner": "war"
         }
       ],
       "shared_geometric_mean": {
-        "max": 0.04806236562849644,
-        "mean": 0.03806024644426661,
+        "max": 0.05635312425947107,
+        "mean": 0.040664022412272405,
         "median": 0.03875795382621968,
         "min": 0.02736041987808371,
-        "std": 0.010368593740540796
+        "std": 0.011657204416787666
       },
       "shared_minimax": {
         "max": 0.4140521287918091,
-        "mean": 0.3249672055244446,
+        "mean": 0.31120907664299013,
         "median": 0.3031123876571655,
         "min": 0.25773710012435913,
-        "std": 0.08041655205761672
+        "std": 0.06177566861423687
       },
       "spatial_dim": 2,
       "task_id": "strain_gradient_plate_2d_o6",
       "war_rel_error": {
-        "max": 0.005578985903412104,
-        "mean": 0.004479771790405114,
+        "max": 0.010180993936955929,
+        "mean": 0.005522613599896431,
         "median": 0.004955848213285208,
         "min": 0.002904481254518032,
-        "std": 0.0013993678392601888
+        "std": 0.0027937421688483837
       },
-      "war_seed_wins": 3
+      "war_seed_wins": 5
     }
   ],
   "tasks": [
     "strain_gradient_plate_2d_o6"
   ],
-  "updated_at": "2026-08-10T20:25:04.208880+00:00"
+  "updated_at": "2026-08-11T09:06:19.396389+00:00"
 }
