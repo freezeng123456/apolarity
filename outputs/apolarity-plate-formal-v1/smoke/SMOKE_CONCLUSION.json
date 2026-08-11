@@ -1,0 +1,96 @@
+{
+  "cell_count": 4,
+  "cells": [
+    {
+      "loss": 0.0665585994720459,
+      "method": "war",
+      "ms_per_step": 30.055799763649702,
+      "passed": true,
+      "peak_mb": 599.77880859375,
+      "rel_error": 0.9291468858718872,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 100,
+      "task_id": "dynamic_plate_2d_o4",
+      "wall_seconds": 12.349460382014513
+    },
+    {
+      "loss": 0.06754563003778458,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 52.883372429692955,
+      "passed": true,
+      "peak_mb": 738.71044921875,
+      "rel_error": 0.9192551970481873,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 57,
+      "task_id": "dynamic_plate_2d_o4",
+      "wall_seconds": 12.500937592238188
+    },
+    {
+      "loss": 1.4167882204055786,
+      "method": "war",
+      "ms_per_step": 74.36890486718679,
+      "passed": true,
+      "peak_mb": 1972.509765625,
+      "rel_error": 0.939065158367157,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 41,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "wall_seconds": 11.898425607010722
+    },
+    {
+      "loss": 1.3756725788116455,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 443.8428357243538,
+      "passed": true,
+      "peak_mb": 4984.68310546875,
+      "rel_error": 0.9077971577644348,
+      "returncode": 0,
+      "status": "complete",
+      "steps": 7,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "wall_seconds": 19.60866415500641
+    }
+  ],
+  "conclusion": "full-size CUDA startup, finite-gradient, loss and data-pipeline gate only; not an accuracy result",
+  "created_at": "2026-08-10T15:00:11.608834+00:00",
+  "engine_protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
+  "failure_count": 0,
+  "git": {
+    "branch": "",
+    "dirty": false,
+    "sha": "ebd94ba725e796268a522dea0e7fb2dd7fa9776b"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
+  "raw_artifacts_retained": false,
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_cell": 3.0,
+  "tasks": [
+    "dynamic_plate_2d_o4",
+    "strain_gradient_plate_2d_o6"
+  ]
+}
