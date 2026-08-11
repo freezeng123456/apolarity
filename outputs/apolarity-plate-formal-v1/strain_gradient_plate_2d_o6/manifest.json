@@ -1,0 +1,83 @@
+{
+  "architecture": {
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "dtype": "torch.float32"
+    },
+    "shared": {
+      "depth": 4,
+      "frequency_initialization": false,
+      "hidden": 128,
+      "init_mode": "common_xavier",
+      "input": "affine-normalized raw coordinates",
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "dtype": "torch.complex64"
+    }
+  },
+  "engine_protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
+  "expected_runs": 6,
+  "git": {
+    "branch": "",
+    "dirty": false,
+    "sha": "ebd94ba725e796268a522dea0e7fb2dd7fa9776b"
+  },
+  "gradient_clip": 10.0,
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "history_interval_seconds": 20.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "method_order_policy": "war-first on even seeds; AD-first on odd seeds",
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 7200.0,
+  "protocol_id": "dynamic_plate_o4_o6_fixed_formal_common_xavier_fp32_v1",
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_seed": 1200.0,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "serial_single_gpu": true,
+  "stage": "formal",
+  "task_specs": [
+    {
+      "family": "dynamic_strain_gradient_kirchhoff_plate",
+      "input_dim": 3,
+      "order": 6,
+      "spatial_dim": 2,
+      "task_id": "strain_gradient_plate_2d_o6",
+      "uniqueness_basis": "linear damped gradient-elastic Kirchhoff plate with homogeneous u, normal-derivative and second-normal-derivative traces plus displacement/velocity initial data; the coercive H3 plate energy and damping give uniqueness by the standard energy estimate",
+      "weights": {
+        "lambda_bc": 10.0,
+        "lambda_ic": 10.0
+      }
+    }
+  ],
+  "tasks": [
+    "strain_gradient_plate_2d_o6"
+  ]
+}
