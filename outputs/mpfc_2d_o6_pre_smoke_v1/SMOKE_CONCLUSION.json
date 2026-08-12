@@ -1,0 +1,39 @@
+{
+  "task": "mpfc_2d_o6",
+  "protocol": "mpfc_2d_o6_common_xavier_fp32_v1",
+  "server_python": "/root/apolarity-venv/bin/python3",
+  "torch": "2.11.0+cu128",
+  "device": "NVIDIA H20",
+  "basic_smoke": {
+    "weights": [1.0, 1.0],
+    "n_int": 2,
+    "n_ic": 2,
+    "n_bc": 4,
+    "hidden": 5,
+    "depth": 1,
+    "war_loss": 0.2015468031167984,
+    "real_tanh_autodiff_loss": 0.05026252940297127,
+    "status": "passed"
+  },
+  "full_size_single_step": {
+    "n_int": 512,
+    "n_ic": 256,
+    "n_bc": 1024,
+    "hidden": 128,
+    "depth": 4,
+    "war": {
+      "loss": 0.0315963439643383,
+      "seconds": 0.2993866242468357,
+      "peak_mb": 953.24609375,
+      "finite": true
+    },
+    "real_tanh_autodiff": {
+      "loss": 0.07508505135774612,
+      "seconds": 1.031288517639041,
+      "peak_mb": 2131.64453125,
+      "finite": true
+    },
+    "status": "passed"
+  },
+  "formal_allowed": false
+}

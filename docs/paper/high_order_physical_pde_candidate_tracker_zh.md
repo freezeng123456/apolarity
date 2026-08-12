@@ -342,8 +342,10 @@ slope RMS 也远低于谱 reference，说明两种网络都停在近零假解。
 2026-08-13 开发状态：已新增 `experiments/mpfc_2d/problem.py`，固定
 `M=1, beta=0.1, epsilon=0.25`、周期 `[0,2pi]^2 x [0,1]`、初值及零初始速度，
 并实现 `Delta^3(phi)`、`Delta(phi^3)` 的直接展开残差、两种网络后端和边界导数
-0--5 阶接口。当前开发机没有 PyTorch runtime，已完成 Python 编译和静态 diff 检查；
-数值 smoke 必须在实验服务器的固定环境中执行，不能把未通过 smoke 的代码送入搜参。
+0--5 阶接口。开发机没有 PyTorch runtime，已完成 Python 编译和静态 diff 检查；随后在
+固定 H20/PyTorch `2.11.0+cu128` 环境完成基础与 full-size 单步 smoke：两种方法均
+finite、梯度有限且无 OOM（WAR `953.25 MB`，real-tanh autodiff `2131.64 MB`）。
+该结果只放行 reference/convergence 与共享搜参，不放行 5-seed formal。
 
 结果占位：
 
@@ -630,7 +632,7 @@ evaluation、写盘与绘图，按约 7--8 小时 wall time 预留。
 | 日期 | 变更 |
 |---|---|
 | 2026-08-12 | HO-04 完成两档 smoke、三点 sentinel、49 候选共享搜参、3-seed pilot 与 5-seed formal（10/10）；固定共同权重为 `(1e2,1e1)`，WAR 在 5/5 seeds 的主速度指标和全部物理/效率指标上优于 real-tanh autodiff，状态更新为 `FORMAL_COMPLETE / PASS`。 |
-| 2026-08-13 | HO-02 MPFC 解锁：新增二维六阶直接残差、周期 0--5 阶 trace、共同 Xavier 的 WAR/real-tanh 模型接口和 finite-gradient 测试；等待服务器 reference 与 smoke 门禁，不启动正式长跑。 |
+| 2026-08-13 | HO-02 MPFC 解锁：新增二维六阶直接残差、周期 0--5 阶 trace、共同 Xavier 的 WAR/real-tanh 模型接口；固定 H20 基础与 full-size 单步 smoke 均通过，进入 reference/convergence 阶段，尚未启动搜参或正式长跑。 |
 | 2026-08-12 | 用户决定停止 MBE：HO-01 定位为 `REJECTED / TRAINING_FAILURE`，不再 pilot/formal；HO-04 提升到 HO-02 MPFC 前，冻结 Taylor--Green setting、损失、物理门禁和自动长跑流程，并完成多输出实现。 |
 | 2026-08-12 | HO-01 完成 49 个共享权重、98 个 method cells 的完整搜索；结果完整但全部饱和在近零假解，状态更新为 `SEARCHED / HOLD`，未启动 pilot/formal。 |
 | 2026-08-11 | 建立候选队列、统一协议、收益判据、实验门槛和结果占位表；尚未启动新实验。 |
