@@ -72,7 +72,7 @@ ground truth 的成本。
 |---:|---|---|---:|---:|---|---|---|
 | — | `HO-01` | MBE slope-selection | 2D | 4 | `REJECTED / TRAINING_FAILURE` | 完整搜参负结果；49 个权重均为近零假解 | 否；停止 pilot/formal |
 | 1 | `HO-04` | Hyperviscous Navier--Stokes | 2D | 4 | `FORMAL_COMPLETE / PASS` | 已完成门禁、共享搜参、pilot 与 5-seed formal；WAR 在速度、压力、散度和能量指标上均优于实数 AD | 暂停追加实验；保留为可复现实验基准 |
-| 2 | `HO-02` | Modified Phase-Field Crystal | 2D | 6 | `RESEARCH` | 六阶主候选 | 否，等待 `HO-04` 结论 |
+| 2 | `HO-02` | Modified Phase-Field Crystal | 2D | 6 | `IMPLEMENTED / PRE-SMOKE` | 六阶主候选；方程、直接六阶残差和周期 0--5 阶 trace 接口已落地，等待 reference 与 CUDA 门禁 | 否，先完成 reference、smoke 和共享搜参 |
 | 3 | `HO-03` | Kawahara / KdV--Kawahara | 1D | 5 | `RESEARCH` | 奇数阶诊断候选 | 否，先完成低成本 pilot |
 | 4 | `HO-05` | Hyperviscous Navier--Stokes ABC flow | 3D | 4 | `HOLD` | 三维扩展 | 否，等待 `HO-04` |
 | 5 | `HO-06` | generalized sixth-order Boussinesq | 1D | 6 | `RESEARCH` | 短时间高风险候选 | 否，只允许短时间 pilot |
@@ -338,6 +338,12 @@ slope RMS 也远低于谱 reference，说明两种网络都停在近零假解。
 - [ ] 完成 5-seed formal；
 - [ ] 在服务器/T4 生成实时曲线；
 - [ ] 提交 GitHub 并填写总结果表。
+
+2026-08-13 开发状态：已新增 `experiments/mpfc_2d/problem.py`，固定
+`M=1, beta=0.1, epsilon=0.25`、周期 `[0,2pi]^2 x [0,1]`、初值及零初始速度，
+并实现 `Delta^3(phi)`、`Delta(phi^3)` 的直接展开残差、两种网络后端和边界导数
+0--5 阶接口。当前开发机没有 PyTorch runtime，已完成 Python 编译和静态 diff 检查；
+数值 smoke 必须在实验服务器的固定环境中执行，不能把未通过 smoke 的代码送入搜参。
 
 结果占位：
 
@@ -612,7 +618,7 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 
 1. `HO-01` MBE：已经形成完整负结果，定性为 `TRAINING_FAILURE` 并停止；
 2. `HO-04` 二维超黏性 Navier--Stokes：立即执行上述自动门禁、搜参、pilot 与条件 formal；
-3. `HO-02` MPFC：等待 `HO-04` 结论后再开发；
+3. `HO-02` MPFC：HO-04 已通过，进入 reference、两档 smoke 和共享搜参门禁；
 4. `HO-03` Kawahara：保留为后续奇数阶低成本诊断。
 
 `HO-04` 从 sentinel 到 formal 的纯训练上限为
@@ -624,6 +630,7 @@ evaluation、写盘与绘图，按约 7--8 小时 wall time 预留。
 | 日期 | 变更 |
 |---|---|
 | 2026-08-12 | HO-04 完成两档 smoke、三点 sentinel、49 候选共享搜参、3-seed pilot 与 5-seed formal（10/10）；固定共同权重为 `(1e2,1e1)`，WAR 在 5/5 seeds 的主速度指标和全部物理/效率指标上优于 real-tanh autodiff，状态更新为 `FORMAL_COMPLETE / PASS`。 |
+| 2026-08-13 | HO-02 MPFC 解锁：新增二维六阶直接残差、周期 0--5 阶 trace、共同 Xavier 的 WAR/real-tanh 模型接口和 finite-gradient 测试；等待服务器 reference 与 smoke 门禁，不启动正式长跑。 |
 | 2026-08-12 | 用户决定停止 MBE：HO-01 定位为 `REJECTED / TRAINING_FAILURE`，不再 pilot/formal；HO-04 提升到 HO-02 MPFC 前，冻结 Taylor--Green setting、损失、物理门禁和自动长跑流程，并完成多输出实现。 |
 | 2026-08-12 | HO-01 完成 49 个共享权重、98 个 method cells 的完整搜索；结果完整但全部饱和在近零假解，状态更新为 `SEARCHED / HOLD`，未启动 pilot/formal。 |
 | 2026-08-11 | 建立候选队列、统一协议、收益判据、实验门槛和结果占位表；尚未启动新实验。 |
