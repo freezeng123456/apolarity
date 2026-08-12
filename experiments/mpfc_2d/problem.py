@@ -145,8 +145,12 @@ RUNNER_MANIFEST_METADATA = {
 def runner_manifest_metadata(*, smoke: bool) -> dict[str, object]:
     metadata = dict(RUNNER_MANIFEST_METADATA)
     metadata["smoke"] = bool(smoke)
-    metadata["reference_root"] = str(REFERENCE_ROOT) if REFERENCE_ROOT else None
-    metadata["reference_sha256"] = _reference_sha256()
+    reference_sha = _reference_sha256()
+    metadata["reference"] = {
+        "root": str(REFERENCE_ROOT) if REFERENCE_ROOT else None,
+        "sha256": reference_sha,
+        "protocol": "mpfc_2d_imex_fourier_reference_v1",
+    }
     return metadata
 
 
@@ -460,6 +464,7 @@ def _load_reference(
     metadata = {
         "reference_path": str(reference_path),
         "reference_sha256": reference_sha,
+        "sha256": reference_sha,
         "reference_count": int(points_np.shape[0]),
         "reference_protocol": "mpfc_2d_imex_fourier_reference_v1",
         "reference_eval_seed": EVAL_SEED,
