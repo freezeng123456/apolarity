@@ -69,6 +69,11 @@ tensor_components_to_float = _PROBLEM.tensor_components_to_float
 PROTOCOL_ID = "high_order_candidate_screen_v1"
 DEFAULT_ROOT = ROOT / "outputs" / "search" / "high-order-candidate-pilot-v1"
 GRAD_CLIP = 10.0
+STRICT_MANIFEST_BINDING = False
+SUMMARY_METRIC_KEYS = tuple(getattr(_PROBLEM, "SUMMARY_METRIC_KEYS", ()))
+HISTORY_REQUIRED_METRICS = tuple(getattr(
+    _PROBLEM, "HISTORY_REQUIRED_METRICS", ()
+))
 DEFAULT_SAMPLES = {
     "n_int": 2048,
     "n_ic": 512,
@@ -388,6 +393,7 @@ def train_one(
                 "rel_error",
                 "L_PDE",
                 "L_BC",
+                *HISTORY_REQUIRED_METRICS,
             ],
         },
         "model": model_metadata(model, method),
@@ -513,6 +519,11 @@ def run_worker(args: argparse.Namespace) -> int:
         )
         result.update({"git": git_state(), "hardware": hardware_metadata()})
         atomic_write_json(output, result)
+        compact_metrics = {
+            key: result.get("metrics", {}).get(key)
+            for key in SUMMARY_METRIC_KEYS
+            if key in result.get("metrics", {})
+        }
         print(json.dumps({
             "event": "CELL_FINAL",
             "status": result["status"],
@@ -524,6 +535,7 @@ def run_worker(args: argparse.Namespace) -> int:
             "rel_error": result.get("rel_error"),
             "ms_per_step": result.get("ms_per_step"),
             "peak_mb": result.get("peak_mb"),
+            **compact_metrics,
         }, sort_keys=True), flush=True)
         return 0 if result["status"] == "complete" else 2
     except BaseException as error:  # noqa: BLE001 - persist every failure
@@ -597,6 +609,11 @@ def flatten_result(
         row["final_history_has_rel_error"] = bool(
             result.get("history") and "rel_error" in result["history"][-1]
         )
+        metrics = result.get("metrics", {})
+        if isinstance(metrics, dict):
+            for metric_key in SUMMARY_METRIC_KEYS:
+                if metric_key in metrics:
+                    row[metric_key] = metrics[metric_key]
     return row
 
 
@@ -624,6 +641,13 @@ def build_summary(
                 pair[f"{method}_loss"] = float(result["loss"])
                 pair[f"{method}_ms_per_step"] = float(result["ms_per_step"])
                 pair[f"{method}_peak_mb"] = float(result["peak_mb"])
+                metrics = result.get("metrics", {})
+                if isinstance(metrics, dict):
+                    for metric_key in SUMMARY_METRIC_KEYS:
+                        if metric_key in metrics:
+                            pair[f"{method}_{metric_key}"] = float(
+                                metrics[metric_key]
+                            )
             if complete:
                 war_error = pair["war_rel_error"]
                 ad_error = pair["real_tanh_autodiff_rel_error"]
@@ -684,6 +708,17 @@ def build_summary(
             "ad_seed_wins": sum(
                 row.get("winner") == "real_tanh_autodiff" for row in complete_pairs
             ),
+            "physical_metrics": {
+                method: {
+                    metric_key: _distribution([
+                        row[f"{method}_{metric_key}"]
+                        for row in complete_pairs
+                        if f"{method}_{metric_key}" in row
+                    ])
+                    for metric_key in SUMMARY_METRIC_KEYS
+                }
+                for method in METHODS
+            },
             "seed_metrics": paired,
         }
         atomic_write_json(root / task / "summary.json", summary)
@@ -853,6 +888,11 @@ def run_smoke(args: argparse.Namespace) -> int:
                     "ms_per_step": result.get("ms_per_step"),
                     "peak_mb": result.get("peak_mb"),
                 }
+                metrics = result.get("metrics", {})
+                if isinstance(metrics, dict):
+                    for metric_key in SUMMARY_METRIC_KEYS:
+                        if metric_key in metrics:
+                            cell[metric_key] = metrics[metric_key]
                 if not passed:
                     cell["error_type"] = result.get("error_type")
                     cell["error"] = result.get("error")
@@ -898,7 +938,7 @@ def run_orchestrate(args: argparse.Namespace) -> int:
     manifest_path = root / "manifest.json"
     if manifest_path.exists():
         existing = json.loads(manifest_path.read_text())
-        for key in (
+        compatibility_keys = [
             "protocol_id",
             "engine_protocol_id",
             "stage",
@@ -907,9 +947,22 @@ def run_orchestrate(args: argparse.Namespace) -> int:
             "seeds",
             "seconds_per_method_seed",
             "sample_counts",
-        ):
+        ]
+        if STRICT_MANIFEST_BINDING:
+            compatibility_keys.extend([
+                "task_specs",
+                "architecture",
+                "method_order_policy",
+            ])
+        for key in compatibility_keys:
             if existing.get(key) != expected_manifest.get(key):
                 raise ValueError(f"incompatible manifest field {key!r}")
+        if (
+            STRICT_MANIFEST_BINDING
+            and existing.get("git", {}).get("sha")
+            != expected_manifest.get("git", {}).get("sha")
+        ):
+            raise ValueError(f"incompatible git SHA at {manifest_path}")
     else:
         atomic_write_json(manifest_path, expected_manifest)
 

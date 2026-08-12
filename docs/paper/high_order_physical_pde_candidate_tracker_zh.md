@@ -61,6 +61,7 @@ direct-autodiff 基线在哪些问题上具有实际收益。候选方程必须�
 | `FORMAL_COMPLETE` | 5-seed、每方法 1200 秒正式实验完成并通过完整性审核 |
 | `HOLD` | 候选有效，但优先级较低，等待前置候选结论 |
 | `REJECTED` | 数学、训练、结果完整性或科学价值门槛未通过，不继续消耗 GPU |
+| `TRAINING_FAILURE` | 数学/实现门禁通过，但完整权重搜索仍收敛到不可用假解；作为负结果保留，不再长跑 |
 
 ## 4. 总队列
 
@@ -69,17 +70,20 @@ ground truth 的成本。
 
 | 顺序 | ID | 候选 | 维数 | 最高空间阶数 | 当前状态 | 角色 | 是否允许正式长跑 |
 |---:|---|---|---:|---:|---|---|---|
-| 1 | `HO-01` | MBE slope-selection | 2D | 4 | `SEARCHED / HOLD` | 49 个权重均收敛到近零假解 | 否，等待用户决定是否做诊断 pilot |
-| 2 | `HO-02` | Modified Phase-Field Crystal | 2D | 6 | `RESEARCH` | 六阶主候选 | 否，先完成搜参和 pilot |
+| — | `HO-01` | MBE slope-selection | 2D | 4 | `REJECTED / TRAINING_FAILURE` | 完整搜参负结果；49 个权重均为近零假解 | 否；停止 pilot/formal |
+| 1 | `HO-04` | Hyperviscous Navier--Stokes | 2D | 4 | `IMPLEMENTED` | 当前第一优先级；跨物理体系、多输出 | 是；仅按本节预注册门禁自动放行 |
+| 2 | `HO-02` | Modified Phase-Field Crystal | 2D | 6 | `RESEARCH` | 六阶主候选 | 否，等待 `HO-04` 结论 |
 | 3 | `HO-03` | Kawahara / KdV--Kawahara | 1D | 5 | `RESEARCH` | 奇数阶诊断候选 | 否，先完成低成本 pilot |
-| 4 | `HO-04` | Hyperviscous Navier--Stokes | 2D | 4 | `RESEARCH` | 跨物理体系候选 | 否，先完成多输出 smoke |
-| 5 | `HO-05` | Hyperviscous Navier--Stokes ABC flow | 3D | 4 | `HOLD` | 三维扩展 | 否，等待 `HO-04` |
-| 6 | `HO-06` | generalized sixth-order Boussinesq | 1D | 6 | `RESEARCH` | 短时间高风险候选 | 否，只允许短时间 pilot |
-| 7 | `HO-07` | Kuramoto--Sivashinsky | 1D | 4 | `HOLD` | 常见物理对照 | 否，等待前六项结论 |
-| 8 | `HO-08` | Functionalized Cahn--Hilliard | 2D | 6 | `HOLD` | 奇异势储备候选 | 否，等待 MPFC 结论 |
+| 4 | `HO-05` | Hyperviscous Navier--Stokes ABC flow | 3D | 4 | `HOLD` | 三维扩展 | 否，等待 `HO-04` |
+| 5 | `HO-06` | generalized sixth-order Boussinesq | 1D | 6 | `RESEARCH` | 短时间高风险候选 | 否，只允许短时间 pilot |
+| 6 | `HO-07` | Kuramoto--Sivashinsky | 1D | 4 | `HOLD` | 常见物理对照 | 否，等待前置候选结论 |
+| 7 | `HO-08` | Functionalized Cahn--Hilliard | 2D | 6 | `HOLD` | 奇异势储备候选 | 否，等待 MPFC 结论 |
 
 默认执行原则是：前一候选至少完成共享权重搜索和 3-seed pilot，并形成继续或停止的
-书面结论后，再决定是否启动下一候选的正式阶段。候选之间不自动串行启动正式长跑。
+书面结论后，再决定是否启动下一候选的正式阶段。2026-08-12 用户已对 `HO-04`
+作一次性例外授权：两档 smoke、三点 sentinel、完整搜参、3-seed pilot 和 5-seed
+formal 可以按本文件预注册门禁自动串行；任一门禁失败必须保留证据并停止，不能临时
+改参、降规模或换精度。该授权不延伸到 `HO-02` 及后续候选。
 
 ## 5. 统一实验阶段与门槛
 
@@ -271,23 +275,21 @@ slope RMS 也远低于谱 reference，说明两种网络都停在近零假解。
 - [x] 完成解析制造解交叉校验；
 - [x] 完成两档 CUDA smoke；
 - [x] 完成共享权重搜索；
-- [ ] 用户决定是否用 `point_021=(1,1e-3)` 做诊断 pilot；
-- [ ] 完成 3-seed pilot；
-- [ ] 写出 `GO_FORMAL`/`STOP` 结论；
-- [ ] 完成 5-seed formal；
-- [ ] 在服务器/T4 生成实时曲线；
-- [ ] 提交 GitHub 并填写总结果表。
+- [x] 用户决定及时止损，不做诊断 pilot；
+- [x] 写出 `STOP / TRAINING_FAILURE` 结论；
+- [x] 保留完整 search 原始证据和报告；
+- [ ] 不再启动 3-seed pilot 或 5-seed formal。
 
 结果占位：
 
 | 字段 | 值 |
 |---|---|
-| selected `(lambda_ic, lambda_bc)` | shared minimax 形式候选 `(1,1e-3)`；尚未批准 pilot |
-| pilot median WAR / AD | `TBD / TBD` |
-| formal median WAR / AD | `TBD / TBD` |
-| `G_error` | `TBD` |
-| WAR paired wins | `TBD / 5` |
-| 结论 | `SEARCHED / HOLD`：49 个权重均为 `rel_error≈1` 的近零假解 |
+| selected `(lambda_ic, lambda_bc)` | 不选择正式权重；`(1,1e-3)` 仅是失败搜索中的 shared-minimax 点 |
+| pilot median WAR / AD | 不运行 |
+| formal median WAR / AD | 不运行 |
+| `G_error` | 不适用 |
+| WAR paired wins | 不适用 |
+| 结论 | `REJECTED / TRAINING_FAILURE`：49 个权重均为 `rel_error≈1` 的近零假解 |
 
 ### HO-02：二维六阶 Modified Phase-Field Crystal
 
@@ -418,15 +420,62 @@ Laplacian 推广到奇数五阶导数。
 | ground truth | 无外力解析解 |
 | 特有指标 | divergence、动能衰减、压力 gauge、分量误差 |
 
+2026-08-12 冻结的解析 setting 为：
+
+\[
+A(t)=\exp[-(2\nu+4\eta)t]=\exp(-0.14t),
+\]
+\[
+u=A\sin x\cos y,\qquad
+v=-A\cos x\sin y,
+\]
+\[
+p=\frac{A^2}{4}(\cos 2x+\cos 2y).
+\]
+
+它满足 `Delta(u,v)=-2(u,v)`、`Delta^2(u,v)=4(u,v)`；对流项恰由上述
+压力梯度抵消，线性衰减率恰为 `2 nu + 4 eta`。压力的空间均值为零，因此解析解同时
+固定了 pressure gauge。主误差定义为 `(u,v)` 联合 relative L2；压力误差不混入主
+指标，但必须单独报告。
+
+损失冻结为：
+
+\[
+L=L_{\rm momentum}+L_{\rm div}
++\lambda_{\rm ic}L_{\rm ic}
++\lambda_{\rm bc}L_{\rm bc}
++L_{\rm gauge}.
+\]
+
+其中两个动量分量等权；`L_div` 与 `L_gauge` 固定权重为 1；`L_ic` 只约束初始
+速度；`L_bc` 等权聚合速度的 0--3 阶周期 trace 与压力 0 阶周期 trace。只搜索
+`lambda_ic,lambda_bc`，不把不可压约束和 gauge 变成额外可调自由度。
+
+自动流程冻结如下：
+
+1. CPU 公式/多输出导数/参数梯度测试；
+2. 每方法 3 秒基础 CUDA smoke；
+3. 正式采样规模 `2048/512/1024/16384/2048` 的每方法 3 秒 smoke；
+4. `(1,1)/(10,1)/(10,10)` 三个共享权重、每方法 180 秒 sentinel；
+5. sentinel 至少一组满足“一法 `<0.2`、另一法 `<0.75`”及物理门禁后，运行
+   完整 `7x7`、每方法 60 秒共享搜参；
+6. 按 shared-minimax 第一名（`max_error<1.25`）固定共同权重；
+7. 3 seeds × 2 methods × 600 秒 pilot；仅当 6/6 完整、误差门槛通过、每个 seed
+   `<0.95`，且两方法 median 均满足 divergence `<0.25`、pressure mean `<0.25`、
+   energy error `<0.5`、pressure error `<1.5` 时进入 formal；
+8. 5 seeds × 2 methods × 1200 秒 formal，并在服务器环境生成曲线和 CSV。
+
 该候选必须先证明多输出、压力和不可压约束不会使 smoke 显存或速度不可接受。结果分析
 要区分“高阶导数收益”和“多输出优化差异”，不能只给一个聚合 relative error。
 
 任务：
 
-- [ ] 写出并独立核对超黏性 Taylor--Green 解析解；
-- [ ] 核对速度、压力、衰减率和 pressure gauge；
-- [ ] 实现直接四阶动量残差和 divergence residual；
+- [x] 写出并独立核对超黏性 Taylor--Green 解析解；
+- [x] 核对速度、压力、衰减率和 pressure gauge；
+- [x] 实现直接四阶动量残差和 divergence residual；
+- [x] 扩展 WAR/direct-AD 后端支持逐通道多输出高阶导数；
 - [ ] 完成多输出 CUDA smoke 与显存审核；
+- [ ] 完成三点 sentinel；
 - [ ] 完成共享权重搜索；
 - [ ] 完成 3-seed pilot；
 - [ ] 通过后完成 5-seed formal；
@@ -517,7 +566,7 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 
 | ID | task | order | selected weights | WAR median | AD median | `G_error` | WAR wins | `G_TTA` | `G_step` | peak MB WAR/AD | 物理诊断 | 最终决定 |
 |---|---|---:|---|---:|---:|---:|---:|---:|---:|---|---|---|
-| `HO-01` | MBE 2D | 4 | `(1,1e-3)`，仅诊断候选 | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `1.592`（60 秒搜索） | `957.74/965.29` | 近零坡度、能量约 0.25 | `SEARCHED / HOLD` |
+| `HO-01` | MBE 2D | 4 | 不进入正式实验 | `N/A` | `N/A` | `N/A` | `N/A` | `N/A` | `1.592`（60 秒搜索） | `957.74/965.29` | 近零坡度、能量约 0.25 | `TRAINING_FAILURE / STOP` |
 | `HO-02` | MPFC 2D | 6 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-03` | Kawahara 1D | 5 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-04` | hyper-NS 2D | 4 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
@@ -538,16 +587,21 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 7--8 小时估计。向量流体和三维问题需要额外考虑 evaluation 与显存开销。
 
 不建议八个候选全部直接进入 formal。正确用法是先让每个候选通过低成本门禁，只有出现
-可训练且有区分度的候选才投入 5-seed 长跑。按照当前顺序，第一批计划只推进：
+可训练且有区分度的候选才投入 5-seed 长跑。当前执行顺序调整为：
 
-1. `HO-01` MBE：完整搜参已完成并转入 `HOLD`；只有用户再次确认后才做诊断 pilot；
-2. `HO-02` MPFC：完整搜参和 pilot；
-3. `HO-03` Kawahara：先做不带完整网格的低成本奇数阶 pilot；
-4. 根据前三项结果决定 `HO-04` 超黏性 Navier--Stokes 是否进入实现。
+1. `HO-01` MBE：已经形成完整负结果，定性为 `TRAINING_FAILURE` 并停止；
+2. `HO-04` 二维超黏性 Navier--Stokes：立即执行上述自动门禁、搜参、pilot 与条件 formal；
+3. `HO-02` MPFC：等待 `HO-04` 结论后再开发；
+4. `HO-03` Kawahara：保留为后续奇数阶低成本诊断。
+
+`HO-04` 从 sentinel 到 formal 的纯训练上限为
+`18 min + 1.63 h + 1 h + 3.33 h = 6.26 h`；加上两档 smoke、最终高阶导数
+evaluation、写盘与绘图，按约 7--8 小时 wall time 预留。
 
 ## 10. 变更记录
 
 | 日期 | 变更 |
 |---|---|
+| 2026-08-12 | 用户决定停止 MBE：HO-01 定位为 `REJECTED / TRAINING_FAILURE`，不再 pilot/formal；HO-04 提升到 HO-02 MPFC 前，冻结 Taylor--Green setting、损失、物理门禁和自动长跑流程，并完成多输出实现。 |
 | 2026-08-12 | HO-01 完成 49 个共享权重、98 个 method cells 的完整搜索；结果完整但全部饱和在近零假解，状态更新为 `SEARCHED / HOLD`，未启动 pilot/formal。 |
 | 2026-08-11 | 建立候选队列、统一协议、收益判据、实验门槛和结果占位表；尚未启动新实验。 |

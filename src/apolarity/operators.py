@@ -45,31 +45,45 @@ def _real_of(dtype: torch.dtype) -> torch.dtype:
 
 
 def direct_monomial_autodiff(model: nn.Module, x: Tensor, alpha: Iterable[int], *, create_graph: bool = True) -> Tensor:
-    """Direct nested coordinate autodiff reference for one expanded multi-index."""
+    """Direct nested coordinate autodiff for one expanded multi-index.
+
+    Scalar-output models retain the historical ``(batch, 1)`` result.  For a
+    vector-output model, each output channel is differentiated independently
+    and the derivatives are concatenated as ``(batch, out)``.  Summing the
+    channels before differentiation would only recover the derivative of the
+    channel sum and is therefore deliberately avoided.
+    """
     alpha_t = _alpha_tuple(alpha)
     batch, _d = _validate_request(x, alpha_t)
     x_req = x if x.requires_grad else x.detach().clone().requires_grad_(True)
     y = model(x_req)
-    if y.ndim != 2 or y.shape != (batch, 1):
+    if y.ndim != 2 or y.shape[0] != batch or y.shape[1] < 1:
         raise ValueError(
-            "single_monomial_partial requires scalar model output with shape "
-            f"(batch, 1); got {tuple(y.shape)}"
+            "single_monomial_partial requires model output with shape "
+            f"(batch, out>=1); got {tuple(y.shape)}"
         )
-    deriv = y
-    for k, idx in enumerate(alpha_t):
-        cg = create_graph or (k < len(alpha_t) - 1)
-        s = deriv.sum()
-        # PyTorch returns the conjugate Wirtinger derivative for a holomorphic
-        # complex output. Conjugating it recovers the analytic input derivative,
-        # matching directional Taylor jets and real-coordinate finite differences.
-        grad = torch.autograd.grad(
-            s, x_req, grad_outputs=torch.ones_like(s),
-            create_graph=cg, retain_graph=True,
-        )[0]
-        if grad.is_complex():
-            grad = grad.conj()
-        deriv = grad[:, idx:idx + 1]
-    return deriv
+    outputs: list[Tensor] = []
+    for output_index in range(y.shape[1]):
+        deriv = y[:, output_index:output_index + 1]
+        for k, idx in enumerate(alpha_t):
+            cg = create_graph or (k < len(alpha_t) - 1)
+            s = deriv.sum()
+            # PyTorch returns the conjugate Wirtinger derivative for a
+            # holomorphic complex output. Conjugating it recovers the analytic
+            # input derivative, matching directional Taylor jets and real-
+            # coordinate finite differences.
+            grad = torch.autograd.grad(
+                s,
+                x_req,
+                grad_outputs=torch.ones_like(s),
+                create_graph=cg,
+                retain_graph=True,
+            )[0]
+            if grad.is_complex():
+                grad = grad.conj()
+            deriv = grad[:, idx:idx + 1]
+        outputs.append(deriv)
+    return torch.cat(outputs, dim=1)
 
 
 def polarization_directions(

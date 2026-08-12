@@ -468,8 +468,8 @@ def tp_directional_via_jet(
 ) -> Tensor:
     """Compute T_p(Z) = g^{(p)}(0) / p!  via Taylor jet propagation.
 
-    Same semantics as ``kdv_hd.estimators._tp_via_reverse``: shape
-    ``(B, K, 1)``.
+    The result has shape ``(B, K, out)``.  Scalar-output models therefore
+    retain the historical ``(B, K, 1)`` shape.
 
     The MLP is evaluated *once* on a flat ``(B*K, d)`` batch, with each
     layer replaced by its jet rule.  Memory: ``(p+1) * L * B * K * H``
@@ -496,19 +496,20 @@ def tp_directional_via_jet(
     out_jet = _jet_forward_model(model, in_jet)
 
     # out_jet.terms[p] is already T_p = g^{(p)}(0) / p!  (probabilist convention)
-    if out_jet.terms[p].numel() != B * K:
+    term = out_jet.terms[p]
+    if term.ndim != 2 or term.shape[0] != B * K or term.shape[1] < 1:
         raise ValueError(
-            "Taylor-jet partials require scalar model output with one value per "
-            f"input; got output shape {tuple(out_jet.terms[p].shape)}"
+            "Taylor-jet partials require model output with shape "
+            f"(batch, out>=1); got output shape {tuple(term.shape)}"
         )
-    return out_jet.terms[p].reshape(B, K, 1)
+    return term.reshape(B, K, term.shape[1])
 
 
 def tp_directional_all_via_jet(
     model: nn.Module, xyt_input: Tensor, Z: Tensor, p_max: int,
 ) -> List[Tensor]:
     """Compute T_1, T_2, ..., T_{p_max} via a SINGLE jet pass of order
-    ``p_max``.  Returns list of ``(B, K, 1)`` tensors.
+    ``p_max``.  Returns a list of ``(B, K, out)`` tensors.
 
     This is strictly cheaper than calling ``tp_directional_via_jet`` p_max
     times because the same forward jet pass already contains every order.
@@ -521,16 +522,23 @@ def tp_directional_all_via_jet(
 
     in_jet = TaylorJet.from_input(xyt_exp, Z_flat, p_max)
     out_jet = _jet_forward_model(model, in_jet)
-    if out_jet.terms[0].numel() != B * K:
+    zeroth = out_jet.terms[0]
+    if zeroth.ndim != 2 or zeroth.shape[0] != B * K or zeroth.shape[1] < 1:
         raise ValueError(
-            "Taylor-jet partials require scalar model output with one value per "
-            f"input; got output shape {tuple(out_jet.terms[0].shape)}"
+            "Taylor-jet partials require model output with shape "
+            f"(batch, out>=1); got output shape {tuple(zeroth.shape)}"
         )
 
     out_list: List[Tensor] = []
     for k in range(1, p_max + 1):
         # terms[k] is already T_k under the probabilist convention.
-        out_list.append(out_jet.terms[k].reshape(B, K, 1))
+        term = out_jet.terms[k]
+        if term.shape != zeroth.shape:
+            raise ValueError(
+                "Taylor-jet output shape changed across derivative orders: "
+                f"order0={tuple(zeroth.shape)} order{k}={tuple(term.shape)}"
+            )
+        out_list.append(term.reshape(B, K, term.shape[1]))
     return out_list
 
 

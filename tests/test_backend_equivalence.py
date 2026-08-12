@@ -142,11 +142,49 @@ def test_request_validation_is_consistent_across_backends():
         single_monomial_partial(model, x[0], (0,), backend="direct_autodiff")
 
 
-def test_multioutput_models_are_rejected():
+@pytest.mark.parametrize("alpha", [(0,), (0, 1), (0, 0, 1, 1)])
+def test_multioutput_models_match_across_backends(alpha):
     model = _real_net(nn.Tanh(), out=2)
     x = torch.randn(2, 3, dtype=torch.float64)
 
-    with pytest.raises(ValueError, match="scalar model output"):
-        single_monomial_partial(model, x, (0,), backend="direct_autodiff")
-    with pytest.raises(ValueError, match="scalar model output"):
-        single_monomial_partial(model, x, (0,), backend="waring_complex_jet")
+    direct = single_monomial_partial(
+        model, x, alpha, backend="direct_autodiff"
+    )
+    waring = single_monomial_partial(
+        model, x, alpha, backend="waring_complex_jet"
+    )
+    assert direct.shape == waring.shape == (2, 2)
+    torch.testing.assert_close(
+        waring.real, direct, rtol=3e-10, atol=3e-11
+    )
+    torch.testing.assert_close(
+        waring.imag, torch.zeros_like(waring.imag), rtol=0.0, atol=3e-11
+    )
+
+
+@pytest.mark.parametrize("backend", ["polarization_jet", "waring_complex_jet"])
+def test_multioutput_parameter_gradients_match_direct(backend):
+    reference = _real_net(nn.Tanh(), out=3)
+    candidate = copy.deepcopy(reference)
+    x = torch.tensor(
+        [[-0.25, 0.1, 0.3], [0.2, -0.4, 0.15]], dtype=torch.float64
+    )
+    alpha = (0, 0, 1, 1)
+
+    direct = single_monomial_partial(
+        reference, x, alpha, backend="direct_autodiff"
+    )
+    (direct[:, 0].square().mean() + 0.3 * direct[:, 2].square().mean()).backward()
+
+    actual = single_monomial_partial(candidate, x, alpha, backend=backend)
+    (actual[:, 0].real.square().mean() + 0.3 * actual[:, 2].real.square().mean()).backward()
+
+    for expected_param, actual_param in zip(
+        reference.parameters(), candidate.parameters()
+    ):
+        if expected_param.grad is None:
+            assert actual_param.grad is None
+        else:
+            torch.testing.assert_close(
+                actual_param.grad, expected_param.grad, rtol=3e-9, atol=3e-11
+            )

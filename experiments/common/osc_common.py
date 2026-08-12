@@ -519,7 +519,7 @@ def deriv_alpha(
     *,
     backend: str | None = None,
 ) -> Tensor:
-    """Single-monomial partial d^alpha for a scalar-output model.
+    """Single-monomial partial d^alpha for scalar- or vector-output models.
 
     Uses the complex Waring + Taylor-jet backend where supported and nested
     coordinate autodiff for the Cauchy net.  A caller can request the direct

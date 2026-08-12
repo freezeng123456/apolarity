@@ -73,6 +73,22 @@ RUNNER_FAMILY_NAME = str(
 )
 BASELINE_METHOD = METHODS[1]
 GRAD_CLIP = 10.0
+OUTPUT_DIM = int(getattr(_problem, "OUTPUT_DIM", 1))
+SUMMARY_METRIC_KEYS = tuple(getattr(
+    _problem,
+    "SUMMARY_METRIC_KEYS",
+    ("mass_drift_rms",),
+))
+SMOKE_METRIC_KEYS = tuple(getattr(
+    _problem,
+    "SMOKE_METRIC_KEYS",
+    SUMMARY_METRIC_KEYS,
+))
+HISTORY_REQUIRED_METRICS = tuple(getattr(
+    _problem,
+    "HISTORY_REQUIRED_METRICS",
+    ("mass_drift_rms",),
+))
 
 
 def utc_now() -> str:
@@ -363,7 +379,7 @@ def train_one(
                 "L_PDE",
                 "L_IC",
                 "L_BC",
-                "mass_drift_rms",
+                *HISTORY_REQUIRED_METRICS,
             ],
         },
         "model": model_metadata(model, method),
@@ -507,6 +523,11 @@ def run_worker(args: argparse.Namespace) -> int:
         )
         result.update({"git": git_state(), "hardware": hardware_metadata()})
         atomic_write_json(output, result)
+        compact_metrics = {
+            key: result.get("metrics", {}).get(key)
+            for key in SMOKE_METRIC_KEYS
+            if key in result.get("metrics", {})
+        }
         print(json.dumps({
             "status": result["status"],
             "task_id": result["task_id"],
@@ -514,7 +535,7 @@ def run_worker(args: argparse.Namespace) -> int:
             "steps": result["steps"],
             "loss": result["loss"],
             "rel_error": result["rel_error"],
-            "mass_drift_rms": result.get("metrics", {}).get("mass_drift_rms"),
+            **compact_metrics,
         }, sort_keys=True), flush=True)
         return 0 if result["status"] == "complete" else 2
     except BaseException as error:  # noqa: BLE001 - preserve every failure
@@ -564,7 +585,7 @@ def manifest(
     parameter_elements = (
         input_dim * HIDDEN + HIDDEN
         + (DEPTH - 1) * (HIDDEN * HIDDEN + HIDDEN)
-        + HIDDEN + 1
+        + HIDDEN * OUTPUT_DIM + OUTPUT_DIM
     )
     baseline_activation = str(
         getattr(_problem, "BASELINE_ACTIVATION", "sinh")
@@ -602,6 +623,7 @@ def manifest(
                 "backend": "waring_complex_jet",
                 "parameter_elements": parameter_elements,
                 "real_dof": 2 * parameter_elements,
+                "output_dim": OUTPUT_DIM,
             },
             BASELINE_METHOD: {
                 "parameter_dtype": str(REAL_DTYPE),
@@ -609,6 +631,7 @@ def manifest(
                 "backend": "direct_autodiff",
                 "parameter_elements": parameter_elements,
                 "real_dof": parameter_elements,
+                "output_dim": OUTPUT_DIM,
             },
             "capacity_note": (
                 "literal layer shapes are matched; native complex parameters "
@@ -680,9 +703,12 @@ def summarize_task(task: Cahn2DTask, task_dir: Path) -> dict[str, Any]:
                 row[f"{method}_rel_error"] = float(result["rel_error"])
                 row[f"{method}_loss"] = float(result["loss"])
                 row[f"{method}_steps"] = int(result["steps"])
-                row[f"{method}_mass_drift_rms"] = float(
-                    result.get("metrics", {}).get("mass_drift_rms", math.nan)
-                )
+                metrics = result.get("metrics", {})
+                for metric_key in SUMMARY_METRIC_KEYS:
+                    if metric_key in metrics:
+                        row[f"{method}_{metric_key}"] = float(
+                            metrics[metric_key]
+                        )
                 complete_runs += 1
             elif status not in {"missing", "running"}:
                 failed_runs += 1
@@ -806,7 +832,7 @@ def build_smoke_conclusion(
                     cell[key] = result[key]
             metrics = result.get("metrics")
             if isinstance(metrics, dict):
-                for key in ("mass_drift_rms", "mass_drift_max_abs"):
+                for key in SMOKE_METRIC_KEYS:
                     if key in metrics:
                         cell[key] = metrics[key]
             for key in ("error_type", "error"):
