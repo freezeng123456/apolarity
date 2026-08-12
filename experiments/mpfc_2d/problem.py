@@ -368,11 +368,17 @@ def make_loss_bundle(
         boundary, boundary_parts = _periodic_boundary_loss(
             task, model, dtype, backend, n_bc, device, generator
         )
-        initial = sample_initial(task, n_ic, device=device, generator=generator).to(dtype=dtype)
+        initial_physical = sample_initial(
+            task, n_ic, device=device, generator=generator
+        )
+        initial = initial_physical.to(dtype=dtype)
         phi = _predict_real(model, initial)
         phi_t = _partial(model, initial, (2,), backend)
-        target_phi = initial_phi(initial).detach()
-        target_phi_t = initial_phi_t(initial).detach()
+        # Targets are physical real-valued data.  Evaluating them on the
+        # complex WAR input would promote the IC loss to complex dtype and
+        # make ``loss.backward()`` invalid for a scalar objective.
+        target_phi = initial_phi(initial_physical).detach()
+        target_phi_t = initial_phi_t(initial_physical).detach()
         l_ic_phi = (phi - target_phi).square().mean()
         l_ic_velocity = (phi_t - target_phi_t).square().mean()
         l_ic = 0.5 * (l_ic_phi + l_ic_velocity)
@@ -443,4 +449,3 @@ __all__ = [
     "sample_interior",
     "spatial_laplacian_power",
 ]
-
