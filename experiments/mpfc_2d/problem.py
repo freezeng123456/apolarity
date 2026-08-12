@@ -20,6 +20,8 @@ introducing an auxiliary chemical-potential network.
 from __future__ import annotations
 
 import math
+import os
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Callable
 
@@ -31,13 +33,21 @@ from apolarity.taylor_jet import TaylorJet, jet_forward_sequential
 
 
 PROTOCOL_ID = "mpfc_2d_o6_common_xavier_fp32_v1"
+RUNNER_FAMILY_NAME = "modified_phase_field_crystal"
 TASK_ID = "mpfc_2d_o6"
 FAMILY = "modified_phase_field_crystal"
 REAL_DTYPE = torch.float32
 COMPLEX_DTYPE = torch.complex64
 METHODS = ("war", "real_tanh_autodiff")
+BASELINE_ACTIVATION = "tanh"
+ALTERNATE_METHOD_ORDER = True
+STRICT_MANIFEST_BINDING = True
+GRID_VALUES = (1e-3, 1e-2, 1e-1, 1.0, 1e1, 1e2, 1e3)
 HIDDEN = 128
 DEPTH = 4
+LEARNING_RATE = 1e-3
+LEARNING_RATE_FINAL = 1e-4
+HISTORY_INTERVAL_SECONDS = 10.0
 DOMAIN_MAX = 2.0 * math.pi
 T_MAX = 1.0
 MOBILITY = 1.0
@@ -55,6 +65,8 @@ class MPFCTask:
     family: str = FAMILY
     spatial_dim: int = 2
     order: int = 6
+    q: int = 3
+    eta: float = 1.0
     coordinate_names: tuple[str, ...] = ("x", "y", "t")
     lows: tuple[float, ...] = (0.0, 0.0, 0.0)
     highs: tuple[float, ...] = (DOMAIN_MAX, DOMAIN_MAX, T_MAX)
@@ -70,10 +82,72 @@ class MPFCTask:
     def input_dim(self) -> int:
         return len(self.coordinate_names)
 
+    @property
+    def weight_count(self) -> int:
+        return len(self.weight_names)
+
+    @property
+    def center_weights(self) -> tuple[float, float]:
+        return self.weights
+
 
 TASK = MPFCTask()
+Cahn2DTask = MPFCTask
 TASKS = {TASK_ID: TASK}
 TASK_ORDER = (TASK_ID,)
+
+# The generic audited two-weight runner consumes the same metadata/metric
+# contract as the existing HO-04 and CH runners.  Keeping these declarations
+# here makes the MPFC experiment self-describing in its manifest.
+OUTPUT_DIM = 1
+SUMMARY_METRIC_KEYS = ("rel_error",)
+SMOKE_METRIC_KEYS = SUMMARY_METRIC_KEYS
+HISTORY_REQUIRED_METRICS: tuple[str, ...] = ()
+_REFERENCE_ROOT_RAW = os.environ.get("APOLARITY_MPFC_REFERENCE_ROOT")
+REFERENCE_ROOT = (
+    Path(_REFERENCE_ROOT_RAW).expanduser() if _REFERENCE_ROOT_RAW else None
+)
+
+
+def _reference_sha256(root: Path | None = None) -> str | None:
+    base = root or REFERENCE_ROOT
+    if base is None:
+        return None
+    path = base / "REFERENCE_SHA256"
+    try:
+        return path.read_text().split()[0]
+    except (OSError, IndexError):
+        return None
+
+
+RUNNER_MANIFEST_METADATA = {
+    "equation": (
+        "beta*phi_tt + phi_t - M*(Delta^3(phi) + 2*Delta^2(phi) "
+        "+ (1-epsilon)*Delta(phi) + Delta(phi^3)) = 0"
+    ),
+    "M": MOBILITY,
+    "beta": BETA,
+    "epsilon": EPSILON,
+    "domain": "[0,2*pi]^2 x [0,1]",
+    "initial_condition": (
+        "0.1 + 0.15*cos(x)*cos(y) + 0.05*cos(2*x)*cos(y)"
+    ),
+    "initial_velocity": "0",
+    "boundary": "explicit periodic traces of normal derivatives 0..5",
+    "training_precision": {"war": "complex64", "real_ad": "float32"},
+    "primary_metric": "relative L2 error against converged Fourier reference",
+    "direct_sixth_order_residual": True,
+    "frequency_initialization": False,
+    "trigonometric_input_features": False,
+}
+
+
+def runner_manifest_metadata(*, smoke: bool) -> dict[str, object]:
+    metadata = dict(RUNNER_MANIFEST_METADATA)
+    metadata["smoke"] = bool(smoke)
+    metadata["reference_root"] = str(REFERENCE_ROOT) if REFERENCE_ROOT else None
+    metadata["reference_sha256"] = _reference_sha256()
+    return metadata
 
 
 def _common_xavier_init_(net: nn.Sequential) -> None:
@@ -337,10 +411,60 @@ def _periodic_boundary_loss(
     return total, components
 
 
+@dataclass
 class LossBundle:
-    def __init__(self, loss_fn: Callable[[], tuple[Tensor, dict[str, Tensor]]], metadata: dict[str, object]) -> None:
-        self.loss_fn = loss_fn
-        self.metadata = metadata
+    loss_fn: Callable[[], tuple[Tensor, dict[str, Tensor]]]
+    eval_metrics_fn: Callable[[], dict[str, object]]
+    history_metrics_fn: Callable[[], dict[str, object]]
+    metadata: dict[str, object]
+
+
+def _load_reference(
+    *,
+    device: torch.device,
+    n_eval: int,
+    history_eval_n: int,
+) -> tuple[Tensor, Tensor, dict[str, object]]:
+    """Load the independently generated Fourier reference and bind its SHA."""
+
+    if REFERENCE_ROOT is None:
+        raise FileNotFoundError(
+            "MPFC reference.npz is required for non-smoke evaluation; set "
+            "APOLARITY_MPFC_REFERENCE_ROOT"
+        )
+    reference_path = REFERENCE_ROOT / "reference.npz"
+    reference_sha = _reference_sha256()
+    if not reference_path.is_file():
+        raise FileNotFoundError(
+            "MPFC reference.npz is required for non-smoke evaluation; set "
+            "APOLARITY_MPFC_REFERENCE_ROOT"
+        )
+    # numpy is deliberately loaded through npz parsing rather than torch
+    # serialization; importing it here keeps the training module lightweight.
+    import numpy as np
+    data = np.load(reference_path)
+    points_np = np.asarray(data["points"], dtype=np.float32)
+    phi_np = np.asarray(data["phi"], dtype=np.float32)
+    if points_np.ndim != 2 or points_np.shape[1] != INPUT_DIM:
+        raise ValueError("MPFC reference points must have shape (N,3)")
+    if phi_np.ndim != 1 or phi_np.shape[0] != points_np.shape[0]:
+        raise ValueError("MPFC reference phi must be a vector aligned to points")
+    if n_eval > points_np.shape[0]:
+        raise ValueError(
+            f"reference has {points_np.shape[0]} points but n_eval={n_eval}"
+        )
+    if history_eval_n > n_eval:
+        raise ValueError("history_eval_n cannot exceed n_eval")
+    points = torch.as_tensor(points_np[:n_eval], device=device, dtype=REAL_DTYPE)
+    phi = torch.as_tensor(phi_np[:n_eval], device=device, dtype=REAL_DTYPE)
+    metadata = {
+        "reference_path": str(reference_path),
+        "reference_sha256": reference_sha,
+        "reference_count": int(points_np.shape[0]),
+        "reference_protocol": "mpfc_2d_imex_fourier_reference_v1",
+        "reference_eval_seed": EVAL_SEED,
+    }
+    return points, phi, metadata
 
 
 def make_loss_bundle(
@@ -348,28 +472,63 @@ def make_loss_bundle(
     model: nn.Module,
     dtype: torch.dtype,
     backend: str,
-    weights: tuple[float, float],
+    weights: tuple[float, ...],
     device: torch.device,
     *,
-    n_int: int,
-    n_ic: int,
-    n_bc: int,
+    smoke: bool = False,
+    n_int: int | None = None,
+    n_ic: int | None = None,
+    n_bc: int | None = None,
+    n_eval: int | None = None,
+    history_eval_n: int | None = None,
     train_seed: int = TRAIN_SEED,
+    eval_seed: int = EVAL_SEED,
 ) -> LossBundle:
     if len(weights) != 2 or any(value <= 0 for value in weights):
         raise ValueError("MPFC requires positive (lambda_ic, lambda_bc)")
-    generator = torch.Generator(device=device).manual_seed(train_seed)
+    defaults = (16, 16, 16, 128, 64) if smoke else (
+        2048, 512, 1024, 16384, 2048
+    )
+    n_int = defaults[0] if n_int is None else int(n_int)
+    n_ic = defaults[1] if n_ic is None else int(n_ic)
+    n_bc = defaults[2] if n_bc is None else int(n_bc)
+    n_eval = defaults[3] if n_eval is None else int(n_eval)
+    history_eval_n = defaults[4] if history_eval_n is None else int(history_eval_n)
+    if min(n_int, n_ic, n_bc, n_eval, history_eval_n) <= 0:
+        raise ValueError("all MPFC sample counts must be positive")
+    if history_eval_n > n_eval:
+        raise ValueError("history_eval_n cannot exceed n_eval")
+    train_generator = torch.Generator(device=device).manual_seed(train_seed)
+    eval_generator = torch.Generator(device=device).manual_seed(eval_seed)
+    if smoke:
+        eval_points = sample_interior(
+            task, n_eval, device=device, generator=eval_generator
+        )
+        eval_target = initial_phi(eval_points).detach()
+        reference_metadata: dict[str, object] = {
+            "reference_protocol": "smoke_initial_condition_only",
+            "reference_sha256": None,
+            "reference_count": 0,
+        }
+    else:
+        eval_points, eval_target, reference_metadata = _load_reference(
+            device=device, n_eval=n_eval, history_eval_n=history_eval_n
+        )
+    history_points = eval_points[:history_eval_n]
+    history_target = eval_target[:history_eval_n]
 
     def loss_fn() -> tuple[Tensor, dict[str, Tensor]]:
-        interior = sample_interior(task, n_int, device=device, generator=generator).to(dtype=dtype)
+        interior = sample_interior(
+            task, n_int, device=device, generator=train_generator
+        ).to(dtype=dtype)
         residual = mpfc_residual(model, interior, backend)
         l_pde = (residual / RESIDUAL_SCALE).square().mean()
 
         boundary, boundary_parts = _periodic_boundary_loss(
-            task, model, dtype, backend, n_bc, device, generator
+            task, model, dtype, backend, n_bc, device, train_generator
         )
         initial_physical = sample_initial(
-            task, n_ic, device=device, generator=generator
+            task, n_ic, device=device, generator=train_generator
         )
         initial = initial_physical.to(dtype=dtype)
         phi = _predict_real(model, initial)
@@ -397,9 +556,27 @@ def make_loss_bundle(
         }
         return total, components
 
+    def _relative_l2(prediction: Tensor, target: Tensor) -> float:
+        numerator = (prediction - target).square().mean().sqrt()
+        denominator = target.square().mean().sqrt().clamp_min(1e-12)
+        return float((numerator / denominator).item())
+
+    def _evaluate(points: Tensor, target: Tensor) -> dict[str, object]:
+        with torch.no_grad():
+            prediction = _predict_real(model, points.to(dtype=dtype))
+        return {"rel_error": _relative_l2(prediction, target)}
+
+    def history_metrics_fn() -> dict[str, object]:
+        return _evaluate(history_points, history_target)
+
+    def eval_metrics_fn() -> dict[str, object]:
+        return _evaluate(eval_points, eval_target)
+
     return LossBundle(
-        loss_fn,
-        {
+        loss_fn=loss_fn,
+        eval_metrics_fn=eval_metrics_fn,
+        history_metrics_fn=history_metrics_fn,
+        metadata={
             "task_id": task.task_id,
             "equation": (
                 "beta*phi_tt + phi_t - M*(Delta^3(phi) + 2*Delta^2(phi) "
@@ -418,25 +595,48 @@ def make_loss_bundle(
             "n_ic": n_ic,
             "n_bc": n_bc,
             "sample_policy": "resample_each_training_step",
+            "reference": reference_metadata,
+            "eval_seed": eval_seed,
+            "history_eval_n": history_eval_n,
+            "n_eval": n_eval,
+            "smoke": bool(smoke),
         },
     )
 
 
+def tensor_components_to_float(values: dict[str, Tensor]) -> dict[str, float]:
+    return {
+        key: float(value.detach().real.item()) for key, value in values.items()
+    }
+
+
 __all__ = [
+    "BASELINE_ACTIVATION",
     "BETA",
     "COMPLEX_DTYPE",
+    "Cahn2DTask",
     "DEPTH",
     "EPSILON",
+    "EVAL_SEED",
+    "GRID_VALUES",
     "HIDDEN",
+    "HISTORY_INTERVAL_SECONDS",
+    "LEARNING_RATE",
+    "LEARNING_RATE_FINAL",
     "METHODS",
     "MPFCTask",
     "MOBILITY",
+    "OUTPUT_DIM",
     "PROTOCOL_ID",
     "REAL_DTYPE",
     "RESIDUAL_SCALE",
+    "RUNNER_FAMILY_NAME",
+    "SMOKE_METRIC_KEYS",
+    "SUMMARY_METRIC_KEYS",
     "TASK",
     "TASKS",
     "TASK_ORDER",
+    "TRAIN_SEED",
     "build_model",
     "initial_phi",
     "initial_phi_t",
@@ -444,8 +644,10 @@ __all__ = [
     "make_loss_bundle",
     "model_metadata",
     "mpfc_residual",
+    "runner_manifest_metadata",
     "sample_face_pairs",
     "sample_initial",
     "sample_interior",
     "spatial_laplacian_power",
+    "tensor_components_to_float",
 ]

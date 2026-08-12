@@ -345,7 +345,11 @@ slope RMS 也远低于谱 reference，说明两种网络都停在近零假解。
 0--5 阶接口。开发机没有 PyTorch runtime，已完成 Python 编译和静态 diff 检查；随后在
 固定 H20/PyTorch `2.11.0+cu128` 环境完成基础与 full-size 单步 smoke：两种方法均
 finite、梯度有限且无 OOM（WAR `953.25 MB`，real-tanh autodiff `2131.64 MB`）。
-该结果只放行 reference/convergence 与共享搜参，不放行 5-seed formal。
+该结果只放行 reference/convergence 与共享搜参，不放行 5-seed formal。4096 点参考解
+的中到细相对差为 `3.7198e-4`，质量守恒误差为 0，伪能量单调不增；两档 smoke
+（基础与 `n_int=512,n_ic=256,n_bc=1024,n_eval=4096,history_eval_n=1024`）均为
+`2/2 complete`。非 smoke 参考绑定单元已确认结果 JSON 中记录固定 reference SHA，
+因此搜参不会把初值当作最终评估目标。
 
 结果占位：
 
@@ -596,7 +600,7 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 | ID | task | order | selected weights | WAR median | AD median | `G_error` | WAR wins | `G_TTA` | `G_step` | peak MB WAR/AD | 物理诊断 | 最终决定 |
 |---|---|---:|---|---:|---:|---:|---:|---:|---:|---|---|---|
 | `HO-01` | MBE 2D | 4 | 不进入正式实验 | `N/A` | `N/A` | `N/A` | `N/A` | `N/A` | `1.592`（60 秒搜索） | `957.74/965.29` | 近零坡度、能量约 0.25 | `TRAINING_FAILURE / STOP` |
-| `HO-02` | MPFC 2D | 6 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
+| `HO-02` | MPFC 2D | 6 | `PRE-SEARCH` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-03` | Kawahara 1D | 5 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-04` | hyper-NS 2D | 4 | `lambda_ic=1e2, lambda_bc=1e1` | `0.005467` | `0.027698` | `0.012508`（共享几何平均中位数） | `5/5` | `TBD`（未注册同精度达到阈值的 TTA） | `3.979`（AD/WAR 每步） | `866.05/2521.88` | pressure/divergence/energy 均 WAR 更低 | `FORMAL_COMPLETE / PASS` |
 | `HO-05` | hyper-NS 3D | 4 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
@@ -620,7 +624,7 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 
 1. `HO-01` MBE：已经形成完整负结果，定性为 `TRAINING_FAILURE` 并停止；
 2. `HO-04` 二维超黏性 Navier--Stokes：立即执行上述自动门禁、搜参、pilot 与条件 formal；
-3. `HO-02` MPFC：HO-04 已通过，进入 reference、两档 smoke 和共享搜参门禁；
+3. `HO-02` MPFC：reference 收敛通过、两档 smoke 通过，进入共享搜参门禁；
 4. `HO-03` Kawahara：保留为后续奇数阶低成本诊断。
 
 `HO-04` 从 sentinel 到 formal 的纯训练上限为
