@@ -66,3 +66,42 @@ peak memory 和梯度路径均为有限值；搜索规模 smoke 的峰值显存�
 `search_sized_smoke_conclusion.json` 两份结论 JSON。两阶段 smoke 仍只是
 CUDA 启动、有限性和数据管线门禁，不进入论文统计；随后运行的 196 个
 60 秒搜参 cell 才是本次可分析的权重搜索结果。
+
+## 2026-08-12 二维四阶 MBE slope-selection smoke 审核
+
+协议冻结为无外力二维 slope-selection MBE：区域 `[0,2pi]^2 x [0,1]`、
+`nu=0.05`、显式周期 trace matching 到法向三阶导数。WAR 使用
+`complex64+sinh+Waring jet`，基线使用
+`float32+tanh+direct autodiff`；两者均为 hidden 128、depth 4、共同
+Xavier 类初始化和仅仿射归一化的原始 `(x,y,t)` 输入，不含三角输入、
+周期嵌入或频率初始化。
+
+公式门禁和原 Cahn--Hilliard 回归共 14 项全部通过。制造解残差经独立
+direct differentiation 交叉核对，解析解的 0--3 阶周期 trace 一致，
+两种方法的四阶 loss 与参数梯度均有限。
+
+H20 上完成两档 3 秒 CUDA smoke，均为 2/2 cells 完整且没有 OOM、NaN
+或非有限梯度：
+
+| 规模 | 方法 | steps | final loss | final rel_error | peak MiB |
+|---|---|---:|---:|---:|---:|
+| 基础 | WAR | 55 | `7.371412e-02` | `1.016099` | 88.8 |
+| 基础 | real tanh AD | 36 | `7.363635e-02` | `1.077519` | 85.3 |
+| 搜参正式采样 | WAR | 54 | `6.698397e-02` | `1.007918` | 942.9 |
+| 搜参正式采样 | real tanh AD | 38 | `6.587392e-02` | `1.024161` | 955.3 |
+
+搜参正式采样固定为 `n_int=2048, n_ic=512, n_bc=1024,
+n_eval=16384, history_eval_n=2048`。另以通过收敛审核的无外力谱 reference
+做了同规模数据管线门禁：WAR/AD 分别完成 54/34 步，reference 校验和均
+与 manifest 一致，日志末行同时包含 final loss 和 rel_error。
+
+三档 ETDRK4 谱 reference 的网格/步长为
+`(32,2e-3)/(64,1e-3)/(128,5e-4)`；32→64 与 64→128 的固定评估集相对差
+分别为 `5.619516e-04` 和 `8.021451e-07`，质量漂移低于 `2e-18`，自由能
+在五个诊断时刻从 `0.2368129` 单调下降到 `0.1437878`。因此 reference
+门禁通过。这里的 reference 使用高精度独立求解器；神经网络训练仍严格为
+WAR `complex64` 与实数 AD `float32`。
+
+上述所有 3 秒数值只用于启动、公式、显存和数据管线审核，不进入论文统计。
+原始 smoke worker JSON/日志在形成本节结论后清理；仅保留结论和正式
+reference 审核记录。

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Smoke, run, resume, and summarize the 2D natural-BC CH weight grid.
+"""Smoke, run, resume, and summarize a two-weight PDE grid.
 
-The ranked grid contains 49 shared ``(lambda_ic, lambda_bc)`` vectors for each
-of CH4 and CH6.  Every vector is trained once with WAR and once with the
-architecture-matched real-sinh autodiff baseline.
+The default problem is the 2D natural-boundary Cahn--Hilliard benchmark.  A
+thin wrapper may set ``APOLARITY_PROBLEM_FAMILY`` to select another problem
+module implementing the same audited runner contract.  Every shared
+``(lambda_ic, lambda_bc)`` vector is trained once with WAR and once with the
+problem's architecture-matched real-autodiff baseline.
 """
 
 from __future__ import annotations
@@ -32,12 +34,16 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMON = ROOT / "experiments" / "common"
-CAHN2D = ROOT / "experiments" / "cahn_hilliard_2d"
+PROBLEM_FAMILY = os.environ.get(
+    "APOLARITY_PROBLEM_FAMILY", "cahn_hilliard_2d"
+)
+PROBLEM_DIR = ROOT / "experiments" / PROBLEM_FAMILY
 SRC = ROOT / "src"
-for path in (str(COMMON), str(CAHN2D), str(SRC)):
+for path in (str(COMMON), str(PROBLEM_DIR), str(SRC)):
     if path not in sys.path:
         sys.path.insert(0, path)
 
+import problem as _problem  # noqa: E402
 from problem import (  # noqa: E402
     COMPLEX_DTYPE,
     DEPTH,
@@ -61,7 +67,11 @@ from problem import (  # noqa: E402
 
 
 DEFAULT_ROOT = ROOT / "outputs" / PROTOCOL_ID
-TASK_ORDER = ("cahn_hilliard_2d_o4", "cahn_hilliard_2d_o6")
+TASK_ORDER = tuple(getattr(_problem, "TASK_ORDER", tuple(TASKS)))
+RUNNER_FAMILY_NAME = str(
+    getattr(_problem, "RUNNER_FAMILY_NAME", PROBLEM_FAMILY)
+)
+BASELINE_METHOD = METHODS[1]
 GRAD_CLIP = 10.0
 
 
@@ -179,7 +189,7 @@ def train_one(
     if seconds <= 0:
         raise ValueError("seconds must be positive")
     if not torch.cuda.is_available():
-        raise RuntimeError("2D Cahn--Hilliard training requires CUDA")
+        raise RuntimeError(f"{RUNNER_FAMILY_NAME} training requires CUDA")
     device = torch.device("cuda")
     torch.manual_seed(train_seed)
     torch.cuda.manual_seed_all(train_seed)
@@ -313,9 +323,9 @@ def train_one(
         "protocol_id": PROTOCOL_ID,
         "status": status,
         "task_id": task.task_id,
-        "family": "cahn_hilliard_2d",
+        "family": str(getattr(task, "family", RUNNER_FAMILY_NAME)),
         "order": task.order,
-        "q": task.q,
+        "q": int(getattr(task, "q", task.order // 2)),
         "method": method,
         "weights": list(weights),
         "weight_map": dict(zip(task.weight_names, weights)),
@@ -373,14 +383,55 @@ def load_result(path: Path) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
-def result_complete(path: Path) -> bool:
+def result_complete(
+    path: Path,
+    *,
+    task_id: str | None = None,
+    method: str | None = None,
+    weights: tuple[float, ...] | None = None,
+    seconds: float | None = None,
+    smoke: bool | None = None,
+    train_seed: int | None = None,
+    eval_seed: int | None = None,
+    reference_sha256: str | None = None,
+) -> bool:
     result = load_result(path)
-    return bool(
+    if not bool(
         result
         and result.get("protocol_id") == PROTOCOL_ID
         and result.get("status") == "complete"
+        and math.isfinite(float(result.get("loss", math.inf)))
         and math.isfinite(float(result.get("rel_error", math.inf)))
+    ):
+        return False
+    assert result is not None
+    checks = (
+        task_id is None or result.get("task_id") == task_id,
+        method is None or result.get("method") == method,
+        seconds is None
+        or math.isclose(float(result.get("budget_seconds", -1.0)), seconds),
+        smoke is None or bool(result.get("smoke")) is smoke,
+        train_seed is None or int(result.get("train_seed", -1)) == train_seed,
+        eval_seed is None or int(result.get("eval_seed", -1)) == eval_seed,
     )
+    if not all(checks):
+        return False
+    if weights is not None:
+        found = tuple(float(value) for value in result.get("weights", ()))
+        if len(found) != len(weights) or any(
+            not math.isclose(left, right, rel_tol=0.0, abs_tol=1e-14)
+            for left, right in zip(found, weights, strict=True)
+        ):
+            return False
+    if reference_sha256 is not None:
+        found_reference = (
+            result.get("problem", {}).get("reference", {})
+            if isinstance(result.get("problem"), dict)
+            else {}
+        )
+        if found_reference.get("reference_sha256") != reference_sha256:
+            return False
+    return True
 
 
 def worker_command(
@@ -463,7 +514,7 @@ def run_worker(args: argparse.Namespace) -> int:
             "steps": result["steps"],
             "loss": result["loss"],
             "rel_error": result["rel_error"],
-            "mass_drift_rms": result["metrics"]["mass_drift_rms"],
+            "mass_drift_rms": result.get("metrics", {}).get("mass_drift_rms"),
         }, sort_keys=True), flush=True)
         return 0 if result["status"] == "complete" else 2
     except BaseException as error:  # noqa: BLE001 - preserve every failure
@@ -503,10 +554,20 @@ def manifest(
 ) -> dict[str, Any]:
     task_list = list(tasks)
     candidate_count = sum(len(candidate_vectors(TASKS[name])) for name in task_list)
+    metadata_factory = getattr(_problem, "runner_manifest_metadata", None)
+    problem_metadata = (
+        metadata_factory(smoke=smoke)
+        if callable(metadata_factory)
+        else dict(getattr(_problem, "RUNNER_MANIFEST_METADATA", {}))
+    )
+    input_dim = int(getattr(_problem, "INPUT_DIM", 3))
     parameter_elements = (
-        3 * HIDDEN + HIDDEN
+        input_dim * HIDDEN + HIDDEN
         + (DEPTH - 1) * (HIDDEN * HIDDEN + HIDDEN)
         + HIDDEN + 1
+    )
+    baseline_activation = str(
+        getattr(_problem, "BASELINE_ACTIVATION", "sinh")
     )
     return {
         "protocol_id": PROTOCOL_ID,
@@ -516,8 +577,11 @@ def manifest(
             {
                 "task_id": name,
                 "order": TASKS[name].order,
-                "q": TASKS[name].q,
-                "eta_q": TASKS[name].eta,
+                "family": str(
+                    getattr(TASKS[name], "family", RUNNER_FAMILY_NAME)
+                ),
+                "q": int(getattr(TASKS[name], "q", TASKS[name].order // 2)),
+                "eta_q": float(getattr(TASKS[name], "eta", math.nan)),
                 "weight_names": list(TASKS[name].weight_names),
                 "candidate_count": len(candidate_vectors(TASKS[name])),
             }
@@ -528,19 +592,20 @@ def manifest(
             "shared": {
                 "input": "affine-normalized raw (x,y,t)",
                 "trigonometric_input_features": False,
-                "activation": "sinh",
                 "hidden": HIDDEN,
                 "depth": DEPTH,
                 "init": "common_xavier",
             },
             "war": {
                 "parameter_dtype": str(COMPLEX_DTYPE),
+                "activation": "sinh",
                 "backend": "waring_complex_jet",
                 "parameter_elements": parameter_elements,
                 "real_dof": 2 * parameter_elements,
             },
-            "real_sinh_autodiff": {
+            BASELINE_METHOD: {
                 "parameter_dtype": str(REAL_DTYPE),
+                "activation": baseline_activation,
                 "backend": "direct_autodiff",
                 "parameter_elements": parameter_elements,
                 "real_dof": parameter_elements,
@@ -568,6 +633,12 @@ def manifest(
         "history_interval_seconds": HISTORY_INTERVAL_SECONDS,
         "gradient_clip": GRAD_CLIP,
         "serial_single_gpu": True,
+        "method_order_policy": (
+            "WAR-first for even candidates; AD-first for odd candidates"
+            if bool(getattr(_problem, "ALTERNATE_METHOD_ORDER", False))
+            else "fixed declared method order"
+        ),
+        "problem_metadata": problem_metadata,
         "git": git_state(),
         "hardware": hardware_metadata(),
     }
@@ -623,11 +694,11 @@ def summarize_task(task: Cahn2DTask, task_dir: Path) -> dict[str, Any]:
             for method in METHODS
         ):
             war_error = float(results["war"]["rel_error"])
-            ad_error = float(results["real_sinh_autodiff"]["rel_error"])
+            ad_error = float(results[BASELINE_METHOD]["rel_error"])
             paired.append({
                 **candidate,
                 "war_rel_error": war_error,
-                "real_sinh_autodiff_rel_error": ad_error,
+                f"{BASELINE_METHOD}_rel_error": ad_error,
                 "geometric_mean": math.sqrt(war_error * ad_error),
                 "max_error": max(war_error, ad_error),
                 "mean_error": 0.5 * (war_error + ad_error),
@@ -642,10 +713,10 @@ def summarize_task(task: Cahn2DTask, task_dir: Path) -> dict[str, Any]:
             row["geometric_mean"], row["max_error"], row["weight_sum"]
         ),
         "war": lambda row: (
-            row["war_rel_error"], row["real_sinh_autodiff_rel_error"], row["weight_sum"]
+            row["war_rel_error"], row[f"{BASELINE_METHOD}_rel_error"], row["weight_sum"]
         ),
-        "real_sinh_autodiff": lambda row: (
-            row["real_sinh_autodiff_rel_error"], row["war_rel_error"], row["weight_sum"]
+        BASELINE_METHOD: lambda row: (
+            row[f"{BASELINE_METHOD}_rel_error"], row["war_rel_error"], row["weight_sum"]
         ),
     }
     ranking_dir = task_dir / "rankings"
@@ -770,7 +841,9 @@ def run_smoke(args: argparse.Namespace) -> int:
     tasks = selected_tasks(args.tasks)
     temporary: tempfile.TemporaryDirectory[str] | None = None
     if args.ephemeral_conclusion is not None:
-        temporary = tempfile.TemporaryDirectory(prefix="apolarity-cahn2d-smoke-")
+        temporary = tempfile.TemporaryDirectory(
+            prefix=f"apolarity-{PROBLEM_FAMILY}-smoke-"
+        )
         root = Path(temporary.name).resolve()
     else:
         root = (args.output_root or DEFAULT_ROOT / "_smoke").resolve()
@@ -811,7 +884,16 @@ def run_smoke(args: argparse.Namespace) -> int:
                 return_code = _run_subprocess(
                     command, log, timeout=max(300.0, args.seconds * 30.0)
                 )
-                if return_code != 0 or not result_complete(output):
+                if return_code != 0 or not result_complete(
+                    output,
+                    task_id=task_name,
+                    method=method,
+                    weights=task.center_weights,
+                    seconds=args.seconds,
+                    smoke=True,
+                    train_seed=args.train_seed,
+                    eval_seed=args.eval_seed,
+                ):
                     failures += 1
                     print(
                         f"[smoke-failed] {task_name} {method}", flush=True
@@ -866,9 +948,30 @@ def run_orchestrate(args: argparse.Namespace) -> int:
     )
     if manifest_path.exists():
         existing = json.loads(manifest_path.read_text())
-        for key in ("protocol_id", "tasks", "methods", "seconds_per_method_run", "sample_overrides"):
+        compatibility_keys = [
+            "protocol_id",
+            "tasks",
+            "methods",
+            "seconds_per_method_run",
+            "sample_overrides",
+        ]
+        strict_binding = bool(
+            getattr(_problem, "STRICT_MANIFEST_BINDING", False)
+        )
+        if strict_binding:
+            compatibility_keys.extend([
+                "problem_metadata",
+                "method_order_policy",
+            ])
+        for key in compatibility_keys:
             if existing.get(key) != expected_manifest.get(key):
                 raise ValueError(f"incompatible manifest field {key!r} at {manifest_path}")
+        if (
+            strict_binding
+            and existing.get("git", {}).get("sha")
+            != expected_manifest.get("git", {}).get("sha")
+        ):
+            raise ValueError(f"incompatible git SHA at {manifest_path}")
     else:
         atomic_write_json(manifest_path, expected_manifest)
 
@@ -877,6 +980,11 @@ def run_orchestrate(args: argparse.Namespace) -> int:
     attempted = 0
     failures = 0
     started = time.time()
+    expected_reference_sha = (
+        expected_manifest.get("problem_metadata", {})
+        .get("reference", {})
+        .get("sha256")
+    )
     for task_name in tasks:
         task = TASKS[task_name]
         task_dir = root / task_name
@@ -886,10 +994,26 @@ def run_orchestrate(args: argparse.Namespace) -> int:
             point_dir = task_dir / "points" / candidate["candidate_id"]
             point_dir.mkdir(parents=True, exist_ok=True)
             atomic_write_json(point_dir / "candidate.json", candidate)
-            for method in METHODS:
+            method_order = (
+                METHODS
+                if not bool(getattr(_problem, "ALTERNATE_METHOD_ORDER", False))
+                or index % 2 == 0
+                else tuple(reversed(METHODS))
+            )
+            for method in method_order:
                 output = point_dir / f"{method}.json"
                 log = point_dir / f"{method}.log"
-                if args.resume and result_complete(output):
+                expected_result = {
+                    "task_id": task_name,
+                    "method": method,
+                    "weights": weights,
+                    "seconds": args.seconds,
+                    "smoke": False,
+                    "train_seed": args.train_seed,
+                    "eval_seed": args.eval_seed,
+                    "reference_sha256": expected_reference_sha,
+                }
+                if args.resume and result_complete(output, **expected_result):
                     processed += 1
                     continue
                 if output.exists():
@@ -917,7 +1041,9 @@ def run_orchestrate(args: argparse.Namespace) -> int:
                         log,
                         timeout=max(600.0, args.seconds * 30.0),
                     )
-                    if return_code == 0 and result_complete(output):
+                    if return_code == 0 and result_complete(
+                        output, **expected_result
+                    ):
                         success = True
                         break
                     if output.exists():
