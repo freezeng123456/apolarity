@@ -1,0 +1,116 @@
+{
+  "architecture": {
+    "capacity_note": "literal layer shapes are matched; native complex parameters contain two real scalar degrees of freedom",
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "output_dim": 1,
+      "parameter_dtype": "torch.float32",
+      "parameter_elements": 50177,
+      "real_dof": 50177
+    },
+    "shared": {
+      "depth": 4,
+      "hidden": 128,
+      "init": "common_xavier",
+      "input": "affine-normalized raw (x,y,t)",
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "output_dim": 1,
+      "parameter_dtype": "torch.complex64",
+      "parameter_elements": 50177,
+      "real_dof": 100354
+    }
+  },
+  "candidate_count": 49,
+  "created_at": "2026-08-12T16:41:19.566587+00:00",
+  "git": {
+    "branch": "master",
+    "dirty": true,
+    "sha": "019577d3f6f3dc1b108285d2734ff6fc427f0188"
+  },
+  "gradient_clip": 10.0,
+  "grid_type": "complete_ordered_cartesian_product",
+  "grid_values": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.11.15 (main, Aug  5 2026, 15:45:52) [Clang 22.1.3 ]",
+    "python_executable": "/root/apolarity-venv/bin/python3",
+    "torch": "2.11.0+cu128"
+  },
+  "history_interval_seconds": 10.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "method_order_policy": "WAR-first for even candidates; AD-first for odd candidates",
+  "method_run_count": 98,
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 5880.0,
+  "problem_metadata": {
+    "M": 1.0,
+    "beta": 0.1,
+    "boundary": "explicit periodic traces of normal derivatives 0..5",
+    "direct_sixth_order_residual": true,
+    "domain": "[0,2*pi]^2 x [0,1]",
+    "epsilon": 0.25,
+    "equation": "beta*phi_tt + phi_t - M*(Delta^3(phi) + 2*Delta^2(phi) + (1-epsilon)*Delta(phi) + Delta(phi^3)) = 0",
+    "frequency_initialization": false,
+    "initial_condition": "0.1 + 0.15*cos(x)*cos(y) + 0.05*cos(2*x)*cos(y)",
+    "initial_velocity": "0",
+    "primary_metric": "relative L2 error against converged Fourier reference",
+    "reference": {
+      "protocol": "mpfc_2d_imex_fourier_reference_v1",
+      "root": "/root/apolarity-mpfc-ho02-reference-4096-v1",
+      "sha256": "8d6a81b8d5a00cbff56287be16bdad273d81dabaf4b6faaa43f863c9b72a77e5"
+    },
+    "smoke": false,
+    "training_precision": {
+      "real_ad": "float32",
+      "war": "complex64"
+    },
+    "trigonometric_input_features": false
+  },
+  "protocol_id": "mpfc_2d_o6_common_xavier_fp32_v1",
+  "sample_overrides": {
+    "history_eval_n": 1024,
+    "n_bc": 1024,
+    "n_eval": 4096,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_run": 60.0,
+  "serial_single_gpu": true,
+  "smoke": false,
+  "tasks": [
+    {
+      "candidate_count": 49,
+      "eta_q": 1.0,
+      "family": "modified_phase_field_crystal",
+      "order": 6,
+      "q": 3,
+      "task_id": "mpfc_2d_o6",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    }
+  ]
+}
