@@ -1,0 +1,296 @@
+{
+  "all_complete": true,
+  "candidate_ranking": [
+    "hyperviscous_ns_2d_o4"
+  ],
+  "complete_runs": 10,
+  "engine_protocol_id": "hyperns_2d_fixed_common_xavier_fp32_v1",
+  "expected_runs": 10,
+  "protocol_id": "hyperns_2d_pilot_formal_v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "task_summaries": [
+    {
+      "ad_over_war_peak_memory": {
+        "max": 2.911941756823575,
+        "mean": 2.911941756823575,
+        "median": 2.911941756823575,
+        "min": 2.911941756823575,
+        "std": 0.0
+      },
+      "ad_over_war_step_time": {
+        "max": 4.317743658672551,
+        "mean": 4.0439219052579976,
+        "median": 3.9791812239069904,
+        "min": 3.8705497967613445,
+        "std": 0.17828154098571572
+      },
+      "ad_seed_wins": 0,
+      "expected_seed_count": 5,
+      "family": "hyperviscous_navier_stokes_2d",
+      "order": 4,
+      "paired_complete_seed_count": 5,
+      "physical_metrics": {
+        "real_tanh_autodiff": {
+          "divergence_rms": {
+            "max": 0.023902637884020805,
+            "mean": 0.020732985436916353,
+            "median": 0.019685206934809685,
+            "min": 0.01826343685388565,
+            "std": 0.0022665745695054796
+          },
+          "energy_relative_rmse": {
+            "max": 0.038182735443115234,
+            "mean": 0.023586377315223218,
+            "median": 0.021115614101290703,
+            "min": 0.009114126674830914,
+            "std": 0.011398906816747439
+          },
+          "pressure_mean_max_abs": {
+            "max": 0.01049681194126606,
+            "mean": 0.00649007991887629,
+            "median": 0.0059350538067519665,
+            "min": 0.0028927053790539503,
+            "std": 0.0032120872089117848
+          },
+          "pressure_rel_error": {
+            "max": 0.24706459045410156,
+            "mean": 0.18881637156009673,
+            "median": 0.1867951601743698,
+            "min": 0.14091654121875763,
+            "std": 0.03851916065333924
+          },
+          "velocity_rel_error": {
+            "max": 0.04035002365708351,
+            "mean": 0.02921448163688183,
+            "median": 0.02769753895699978,
+            "min": 0.022585449740290642,
+            "std": 0.006639344321250841
+          }
+        },
+        "war": {
+          "divergence_rms": {
+            "max": 0.003955200780183077,
+            "mean": 0.003506885375827551,
+            "median": 0.003719845088198781,
+            "min": 0.002707191277295351,
+            "std": 0.0005411996526712953
+          },
+          "energy_relative_rmse": {
+            "max": 0.008375286124646664,
+            "mean": 0.007309321034699679,
+            "median": 0.006966482847929001,
+            "min": 0.006859832908958197,
+            "std": 0.000636450182606506
+          },
+          "pressure_mean_max_abs": {
+            "max": 0.013201836496591568,
+            "mean": 0.00703719244338572,
+            "median": 0.006044754758477211,
+            "min": 0.0033779277000576258,
+            "std": 0.0036746185980876915
+          },
+          "pressure_rel_error": {
+            "max": 0.04851171374320984,
+            "mean": 0.043899761885404585,
+            "median": 0.043436914682388306,
+            "min": 0.03997693210840225,
+            "std": 0.0031138404846957346
+          },
+          "velocity_rel_error": {
+            "max": 0.0063581508584320545,
+            "mean": 0.005690808780491352,
+            "median": 0.0054670581594109535,
+            "min": 0.0049804640002548695,
+            "std": 0.0005972389418755355
+          }
+        }
+      },
+      "real_tanh_autodiff_rel_error": {
+        "max": 0.04035002365708351,
+        "mean": 0.02921448163688183,
+        "median": 0.02769753895699978,
+        "min": 0.022585449740290642,
+        "std": 0.006639344321250841
+      },
+      "screen_pass": true,
+      "screen_rank": 1,
+      "screen_rule": "all pairs complete; best method median rel_error < 0.2; worst method median rel_error < 0.75",
+      "seed_metrics": [
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 4.118997692806092,
+          "geometric_mean_error": 0.011896664851219256,
+          "max_error": 0.022585449740290642,
+          "real_tanh_autodiff_divergence_rms": 0.01826343685388565,
+          "real_tanh_autodiff_energy_relative_rmse": 0.009114126674830914,
+          "real_tanh_autodiff_loss": 0.0071381679736077785,
+          "real_tanh_autodiff_ms_per_step": 225.8998817073049,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.009007944725453854,
+          "real_tanh_autodiff_pressure_rel_error": 0.14091654121875763,
+          "real_tanh_autodiff_rel_error": 0.022585449740290642,
+          "real_tanh_autodiff_velocity_rel_error": 0.022585449740290642,
+          "seed": 0,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.003719845088198781,
+          "war_energy_relative_rmse": 0.006966482847929001,
+          "war_loss": 0.0022016260772943497,
+          "war_ms_per_step": 54.84341059521431,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.006775091867893934,
+          "war_pressure_rel_error": 0.044757574796676636,
+          "war_rel_error": 0.00626645190641284,
+          "war_velocity_rel_error": 0.00626645190641284,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.8705497967613445,
+          "geometric_mean_error": 0.011558084255798873,
+          "max_error": 0.026822663843631744,
+          "real_tanh_autodiff_divergence_rms": 0.019685206934809685,
+          "real_tanh_autodiff_energy_relative_rmse": 0.021115614101290703,
+          "real_tanh_autodiff_loss": 0.010612178593873978,
+          "real_tanh_autodiff_ms_per_step": 213.0468531820732,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.0059350538067519665,
+          "real_tanh_autodiff_pressure_rel_error": 0.1867951601743698,
+          "real_tanh_autodiff_rel_error": 0.026822663843631744,
+          "real_tanh_autodiff_velocity_rel_error": 0.026822663843631744,
+          "seed": 1,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.002707191277295351,
+          "war_energy_relative_rmse": 0.006859832908958197,
+          "war_loss": 0.0008659578743390739,
+          "war_ms_per_step": 55.04304669076694,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.005786351393908262,
+          "war_pressure_rel_error": 0.03997693210840225,
+          "war_rel_error": 0.0049804640002548695,
+          "war_velocity_rel_error": 0.0049804640002548695,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 4.317743658672551,
+          "geometric_mean_error": 0.014736368551330058,
+          "max_error": 0.04035002365708351,
+          "real_tanh_autodiff_divergence_rms": 0.023902637884020805,
+          "real_tanh_autodiff_energy_relative_rmse": 0.038182735443115234,
+          "real_tanh_autodiff_loss": 0.011369711719453335,
+          "real_tanh_autodiff_ms_per_step": 242.88707046658917,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.01049681194126606,
+          "real_tanh_autodiff_pressure_rel_error": 0.24706459045410156,
+          "real_tanh_autodiff_rel_error": 0.04035002365708351,
+          "real_tanh_autodiff_velocity_rel_error": 0.04035002365708351,
+          "seed": 2,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.003955200780183077,
+          "war_energy_relative_rmse": 0.006920532323420048,
+          "war_loss": 0.0008825236582197249,
+          "war_ms_per_step": 56.253240040948256,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.006044754758477211,
+          "war_pressure_rel_error": 0.043436914682388306,
+          "war_rel_error": 0.005381918977946043,
+          "war_velocity_rel_error": 0.005381918977946043,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.9331371541430062,
+          "geometric_mean_error": 0.013270460847156116,
+          "max_error": 0.02769753895699978,
+          "real_tanh_autodiff_divergence_rms": 0.022180752828717232,
+          "real_tanh_autodiff_energy_relative_rmse": 0.018112054094672203,
+          "real_tanh_autodiff_loss": 0.0072684683836996555,
+          "real_tanh_autodiff_ms_per_step": 221.97957345034033,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.0028927053790539503,
+          "real_tanh_autodiff_pressure_rel_error": 0.17443275451660156,
+          "real_tanh_autodiff_rel_error": 0.02769753895699978,
+          "real_tanh_autodiff_velocity_rel_error": 0.02769753895699978,
+          "seed": 3,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.003947685472667217,
+          "war_energy_relative_rmse": 0.008375286124646664,
+          "war_loss": 0.0015104571357369423,
+          "war_ms_per_step": 56.438299695833415,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.0033779277000576258,
+          "war_pressure_rel_error": 0.0428156740963459,
+          "war_rel_error": 0.0063581508584320545,
+          "war_velocity_rel_error": 0.0063581508584320545,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.9791812239069904,
+          "geometric_mean_error": 0.012507970982615186,
+          "max_error": 0.028616731986403465,
+          "real_tanh_autodiff_divergence_rms": 0.019632892683148384,
+          "real_tanh_autodiff_energy_relative_rmse": 0.03140735626220703,
+          "real_tanh_autodiff_loss": 0.008296562358736992,
+          "real_tanh_autodiff_ms_per_step": 224.32343550931628,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.004117883741855621,
+          "real_tanh_autodiff_pressure_rel_error": 0.19487281143665314,
+          "real_tanh_autodiff_rel_error": 0.028616731986403465,
+          "real_tanh_autodiff_velocity_rel_error": 0.028616731986403465,
+          "seed": 4,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.0032045042607933283,
+          "war_energy_relative_rmse": 0.007424470968544483,
+          "war_loss": 0.0018244419479742646,
+          "war_ms_per_step": 56.37426970191183,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.013201836496591568,
+          "war_pressure_rel_error": 0.04851171374320984,
+          "war_rel_error": 0.0054670581594109535,
+          "war_velocity_rel_error": 0.0054670581594109535,
+          "winner": "war"
+        }
+      ],
+      "shared_geometric_mean": {
+        "max": 0.014736368551330058,
+        "mean": 0.012793909897623898,
+        "median": 0.012507970982615186,
+        "min": 0.011558084255798873,
+        "std": 0.0012663255093245443
+      },
+      "shared_minimax": {
+        "max": 0.04035002365708351,
+        "mean": 0.02921448163688183,
+        "median": 0.02769753895699978,
+        "min": 0.022585449740290642,
+        "std": 0.006639344321250841
+      },
+      "spatial_dim": 2,
+      "task_id": "hyperviscous_ns_2d_o4",
+      "war_rel_error": {
+        "max": 0.0063581508584320545,
+        "mean": 0.005690808780491352,
+        "median": 0.0054670581594109535,
+        "min": 0.0049804640002548695,
+        "std": 0.0005972389418755355
+      },
+      "war_seed_wins": 5
+    }
+  ],
+  "tasks": [
+    "hyperviscous_ns_2d_o4"
+  ],
+  "updated_at": "2026-08-12T13:22:52.202119+00:00"
+}

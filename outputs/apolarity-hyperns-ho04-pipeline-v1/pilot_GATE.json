@@ -1,0 +1,30 @@
+{
+  "accuracy_gate": true,
+  "created_at": "2026-08-12T10:02:20.603790+00:00",
+  "decision": "GO_FORMAL",
+  "individual_velocity_rel_errors": [
+    0.0074396077543497086,
+    0.0058290474116802216,
+    0.006273011676967144,
+    0.171676903963089,
+    0.17339280247688293,
+    0.1399882286787033
+  ],
+  "median_physical_metrics": {
+    "real_tanh_autodiff": {
+      "divergence_rms": 0.06117834895849228,
+      "energy_relative_rmse": 0.21836033463478088,
+      "pressure_mean_max_abs": 0.009475770406425,
+      "pressure_rel_error": 0.6029465198516846
+    },
+    "war": {
+      "divergence_rms": 0.005445918533951044,
+      "energy_relative_rmse": 0.004151531029492617,
+      "pressure_mean_max_abs": 0.006146079860627651,
+      "pressure_rel_error": 0.05311943590641022
+    }
+  },
+  "no_degenerate_seed_gate": true,
+  "physics_gate": true,
+  "rule": "6/6 complete; best method median velocity error<0.2; other<0.75; every seed<0.95; per-method median divergence<0.25, pressure mean<0.25, energy error<0.5 and pressure error<1.5"
+}

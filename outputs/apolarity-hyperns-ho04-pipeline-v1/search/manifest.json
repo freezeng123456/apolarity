@@ -1,0 +1,113 @@
+{
+  "architecture": {
+    "capacity_note": "literal layer shapes are matched; native complex parameters contain two real scalar degrees of freedom",
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "output_dim": 3,
+      "parameter_dtype": "torch.float32",
+      "parameter_elements": 50435,
+      "real_dof": 50435
+    },
+    "shared": {
+      "depth": 4,
+      "hidden": 128,
+      "init": "common_xavier",
+      "input": "affine-normalized raw (x,y,t)",
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "output_dim": 3,
+      "parameter_dtype": "torch.complex64",
+      "parameter_elements": 50435,
+      "real_dof": 100870
+    }
+  },
+  "candidate_count": 49,
+  "created_at": "2026-08-12T07:19:01.197743+00:00",
+  "git": {
+    "branch": "agent/hyperns-ho04",
+    "dirty": false,
+    "sha": "8118889c9f4ff8cca8dc02b94059d9502e2ce5a6"
+  },
+  "gradient_clip": 10.0,
+  "grid_type": "complete_ordered_cartesian_product",
+  "grid_values": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.11.15 (main, Aug  5 2026, 15:45:52) [Clang 22.1.3 ]",
+    "python_executable": "/root/apolarity-venv/bin/python",
+    "torch": "2.11.0+cu128"
+  },
+  "history_interval_seconds": 10.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "method_order_policy": "WAR-first for even candidates; AD-first for odd candidates",
+  "method_run_count": 98,
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 5880.0,
+  "problem_metadata": {
+    "analytic_unforced_reference": true,
+    "boundary": "explicit periodic velocity trace matching at normal orders 0..3; pressure order 0; per-time zero-mean pressure gauge",
+    "direct_fourth_order_residual": true,
+    "domain": "[0,2*pi]^2 x [0,1]",
+    "equation": "U_t + (U.grad)U + grad(p) - nu*Delta(U) + eta*Delta^2(U) = 0; div(U)=0",
+    "eta": 0.01,
+    "exact_solution": "A=exp(-(2*nu+4*eta)t); u=A*sin(x)*cos(y); v=-A*cos(x)*sin(y); p=A^2*(cos(2x)+cos(2y))/4",
+    "network_output": [
+      "u",
+      "v",
+      "p"
+    ],
+    "nu": 0.05,
+    "primary_metric": "combined velocity relative L2",
+    "smoke": false,
+    "training_precision": {
+      "real_ad": "float32",
+      "war": "complex64"
+    }
+  },
+  "protocol_id": "hyperns_2d_taylor_green_common_xavier_fp32_v1",
+  "sample_overrides": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_run": 60.0,
+  "serial_single_gpu": true,
+  "smoke": false,
+  "tasks": [
+    {
+      "candidate_count": 49,
+      "eta_q": 0.01,
+      "family": "hyperviscous_navier_stokes_2d",
+      "order": 4,
+      "q": 2,
+      "task_id": "hyperviscous_ns_2d_o4",
+      "weight_names": [
+        "lambda_ic",
+        "lambda_bc"
+      ]
+    }
+  ]
+}

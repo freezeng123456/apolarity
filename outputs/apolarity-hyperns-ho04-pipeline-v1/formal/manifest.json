@@ -1,0 +1,85 @@
+{
+  "architecture": {
+    "real_tanh_autodiff": {
+      "activation": "tanh",
+      "backend": "direct_autodiff",
+      "dtype": "torch.float32"
+    },
+    "shared": {
+      "depth": 4,
+      "frequency_initialization": false,
+      "hidden": 128,
+      "init_mode": "common_xavier",
+      "input": "affine-normalized raw coordinates",
+      "trigonometric_input_features": false
+    },
+    "war": {
+      "activation": "sinh",
+      "backend": "waring_complex_jet",
+      "dtype": "torch.complex64"
+    }
+  },
+  "engine_protocol_id": "hyperns_2d_fixed_common_xavier_fp32_v1",
+  "expected_runs": 10,
+  "git": {
+    "branch": "agent/hyperns-ho04",
+    "dirty": false,
+    "sha": "8118889c9f4ff8cca8dc02b94059d9502e2ce5a6"
+  },
+  "gradient_clip": 10.0,
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.11.15 (main, Aug  5 2026, 15:45:52) [Clang 22.1.3 ]",
+    "python_executable": "/root/apolarity-venv/bin/python",
+    "torch": "2.11.0+cu128"
+  },
+  "history_interval_seconds": 10.0,
+  "learning_rate": 0.001,
+  "learning_rate_final": 0.0001,
+  "method_order_policy": "war-first on even seeds; AD-first on odd seeds",
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "nominal_training_seconds": 12000.0,
+  "protocol_id": "hyperns_2d_pilot_formal_v1",
+  "sample_counts": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "seconds_per_method_seed": 1200.0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "serial_single_gpu": true,
+  "stage": "formal",
+  "task_specs": [
+    {
+      "family": "hyperviscous_navier_stokes_2d",
+      "input_dim": 3,
+      "order": 4,
+      "spatial_dim": 2,
+      "task_id": "hyperviscous_ns_2d_o4",
+      "uniqueness_basis": "global unique smooth periodic 2D hyperviscous Navier--Stokes velocity for smooth divergence-free data; pressure is unique after the zero-spatial-mean gauge is fixed",
+      "weights": {
+        "lambda_bc": 10.0,
+        "lambda_ic": 100.0
+      }
+    }
+  ],
+  "tasks": [
+    "hyperviscous_ns_2d_o4"
+  ]
+}

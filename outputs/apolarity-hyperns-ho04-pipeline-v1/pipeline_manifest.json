@@ -1,0 +1,56 @@
+{
+  "automatic_parameter_changes": false,
+  "created_at": "2026-08-12T07:00:16.171803+00:00",
+  "formal": {
+    "seconds": 1200.0,
+    "seeds": 5
+  },
+  "git": {
+    "branch": "agent/hyperns-ho04",
+    "dirty": false,
+    "sha": "8118889c9f4ff8cca8dc02b94059d9502e2ce5a6"
+  },
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "pilot": {
+    "seconds": 600.0,
+    "seeds": 3
+  },
+  "protocol": "hyperns_ho04_gated_pipeline_v1",
+  "samples": {
+    "history_eval_n": 2048,
+    "n_bc": 1024,
+    "n_eval": 16384,
+    "n_ic": 512,
+    "n_int": 2048
+  },
+  "search_grid": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "search_seconds": 60.0,
+  "sentinel_seconds": 180.0,
+  "sentinel_weights": [
+    [
+      1.0,
+      1.0
+    ],
+    [
+      10.0,
+      1.0
+    ],
+    [
+      10.0,
+      10.0
+    ]
+  ],
+  "strictly_serial_single_gpu": true,
+  "task": "hyperviscous_ns_2d_o4"
+}

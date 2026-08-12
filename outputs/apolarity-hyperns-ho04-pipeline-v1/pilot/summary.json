@@ -1,0 +1,238 @@
+{
+  "all_complete": true,
+  "candidate_ranking": [
+    "hyperviscous_ns_2d_o4"
+  ],
+  "complete_runs": 6,
+  "engine_protocol_id": "hyperns_2d_fixed_common_xavier_fp32_v1",
+  "expected_runs": 6,
+  "protocol_id": "hyperns_2d_pilot_formal_v1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "task_summaries": [
+    {
+      "ad_over_war_peak_memory": {
+        "max": 2.911941756823575,
+        "mean": 2.911941756823575,
+        "median": 2.911941756823575,
+        "min": 2.911941756823575,
+        "std": 0.0
+      },
+      "ad_over_war_step_time": {
+        "max": 3.9059367314906894,
+        "mean": 3.8925507228367686,
+        "median": 3.8975297533187923,
+        "min": 3.874185683700824,
+        "std": 0.0164506935216807
+      },
+      "ad_seed_wins": 0,
+      "expected_seed_count": 3,
+      "family": "hyperviscous_navier_stokes_2d",
+      "order": 4,
+      "paired_complete_seed_count": 3,
+      "physical_metrics": {
+        "real_tanh_autodiff": {
+          "divergence_rms": {
+            "max": 0.0633297711610794,
+            "mean": 0.05632213751475016,
+            "median": 0.06117834895849228,
+            "min": 0.0444582924246788,
+            "std": 0.01033055030549457
+          },
+          "energy_relative_rmse": {
+            "max": 0.239316925406456,
+            "mean": 0.21633015076319376,
+            "median": 0.21836033463478088,
+            "min": 0.19131319224834442,
+            "std": 0.024066176143981297
+          },
+          "pressure_mean_max_abs": {
+            "max": 0.011385072953999043,
+            "mean": 0.009148721427967152,
+            "median": 0.009475770406425,
+            "min": 0.006585320923477411,
+            "std": 0.0024165317428821147
+          },
+          "pressure_rel_error": {
+            "max": 0.697117269039154,
+            "mean": 0.6251437465349833,
+            "median": 0.6029465198516846,
+            "min": 0.5753674507141113,
+            "std": 0.06383801547563599
+          },
+          "velocity_rel_error": {
+            "max": 0.17339280247688293,
+            "mean": 0.16168597837289175,
+            "median": 0.171676903963089,
+            "min": 0.1399882286787033,
+            "std": 0.01881037833939421
+          }
+        },
+        "war": {
+          "divergence_rms": {
+            "max": 0.005591839551925659,
+            "mean": 0.005170149573435386,
+            "median": 0.005445918533951044,
+            "min": 0.004472690634429455,
+            "std": 0.0006084077288884046
+          },
+          "energy_relative_rmse": {
+            "max": 0.004568949341773987,
+            "mean": 0.004167728281269471,
+            "median": 0.004151531029492617,
+            "min": 0.003782704472541809,
+            "std": 0.00039337261193723587
+          },
+          "pressure_mean_max_abs": {
+            "max": 0.008153650909662247,
+            "mean": 0.006323004451890786,
+            "median": 0.006146079860627651,
+            "min": 0.0046692825853824615,
+            "std": 0.001748908913596217
+          },
+          "pressure_rel_error": {
+            "max": 0.06819426268339157,
+            "mean": 0.05681779111425082,
+            "median": 0.05311943590641022,
+            "min": 0.04913967475295067,
+            "std": 0.010051253838812713
+          },
+          "velocity_rel_error": {
+            "max": 0.0074396077543497086,
+            "mean": 0.006513888947665691,
+            "median": 0.006273011676967144,
+            "min": 0.0058290474116802216,
+            "std": 0.0008318608952218512
+          }
+        }
+      },
+      "real_tanh_autodiff_rel_error": {
+        "max": 0.17339280247688293,
+        "mean": 0.16168597837289175,
+        "median": 0.171676903963089,
+        "min": 0.1399882286787033,
+        "std": 0.01881037833939421
+      },
+      "screen_pass": true,
+      "screen_rank": 1,
+      "screen_rule": "all pairs complete; best method median rel_error < 0.2; worst method median rel_error < 0.75",
+      "seed_metrics": [
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.8975297533187923,
+          "geometric_mean_error": 0.035738058508634,
+          "max_error": 0.171676903963089,
+          "real_tanh_autodiff_divergence_rms": 0.06117834895849228,
+          "real_tanh_autodiff_energy_relative_rmse": 0.21836033463478088,
+          "real_tanh_autodiff_loss": 0.08892162889242172,
+          "real_tanh_autodiff_ms_per_step": 210.99763839936563,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.011385072953999043,
+          "real_tanh_autodiff_pressure_rel_error": 0.5753674507141113,
+          "real_tanh_autodiff_rel_error": 0.171676903963089,
+          "real_tanh_autodiff_velocity_rel_error": 0.171676903963089,
+          "seed": 0,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.005591839551925659,
+          "war_energy_relative_rmse": 0.004568949341773987,
+          "war_loss": 0.0019456075970083475,
+          "war_ms_per_step": 54.1362482787203,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.006146079860627651,
+          "war_pressure_rel_error": 0.04913967475295067,
+          "war_rel_error": 0.0074396077543497086,
+          "war_velocity_rel_error": 0.0074396077543497086,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.874185683700824,
+          "geometric_mean_error": 0.03179174211146433,
+          "max_error": 0.17339280247688293,
+          "real_tanh_autodiff_divergence_rms": 0.0633297711610794,
+          "real_tanh_autodiff_energy_relative_rmse": 0.239316925406456,
+          "real_tanh_autodiff_loss": 0.09575749933719635,
+          "real_tanh_autodiff_ms_per_step": 212.24370195757996,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.006585320923477411,
+          "real_tanh_autodiff_pressure_rel_error": 0.697117269039154,
+          "real_tanh_autodiff_rel_error": 0.17339280247688293,
+          "real_tanh_autodiff_velocity_rel_error": 0.17339280247688293,
+          "seed": 1,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.004472690634429455,
+          "war_energy_relative_rmse": 0.004151531029492617,
+          "war_loss": 0.0026379164773970842,
+          "war_ms_per_step": 54.78408091034855,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.0046692825853824615,
+          "war_pressure_rel_error": 0.05311943590641022,
+          "war_rel_error": 0.0058290474116802216,
+          "war_velocity_rel_error": 0.0058290474116802216,
+          "winner": "war"
+        },
+        {
+          "ad_over_war_peak_memory": 2.911941756823575,
+          "ad_over_war_step_time": 3.9059367314906894,
+          "geometric_mean_error": 0.029633558563551776,
+          "max_error": 0.1399882286787033,
+          "real_tanh_autodiff_divergence_rms": 0.0444582924246788,
+          "real_tanh_autodiff_energy_relative_rmse": 0.19131319224834442,
+          "real_tanh_autodiff_loss": 0.06517674773931503,
+          "real_tanh_autodiff_ms_per_step": 212.80290461574674,
+          "real_tanh_autodiff_peak_mb": 2521.88232421875,
+          "real_tanh_autodiff_pressure_mean_max_abs": 0.009475770406425,
+          "real_tanh_autodiff_pressure_rel_error": 0.6029465198516846,
+          "real_tanh_autodiff_rel_error": 0.1399882286787033,
+          "real_tanh_autodiff_velocity_rel_error": 0.1399882286787033,
+          "seed": 2,
+          "status": "complete",
+          "task_id": "hyperviscous_ns_2d_o4",
+          "war_divergence_rms": 0.005445918533951044,
+          "war_energy_relative_rmse": 0.003782704472541809,
+          "war_loss": 0.001106387353502214,
+          "war_ms_per_step": 54.4819128533429,
+          "war_peak_mb": 866.04833984375,
+          "war_pressure_mean_max_abs": 0.008153650909662247,
+          "war_pressure_rel_error": 0.06819426268339157,
+          "war_rel_error": 0.006273011676967144,
+          "war_velocity_rel_error": 0.006273011676967144,
+          "winner": "war"
+        }
+      ],
+      "shared_geometric_mean": {
+        "max": 0.035738058508634,
+        "mean": 0.03238778639455003,
+        "median": 0.03179174211146433,
+        "min": 0.029633558563551776,
+        "std": 0.0030955906521093163
+      },
+      "shared_minimax": {
+        "max": 0.17339280247688293,
+        "mean": 0.16168597837289175,
+        "median": 0.171676903963089,
+        "min": 0.1399882286787033,
+        "std": 0.01881037833939421
+      },
+      "spatial_dim": 2,
+      "task_id": "hyperviscous_ns_2d_o4",
+      "war_rel_error": {
+        "max": 0.0074396077543497086,
+        "mean": 0.006513888947665691,
+        "median": 0.006273011676967144,
+        "min": 0.0058290474116802216,
+        "std": 0.0008318608952218512
+      },
+      "war_seed_wins": 3
+    }
+  ],
+  "tasks": [
+    "hyperviscous_ns_2d_o4"
+  ],
+  "updated_at": "2026-08-12T10:02:20.263341+00:00"
+}

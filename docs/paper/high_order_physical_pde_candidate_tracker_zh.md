@@ -71,7 +71,7 @@ ground truth 的成本。
 | 顺序 | ID | 候选 | 维数 | 最高空间阶数 | 当前状态 | 角色 | 是否允许正式长跑 |
 |---:|---|---|---:|---:|---|---|---|
 | — | `HO-01` | MBE slope-selection | 2D | 4 | `REJECTED / TRAINING_FAILURE` | 完整搜参负结果；49 个权重均为近零假解 | 否；停止 pilot/formal |
-| 1 | `HO-04` | Hyperviscous Navier--Stokes | 2D | 4 | `IMPLEMENTED` | 当前第一优先级；跨物理体系、多输出 | 是；仅按本节预注册门禁自动放行 |
+| 1 | `HO-04` | Hyperviscous Navier--Stokes | 2D | 4 | `FORMAL_COMPLETE / PASS` | 已完成门禁、共享搜参、pilot 与 5-seed formal；WAR 在速度、压力、散度和能量指标上均优于实数 AD | 暂停追加实验；保留为可复现实验基准 |
 | 2 | `HO-02` | Modified Phase-Field Crystal | 2D | 6 | `RESEARCH` | 六阶主候选 | 否，等待 `HO-04` 结论 |
 | 3 | `HO-03` | Kawahara / KdV--Kawahara | 1D | 5 | `RESEARCH` | 奇数阶诊断候选 | 否，先完成低成本 pilot |
 | 4 | `HO-05` | Hyperviscous Navier--Stokes ABC flow | 3D | 4 | `HOLD` | 三维扩展 | 否，等待 `HO-04` |
@@ -465,6 +465,27 @@ L=L_{\rm momentum}+L_{\rm div}
    energy error `<0.5`、pressure error `<1.5` 时进入 formal；
 8. 5 seeds × 2 methods × 1200 秒 formal，并在服务器环境生成曲线和 CSV。
 
+2026-08-12 正式结果（固定提交 `8118889c9f4ff8cca8dc02b94059d9502e2ce5a6`，
+协议 `hyperns_ho04_gated_pipeline_v1`）如下。共享搜参通过后按 shared-minimax 选择
+`lambda_ic=1e2, lambda_bc=1e1`；formal 共 10/10 个 cell，5 个 paired seeds，
+无失败。主指标是 `(u,v)` 联合 velocity relative L2，压力单独报告；所有 history
+均有有限的 `loss` 与 `rel_error` 末值。
+
+| 指标（5 seeds 汇总） | WAR（complex64 + sinh + Waring jet） | real_tanh_autodiff（float32 + tanh + direct AD） |
+|---|---:|---:|
+| velocity relative L2，中位数（均值） | `0.005467` (`0.005691`) | `0.027698` (`0.029214`) |
+| pressure relative L2，中位数（均值） | `0.043437` (`0.043900`) | `0.186795` (`0.188816`) |
+| divergence RMS，中位数（均值） | `0.003720` (`0.003507`) | `0.019685` (`0.020733`) |
+| energy relative RMSE，中位数（均值） | `0.006966` (`0.007309`) | `0.021116` (`0.023586`) |
+| 每步耗时（ms），中位数 | `56.25` | `224.32` |
+| 峰值显存（MB） | `866.05` | `2521.88` |
+
+WAR 在 5/5 个 paired seeds 上赢得 velocity relative L2；AD/WAR 的中位每步耗时比为
+`3.979`，峰值显存比为 `2.912`。共享几何平均误差的中位数为 `0.012508`，共享
+minimax 的中位数为 `0.027698`。因此 HO-04 满足预注册的可训练性和物理门禁，并形成
+一个具有明显效率与精度区分度的高阶、多输出 PDE 基准。服务器生成的实时曲线、CSV、
+PDF 与全部原始 JSON/log/history 位于独立结果 bundle；不在本地重新生成图片。
+
 该候选必须先证明多输出、压力和不可压约束不会使 smoke 显存或速度不可接受。结果分析
 要区分“高阶导数收益”和“多输出优化差异”，不能只给一个聚合 relative error。
 
@@ -474,13 +495,13 @@ L=L_{\rm momentum}+L_{\rm div}
 - [x] 核对速度、压力、衰减率和 pressure gauge；
 - [x] 实现直接四阶动量残差和 divergence residual；
 - [x] 扩展 WAR/direct-AD 后端支持逐通道多输出高阶导数；
-- [ ] 完成多输出 CUDA smoke 与显存审核；
-- [ ] 完成三点 sentinel；
-- [ ] 完成共享权重搜索；
-- [ ] 完成 3-seed pilot；
-- [ ] 通过后完成 5-seed formal；
-- [ ] 分别报告 velocity、pressure、divergence 和 efficiency；
-- [ ] 填写总结果表。
+- [x] 完成多输出 CUDA smoke 与显存审核；
+- [x] 完成三点 sentinel；
+- [x] 完成共享权重搜索；
+- [x] 完成 3-seed pilot；
+- [x] 通过后完成 5-seed formal；
+- [x] 分别报告 velocity、pressure、divergence 和 efficiency；
+- [x] 填写总结果表。
 
 ### HO-05：三维四阶 Hyperviscous Navier--Stokes ABC flow
 
@@ -569,7 +590,7 @@ PINN 问题，论文增量预计低于 MBE、MPFC 和超黏性流体。
 | `HO-01` | MBE 2D | 4 | 不进入正式实验 | `N/A` | `N/A` | `N/A` | `N/A` | `N/A` | `1.592`（60 秒搜索） | `957.74/965.29` | 近零坡度、能量约 0.25 | `TRAINING_FAILURE / STOP` |
 | `HO-02` | MPFC 2D | 6 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-03` | Kawahara 1D | 5 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
-| `HO-04` | hyper-NS 2D | 4 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
+| `HO-04` | hyper-NS 2D | 4 | `lambda_ic=1e2, lambda_bc=1e1` | `0.005467` | `0.027698` | `0.012508`（共享几何平均中位数） | `5/5` | `TBD`（未注册同精度达到阈值的 TTA） | `3.979`（AD/WAR 每步） | `866.05/2521.88` | pressure/divergence/energy 均 WAR 更低 | `FORMAL_COMPLETE / PASS` |
 | `HO-05` | hyper-NS 3D | 4 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-06` | gSOBE 1D | 6 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
 | `HO-07` | KS 1D | 4 | `TBD` | `TBD` | `TBD` | `TBD` | `TBD/5` | `TBD` | `TBD` | `TBD/TBD` | `TBD` | `TBD` |
@@ -602,6 +623,7 @@ evaluation、写盘与绘图，按约 7--8 小时 wall time 预留。
 
 | 日期 | 变更 |
 |---|---|
+| 2026-08-12 | HO-04 完成两档 smoke、三点 sentinel、49 候选共享搜参、3-seed pilot 与 5-seed formal（10/10）；固定共同权重为 `(1e2,1e1)`，WAR 在 5/5 seeds 的主速度指标和全部物理/效率指标上优于 real-tanh autodiff，状态更新为 `FORMAL_COMPLETE / PASS`。 |
 | 2026-08-12 | 用户决定停止 MBE：HO-01 定位为 `REJECTED / TRAINING_FAILURE`，不再 pilot/formal；HO-04 提升到 HO-02 MPFC 前，冻结 Taylor--Green setting、损失、物理门禁和自动长跑流程，并完成多输出实现。 |
 | 2026-08-12 | HO-01 完成 49 个共享权重、98 个 method cells 的完整搜索；结果完整但全部饱和在近零假解，状态更新为 `SEARCHED / HOLD`，未启动 pilot/formal。 |
 | 2026-08-11 | 建立候选队列、统一协议、收益判据、实验门槛和结果占位表；尚未启动新实验。 |
