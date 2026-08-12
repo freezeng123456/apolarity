@@ -1,0 +1,60 @@
+{
+  "cell_count": 2,
+  "cells": [
+    {
+      "loss": 0.07370579987764359,
+      "mass_drift_max_abs": 0.002798039000481367,
+      "mass_drift_rms": 0.0018132850527763367,
+      "method": "war",
+      "ms_per_step": 55.088594962250106,
+      "peak_mb": 88.75732421875,
+      "rel_error": 1.0159837007522583,
+      "status": "complete",
+      "steps": 55,
+      "task_id": "mbe_2d_o4"
+    },
+    {
+      "loss": 0.05202285200357437,
+      "mass_drift_max_abs": 0.05427299439907074,
+      "mass_drift_rms": 0.03325701132416725,
+      "method": "real_tanh_autodiff",
+      "ms_per_step": 86.96261500673634,
+      "peak_mb": 85.2529296875,
+      "rel_error": 1.0954114198684692,
+      "status": "complete",
+      "steps": 35,
+      "task_id": "mbe_2d_o4"
+    }
+  ],
+  "completed_at": "2026-08-12T04:02:27.982061+00:00",
+  "failure_count": 0,
+  "git": {
+    "branch": "agent/mbe-ho01",
+    "dirty": false,
+    "sha": "60007cbf7572bc96be93d92bb5fa3c5638000339"
+  },
+  "hardware": {
+    "cuda_available": true,
+    "cuda_device_index": 0,
+    "cuda_device_name": "NVIDIA H20",
+    "cuda_runtime": "12.8",
+    "cuda_total_memory_bytes": 102010650624,
+    "hostname": "ts-8b1d89fc9fd684cf019fd87b27a1038c-launcher",
+    "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+    "python_executable": "/jizhicfs/yuyechen/miniconda3/envs/cl/bin/python",
+    "torch": "2.10.0+cu128"
+  },
+  "interpretation": "startup/finite-gradient/data-pipeline gate only; not a formal accuracy result and not eligible for paper statistics",
+  "kind": "ephemeral_cuda_smoke_conclusion",
+  "methods": [
+    "war",
+    "real_tanh_autodiff"
+  ],
+  "passed": true,
+  "protocol_id": "mbe_2d_slope_selection_spectral_reference_fp32_v1",
+  "raw_artifacts_retained": false,
+  "seconds_per_cell": 3.0,
+  "tasks": [
+    "mbe_2d_o4"
+  ]
+}
