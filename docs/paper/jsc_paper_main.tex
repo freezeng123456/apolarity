@@ -582,8 +582,8 @@ Expanding $\Delta^{m}$ produces $\binom{d+m-1}{m}$ monomial terms, each evaluate
 \centering
 \includegraphics[width=\linewidth]{fig_poly_d2.pdf}
 \caption{Two-dimensional polyharmonic benchmark.
-Panel (a) shows the five-seed mean relative $L^{2}$ error and the seedwise range after 1200 seconds.
-Panels (b) and (c) show the error and normalized interior residual histories for the representative fourth-order setting.}
+Panel (a) shows the five-seed mean relative $L^{2}$ error after 1200 seconds with sample-deviation bars, and a star marks the lowest mean at each order.
+Panels (b) and (c) show the seed-mean error and normalized interior residual histories of the representative fourth-order setting, with the seedwise range shaded.}
 \label{fig_num_poly_d2}
 \end{figure}
 
@@ -621,9 +621,8 @@ Unlike a separable Fourier mode, this target has the local radial wavenumber $\a
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{fig_chirp.pdf}
-\caption{Radial-chirp benchmark.
-Panel (a) reports the final five-seed accuracy and the seedwise range.
-Panels (b) and (c) show the accuracy and normalized residual histories for $a = 2$.}
+\caption{Radial-chirp benchmark, under the same reporting convention as Figure~\ref{fig_num_poly_d2}.
+The history panels use $a = 2$.}
 \label{fig_num_chirp}
 \end{figure}
 
@@ -652,9 +651,8 @@ Complex $\sinh$ represents $E$ natively, whereas each baseline uses a split real
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{fig_maxwell.pdf}
-\caption{Time-harmonic Maxwell benchmark.
-Panel (a) reports the final five-seed accuracy and the seedwise range.
-Panels (b) and (c) show the accuracy and normalized residual histories for $a = 4$.}
+\caption{Time-harmonic Maxwell benchmark, under the same reporting convention as Figure~\ref{fig_num_poly_d2}.
+The history panels use $a = 4$.}
 \label{fig_num_maxwell}
 \end{figure}
 
@@ -670,6 +668,7 @@ This benchmark favours a native complex representation by construction, and the 
 The rows of Table~\ref{tab_jsc_v2_throughput} show why equal wall-clock time is a more informative control than an equal number of optimizer steps.
 On the scalar chirp task SIREN completes the fastest steps, while the branched mFF-PINN and the three MscaleDNN subnets are slower by factors of about $2$ and $3$.
 For Maxwell each split-real baseline evaluates two networks, which raises its per-step cost, and the polyharmonic row shows the cost of propagating fourth-order jets through branched architectures.
+The table stays within one setting per row because the recorded source commit differs between settings, so a throughput trend across a sweep would not be attributable to the sweep.
 
 Across the 12 settings, Complex $\sinh$ attains the smallest five-seed mean error in every table.
 The margin to the next lowest mean exceeds a factor of $70$ in four settings, namely the two-dimensional fourth-order and three-dimensional second-order polyharmonic problems, the radial chirp at $a = 2$, and Maxwell at $a = 2$; it is at least a factor of $3$ in $11$ of the $12$ settings.

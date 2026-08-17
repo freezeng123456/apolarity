@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Generate paper figures exclusively from validated jsc_v2 bundles.
 
-Figures are drawn at the SIAM text width of the manuscript (370.4 pt) so that
-``\\includegraphics[width=\\linewidth]`` scales them by one and the type sizes
-below are the sizes that reach the page.
+Layout, styling, and output conventions follow the group's reference plotting
+implementation: a grid of panels with lettered titles, error bars on the
+profile panel, a star on the best entry, per-panel legends, one figure legend
+plus a suptitle, explicit figure margins, and PDF/PNG/SVG output.  The one
+deliberate departure is scale: the canvas is sized so that the saved figure is
+as wide as the manuscript text block, so ``width=\\linewidth`` neither enlarges
+nor shrinks it and the type sizes below are the sizes that reach the page.
 """
 
 from __future__ import annotations
@@ -26,72 +30,88 @@ RESULT_ROOT = ROOT / "experiments" / "results" / "jsc_v2"
 OUT = ROOT / "docs" / "paper" / "figures"
 PROTOCOL_ID = "jsc_v2"
 METHODS = ("complex_sinh", "siren", "fourier", "mscale")
-STYLE = {
-    "complex_sinh": (r"Complex $\sinh$", "#1450a0", "-", "o"),
-    "siren": ("SIREN", "#c0392b", "--", "s"),
-    "fourier": ("mFF-PINN", "#1b7f4d", "-.", "^"),
-    "mscale": ("MscaleDNN-2-sin", "#7b3fa0", ":", "D"),
+METHOD_LABEL = {
+    "complex_sinh": r"Complex $\sinh$",
+    "siren": "SIREN",
+    "fourier": "mFF-PINN",
+    "mscale": "MscaleDNN-2-sin",
 }
-#: SIAM \textwidth of jsc_paper_main.tex, in inches (370.38374 pt / 72.27).
-TEXT_WIDTH_IN = 5.125
-FIG_HEIGHT_IN = 2.55
+STYLE = {
+    "complex_sinh": {"color": "#1450a0", "linestyle": "-", "marker": "o"},
+    "siren": {"color": "#c0392b", "linestyle": "--", "marker": "s"},
+    "fourier": {"color": "#1b7f4d", "linestyle": "-.", "marker": "^"},
+    "mscale": {"color": "#7b3fa0", "linestyle": ":", "marker": "D"},
+}
+FAMILY_TITLE = {
+    "poly_d2": r"Polyharmonic benchmark, $d=2$",
+    "poly_d3": r"Polyharmonic benchmark, $d=3$",
+    "chirp": "Radial-chirp benchmark",
+    "maxwell": "Time-harmonic Maxwell benchmark",
+}
 SWEEP_LABEL = {
     "poly_d2": r"operator order $2m$",
     "poly_d3": r"operator order $2m$",
     "chirp": r"chirp rate $a$",
     "maxwell": r"wavenumber parameter $a$",
 }
-PANEL_TITLE = {
-    "poly_d2": "polyharmonic, $d=2$",
-    "poly_d3": "polyharmonic, $d=3$",
-    "chirp": "radial chirp",
-    "maxwell": "Maxwell",
-}
+#: The manuscript is set by siamltex with \textwidth = 370.38 pt.
+TEXT_WIDTH_IN = 370.38374 / 72.27
+#: The canvas is the text block itself.  A tight bounding box is deliberately
+#: not used: its size depends on the tick labels, which would give the four
+#: benchmark figures four different widths, four different scale factors on the
+#: page, and four different effective type sizes.
+FIG_WIDTH_IN = TEXT_WIDTH_IN
+FIG_HEIGHT_IN = 2.42
 
 
 def set_plot_style() -> None:
-    """Apply the house figure style at the manuscript's own type sizes."""
+    """House figure style, with type scaled to a text-width canvas."""
     plt.rcParams.update(
         {
             "font.family": "serif",
-            "font.serif": ["DejaVu Serif"],
+            "font.serif": ["DejaVu Serif", "Times New Roman", "Times"],
             "mathtext.fontset": "dejavuserif",
             "font.size": 8.0,
             "axes.titlesize": 8.0,
             "axes.labelsize": 8.0,
-            "legend.fontsize": 8.0,
+            "legend.fontsize": 7.5,
             "xtick.labelsize": 7.0,
             "ytick.labelsize": 7.0,
-            "axes.linewidth": 0.7,
-            "lines.linewidth": 1.5,
-            "figure.facecolor": "white",
+            "axes.linewidth": 0.8,
             "savefig.facecolor": "white",
-            "savefig.bbox": "tight",
-            "savefig.pad_inches": 0.02,
+            "figure.facecolor": "white",
         }
     )
 
 
 def style_axis(axis: plt.Axes) -> None:
-    """Grid, tick, and spine treatment shared by every panel."""
-    axis.grid(True, which="major", color="#D0D0D0", linewidth=0.5, zorder=0)
-    axis.grid(True, which="minor", color="#ECECEC", linewidth=0.35, zorder=0)
-    axis.tick_params(direction="in", top=True, right=True, width=0.6, length=2.6)
-    axis.tick_params(which="minor", direction="in", top=True, right=True, length=1.5)
+    axis.grid(which="major", color="0.82", linewidth=0.65, alpha=0.75)
+    axis.grid(which="minor", color="0.90", linewidth=0.45, alpha=0.45)
+    axis.tick_params(direction="in", top=True, right=True, width=0.7, length=2.8)
+    axis.tick_params(which="minor", direction="in", top=True, right=True, length=1.6)
     axis.set_axisbelow(True)
 
 
-def thin_log_ticks(axis: plt.Axes, max_decades: int = 5) -> None:
-    """Keep a log axis readable inside a narrow panel."""
-    low, high = axis.get_ylim()
-    decades = np.log10(high) - np.log10(low)
-    step = max(1, int(np.ceil(decades / max_decades)))
-    axis.yaxis.set_major_locator(LogLocator(base=10.0, numticks=max_decades + 2)
-                                 if step == 1 else
-                                 LogLocator(base=10.0, subs=(1.0,), numticks=99))
-    if step > 1:
-        axis.yaxis.set_major_locator(LogLocator(base=10.0, subs=(1.0,), numticks=max_decades + 1))
+def thin_log_ticks(axis: plt.Axes, max_labels: int = 5) -> None:
+    """Keep decade labels sparse enough for a half-width panel."""
+    axis.yaxis.set_major_locator(
+        LogLocator(base=10.0, subs=(1.0,), numticks=max_labels)
+    )
+    axis.yaxis.set_minor_locator(LogLocator(base=10.0, subs=tuple(np.arange(2, 10) * 0.1)))
     axis.yaxis.set_minor_formatter(NullFormatter())
+
+
+def save_figure(fig: plt.Figure, stem: Path) -> list[Path]:
+    outputs: list[Path] = []
+    for extension, kwargs in (
+        ("pdf", {"metadata": {"CreationDate": None}}),
+        ("png", {"dpi": 300}),
+        ("svg", {"metadata": {"Date": None}}),
+    ):
+        path = stem.with_suffix(f".{extension}")
+        fig.savefig(path, **kwargs)
+        outputs.append(path)
+    return outputs
 
 
 def validated_bundles() -> list[tuple[Path, list[dict], list[dict]]]:
@@ -128,15 +148,16 @@ def grouped_bundles():
     return grouped
 
 
-def means_for(items) -> dict[str, list[tuple[float, float, float, float]]]:
-    values = defaultdict(lambda: defaultdict(list))
+def sweep_statistics(items, field: str) -> dict[str, list[tuple[float, float, float]]]:
+    """Per method, the sweep value with the seed mean and sample deviation."""
+    values: dict[str, dict[float, list[float]]] = defaultdict(lambda: defaultdict(list))
     for _, rows, _ in items:
         for row in rows:
-            values[row["variant"]][float(row["sweep"])].append(float(row["L2_err"]))
+            values[row["variant"]][float(row["sweep"])].append(float(row[field]))
     return {
         method: [
-            (sweep, float(np.mean(v)), float(np.min(v)), float(np.max(v)))
-            for sweep, v in sorted(by_sweep.items())
+            (sweep, float(np.mean(samples)), float(np.std(samples, ddof=1)))
+            for sweep, samples in sorted(by_sweep.items())
         ]
         for method, by_sweep in values.items()
     }
@@ -164,95 +185,120 @@ def mean_trace(traces: list[np.ndarray], column: int, floor: float):
     return grid, np.exp(logs.mean(0)), np.exp(logs.min(0)), np.exp(logs.max(0))
 
 
+def plot_profile(axis: plt.Axes, stats, tag: str, ylabel: str, xlabel: str,
+                 title: str, mark_best: bool) -> None:
+    sweeps = [point[0] for point in next(iter(stats.values()))]
+    for method in METHODS:
+        points = stats.get(method)
+        if not points:
+            continue
+        style = STYLE[method]
+        x, mean, deviation = (np.asarray(column) for column in zip(*points))
+        axis.errorbar(
+            x, mean, yerr=deviation,
+            color=style["color"], linestyle=style["linestyle"], marker=style["marker"],
+            markersize=4.2, markerfacecolor="white", markeredgewidth=1.1,
+            linewidth=1.6, elinewidth=0.8, capsize=2.0, capthick=0.8, zorder=3,
+        )
+    if mark_best:
+        for index, sweep in enumerate(sweeps):
+            best = min(
+                (stats[method][index][1], method)
+                for method in METHODS if stats.get(method)
+            )
+            axis.scatter(
+                [sweep], [best[0]], marker="*", s=70,
+                color=STYLE[best[1]]["color"], edgecolor="black", linewidth=0.4,
+                zorder=5,
+            )
+    axis.set_xticks(sweeps)
+    axis.set_xlabel(xlabel)
+    axis.set_ylabel(ylabel)
+    axis.set_title(f"({tag})  {title}")
+
+
 def make_figure(key: str, items) -> list[Path]:
-    means = means_for(items)
+    error_stats = sweep_statistics(items, "L2_err")
     representative = items[len(items) // 2]
     representative_sweep = float(representative[1][0]["sweep"])
     traces = histories_for(representative)
-
-    fig, axes = plt.subplots(
-        1, 3, figsize=(TEXT_WIDTH_IN, FIG_HEIGHT_IN), layout="constrained"
-    )
-    fig.get_layout_engine().set(w_pad=0.02, h_pad=0.02, wspace=0.06, hspace=0.0)
-    # Seed bands of a diverging residual can span fifteen decades; the history
-    # panels are framed on the seed-mean curves so that every method stays
-    # legible, and the bands are allowed to run off the top of the panel.
-    mean_extent: dict[plt.Axes, list[tuple[float, float]]] = {axes[1]: [], axes[2]: []}
-    for method in METHODS:
-        label, color, linestyle, marker = STYLE[method]
-        points = means.get(method, [])
-        if points:
-            x, mean, lo, hi = map(np.asarray, zip(*points))
-            axes[0].plot(
-                x, mean,
-                color=color, linestyle=linestyle, marker=marker,
-                markersize=3.6, markerfacecolor="white", markeredgewidth=1.0,
-                zorder=3,
-            )
-            axes[0].fill_between(x, lo, hi, color=color, alpha=0.13, linewidth=0, zorder=2)
-        method_traces = traces.get(method, [])
-        if method_traces:
-            for axis, column, floor in ((axes[1], 1, 1e-12), (axes[2], 2, 1e-16)):
-                grid, mean, lo, hi = mean_trace(method_traces, column, floor)
-                axis.plot(grid, mean, color=color, linestyle=linestyle, zorder=3)
-                axis.fill_between(grid, lo, hi, color=color, alpha=0.13, linewidth=0, zorder=2)
-                axis.plot(
-                    grid[-1], mean[-1],
-                    color=color, marker=marker, markersize=3.6,
-                    markerfacecolor="white", markeredgewidth=1.0, zorder=4,
-                )
-                mean_extent[axis].append((float(mean.min()), float(mean.max())))
-
-    axes[0].set_xlabel(SWEEP_LABEL[key])
-    axes[0].set_ylabel(r"relative $L^2$ error")
-    axes[0].set_title("(a) final error")
-    axes[0].set_xticks([point[0] for point in next(iter(means.values()))])
-
-    sweep_tag = (
+    setting = (
         rf"$2m={representative_sweep:g}$" if key.startswith("poly_")
         else rf"$a={representative_sweep:g}$"
     )
-    axes[1].set_xlabel("training time (s)")
-    axes[1].set_ylabel(r"relative $L^2$ error")
-    axes[1].set_title(f"(b) error, {sweep_tag}")
-    axes[2].set_xlabel("training time (s)")
-    axes[2].set_ylabel("normalized residual")
-    axes[2].set_title(f"(c) residual, {sweep_tag}")
 
-    for axis in axes:
+    fig, axes = plt.subplots(1, 3, figsize=(FIG_WIDTH_IN, FIG_HEIGHT_IN))
+    plot_profile(
+        axes[0], error_stats, "a",
+        r"relative $L^2$ error", SWEEP_LABEL[key],
+        "final accuracy", mark_best=True,
+    )
+    axes[0].set_yscale("log")
+
+    for axis, column, floor, tag, ylabel, name in (
+        (axes[1], 1, 1e-12, "b", r"relative $L^2$ error", "error"),
+        (axes[2], 2, 1e-16, "c", "normalized residual", "residual"),
+    ):
+        extent = []
+        for method in METHODS:
+            method_traces = traces.get(method)
+            if not method_traces:
+                continue
+            style = STYLE[method]
+            grid, mean, low, high = mean_trace(method_traces, column, floor)
+            axis.plot(grid, mean, color=style["color"], linestyle=style["linestyle"],
+                      linewidth=1.6, zorder=3)
+            axis.fill_between(grid, low, high, color=style["color"], alpha=0.13,
+                              linewidth=0, zorder=2)
+            axis.plot(grid[-1], mean[-1], color=style["color"], marker=style["marker"],
+                      markersize=4.2, markerfacecolor="white", markeredgewidth=1.1,
+                      zorder=4)
+            extent.append((float(mean.min()), float(mean.max())))
         axis.set_yscale("log")
-    for axis, extents in mean_extent.items():
-        if extents:
-            low = min(item[0] for item in extents)
-            high = max(item[1] for item in extents)
-            axis.set_ylim(low / 3.0, high * 3.0)
-    for axis in axes:
-        style_axis(axis)
-        thin_log_ticks(axis)
-    for axis in axes[1:]:
-        axis.set_xlim(left=0.0)
-        axis.set_xticks([0, 400, 800, 1200])
+        if extent:
+            axis.set_ylim(min(item[0] for item in extent) / 3.0,
+                          max(item[1] for item in extent) * 3.0)
+        axis.set_xlim(0.0, 1200.0)
+        axis.set_xticks([0, 600, 1200])
+        axis.set_xlabel("training time (s)")
+        axis.set_ylabel(ylabel)
+        axis.set_title(f"({tag})  {name}, {setting}")
 
     handles = [
-        Line2D([0], [0], color=STYLE[method][1], linestyle=STYLE[method][2],
-               marker=STYLE[method][3], markersize=3.6, markerfacecolor="white",
-               markeredgewidth=1.0, linewidth=1.5, label=STYLE[method][0])
+        Line2D([0], [0], color=STYLE[method]["color"], linestyle=STYLE[method]["linestyle"],
+               marker=STYLE[method]["marker"], markersize=4.2, markerfacecolor="white",
+               markeredgewidth=1.1, linewidth=1.6, label=METHOD_LABEL[method])
         for method in METHODS
     ]
-    fig.legend(
-        handles=handles, loc="outside lower center", ncol=4, frameon=False,
-        handlelength=2.2, columnspacing=1.3, handletextpad=0.45, borderaxespad=0.0,
-    )
+    for axis in axes.flat:
+        style_axis(axis)
+        thin_log_ticks(axis, max_labels=4)
+
+    fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1.005),
+               ncol=4, frameon=False, handlelength=1.9, columnspacing=0.9,
+               handletextpad=0.35)
+    fig.subplots_adjust(left=0.088, right=0.976, bottom=0.205, top=0.775,
+                        wspace=0.46)
 
     OUT.mkdir(parents=True, exist_ok=True)
-    outputs = []
-    stem = OUT / f"fig_{key}"
-    for suffix, options in (("pdf", {"metadata": {"CreationDate": None}}), ("png", {"dpi": 300})):
-        path = stem.with_suffix(f".{suffix}")
-        fig.savefig(path, **options)
-        outputs.append(path)
+    outputs = save_figure(fig, OUT / f"fig_{key}")
     plt.close(fig)
     return outputs
+
+
+def check_width(path: Path, tolerance_pt: float = 1.5) -> None:
+    """Fail loudly if a saved PDF would be rescaled by \\includegraphics."""
+    target = TEXT_WIDTH_IN * 72.0
+    with path.open("rb") as handle:
+        blob = handle.read(4096)
+    marker = b"/MediaBox [ "
+    start = blob.index(marker) + len(marker)
+    width = float(blob[start:blob.index(b"]", start)].split()[2])
+    if abs(width - target) > tolerance_pt:
+        raise ValueError(
+            f"{path.name} is {width:.1f} pt wide but the text block is "
+            f"{target:.1f} pt; adjust FIG_WIDTH_IN"
+        )
 
 
 def main() -> None:
@@ -263,6 +309,8 @@ def main() -> None:
     set_plot_style()
     for key, items in sorted(grouped.items()):
         for path in make_figure(key, items):
+            if path.suffix == ".pdf":
+                check_width(path)
             print(f"[ok] {path}")
 
 
