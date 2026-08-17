@@ -558,6 +558,7 @@ Accuracy is the held-out relative $L^{2}$ error
     \mathcal{E}_{L^{2}} := \frac{\norm{u_{\theta}-u_{\star}}_{L^{2}(\Omega)}}{\norm{u_{\star}}_{L^{2}(\Omega)}},
 \end{equation}
 and tables report its arithmetic mean and sample standard deviation over the five seeds, while history panels show the geometric mean and the seedwise range.
+Each history panel is framed on the seed-mean curves, so a seedwise band leaves the panel wherever an individual seed diverges.
 A setting is reported only after automated checks confirm all 20 method-seed rows, that is, four methods and five seeds, together with finite metrics, nonempty monotone histories, the width and protocol metadata, and a fixed evaluation rule.
 All runs used one NVIDIA H20 GPU with CUDA 12.1; the stored records specify PyTorch 2.4.1 or 2.5.1, so throughput is compared within a setting and not across settings.
 
