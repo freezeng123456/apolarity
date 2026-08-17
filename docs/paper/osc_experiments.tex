@@ -15,8 +15,10 @@ pinned upstream commits and tested for architecture and derivative fidelity.
 \subsection{Shared protocol}
 \label{sec:bm:protocol}
 
-Protocol \texttt{jsc\_v2} uses a 1200-second wall-clock budget per
-\((\text{problem},\text{method},\text{seed})\), five seeds, four trainable
+We call one problem together with one value of its sweep parameter a
+\emph{setting}; the protocol below comprises 12 settings. Protocol
+\texttt{jsc\_v2} grants a wall-clock budget of 1200\,s to each triple of
+setting, method, and seed, and uses five seeds, four trainable
 hidden layers, 4096 fixed interior points, 512 fixed boundary points, paired
 per-seed collocation, and a common held-out set of 8192 points. Every hidden
 layer has width \(H=128\). This shared-width control does not match trainable
@@ -27,14 +29,14 @@ networks. The resulting counts are reported with each table.
 
 All methods use Adam with initial learning rate \(10^{-3}\), cosine decay to
 \(10^{-4}\), and the same residual normalization and boundary penalty within
-a problem configuration. The four methods receive the same collocation points
+a setting. The four methods receive the same collocation points
 for a given seed. Complex \(\sinh\) uses complex128 parameters; real targets are
 fitted through its real output component, with a \(10^{-6}\) penalty on
 imaginary parameters. For Maxwell, the full complex output is fitted and each
 real baseline represents real and imaginary components with separate
 networks.
 
-\paragraph{Architecture-specific frequencies.}
+\paragraph{Architecture-specific frequencies}
 For polyharmonic problems, the Complex \(\sinh\) first-layer scale is
 \(2\pi\), while the mFF-PINN branches use scales \(1\) and \(\pi\). For chirp
 and Maxwell problems, these become
@@ -42,7 +44,7 @@ and Maxwell problems, these become
 its upstream first- and hidden-layer frequencies of 30. MscaleDNN-2-sin uses
 three independent subnets at fixed input scales \(1,2,\) and \(4\).
 
-\paragraph{Derivative backend and metric.}
+\paragraph{Derivative backend and metric}
 All four architectures use B3 for every monomial derivative. Scaled
 activations and branched embeddings are admitted only after their input
 derivatives and parameter gradients agree with direct automatic
@@ -56,12 +58,13 @@ differentiation. Accuracy is the held-out relative \(L^2\) error
 \end{equation}
 Tables report the arithmetic mean and sample standard deviation over five
 seeds; history panels show the geometric mean and seedwise range. A
-configuration is reported only after automated checks confirm all 20
-method--seed rows, finite metrics, monotone
+setting is reported only after automated checks confirm all 20
+method--seed rows, that is, four methods and five seeds, together with finite
+metrics, monotone
 histories, width and protocol metadata, and a fixed evaluation rule. All runs
 used an NVIDIA H20 GPU with CUDA 12.1; the stored records specify PyTorch
-2.4.1 or 2.5.1, so throughput is compared within a configuration rather than
-across configurations.
+2.4.1 or 2.5.1, so throughput is compared within a setting rather than
+across settings.
 
 \subsection{Polyharmonic benchmark}
 \label{sec:bm:poly}
@@ -91,7 +94,7 @@ pure coordinate powers need one complex direction.
 \caption{Two-dimensional polyharmonic benchmark. Panel (a) shows the
 five-seed mean relative \(L^2\) error and seedwise range after 1200\,s.
 Panels (b) and (c) show error and normalized interior residual histories for
-the representative fourth-order configuration.}
+the representative fourth-order setting.}
 \label{fig:jsc-v2-poly-d2}
 \end{figure}
 
@@ -100,7 +103,7 @@ the representative fourth-order configuration.}
 \includegraphics[width=\linewidth]{fig_poly_d3.pdf}
 \caption{Three-dimensional polyharmonic benchmark, with the same convention
 as Fig.~\ref{fig:jsc-v2-poly-d2}. History panels use the fourth-order
-configuration.}
+setting.}
 \label{fig:jsc-v2-poly-d3}
 \end{figure}
 
@@ -145,11 +148,12 @@ histories for \(a=2\).}
 \end{figure}
 
 Complex \(\sinh\) gives the lowest mean error at each chirp rate. At \(a=1\),
-its mean \(8.14\times10^{-4}\) error is about three times lower than mFF-PINN,
-the next method. The separation grows at \(a=2\), where the three real
+its mean error of \(8.14\times10^{-4}\) is about three times smaller than that
+of mFF-PINN, the next most accurate method. The separation grows at \(a=2\),
+where the three real
 baselines have mean errors between \(0.847\) and \(1.53\), while Complex
 \(\sinh\) remains at \(2.39\times10^{-3}\). At \(a=3\), its error rises to
-\(0.100\), but remains below the real baselines. Because all methods share one
+\(0.100\) but stays below all three real baselines. Because all methods share one
 loss and optimizer protocol, these results compare end-to-end methods; they do
 not by themselves identify representation as the sole cause of the gap.
 
@@ -204,9 +208,9 @@ MscaleDNN subnets are slower. For Maxwell, each split-real baseline evaluates
 two networks, increasing its per-step cost. The polyharmonic row also shows
 the steep cost of propagating fourth-order jets through branched architectures.
 
-Across the 12 configurations, Complex \(\sinh\) attains the smallest
-five-seed mean error in every table. In 11 settings, the next-lowest mean is
+Across the 12 settings, Complex \(\sinh\) attains the smallest
+five-seed mean error in every table. In 11 of them, the next-lowest mean is
 at least three times larger. The exception is the three-dimensional
-sixth-order polyharmonic configuration, where all methods are close to the
+sixth-order polyharmonic setting, where all methods are close to the
 trivial-predictor error. This distinction is retained in the discussion rather
 than reducing the benchmark to an unqualified win count.

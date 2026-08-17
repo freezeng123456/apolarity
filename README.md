@@ -125,8 +125,13 @@ have shape `(batch, d)` and models must return one scalar per input with shape
   cd docs/beamer && xelatex -interaction=nonstopmode apolarity_report_zh.tex
   ```
 
-- Paper draft:
+- Paper draft (Elsevier `elsarticle` format for the Journal of Computational
+  Physics; the bibliography is BibTeX, so run the four standard passes):
 
   ```bash
-  cd docs/paper && xelatex -interaction=nonstopmode jsc_paper_main.tex
+  cd docs/paper
+  pdflatex -interaction=nonstopmode jsc_paper_main.tex
+  bibtex jsc_paper_main
+  pdflatex -interaction=nonstopmode jsc_paper_main.tex
+  pdflatex -interaction=nonstopmode jsc_paper_main.tex
   ```
