@@ -64,7 +64,7 @@ def build(key: str, items) -> Path:
         "maxwell": "Time-harmonic Maxwell benchmark",
     }[key]
     headers = [HEAD[method] for method in methods]
-    label_key = key.replace("_", "-")
+    label_key = key
     lines = [
         "% auto-generated from validated protocol_id=jsc_v2 bundles",
         r"\begin{table}[htbp]",
@@ -73,7 +73,7 @@ def build(key: str, items) -> Path:
         rf"\caption{{{title}: mean $\pm$ sample standard deviation of the "
         r"held-out relative $L^2$ error over five seeds after 1200\,s. "
         r"The lowest mean in each row is set in bold.}",
-        rf"\label{{tab:jsc-v2-{label_key}}}",
+        rf"\label{{tab_jsc_v2_{label_key}}}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}l" + "c" * len(methods) + r"@{}}",
         r"\toprule",
@@ -137,7 +137,7 @@ def build_throughput() -> Path:
         r"standard deviation of milliseconds per step over five seeds. "
         r"Methods should be compared within a row; the stored software "
         r"versions differ between settings.}",
-        r"\label{tab:jsc-v2-throughput}",
+        r"\label{tab_jsc_v2_throughput}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}lcccc@{}}",
         r"\toprule",

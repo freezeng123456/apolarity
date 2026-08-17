@@ -46,7 +46,7 @@ experiments/
   archived/          # other families, auxiliary results, and historical runners
 docs/
   beamer/  apolarity_report_zh.tex
-  paper/   jsc_paper_main.tex, jsc_paper_main.bib, highlights.txt
+  paper/   jsc_paper_main.tex, jsc_paper_main.bib, siamltex.cls, siamfull.bst
 scripts/
   run_jsc_main3.sh                    # launch exactly one jsc_v3 setting
   validate_jsc_results.py             # validate one atomic result bundle
@@ -125,8 +125,10 @@ have shape `(batch, d)` and models must return one scalar per input with shape
   cd docs/beamer && xelatex -interaction=nonstopmode apolarity_report_zh.tex
   ```
 
-- Paper draft (Elsevier `elsarticle` format for the Journal of Computational
-  Physics; the bibliography is BibTeX, so run the four standard passes):
+- Paper draft. The manuscript targets the Journal of Computational Physics and
+  uses the SIAM `siamltex` class, which is vendored in `docs/paper/` together
+  with `siamfull.bst`, a renamed derivative of `siam.bst` that spells out given
+  names. The bibliography is BibTeX, so run the four standard passes:
 
   ```bash
   cd docs/paper
