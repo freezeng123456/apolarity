@@ -107,6 +107,9 @@ setting.}
 \label{fig:jsc-v2-poly-d3}
 \end{figure}
 
+Tables~\ref{tab:jsc-v2-poly-d2} and~\ref{tab:jsc-v2-poly-d3} report the final
+accuracies, and Figs.~\ref{fig:jsc-v2-poly-d2} and~\ref{fig:jsc-v2-poly-d3}
+show the corresponding error and residual histories.
 In two dimensions, the mean error of Complex \(\sinh\) increases from
 \(3.36\times10^{-4}\) at order two to \(1.01\times10^{-1}\) at order six,
 but remains below the three real baselines throughout. The gap is largest at
@@ -147,7 +150,9 @@ histories for \(a=2\).}
 \label{fig:jsc-v2-chirp}
 \end{figure}
 
-Complex \(\sinh\) gives the lowest mean error at each chirp rate. At \(a=1\),
+Table~\ref{tab:jsc-v2-chirp} and Fig.~\ref{fig:jsc-v2-chirp} collect the
+results, and Complex \(\sinh\) gives the lowest mean error at each chirp rate.
+At \(a=1\),
 its mean error of \(8.14\times10^{-4}\) is about three times smaller than that
 of mFF-PINN, the next most accurate method. The separation grows at \(a=2\),
 where the three real
@@ -189,7 +194,8 @@ residual histories for \(a=4\).}
 \label{fig:jsc-v2-maxwell}
 \end{figure}
 
-The native-complex network has the lowest mean error at every wavenumber. Its
+As Table~\ref{tab:jsc-v2-maxwell} and Fig.~\ref{fig:jsc-v2-maxwell} show, the
+native-complex network has the lowest mean error at every wavenumber. Its
 mean error increases from \(4.21\times10^{-3}\) at \(a=2\) to \(0.120\) at
 \(a=6\). The split-real baselines remain near or above unit error at the two
 higher wavenumbers. This experiment favors a native complex representation
@@ -201,7 +207,8 @@ controlled ablation of complex arithmetic alone.
 
 \input{tables/jsc_v2_throughput}
 
-The representative throughput rows show why equal wall-clock time is a more
+The representative throughput rows in Table~\ref{tab:jsc-v2-throughput} show
+why equal wall-clock time is a more
 informative control than equal optimizer steps. On the scalar chirp task,
 SIREN completes the fastest steps, whereas the branched mFF-PINN and the three
 MscaleDNN subnets are slower. For Maxwell, each split-real baseline evaluates
