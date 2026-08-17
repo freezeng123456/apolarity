@@ -58,22 +58,22 @@ def build(key: str, items) -> Path:
     }
     symbol = "2m" if key.startswith("poly_") else "a"
     title = {
-        "poly_d2": "Polyharmonic, d=2",
-        "poly_d3": "Polyharmonic, d=3",
-        "chirp": "Radial chirp",
-        "maxwell": "Time-harmonic Maxwell",
+        "poly_d2": r"Polyharmonic benchmark, $d=2$",
+        "poly_d3": r"Polyharmonic benchmark, $d=3$",
+        "chirp": "Radial-chirp benchmark",
+        "maxwell": "Time-harmonic Maxwell benchmark",
     }[key]
     headers = [HEAD[method] for method in methods]
-    label_key = key.replace("_", "-")
+    label_key = key
     lines = [
         "% auto-generated from validated protocol_id=jsc_v2 bundles",
         r"\begin{table}[htbp]",
         r"\centering",
         r"\footnotesize",
         rf"\caption{{{title}: mean $\pm$ sample standard deviation of the "
-        r"relative $L^2$ error over five seeds after 1200\,s. The lowest "
-        r"mean in each row is bold.}",
-        rf"\label{{tab:jsc-v2-{label_key}}}",
+        r"held-out relative $L^2$ error over five seeds after 1200\,s. "
+        r"The lowest mean in each row is set in bold.}",
+        rf"\label{{tab_jsc_v2_{label_key}}}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}l" + "c" * len(methods) + r"@{}}",
         r"\toprule",
@@ -118,6 +118,7 @@ def build_throughput() -> Path:
         "chirp_a2": r"Radial chirp, $a=2$",
         "maxwell_a4": r"Maxwell, $a=4$",
     }
+    header = "setting"
     bundles = {
         task_dir.name: rows
         for task_dir, rows, _ in results.validated_bundles()
@@ -134,13 +135,13 @@ def build_throughput() -> Path:
         r"\footnotesize",
         r"\caption{Representative optimizer throughput: mean $\pm$ sample "
         r"standard deviation of milliseconds per step over five seeds. "
-        r"Compare methods within a row; stored software versions differ "
-        r"between problem configurations.}",
-        r"\label{tab:jsc-v2-throughput}",
+        r"Methods should be compared within a row; the stored software "
+        r"versions differ between settings.}",
+        r"\label{tab_jsc_v2_throughput}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}lcccc@{}}",
         r"\toprule",
-        "configuration & "
+        f"{header} & "
         + " & ".join(HEAD[method] for method in results.METHODS)
         + r" \\",
         r"\midrule",
