@@ -138,10 +138,10 @@ Waring decomposition with \(R\) terms. Thus the minimum probe count is a
 Waring rank (Section~\ref{sec:bridge}).
 \item The Carlini--Catalisano--Geramita theorem \cite{CCG2012} and a
 roots-of-unity filter give a closed-form schedule that attains the complex
-rank. Repeated-index patterns such as \((4,2)\) and \((2,2,2)\) require,
-respectively, 5 rather than 6 and 9 rather than 13 directions compared with
-fully projectively consolidated real polarization. The simpler B2
-implementation retains 7 directions for \((4,2)\).
+rank. For the repeated-index patterns \((4,2)\) and \((2,2,2)\) this schedule
+uses 5 and 9 directions, against 6 and 13 for fully projectively consolidated
+real polarization; the simpler coalescing rule that we implement uses 7
+directions for \((4,2)\).
 \item We combine this schedule with Taylor-mode propagation through smooth
 multilayer perceptrons and a custom vector--Jacobian product. The resulting
 implementation is algebraically exact, differentiable with respect to model
@@ -177,7 +177,7 @@ automatic differentiation. Section~\ref{sec:osc} applies the backend to
 complex-parameter \(\sinh\) PINNs on the polyharmonic, radial-chirp, and
 time-harmonic Maxwell benchmarks. Section~\ref{sec:discussion} discusses scope
 and limitations, and Section~\ref{sec:conclusion} concludes.
-Appendix~\ref{app:proofs} collects the proofs of the roots-of-unity identities
+\ref{app:proofs} collects the proofs of the roots-of-unity identities
 and the apolar form of the rank bound.
 
 \subsection{Notation}
@@ -284,15 +284,24 @@ active variables.
 \(z^{a}=z_0^{a_0}\cdots z_n^{a_n}\).
 \end{corollary}
 
+\begin{proof}
+    Read off the coefficient of $z^{a}$ in \eqref{eq:Qu-expand} and use
+    $a! = \nu!$; in active coordinates $\partial^{a}u(x) = \dal u(x)$.
+\end{proof}
+
+Extracting one mixed derivative is therefore a linear functional on
+\(\R[z]_{p}\), and the remaining question is how few directional evaluations
+suffice to realize it.
+
 \subsection{Directional schedules}
 
 A \emph{directional schedule} of length \(R\) for \(\dal\) is a finite
 collection \((c_{r},v_{r})_{r=1}^{R}\subset\R\times V\) such that
 \begin{equation}
-\dal u(x) \;=\; \sum_{r=1}^{R}c_{r}\,\Tp(x;v_{r}),
-\qquad \text{for every \(u\in C^p\) on a neighborhood of \(x\)}.
+\dal u(x) \;=\; \sum_{r=1}^{R}c_{r}\,\Tp(x;v_{r})
 \label{eq:dir-schedule}
 \end{equation}
+for every \(u\in C^p\) on a neighborhood of \(x\).
 
 Because the schedule is required to hold for every such \(u\),
 the \(p\)-jet of \(u\) at \(x\) may be prescribed arbitrarily on the
@@ -357,7 +366,7 @@ following are equivalent.
     \begin{equation*}
         \sum_{r = 1}^{R} c_r (v_r \mathbin{\cdot} z)^p = \sum_{|\beta| = p} \binom{p}{\beta} \left(\sum_{r = 1}^{R} c_r v_r^{\beta}\right) z^{\beta}.
     \end{equation*}
-    Hence $p! z^a = \sum_{r = 1}^{R} c_r (v_r \mathbin{\cdot} z)^p$ holds if and only if
+    Hence $p!\,z^a = \sum_{r = 1}^{R} c_r (v_r \mathbin{\cdot} z)^p$ holds if and only if
     \begin{equation*}
         \binom{p}{\beta} \sum_{r = 1}^{R} c_r v_r^{\beta} = p!\,\delta_{a\beta}, \quad |\beta| = p.
     \end{equation*}
@@ -383,6 +392,13 @@ Among schedules with real coefficients and real directions, the minimum
 length \(R^{\ast}\) for \(\dal\) equals the real Waring rank
 \(R_{\R}(z^{a})\) of the monomial.
 \end{corollary}
+
+\begin{proof}
+    By Theorem~\ref{thm:bridge}, schedules of length $R$ for $\dal$ correspond
+    to decompositions of $p!\,z^{a}$ into $R$ pure $p$th powers, and absorbing
+    the constant $p!$ into the coefficients $c_{r}$ shows that
+    $R_{\R}(p!\,z^{a}) = R_{\R}(z^{a})$.
+\end{proof}
 
 \begin{remark}[Complex extension]\label{rem:complex-extension}
 Using the complexified directional coefficient defined after
@@ -411,8 +427,8 @@ R_{\C}(z^{a}) \;=\; \prod_{j=1}^{n}(a_{j}+1)
 
 The lower bound uses the apolar ideal
 \((z^{a})^{\perp}=(\partial_{0}^{a_{0}+1},\ldots,\partial_{n}^{a_{n}+1})\),
-which is a complete intersection;
-Appendix~\ref{app:apolar-pairing} recalls the apolar interpretation. The
+which is a complete intersection; the apolar interpretation is recalled in
+\ref{app:apolar-pairing}. The
 upper bound is constructive, and Theorem~\ref{thm:rou} states the
 construction we implement.
 
@@ -434,7 +450,7 @@ Then \(\dal u(x)=\sum_{\zeta}c_{\zeta}\,\Tp(x;v_{\zeta})\) for every
 over \(\C\).
 \end{theorem}
 
-The proof, given in Appendix~\ref{app:rou-proof}, verifies condition (2)
+The proof, given in \ref{app:rou-proof}, verifies condition (2)
 of Theorem~\ref{thm:bridge} directly via the roots-of-unity filter
 \(\sum_{\zeta^{m}=1}\zeta^{k}=m\,\mathbf{1}_{m\mid k}\).
 
@@ -540,8 +556,9 @@ Eq.~\eqref{eq:polarization} of Section~\ref{ssec:backends} under two merging
 rules: backend B2, the rule we implement, merges duplicate and antipodal
 integer directions, whereas projective consolidation additionally uses
 \(\Tp(x;\lambda v)=\lambda^p\Tp(x;v)\) to merge all proportional directions.
-The complex schedule is strictly shorter than both real counts only for
-repeated-index patterns, and it is never longer.
+In the table the complex count never exceeds a real one, and it falls strictly
+below \(R_{\mathrm{proj}}\) exactly for the three patterns in which at least
+two coordinates carry a repeated exponent.
 
 \begin{table}[ht]
 \centering
@@ -688,7 +705,7 @@ complex jets, a point \(x\), and a multi-index \(\nu\) of order \(p\), it return
 the value \(\dal u(x)\) without nested input differentiation. The
 implementation batches all schedule directions in one jet pass.
 Backend (B2) follows the same overall structure with the
-Waring schedule (lines~3--7) replaced by the polarization schedule
+Waring schedule of lines~3--8 replaced by the polarization schedule
 \eqref{eq:polarization}.
 
 \begin{algorithm}[ht]
@@ -770,8 +787,9 @@ order six and is not a general conditioning study.
 \label{sec:experiments}
 % =========================================================
 
-We verify separately the algebraic schedule, derivative values, and
-parameter gradients. All checks use double precision. First, the
+We verify the algebraic schedule, the derivative values, and the parameter
+gradients separately. All checks use double precision, and all are executable
+tests in the repository. First, the
 roots-of-unity coefficient filter is evaluated against every degree-four
 monomial in five variables for the active-exponent pattern \((2,1,1)\);
 the maximum admissible absolute coefficient error is \(10^{-12}\). The
@@ -790,7 +808,9 @@ parameter are compared between the jet backends and nested differentiation.
 The tolerance is \(2\times10^{-9}\) relative and \(2\times10^{-11}\)
 absolute for both real- and complex-parameter networks. Additional analytic
 checks cover orders \(1,2,3,4,\) and \(6\) for a scalar complex
-\(\sinh\) network. These tests establish implementation consistency, but they
+\(\sinh\) network. Every check passes at the tolerance stated for it.
+
+These tests establish implementation consistency, but they
 do not convert a direction-count reduction into a hardware-independent timing
 claim. The application study below therefore reports measured throughput
 together with accuracy.
@@ -804,9 +824,11 @@ together with accuracy.
 
 \subsection{Direction count and computational cost}
 
-The complex schedule is most compact for repeated, balanced active exponents,
-including \((2,2)\), \((2,2,2)\), \((3,3)\), and \((4,2)\). For
-\((2,2,2)\), for example, it uses 9 directions rather than the 13 produced by
+Because the rank formula \eqref{eq:CCG-rank} divides out the factor
+\(a_{0}+1\) belonging to the smallest active exponent, the complex schedule
+gains most when every active coordinate is repeated, that is, when
+\(a_{0}\ge2\); examples are \((2,2)\), \((2,2,2)\), \((3,3)\), and \((4,2)\).
+For \((2,2,2)\) it uses 9 directions rather than the 13 produced by
 coalesced real polarization. This reduction controls the batch size of the
 directional jet, but not every component of execution time. Complex arithmetic,
 kernel launch overhead, memory traffic, and the backward pass can dominate for
@@ -816,16 +838,17 @@ an exact algebraic complexity result, not as a hardware-independent speedup.
 \subsection{Interpretation of the PINN study}
 
 Under the frozen \texttt{jsc\_v2} protocol, Complex \(\sinh\) has the lowest
-mean error in all 12 benchmark settings. The strongest separation occurs in
-the two-dimensional fourth- and sixth-order polyharmonic problems and in the
-complex-valued Maxwell problem. The three-dimensional sixth-order problem is a
+mean error in all 12 benchmark settings. The margin to the next lowest mean
+exceeds a factor of 70 in four of them: the two-dimensional fourth-order and
+three-dimensional second-order polyharmonic problems, the radial chirp at
+\(a=2\), and Maxwell at \(a=2\). The three-dimensional sixth-order problem is a
 necessary counterweight: all methods remain near unit relative error, and the
 difference between Complex \(\sinh\) and SIREN is practically negligible.
 
 The comparison does not isolate one causal mechanism. A complex model changes
 the value representation, initialization, parameter count, and throughput at
 the same time. Literal width \(H=128\) gives the scalar Complex \(\sinh\)
-network roughly twice as many real degrees of freedom as SIREN, whereas
+network exactly twice as many real degrees of freedom as SIREN, whereas
 MscaleDNN-2-sin has more degrees of freedom but completes fewer steps. The loss
 weights and optimizer are shared rather than tuned separately for every
 architecture. The reported result is therefore a controlled comparison of
@@ -834,8 +857,9 @@ are intrinsically superior.
 
 \subsection{Operator scope and stochastic alternatives}
 
-Square-free patterns attain \(R_{\C}=2^{p-1}\), so complex Waring gives no
-direction-count reduction. Operator sums can be expanded and evaluated
+For square-free patterns \(R_{\C}=2^{p-1}\) coincides with the coalesced real
+count, so the complex schedule saves no directions. Operator sums can be
+expanded and evaluated
 monomial by monomial, as in the polyharmonic experiment, but this procedure is
 not jointly rank-optimal for the full sum. Trace-collapsing approaches
 \cite{Li2024forwardLaplacian,Gao2023folx} can be preferable for Laplacian-only
@@ -894,6 +918,10 @@ completed steps, and evaluation rule.
 % =========================================================
 \appendix
 % =========================================================
+
+% elsarticle prints appendix section numbers as "Appendix A"; keep the shared
+% theorem counter in the plain A.1 form already used by appendix equations.
+\renewcommand{\thetheorem}{\Alph{section}.\arabic{theorem}}
 
 \section{Proofs of directional schedule identities}
 \label{app:proofs}
