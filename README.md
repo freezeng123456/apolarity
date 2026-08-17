@@ -46,7 +46,7 @@ experiments/
   archived/          # other families, auxiliary results, and historical runners
 docs/
   beamer/  apolarity_report_zh.tex
-  paper/   jsc_paper_main.tex
+  paper/   jsc_paper_main.tex, jsc_paper_main.bib, highlights.txt
 scripts/
   run_jsc_main3.sh                    # launch exactly one jsc_v3 setting
   validate_jsc_results.py             # validate one atomic result bundle
