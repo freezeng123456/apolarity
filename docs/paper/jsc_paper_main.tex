@@ -93,23 +93,25 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Physics-informed neural networks require repeated evaluation of the differential operator in the residual loss, and for fourth- and sixth-order equations this input differentiation dominates the training cost.
-  Nested automatic differentiation removes no work: it stores a computational graph whose depth grows with both the derivative order and the network depth.
-  Taylor-mode automatic differentiation avoids the nesting by propagating truncated Taylor coefficients along a chosen direction, but it does not determine how many directions one prescribed mixed derivative requires.
-  We show that this question is exactly the Waring problem for a monomial: a directional formula with $R$ probes exists if and only if the associated degree-$p$ monomial is a linear combination of $R$ pure $p$th powers of linear forms.
-  The rank formula of Carlini, Catalisano, and Geramita therefore fixes the minimum number of complex directions, and a roots-of-unity construction attains that minimum in closed form, without solving a linear system.
-  Evaluating the resulting schedule by one batched Taylor jet through a $\sinh$-activated multilayer perceptron, together with a closed-form vector-Jacobian product, yields a derivative backend that is algebraically exact and differentiable in the network parameters.
-  Double-precision tests confirm agreement with nested automatic differentiation for both values and parameter gradients.
-  Under a common 1200-second, five-seed, width-128 protocol, complex-parameter $\sinh$ networks built on this backend attain the lowest mean relative $L^2$ error in all 12 settings of a polyharmonic, radial-chirp, and time-harmonic Maxwell benchmark suite.
+  Evaluating one prescribed high-order mixed partial derivative of a neural surrogate is a recurring cost in scientific computing, and the price of an evaluation is set by how many passes through the model it takes.
+  Repeated automatic differentiation is exact but nests, numerical differentiation trades exactness for a step size, and randomized estimators trade it for variance.
+  Taylor-mode automatic differentiation removes the nesting by propagating truncated Taylor coefficients along one direction at a time, which leaves open how many directions a prescribed derivative needs.
+  We settle that question.
+  For a fixed order the directional Taylor coefficients form a homogeneous polynomial in the direction, so extracting one mixed derivative extracts one of its coefficients, and a directional formula is a decomposition of a monomial into powers of linear forms.
+  The shortest formula therefore has as many terms as the Waring rank of that monomial, which is known in closed form over the complex numbers and is attained by a roots-of-unity construction that requires no linear solve.
+  The classical polarization identity is the lowest-order case of the same construction, and every repeated index widens the gap between them.
+  Realized as one batched Taylor jet with a closed-form adjoint, the schedule becomes a derivative backend that is algebraically exact, differentiable in the model parameters, and able to take complex directions.
+  Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients.
+  As a demonstration, physics-informed networks built on the backend train under a common wall-clock budget on high-order and complex-valued benchmarks, and are the most accurate method in every setting tested.
 \end{abstract}
 
 \begin{keywords}
-physics-informed neural networks,
 high-order derivatives,
 Taylor-mode automatic differentiation,
 Waring decomposition,
 apolarity,
-complex-valued neural networks
+complex-valued neural networks,
+physics-informed neural networks
 \end{keywords}
 
 \begin{AMS}
@@ -123,41 +125,53 @@ complex-valued neural networks
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-Physics-informed neural networks (PINNs) approximate solutions of partial differential equations (PDEs) by embedding the governing equations, boundary data, and observations into the training loss~\cite{Raissi2019}.
-The formulation is mesh-free and applies to problems for which classical discretizations are expensive to assemble, which has made it a standard tool of scientific machine learning.
-Every optimization step, however, evaluates the differential operator of the governing equation at many collocation points, so the cost of differentiating the network with respect to its inputs enters the inner training loop.
-For fourth- and sixth-order equations this cost dominates the step time.
+Derivatives of a neural surrogate with respect to its inputs are needed wherever a learned function has to satisfy, or be probed against, a differential relation.
+Neural representations of the solution of a partial differential equation are trained by penalizing the residual of that equation, so every optimization step differentiates the network at many points~\cite{Raissi2019,Karniadakis2021,Han2018deepbsde}.
+Variational Monte Carlo evaluates a differential operator applied to a neural wavefunction at every sampled configuration~\cite{Li2024forwardLaplacian}.
+In each case the differentiation sits inside the innermost loop, is repeated for the whole of training, and is applied to the same model at many points at once, so its cost is a first-order concern rather than an implementation detail.
+The concern sharpens with the order of the derivative: a fourth- or sixth-order operator is far more expensive to evaluate than a gradient, and the gap widens with the depth of the model.
 
-A direct implementation applies reverse-mode automatic differentiation successively and retains the graph after every coordinate derivative.
-The depth and the storage of the resulting nested graph grow with both the derivative order and the network depth~\cite{Griewank2008}.
-Three complementary strategies reduce this cost.
-Forward- and Taylor-mode automatic differentiation propagate truncated Taylor coefficients through each primitive and never nest input-gradient graphs~\cite{Bettencourt2019,Griewank2008}.
-Stochastic estimators write the target operator as an expectation over random tangent vectors and approximate it by sampling~\cite{Hu2023sdgd,Shi2024stde}.
-Operator-specific specializations exploit the structure of one fixed operator, most prominently the Laplacian, whose trace collapses cleanly through linear layers~\cite{Li2024forwardLaplacian,Gao2023folx}.
+The exact ways of computing such a derivative are long established, and each pays for exactness differently.
+Symbolic differentiation returns a closed-form expression whose size grows quickly with the order.
+Numerical differentiation evaluates the model on a stencil and is indifferent to its internal structure, but it introduces a step size, and truncation and cancellation errors that degrade as the order rises; coupling it with exact differentiation recovers part of the accuracy while keeping the locality~\cite{Chiu2022CAN}.
+Automatic differentiation avoids both drawbacks by differentiating the program itself~\cite{Griewank2008}.
+Its reverse mode is the standard route to a gradient, and a high-order derivative is usually obtained by applying it repeatedly; each application, however, differentiates the graph built by the previous one, so depth and storage grow with the order.
+Taylor mode avoids that nesting: it propagates truncated Taylor coefficients through every primitive, and one forward pass along a chosen direction returns the directional derivatives of all orders up to the truncation~\cite{Bettencourt2019,Griewank2008}.
+The cost of Taylor mode is therefore counted in passes, one per direction, which makes the number of directions the quantity worth minimizing.
 
-Taylor mode supplies the derivative of the network along any prescribed direction, at the cost of one jet pass per direction.
-It does not say how many directions are needed to assemble one prescribed mixed partial derivative, and this is the quantity that controls the cost of a high-order residual.
-The classical answer is the polarization identity, which recovers a mixed derivative of order $p$ from $2^{p}$ signed directional probes and, after duplicate and antipodal directions are merged, from at most $2^{p-1}$ of them.
-That count is exponential in the derivative order and is insensitive to the repetition structure of the multi-index, even though a repeated index carries less information than a square-free one.
-Stochastic estimators trade this deterministic work for variance, and trace-specialized methods address a different operator structure; neither answers the deterministic question for a single fixed multi-index.
+Where exactness can be surrendered, estimation is cheaper still, and a substantial literature now trades it for variance.
+Hutchinson-type estimators replace the trace of a derivative tensor by an expectation of quadratic forms, so that a Laplacian costs Hessian-vector products rather than a Hessian~\cite{Hu2024hte}.
+Dimension-sampling estimators evaluate a random subset of the coordinate terms of the operator at each step~\cite{Hu2023sdgd}.
+Randomized smoothing convolves the model with a Gaussian and uses Stein identities to express derivatives of the smoothed function as expectations of function values, removing the differentiation entirely at the price of a smoothing bandwidth and of a variance that grows as the bandwidth shrinks~\cite{Stein1981,He2023,Hu2025bias}.
+The stochastic Taylor derivative estimator generalizes the idea to an arbitrary contraction of a derivative tensor by pushing forward randomly drawn sparse jets~\cite{Shi2024stde}.
+These methods are unbiased and scale to dimensions that exact evaluation cannot reach, but the estimate they return is exact only in expectation, and the sampling budget reappears in the accuracy of whatever is trained on it.
 
-In this paper we determine the exact answer for one fixed multi-index and turn it into an implementation.
-The starting observation is that the order-$p$ directional Taylor coefficients of the network, viewed as a function of the direction, form a homogeneous polynomial of degree $p$, and that extracting one mixed derivative is the extraction of one of its coefficients.
-A directional formula is then nothing but a decomposition of a monomial into pure powers of linear forms, so the shortest formula has length equal to the Waring rank of that monomial.
-Over the complex numbers this rank is known in closed form and is attained by an explicit roots-of-unity construction, which we combine with a batched Taylor jet through a $\sinh$-activated network and a closed-form vector-Jacobian product.
-Since $\sinh$ and $\cosh$ are entire, the complex directions of the construction are admissible arguments of the network, and the same implementation supports complex-parameter PINNs for complex-valued PDEs.
+A third line keeps exactness and buys speed from the structure of one particular operator.
+The forward Laplacian propagates the value, the gradient, and the Laplacian together through the network, exploiting the way a trace collapses through a linear layer, and is now standard in variational Monte Carlo~\cite{Li2024forwardLaplacian,Gao2023folx}.
+Specializations of this kind are exact and fast, but each is tied to the operator it was designed for.
+
+What is missing from all three lines is an answer for the elementary exact case: one prescribed mixed partial derivative, computed deterministically, of a model that can be evaluated along any direction.
+Taylor mode supplies the derivative along whichever direction it is given, and it is silent about how many directions the target requires.
+The classical answer is the polarization identity, which reconstructs a mixed derivative from signed evaluations along sums of coordinate directions; its count is exponential in the order and depends on the order alone, so it treats a derivative that repeats a few coordinates exactly like one that touches many.
+That insensitivity is suspicious, since a repeated index carries less information than a square-free one, and it raises a question that seems not to have been asked: for a given mixed derivative, what is the smallest number of directional evaluations that can reconstruct it exactly, and which directions attain it?
+
+This paper answers that question and turns the answer into an implementation.
+The route is to stop thinking of the directions as a stencil and to look at what the directional Taylor coefficients are as a function of the direction: for a fixed order they form a homogeneous polynomial, and extracting one mixed derivative is extracting one of its coefficients.
+A directional formula is then a decomposition of a monomial into powers of linear forms, so the shortest formula has as many terms as the Waring rank of that monomial, a quantity the algebraic-geometry literature settled in closed form.
+Over the complex numbers the minimizing directions are roots of unity and are written down without solving anything, the classical polarization identity reappears as the lowest-order instance of the same construction, and every repeated index widens the gap between them.
+Because the construction is exact rather than approximate, it composes with the training loop in the ordinary way: we evaluate the whole schedule in one batched Taylor jet through an entire activation, and give the jet a closed-form adjoint so that the result stays differentiable in the model parameters.
 
 The contributions of this work are as follows:
 \begin{enumerate}[label=(\alph*)]
-  \item We prove that a directional formula for one fixed mixed derivative with $R$ probes exists if and only if the associated monomial admits a Waring decomposition with $R$ terms, so that the minimum probe count is a Waring rank, and we identify the minimizing schedule in closed form.
-  \item We realize the schedule as a batched Taylor jet with a closed-form vector-Jacobian product, obtaining a derivative backend that is algebraically exact, differentiable in the network parameters, and verified against nested automatic differentiation in double precision.
-  \item We evaluate the backend inside complete PINN workflows on 12 polyharmonic, radial-chirp, and time-harmonic Maxwell settings under a common 1200-second, five-seed, width-128 protocol, and report accuracy, throughput, and trainable real degrees of freedom.
+  \item We prove that directional formulas for a fixed mixed derivative correspond exactly to Waring decompositions of the associated monomial, so that the minimum number of directional evaluations is a Waring rank, and we give a schedule that attains it in closed form.
+  \item We realize that schedule as a single batched Taylor jet with a closed-form adjoint, obtaining a derivative backend that is algebraically exact, differentiable in the model parameters, admits complex directions natively, and agrees with nested automatic differentiation in double precision.
+  \item We demonstrate the backend inside complete physics-informed training runs on high-order and complex-valued benchmarks under a common wall-clock budget, reporting accuracy, throughput, and trainable degrees of freedom.
 \end{enumerate}
 
 The remainder of this paper is organized as follows.
-Section~\ref{sec_prelim} reviews the PINN residual, Taylor-mode evaluation of directional derivatives, and the polarization identity that our construction replaces.
+Section~\ref{sec_prelim} fixes the evaluation problem, reviews Taylor-mode evaluation of directional derivatives, and recalls the polarization identity that our construction replaces.
 Section~\ref{sec_formulation} identifies the shortest directional formula with a monomial Waring decomposition, states and proves the main theorem, and gives the resulting algorithm.
-Section~\ref{sec_experiments} verifies the implementation and compares it inside complete PINN workflows on the three benchmark families.
+Section~\ref{sec_experiments} verifies the implementation against nested automatic differentiation and then demonstrates it inside complete training runs on three benchmark families.
 Section~\ref{sec_concl} concludes.
 The roots-of-unity filter, the explicit schedules used in the experiments, and the apolar form of the rank bound are collected in Appendix~\ref{sec_schedules}.
 
@@ -166,25 +180,30 @@ The roots-of-unity filter, the explicit schedules used in the experiments, and t
 %% ====================================================================
 \section{Preliminaries}\label{sec_prelim}
 
-\subsection{High-order operators in PINN residuals}\label{sec_pinn}
+\subsection{The evaluation problem}\label{sec_problem}
 
-Let $\Omega \subset \R^{d}$ be a bounded domain with boundary $\Gamma := \partial\Omega$.
-We consider the boundary-value problem
+Let $u_{\theta} \colon \R^{d} \to \R$ be a neural surrogate with parameters $\theta$, smooth in its inputs, and let $\nu$ be a multi-index of order $p$.
+The task addressed in this paper is the evaluation of the single mixed partial derivative $\partial^{\nu}u_{\theta}$ at a given point, subject to three requirements that together rule out most of the alternatives surveyed in Section~\ref{sec_intro}.
+The value must be exact, so that no step size and no sampling budget enters the result.
+The multi-index is fixed and prescribed, rather than being contracted against a structured family such as a trace, so an operator-specific specialization does not apply.
+And the value must remain differentiable in $\theta$, since it is consumed by an optimizer that updates the surrogate.
+The derivative is also evaluated at many points at once and re-evaluated at every step, so what matters is the cost of one evaluation of one derivative, amortized over a batch.
+
+The benchmarks of Section~\ref{sec_experiments} instantiate this task in its most demanding common form, the residual of a boundary-value problem.
+Let $\Omega \subset \R^{d}$ be a bounded domain with boundary $\Gamma := \partial\Omega$, and consider
 \begin{equation}\label{eq_pde}
     \mathcal{P} u = f \quad\text{in } \Omega,
     \qquad
     \mathcal{B} u = g \quad\text{on } \Gamma,
 \end{equation}
-where $\mathcal{P}$ is a differential operator of order $p$ and $\mathcal{B}$ specifies the boundary conditions.
-In the PINN framework the solution $u$ is approximated by a neural network $u_{\theta}$.
-Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, the parameters are obtained by minimizing
+with $\mathcal{P}$ a differential operator of order $p$ and $\mathcal{B}$ the boundary conditions.
+Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, a physics-informed network fits \eqref{eq_pde} by minimizing
 \begin{equation}\label{eq_pinn_loss}
     \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2}
     + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
 \end{equation}
-Each evaluation of the first term differentiates $u_{\theta}$ to order $p$ at every interior point, and each optimization step differentiates that value again with respect to $\theta$.
-A polyharmonic operator $\mathcal{P} = \Delta^{m}$ expands into $\binom{d+m-1}{m}$ monomial terms, so a single residual evaluation requires many separate high-order mixed derivatives of the same network.
-The subject of this paper is the cost of one such term.
+Expanding $\mathcal{P}$ into monomial terms turns one evaluation of the residual in \eqref{eq_pinn_loss} into several instances of the task above, on the same surrogate and the same batch of points; a polyharmonic operator $\mathcal{P} = \Delta^{m}$, for example, expands into $\binom{d+m-1}{m}$ of them.
+The loss \eqref{eq_pinn_loss} is a consumer of the derivative and not the object of study: nothing in what follows is specific to it.
 
 \subsection{Taylor-mode evaluation of directional derivatives}\label{sec_taylor}
 
@@ -420,7 +439,7 @@ The construction departs from polarization exactly when some exponent exceeds $1
 The directions \eqref{eq_rou} are complex whenever $m_{j} \ge 3$ for some $j$, so the network is evaluated at complex arguments and its activations must admit a holomorphic extension there.
 The functions $\sinh$ and $\cosh$ are entire, and the recurrence \eqref{eq_jet_sinh} is an algebraic identity that holds verbatim on complex tensors.
 By contrast $\tanh$ is meromorphic, with poles at $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for $k \in \Z$, so its jet is defined only away from those points and the admissible directions depend on the activation input.
-Entire activations are therefore a requirement of the construction rather than an incidental convenience, and they are the reason the PINN study of Section~\ref{sec_experiments} uses a $\sinh$ network for the proposed method.
+Entire activations are therefore a requirement of the construction rather than an incidental convenience, and they are the reason the demonstration of Section~\ref{sec_experiments} uses a $\sinh$ network for the proposed method.
 \end{remark}
 
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
@@ -518,9 +537,10 @@ Avoiding a linear solve does not by itself eliminate cancellation, factorial gro
 \section{Numerical experiments}\label{sec_experiments}
 
 This section reports two complementary studies.
-We first verify that the schedule, the derivative values, and the parameter gradients agree with nested automatic differentiation in double precision, without solving any PDE.
-We then embed the backend in complete PINN workflows and compare a complex-parameter $\sinh$ network with three real high-frequency baselines under a fixed compute budget, on polyharmonic, radial-chirp, and time-harmonic Maxwell problems.
-The objective of the second study is not to time an isolated derivative call but to measure the accuracy reached when the backend is used throughout training.
+The first verifies the backend itself: that the schedule, the derivative values, and the parameter gradients agree with nested automatic differentiation in double precision, with no PDE and no training involved.
+The second is a demonstration rather than a further test of the derivative: the backend is placed inside complete physics-informed training runs and asked to sustain a competitive workflow on high-order and complex-valued problems under a fixed compute budget.
+A demonstration of that kind is the honest way to report the benefit, because a reduction in directional evaluations is an algebraic statement whose effect on a real workload also depends on complex arithmetic, batching, and the backward pass.
+We therefore compare a complex-parameter $\sinh$ network against three real high-frequency baselines on polyharmonic, radial-chirp, and time-harmonic Maxwell problems, and report accuracy together with measured throughput.
 
 \subsection{Verification of the derivative backend}\label{sec_num_verify}
 
@@ -674,20 +694,21 @@ Across the 12 settings, Complex $\sinh$ attains the smallest five-seed mean erro
 The margin to the next lowest mean exceeds a factor of $70$ in four settings, namely the two-dimensional fourth-order and three-dimensional second-order polyharmonic problems, the radial chirp at $a = 2$, and Maxwell at $a = 2$; it is at least a factor of $3$ in $11$ of the $12$ settings.
 The exception is the three-dimensional sixth-order polyharmonic setting, in which every method stays close to the error of the trivial predictor.
 The comparison does not isolate a single causal mechanism, since a complex model changes the value representation, the initialization, the parameter count, and the throughput at once: literal width $H = 128$ gives the scalar Complex $\sinh$ network exactly twice as many real degrees of freedom as SIREN, whereas MscaleDNN-2-sin has more degrees of freedom but completes fewer steps, and the loss weights and optimizer are shared rather than tuned per architecture.
-What the study supports is that the rank-optimal backend sustains a complete high-order and complex-valued PINN workflow at a competitive accuracy under one fixed compute protocol.
+What the study supports is the claim it was designed for: an exact derivative backend built on the minimal schedule sustains a complete high-order and complex-valued workflow, at a per-step cost that leaves it competitive with methods tuned for such problems.
 
 %% ====================================================================
 %%  SECTION 5: CONCLUSION
 %% ====================================================================
 \section{Conclusion}\label{sec_concl}
 
-We have shown that constructing a shortest directional formula for one prescribed mixed derivative of a neural surrogate is exactly the Waring problem for the associated monomial.
-The identification is an equivalence rather than a bound: a formula with $R$ probes exists precisely when the monomial is a linear combination of $R$ pure $p$th powers of linear forms.
-The rank formula of Carlini, Catalisano, and Geramita then evaluates the minimum over the complex numbers as the product of the incremented active exponents, and a roots-of-unity construction attains it in closed form, with coefficients that are known in advance rather than obtained from a linear solve.
+Evaluating one prescribed high-order mixed derivative exactly is a question about how few directions suffice, and we have shown that it is the Waring problem for the associated monomial.
+The identification is an equivalence rather than a bound: a directional formula of a given length exists precisely when the monomial decomposes into that many powers of linear forms.
+The rank formula of Carlini, Catalisano, and Geramita then evaluates the minimum over the complex numbers as the product of the incremented active exponents, and a roots-of-unity construction attains it in closed form, with coefficients known in advance rather than obtained from a linear solve.
+The classical polarization identity is the lowest-order case of that construction, which is why the gap between them opens only when an index repeats.
 
-Combined with a batched Taylor jet through an entire activation and a closed-form vector-Jacobian product, the schedule becomes a derivative backend that is algebraically exact and differentiable in the network parameters.
+Combined with a batched Taylor jet through an entire activation and a closed-form vector-Jacobian product, the schedule becomes a derivative backend that is algebraically exact and differentiable in the model parameters.
 Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients through order six.
-Inside complete PINN workflows, a complex-parameter $\sinh$ network built on this backend attains the lowest five-seed mean relative $L^{2}$ error in all 12 settings of a 1200-second, width-128 protocol on polyharmonic, radial-chirp, and time-harmonic Maxwell problems, with a margin of at least a factor of $3$ in 11 of them; the exception is the hardest three-dimensional sixth-order problem, on which every method saturates near the error of the trivial predictor.
+Used inside complete physics-informed training runs, a complex-parameter $\sinh$ network built on this backend attains the lowest five-seed mean relative $L^{2}$ error in all 12 settings of a 1200-second, width-128 protocol on polyharmonic, radial-chirp, and time-harmonic Maxwell problems, with a margin of at least a factor of $3$ in 11 of them; the exception is the hardest three-dimensional sixth-order problem, on which every method saturates near the error of the trivial predictor.
 
 The reduction is sharpest for repeated-index multi-indices and vanishes for square-free ones, where the rank coincides with the merged polarization count.
 Operator sums are handled term by term, so the construction carries no joint optimality claim for a sum, and trace-collapsing or stochastic methods remain preferable for a Laplacian or for a broad tensor contraction.
