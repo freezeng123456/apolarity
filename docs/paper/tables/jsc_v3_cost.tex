@@ -1,0 +1,24 @@
+% auto-generated from validated protocol_id=jsc_v3 bundles
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Cost of one optimizer step under the jsc\_v3 protocol, which changes only the derivative backend.  Times are the three-seed mean of milliseconds per step and memory is the peak allocation of a run; the ratio columns give nested automatic differentiation divided by the Taylor jet, so larger is better for the jet.}
+\label{tab_v3_cost}
+\begin{tabular}{@{}lrrrcrrc@{}}
+\toprule
+& & \multicolumn{3}{c}{ms per step} & \multicolumn{3}{c}{peak memory (MiB)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+setting & $p$ & jet & nested & ratio & jet & nested & ratio \\
+\midrule
+Polyharmonic, $2m=2$ & 2 & $62.3$ & $91.1$ & $\mathbf{1.46}$ & $509$ & $789$ & $\mathbf{1.55}$ \\
+Polyharmonic, $2m=4$ & 4 & $251.6$ & $565.9$ & $\mathbf{2.25}$ & $1759$ & $5400$ & $\mathbf{3.07}$ \\
+Polyharmonic, $2m=6$ & 6 & $854.2$ & $3496.1$ & $\mathbf{4.09}$ & $5728$ & $36976$ & $\mathbf{6.46}$ \\
+Radial chirp, $a=1$ & 2 & $72.8$ & $101.7$ & $\mathbf{1.40}$ & $548$ & $852$ & $\mathbf{1.55}$ \\
+Radial chirp, $a=2$ & 2 & $73.4$ & $101.9$ & $\mathbf{1.39}$ & $548$ & $852$ & $\mathbf{1.55}$ \\
+Radial chirp, $a=3$ & 2 & $73.4$ & $102.1$ & $\mathbf{1.39}$ & $548$ & $852$ & $\mathbf{1.55}$ \\
+Maxwell, $a=2$ & 2 & $73.3$ & $102.1$ & $\mathbf{1.39}$ & $573$ & $853$ & $\mathbf{1.49}$ \\
+Maxwell, $a=4$ & 2 & $73.2$ & $101.9$ & $\mathbf{1.39}$ & $573$ & $853$ & $\mathbf{1.49}$ \\
+Maxwell, $a=6$ & 2 & $72.9$ & $101.8$ & $\mathbf{1.40}$ & $573$ & $853$ & $\mathbf{1.49}$ \\
+\bottomrule
+\end{tabular}
+\end{table}

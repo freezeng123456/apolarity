@@ -102,7 +102,7 @@
   The classical polarization identity is the lowest-order case of the same construction, and every repeated index widens the gap between them.
   Realized as one batched Taylor jet with a closed-form adjoint, the schedule becomes a derivative backend that is algebraically exact, differentiable in the model parameters, and able to take complex directions.
   Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients.
-  As a demonstration, physics-informed networks built on the backend train under a common wall-clock budget on high-order and complex-valued benchmarks, and are the most accurate method in every setting tested.
+  In training runs where the derivative backend is the only quantity that varies, the schedule reduces the time and the memory of one optimizer step by a factor that grows with the derivative order, and the saved time converts into lower error on the higher-order problems.
 \end{abstract}
 
 \begin{keywords}
@@ -165,7 +165,7 @@ The contributions of this work are as follows:
 \begin{enumerate}[label=(\alph*)]
   \item We prove that directional formulas for a fixed mixed derivative correspond exactly to Waring decompositions of the associated monomial, so that the minimum number of directional evaluations is a Waring rank, and we give a schedule that attains it in closed form.
   \item We realize that schedule as a single batched Taylor jet with a closed-form adjoint, obtaining a derivative backend that is algebraically exact, differentiable in the model parameters, admits complex directions natively, and agrees with nested automatic differentiation in double precision.
-  \item We demonstrate the backend inside complete physics-informed training runs on high-order and complex-valued benchmarks under a common wall-clock budget, reporting accuracy, throughput, and trainable degrees of freedom.
+  \item We measure the backend inside complete training runs in which the derivative evaluation is the only thing that varies, and report how the saving in step time, in memory, and in the accuracy reached under a fixed budget grows with the derivative order.
 \end{enumerate}
 
 The remainder of this paper is organized as follows.
@@ -536,11 +536,11 @@ Avoiding a linear solve does not by itself eliminate cancellation, factorial gro
 %% ====================================================================
 \section{Numerical experiments}\label{sec_experiments}
 
-This section reports two complementary studies.
-The first verifies the backend itself: that the schedule, the derivative values, and the parameter gradients agree with nested automatic differentiation in double precision, with no PDE and no training involved.
-The second is a demonstration rather than a further test of the derivative: the backend is placed inside complete physics-informed training runs and asked to sustain a competitive workflow on high-order and complex-valued problems under a fixed compute budget.
-A demonstration of that kind is the honest way to report the benefit, because a reduction in directional evaluations is an algebraic statement whose effect on a real workload also depends on complex arithmetic, batching, and the backward pass.
-We therefore compare a complex-parameter $\sinh$ network against three real high-frequency baselines on polyharmonic, radial-chirp, and time-harmonic Maxwell problems, and report accuracy together with measured throughput.
+This section asks two questions about the backend and nothing else.
+Does it compute the derivative it claims to compute, and does the reduction in directional evaluations turn into a reduction in cost?
+The first is settled against nested automatic differentiation in double precision, with no PDE and no training involved.
+The second requires a workload, because a shorter schedule is an algebraic statement whose effect on running time also depends on complex arithmetic, batching, and the backward pass; we therefore run complete training loops in which the derivative backend is the only thing that varies, and measure the time and the memory one optimizer step costs.
+Physics-informed training is the workload rather than the subject: it is a demanding and reproducible consumer of high-order derivatives, and every quantity below is a property of the backend, not of an architecture.
 
 \subsection{Verification of the derivative backend}\label{sec_num_verify}
 
@@ -554,107 +554,48 @@ Gradients of a squared derivative loss with respect to every network parameter a
 Every check passes at the tolerance stated for it.
 These tests establish that the implementation computes what Theorem~\ref{thm_main} predicts; they do not turn a reduction in direction count into a hardware-independent timing claim.
 
-\subsection{Shared protocol}\label{sec_num_protocol}
+\subsection{A controlled comparison of derivative backends}\label{sec_num_protocol}
 
-A \emph{setting} is one problem together with one value of its sweep parameter, and the study below covers 12 settings.
-The proposed method is a complex-parameter $\sinh$ network, denoted Complex $\sinh$, and the three baselines are SIREN~\cite{Sitzmann2020SIREN}, a multiscale Fourier-feature PINN~\cite{Tancik2020Fourier,Wang2021Pathologies} denoted mFF-PINN, and MscaleDNN-2-sin~\cite{Liu2020MscaleDNN}.
-The three baseline implementations were traced to pinned upstream commits and tested for architecture and derivative fidelity before use.
+The remaining study isolates the derivative backend.
+Protocol \texttt{jsc\_v3} runs two lines that share the surrogate, the loss, the optimizer, the collocation points, the evaluation rule, the seeds, and the wall-clock budget, and differ in one respect: how each monomial derivative of the residual is evaluated.
+The first line uses Algorithm~\ref{alg_waring}, that is, the rank-optimal complex schedule evaluated by one batched Taylor jet, and is labelled \emph{jet} below.
+The second evaluates the same derivative of the same network by nested reverse-mode automatic differentiation, with the graph retained after every coordinate derivative, and is labelled \emph{nested}.
+Both lines are the same complex-parameter $\sinh$ network with four hidden layers of width $H = 128$, hence the same 100{,}098 trainable real degrees of freedom, the same first-layer scale, and the same \texttt{complex128} arithmetic.
+Both use Adam with initial learning rate $10^{-3}$ and cosine decay, 4096 fixed interior points, 512 fixed boundary points, paired per-seed collocation, the same per-setting boundary weights, and a common held-out set of 8192 points.
+Each line is run for three seeds with a budget of 1000 seconds per run.
 
-Protocol \texttt{jsc\_v2} grants a wall-clock budget of 1200 seconds to each triple of setting, method, and seed, and uses five seeds, four trainable hidden layers, 4096 fixed interior points, 512 fixed boundary points, paired per-seed collocation, and a common held-out set of 8192 points.
-Every hidden layer has width $H = 128$.
-This shared-width control does not equalize trainable parameter counts: each complex parameter counts as two real degrees of freedom, frozen Fourier maps are excluded, and a split-real Maxwell model contains two width-128 networks.
-The resulting counts are reported with each table.
-
-All methods use Adam with initial learning rate $10^{-3}$, cosine decay to $10^{-4}$, and the same residual normalization and boundary penalty within a setting, and the four methods receive identical collocation points for a given seed.
-Complex $\sinh$ uses \texttt{complex128} parameters; a real-valued target is fitted through its real output component, with a $10^{-6}$ penalty on the imaginary parts of the parameters.
-For Maxwell the full complex output is fitted, and each real baseline represents the real and imaginary components by two separate networks.
-For the polyharmonic problems the Complex $\sinh$ first-layer scale is $2\pi$ and the mFF-PINN branches use the scales $1$ and $\pi$; for the chirp and Maxwell problems these become $\max(10, 2\pi a)$ and $(1, \max(2, \pi a))$, respectively.
-SIREN retains its upstream first- and hidden-layer frequencies of $30$, and MscaleDNN-2-sin uses three independent subnets at the fixed input scales $1$, $2$, and $4$.
-
-All four architectures use Algorithm~\ref{alg_waring} for every monomial derivative.
-Scaled activations and branched embeddings are admitted only after their input derivatives and parameter gradients agree with direct automatic differentiation.
-Accuracy is the held-out relative $L^{2}$ error
+A \emph{setting} is one problem together with one value of its sweep parameter, and the protocol covers nine: the two-dimensional polyharmonic problem at orders $2m \in \{2,4,6\}$, the radial chirp at $a \in \{1,2,3\}$, and the time-harmonic Maxwell problem at $a \in \{2,4,6\}$, all defined as in Section~\ref{sec_num_problems}.
+All 54 runs were produced by one source commit on one NVIDIA H20 GPU with PyTorch 2.5.1 and CUDA 12.1, so unlike a comparison assembled from separate campaigns, timings here are comparable across settings as well as within one.
+Cost is the measured time per optimizer step together with the peak memory allocated by a run, and accuracy is the held-out relative $L^{2}$ error
 \begin{equation}\label{eq_rel_error}
     \mathcal{E}_{L^{2}} := \frac{\norm{u_{\theta}-u_{\star}}_{L^{2}(\Omega)}}{\norm{u_{\star}}_{L^{2}(\Omega)}},
 \end{equation}
-and tables report its arithmetic mean and sample standard deviation over the five seeds, while history panels show the geometric mean and the seedwise range.
-Each history panel is framed on the seed-mean curves, so a seedwise band leaves the panel wherever an individual seed diverges.
-A setting is reported only after automated checks confirm all 20 method-seed rows, that is, four methods and five seeds, together with finite metrics, nonempty monotone histories, the width and protocol metadata, and a fixed evaluation rule.
-All runs used one NVIDIA H20 GPU with CUDA 12.1; the stored records specify PyTorch 2.4.1 or 2.5.1, so throughput is compared within a setting and not across settings.
+evaluated on that held-out set against the exact solution $u_{\star}$.
+A setting enters the tables only after automated checks confirm all six method-seed rows, finite metrics, nonempty monotone histories, and the protocol metadata.
 
-\subsection{Polyharmonic equations}\label{sec_num_poly}
+\subsection{Benchmark problems}\label{sec_num_problems}
 
-For $d \in \{2,3\}$ we solve the manufactured polyharmonic problem
+The three families place different demands on the derivative.
+For the polyharmonic problem on $(-1,1)^{2}$ we solve
 \begin{equation}\label{eq_num_poly}
-    \Delta^{m}u = (-d\pi^{2})^{m}u_{\star}
-    \quad\text{in }(-1,1)^{d},
+    \Delta^{m}u = (-2\pi^{2})^{m}u_{\star}
+    \quad\text{in }(-1,1)^{2},
     \qquad
-    u_{\star}(\bx) = \prod_{j=1}^{d}\sin(\pi x_{j}),
+    u_{\star}(\bx) = \sin(\pi x_{1})\sin(\pi x_{2}),
 \end{equation}
-at the orders $2m \in \{2,4,6\}$, with the Navier boundary targets $u = u_{\star}$ and $\Delta^{j}u = (-d\pi^{2})^{j}u_{\star}$ for $j = 1, \ldots, m-1$.
-All of these targets vanish for the chosen $u_{\star}$.
-Expanding $\Delta^{m}$ produces $\binom{d+m-1}{m}$ monomial terms, each evaluated independently: a mixed term such as $\partial_{1}^{2}\partial_{2}^{2}u$ uses a schedule of length $3$ by \eqref{eq_rank}, whereas a pure power $\partial_{1}^{2m}u$ needs one direction.
+at the orders $2m \in \{2,4,6\}$, with the Navier boundary targets $u = u_{\star}$ and $\Delta^{j}u = (-2\pi^{2})^{j}u_{\star}$ for $j = 1, \ldots, m-1$, all of which vanish for this $u_{\star}$.
+This family is the reason the derivative order appears as a variable: expanding $\Delta^{m}$ in two dimensions produces the patterns $(2m)$ and, for $m \ge 2$, the mixed patterns whose schedules Table~\ref{tab_patterns} lists.
+At $2m = 4$ the mixed term is $\partial_{1}^{2}\partial_{2}^{2}$, which the schedule \eqref{eq_rou} evaluates with three complex directions instead of the four real ones that merged polarization retains; at $2m = 6$ the mixed terms are $\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$, which take five instead of seven.
 
-\input{tables/jsc_v2_poly_d2}
-\input{tables/jsc_v2_poly_d3}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{fig_poly_d2.pdf}
-\caption{Two-dimensional polyharmonic benchmark.
-Panel (a) shows the five-seed mean relative $L^{2}$ error after 1200 seconds with sample-deviation bars, and a star marks the lowest mean at each order.
-Panels (b) and (c) show the seed-mean error and normalized interior residual histories of the representative fourth-order setting, with the seedwise range shaded.}
-\label{fig_num_poly_d2}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{fig_poly_d3.pdf}
-\caption{Three-dimensional polyharmonic benchmark, under the same reporting convention as Figure~\ref{fig_num_poly_d2}.
-The history panels use the fourth-order setting.}
-\label{fig_num_poly_d3}
-\end{figure}
-
-Tables~\ref{tab_jsc_v2_poly_d2} and~\ref{tab_jsc_v2_poly_d3} report the final accuracies, and Figures~\ref{fig_num_poly_d2} and~\ref{fig_num_poly_d3} show the corresponding histories.
-In two dimensions the mean error of Complex $\sinh$ grows from $3.36 \times 10^{-4}$ at order two to $1.01 \times 10^{-1}$ at order six, and remains below all three baselines throughout; the margin is largest at order four, where the mean error is smaller than the next lowest mean by a factor of about $72$.
-The same ordering holds in three dimensions at orders two and four.
-At order six in three dimensions, Complex $\sinh$ reaches $9.82 \times 10^{-1}$ while SIREN reaches approximately $1$ and the other two baselines are also near unit error, so this setting exhibits budget-limited saturation rather than a meaningful separation.
-\FloatBarrier
-
-\subsection{Non-separable radial chirp}\label{sec_num_chirp}
-
-On $(-1,1)^{2}$ we solve the Helmholtz-type problem
+The other two families sit at order two and sweep a frequency instead.
+On $(-1,1)^{2}$ the radial chirp is
 \begin{equation}\label{eq_num_chirp}
     -\Delta u + u = f,
     \qquad
     u_{\star}(x,y) = \sin\Bigl(\frac{a\pi}{2}(x^{2}+y^{2})\Bigr),
 \end{equation}
-with Dirichlet data taken from $u_{\star}$ and $a \in \{1,2,3\}$.
-Writing $\phi := a\pi(x^{2}+y^{2})/2$ and $r^{2} := x^{2}+y^{2}$, the manufactured source is
-\begin{equation}\label{eq_num_chirp_source}
-    f = (a\pi)^{2}r^{2}\sin\phi - 2a\pi\cos\phi + \sin\phi.
-\end{equation}
-Unlike a separable Fourier mode, this target has the local radial wavenumber $\abs{\nabla\phi} = a\pi r$, so its frequency varies over the domain.
-
-\input{tables/jsc_v2_chirp}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{fig_chirp.pdf}
-\caption{Radial-chirp benchmark, under the same reporting convention as Figure~\ref{fig_num_poly_d2}.
-The history panels use $a = 2$.}
-\label{fig_num_chirp}
-\end{figure}
-
-Table~\ref{tab_jsc_v2_chirp} and Figure~\ref{fig_num_chirp} collect the results, and Complex $\sinh$ attains the lowest mean error at each chirp rate.
-At $a = 1$ its mean error of $8.14 \times 10^{-4}$ is smaller than that of mFF-PINN, the next most accurate method, by a factor of about $3$.
-The separation grows at $a = 2$, where the three baselines have mean errors between $0.847$ and $1.53$ while Complex $\sinh$ remains at $2.39 \times 10^{-3}$.
-At $a = 3$ its error rises to $0.100$ but stays below all three baselines.
-Since all four methods share one loss and one optimizer schedule, these numbers compare complete methods; by themselves they do not identify the value representation as the sole cause of the gap.
-\FloatBarrier
-
-\subsection{Time-harmonic Maxwell equations}\label{sec_num_maxwell}
-
+with Dirichlet data from $u_{\star}$, $a \in \{1,2,3\}$, and the manufactured source $f = (a\pi)^{2}r^{2}\sin\phi - 2a\pi\cos\phi + \sin\phi$, where $\phi := a\pi(x^{2}+y^{2})/2$ and $r^{2} := x^{2}+y^{2}$.
+Its local radial wavenumber $\abs{\nabla\phi} = a\pi r$ varies over the domain, so the target is not a separable Fourier mode.
 For a two-dimensional transverse-magnetic mode, Maxwell's equations reduce to a scalar complex Helmholtz equation for the out-of-plane field $E$,
 \begin{equation}\label{eq_num_maxwell}
     \Delta E + \kappa^{2}E = f,
@@ -663,38 +604,57 @@ For a two-dimensional transverse-magnetic mode, Maxwell's equations reduce to a 
     \qquad
     E_{\star} = \exp\bigl(\mathrm{i}a\pi(x+y)\bigr),
 \end{equation}
-with $\beta = 0.2$, exact Dirichlet data, $a \in \{2,4,6\}$, and the source $f = [-2(a\pi)^{2}+\kappa^{2}]E_{\star}$.
-Complex $\sinh$ represents $E$ natively, whereas each baseline uses a split real-imaginary pair of two width-128 networks.
+with $\beta = 0.2$, exact Dirichlet data, $a \in \{2,4,6\}$, and $f = [-2(a\pi)^{2}+\kappa^{2}]E_{\star}$.
+The Maxwell family is included because its solution is complex-valued, which the schedule of Theorem~\ref{thm_main} accommodates without modification: the surrogate is already evaluated at complex directions, so a complex target costs nothing extra.
+Since both families are of order two, every monomial term of their residuals is a pure power, which the schedule evaluates with a single direction; they therefore isolate what the Taylor jet contributes on its own, with no rank reduction involved.
 
-\input{tables/jsc_v2_maxwell}
+\subsection{Cost of one derivative evaluation}\label{sec_num_cost}
+
+\input{tables/jsc_v3_cost}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{fig_maxwell.pdf}
-\caption{Time-harmonic Maxwell benchmark, under the same reporting convention as Figure~\ref{fig_num_poly_d2}.
-The history panels use $a = 4$.}
-\label{fig_num_maxwell}
+\includegraphics[width=\linewidth]{fig_v3_cost.pdf}
+\caption{Cost of one optimizer step against the derivative order, on the polyharmonic family, for the two backends of Section~\ref{sec_num_protocol}.
+Panels (a) and (b) show the three-seed mean step time and the peak memory of a run; panel (c) shows the ratio of nested automatic differentiation to the Taylor jet for both quantities.}
+\label{fig_v3_cost}
 \end{figure}
 
-As Table~\ref{tab_jsc_v2_maxwell} and Figure~\ref{fig_num_maxwell} show, the native-complex network attains the lowest mean error at every wavenumber, with mean errors growing from $4.21 \times 10^{-3}$ at $a = 2$ to $0.120$ at $a = 6$.
-The split-real baselines remain near or above unit error at the two higher wavenumbers.
-This benchmark favours a native complex representation by construction, and the comparison still contains architecture-dependent optimization and throughput effects, so it should not be read as a controlled ablation of complex arithmetic alone.
-\FloatBarrier
+Table~\ref{tab_v3_cost} and Figure~\ref{fig_v3_cost} report the cost of one optimizer step.
+At order two the jet is faster by a factor between $1.39$ and $1.46$ across all seven order-two settings, and it allocates between $1.49$ and $1.55$ times less memory.
+This is the contribution of Taylor-mode evaluation alone, since a pure power needs one direction and no rank reduction is available; nested differentiation pays for retaining a graph across two coordinate derivatives, and the jet does not.
+The saving then grows with the order, exactly where the rank reduction begins to apply: at order four the step time falls by a factor of $2.25$ and the peak memory by $3.07$, and at order six by $4.09$ and $6.46$.
+In absolute terms, one step of the sixth-order problem costs $854$ milliseconds and $5.6$ gibibytes with the jet, against $3.5$ seconds and $36.1$ gibibytes with nested differentiation.
 
-\subsection{Throughput and aggregate outcome}\label{sec_num_throughput}
+Two mechanisms compound in that growth, and the design of the study separates them.
+The jet replaces a graph of depth proportional to the derivative order and the network depth by $p+1$ coefficient tensors per activation, which is what the memory column measures; this part is available at every order and is what the order-two settings show.
+The schedule then reduces how many directions that jet is run on, from the merged polarization count to the Waring rank of Table~\ref{tab_patterns}, and this part switches on only when an index repeats, which is why the ratio in panel (c) of Figure~\ref{fig_v3_cost} is flat between the orders where no mixed pattern occurs and rises where they do.
+Neither mechanism is a claim about asymptotics: both counts are exact, and what Table~\ref{tab_v3_cost} adds is that on this hardware the algebraic reduction survives contact with complex arithmetic, kernel launches, and the backward pass.
 
-\input{tables/jsc_v2_throughput}
+\subsection{What the saving buys}\label{sec_num_outcome}
 
-The rows of Table~\ref{tab_jsc_v2_throughput} show why equal wall-clock time is a more informative control than an equal number of optimizer steps.
-On the scalar chirp task SIREN completes the fastest steps, while the branched mFF-PINN and the three MscaleDNN subnets are slower by factors of about $2$ and $3$.
-For Maxwell each split-real baseline evaluates two networks, which raises its per-step cost, and the polyharmonic row shows the cost of propagating fourth-order jets through branched architectures.
-The table stays within one setting per row because the recorded source commit differs between settings, so a throughput trend across a sweep would not be attributable to the sweep.
+\input{tables/jsc_v3_outcome}
 
-Across the 12 settings, Complex $\sinh$ attains the smallest five-seed mean error in every table.
-The margin to the next lowest mean exceeds a factor of $70$ in four settings, namely the two-dimensional fourth-order and three-dimensional second-order polyharmonic problems, the radial chirp at $a = 2$, and Maxwell at $a = 2$; it is at least a factor of $3$ in $11$ of the $12$ settings.
-The exception is the three-dimensional sixth-order polyharmonic setting, in which every method stays close to the error of the trivial predictor.
-The comparison does not isolate a single causal mechanism, since a complex model changes the value representation, the initialization, the parameter count, and the throughput at once: literal width $H = 128$ gives the scalar Complex $\sinh$ network exactly twice as many real degrees of freedom as SIREN, whereas MscaleDNN-2-sin has more degrees of freedom but completes fewer steps, and the loss weights and optimizer are shared rather than tuned per architecture.
-What the study supports is the claim it was designed for: an exact derivative backend built on the minimal schedule sustains a complete high-order and complex-valued workflow, at a per-step cost that leaves it competitive with methods tuned for such problems.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{fig_v3_history.pdf}
+\caption{Held-out relative $L^{2}$ error against training time for the two backends, on one representative setting of each family.
+Curves are the three-seed median and the shaded band is the seedwise range.
+Each panel is framed on the median curves.}
+\label{fig_v3_history}
+\end{figure}
+
+A cheaper step is only useful if the training run does more with it.
+Table~\ref{tab_v3_outcome} therefore records how many optimizer steps each line completes inside the common budget and the accuracy it reaches, and Figure~\ref{fig_v3_history} shows the trajectories.
+The step counts follow the cost directly: at order six the jet completes $1171$ steps against $287$, and at order four $3975$ against $1767$.
+The accuracy follows the step counts where the problem is hard enough for the extra steps to matter.
+At order four the jet reaches $6.55 \times 10^{-4}$ against $1.43 \times 10^{-3}$, and at order six $3.36 \times 10^{-2}$ against $9.18 \times 10^{-2}$, in both cases with the seed spread of Table~\ref{tab_v3_outcome} well inside the gap.
+Across the nine settings the jet has the lower three-seed mean error in eight; the exception is the chirp at $a = 2$, where the two lines are within one seed standard deviation of each other.
+
+The order-two settings are the honest counterweight.
+There the extra steps buy little: the two backends track each other in panels (b) and (c) of Figure~\ref{fig_v3_history}, and in five of the six frequency-swept settings the two means differ by less than one seed standard deviation.
+A cheaper derivative is not by itself a better optimizer, and at low order the derivative is not what limits the run.
+What the comparison does establish is the claim the method makes: for one prescribed mixed derivative the schedule is exact and its cost advantage grows with the derivative order, in wall time and in memory, without touching the model, the loss, or the optimizer.
 
 %% ====================================================================
 %%  SECTION 5: CONCLUSION
@@ -708,10 +668,12 @@ The classical polarization identity is the lowest-order case of that constructio
 
 Combined with a batched Taylor jet through an entire activation and a closed-form vector-Jacobian product, the schedule becomes a derivative backend that is algebraically exact and differentiable in the model parameters.
 Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients through order six.
-Used inside complete physics-informed training runs, a complex-parameter $\sinh$ network built on this backend attains the lowest five-seed mean relative $L^{2}$ error in all 12 settings of a 1200-second, width-128 protocol on polyharmonic, radial-chirp, and time-harmonic Maxwell problems, with a margin of at least a factor of $3$ in 11 of them; the exception is the hardest three-dimensional sixth-order problem, on which every method saturates near the error of the trivial predictor.
+Measured against nested differentiation in training runs where nothing else varies, the backend reduces the time of one optimizer step by factors of about $1.4$, $2.3$, and $4.1$ at derivative orders two, four, and six, and its peak memory by about $1.5$, $3.1$, and $6.5$; on the higher-order problems the steps thus gained lower the error reached within a fixed budget.
+The two mechanisms behind that growth are separable in the measurements: Taylor-mode evaluation removes the nested graph at every order, and the rank reduction shortens the schedule wherever an index repeats.
 
 The reduction is sharpest for repeated-index multi-indices and vanishes for square-free ones, where the rank coincides with the merged polarization count.
 Operator sums are handled term by term, so the construction carries no joint optimality claim for a sum, and trace-collapsing or stochastic methods remain preferable for a Laplacian or for a broad tensor contraction.
+At low derivative order a cheaper derivative also buys little in a complete run, since the derivative is not what limits it.
 Natural continuations are a rank-aware expansion of an operator sum that reuses directions across its terms, a conditioning analysis of the schedule at high order and in reduced precision, and the extension of the same apolarity argument to derivative tensors contracted against a fixed structured family.
 
 %% ====================================================================

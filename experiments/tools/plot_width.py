@@ -22,7 +22,15 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
-from matplotlib.ticker import LogLocator, NullFormatter  # noqa: E402
+
+from paper_style import (  # noqa: E402
+    TEXT_WIDTH_IN,
+    check_width,
+    save_figure,
+    set_plot_style,
+    style_axis,
+    thin_log_ticks,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,64 +62,12 @@ SWEEP_LABEL = {
     "chirp": r"chirp rate $a$",
     "maxwell": r"wavenumber parameter $a$",
 }
-#: The manuscript is set by siamltex with \textwidth = 370.38 pt.
-TEXT_WIDTH_IN = 370.38374 / 72.27
 #: The canvas is the text block itself.  A tight bounding box is deliberately
 #: not used: its size depends on the tick labels, which would give the four
 #: benchmark figures four different widths, four different scale factors on the
 #: page, and four different effective type sizes.
 FIG_WIDTH_IN = TEXT_WIDTH_IN
 FIG_HEIGHT_IN = 2.42
-
-
-def set_plot_style() -> None:
-    """House figure style, with type scaled to a text-width canvas."""
-    plt.rcParams.update(
-        {
-            "font.family": "serif",
-            "font.serif": ["DejaVu Serif", "Times New Roman", "Times"],
-            "mathtext.fontset": "dejavuserif",
-            "font.size": 8.0,
-            "axes.titlesize": 8.0,
-            "axes.labelsize": 8.0,
-            "legend.fontsize": 7.5,
-            "xtick.labelsize": 7.0,
-            "ytick.labelsize": 7.0,
-            "axes.linewidth": 0.8,
-            "savefig.facecolor": "white",
-            "figure.facecolor": "white",
-        }
-    )
-
-
-def style_axis(axis: plt.Axes) -> None:
-    axis.grid(which="major", color="0.82", linewidth=0.65, alpha=0.75)
-    axis.grid(which="minor", color="0.90", linewidth=0.45, alpha=0.45)
-    axis.tick_params(direction="in", top=True, right=True, width=0.7, length=2.8)
-    axis.tick_params(which="minor", direction="in", top=True, right=True, length=1.6)
-    axis.set_axisbelow(True)
-
-
-def thin_log_ticks(axis: plt.Axes, max_labels: int = 5) -> None:
-    """Keep decade labels sparse enough for a half-width panel."""
-    axis.yaxis.set_major_locator(
-        LogLocator(base=10.0, subs=(1.0,), numticks=max_labels)
-    )
-    axis.yaxis.set_minor_locator(LogLocator(base=10.0, subs=tuple(np.arange(2, 10) * 0.1)))
-    axis.yaxis.set_minor_formatter(NullFormatter())
-
-
-def save_figure(fig: plt.Figure, stem: Path) -> list[Path]:
-    outputs: list[Path] = []
-    for extension, kwargs in (
-        ("pdf", {"metadata": {"CreationDate": None}}),
-        ("png", {"dpi": 300}),
-        ("svg", {"metadata": {"Date": None}}),
-    ):
-        path = stem.with_suffix(f".{extension}")
-        fig.savefig(path, **kwargs)
-        outputs.append(path)
-    return outputs
 
 
 def validated_bundles() -> list[tuple[Path, list[dict], list[dict]]]:
@@ -284,21 +240,6 @@ def make_figure(key: str, items) -> list[Path]:
     outputs = save_figure(fig, OUT / f"fig_{key}")
     plt.close(fig)
     return outputs
-
-
-def check_width(path: Path, tolerance_pt: float = 1.5) -> None:
-    """Fail loudly if a saved PDF would be rescaled by \\includegraphics."""
-    target = TEXT_WIDTH_IN * 72.0
-    with path.open("rb") as handle:
-        blob = handle.read(4096)
-    marker = b"/MediaBox [ "
-    start = blob.index(marker) + len(marker)
-    width = float(blob[start:blob.index(b"]", start)].split()[2])
-    if abs(width - target) > tolerance_pt:
-        raise ValueError(
-            f"{path.name} is {width:.1f} pt wide but the text block is "
-            f"{target:.1f} pt; adjust FIG_WIDTH_IN"
-        )
 
 
 def main() -> None:
