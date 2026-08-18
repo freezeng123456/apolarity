@@ -1,8 +1,10 @@
-"""Single-monomial partial derivative operators.
+"""Directional-schedule operators.
 
-This module intentionally handles one expanded multi-index at a time.  It does
-not implement Laplacian powers, trace contractions, or contractable operator
-sums.
+:func:`single_monomial_partial` handles one expanded multi-index at a time.
+:func:`laplacian_power` schedules a whole polyharmonic operator from the Waring
+decomposition of its symbol, which for that operator is strictly shorter than
+scheduling its monomials separately.  Trace contractions and general
+contractable operator sums are not implemented.
 """
 from __future__ import annotations
 
@@ -13,6 +15,7 @@ import torch.nn as nn
 from torch import Tensor
 
 from .polarization import polarization_directions as _polarization_directions
+from .symbol import laplacian_power_directions
 from .taylor_jet import tp_directional_via_jet
 from .waring import monomial_waring_directions
 
@@ -166,3 +169,30 @@ def single_monomial_partial(
         return _evaluate_direction_formula(cm, cx, V, coeff, p)
 
     raise ValueError(f"unknown backend: {backend!r}")
+
+
+def laplacian_power(
+    model: nn.Module,
+    x: Tensor,
+    m: int,
+    *,
+    offset: float = 0.0,
+) -> Tensor:
+    """Evaluate ``Delta^m u(x)`` for ``d = 2`` from the symbol's Waring decomposition.
+
+    The schedule has ``m + 1`` directions, the minimum for this operator, against
+    the larger count that scheduling each monomial of ``Delta^m`` separately
+    requires.  The directions are real, so no complex arithmetic is introduced.
+
+    Args:
+        model: Scalar model supported by :mod:`apolarity.taylor_jet`.
+        x: Input tensor of shape ``(B, 2)``.
+        m: Power of the Laplacian; the derivative order is ``2m``.
+        offset: Rotation of the equally spaced direction set, in radians.
+    """
+    if x.ndim != 2 or x.shape[1] != 2:
+        raise ValueError(f"laplacian_power expects x of shape (B, 2), got {tuple(x.shape)}")
+    V, coeff, info = laplacian_power_directions(
+        m, 2, device=x.device, dtype=x.dtype, offset=offset
+    )
+    return _evaluate_direction_formula(model, x, V, coeff, info.order)

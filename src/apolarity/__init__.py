@@ -3,7 +3,12 @@
 from .waring import WaringInfo, alpha_factorial_from_counts, monomial_waring_directions
 from .polarization import PolarizationInfo, polarization_directions
 from .taylor_jet import tp_directional_via_jet, tp_directional_all_via_jet
-from .operators import single_monomial_partial
+from .operators import laplacian_power, single_monomial_partial
+from .symbol import (
+    SymbolScheduleInfo,
+    laplacian_power_directions,
+    laplacian_power_termwise_rank,
+)
 
 __all__ = [
     "WaringInfo",
@@ -14,4 +19,8 @@ __all__ = [
     "tp_directional_via_jet",
     "tp_directional_all_via_jet",
     "single_monomial_partial",
+    "laplacian_power",
+    "SymbolScheduleInfo",
+    "laplacian_power_directions",
+    "laplacian_power_termwise_rank",
 ]
