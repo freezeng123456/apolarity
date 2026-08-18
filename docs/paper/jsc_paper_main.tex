@@ -252,6 +252,7 @@ Second, a formula that reconstructs the derivative from finitely many directiona
 Third, pairing each direction with the polynomial variable turns that system into a single polynomial identity: the monomial belonging to the target derivative, written as a linear combination of $p$th powers of linear forms.
 Fourth, the least number of terms in such a combination is by definition the Waring rank of that monomial, a quantity known in closed form, and one set of minimizing linear forms consists of roots of unity.
 The four steps together replace a search for a stencil by a rank computation, and because the outcome is a minimum, it certifies that no shorter formula exists.
+Only the fourth step uses that the target derivative is a single monomial; Section~\ref{sec_operator} removes that restriction and applies the first three steps to a whole operator.
 
 We introduce some notation used throughout this section.
 Let $\N_{0} := \{0, 1, 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional complex space.
@@ -466,6 +467,80 @@ $(1^{6})$    & $u_{123456}$ & $32$ \\
 \end{tabular}
 \end{table}
 
+\subsection{Scheduling an operator as a whole}\label{sec_operator}
+
+Nothing in Section~\ref{sec_expansion} used that the target is a single monomial.
+The derivation used only that the target is a linear functional on $\K[\bz]_{p}$, and every homogeneous constant-coefficient operator of order $p$ is such a functional.
+Let
+\begin{equation}\label{eq_symbol}
+    \mathcal{P} = \sum_{\abs{\beta}=p} b_{\beta}\,\partial^{\beta},
+    \qquad
+    \sigma_{\mathcal{P}}(\bz) := \sum_{\abs{\beta}=p} b_{\beta}\,\bz^{\beta},
+\end{equation}
+so that $\sigma_{\mathcal{P}}$ is the symbol of $\mathcal{P}$, a homogeneous polynomial of degree $p$.
+A directional schedule for $\mathcal{P}$ is defined exactly as in \eqref{eq_schedule}, with $\mathcal{P}u(\bx)$ in place of $\dal u(\bx)$.
+
+\begin{proposition}[Schedules for a general operator]\label{prop_symbol}
+    A collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \C \times V_{\C}$ is a directional schedule for $\mathcal{P}$ if and only if
+    \begin{equation}\label{eq_symbol_bridge}
+        p!\,\sigma_{\mathcal{P}}(\bz) = \sum_{r=1}^{R} c_{r}(\bv_{r} \cdot \bz)^{p}
+        \qquad\text{in } \C[\bz]_{p},
+    \end{equation}
+    and the minimum length of such a schedule is $R_{\C}(\sigma_{\mathcal{P}})$.
+\end{proposition}
+
+\begin{proof}
+    Substituting \eqref{eq_qu_expand} into $\sum_{r} c_{r}\Tp(\bx;\bv_{r})$ and matching the free coefficients $\partial^{\beta}u(\bx)$ against $\mathcal{P}u(\bx) = \sum_{\beta}b_{\beta}\partial^{\beta}u(\bx)$ replaces the moment conditions \eqref{eq_moment} by $\sum_{r} c_{r}\bv_{r}^{\beta} = \beta!\,b_{\beta}$ for every $\beta$ with $\abs{\beta} = p$.
+    Expanding the left-hand side of \eqref{eq_symbol_bridge} by \eqref{eq_power_expand} gives the coefficient $\binom{p}{\beta}\sum_{r}c_{r}\bv_{r}^{\beta}$ at $\bz^{\beta}$, and the right-hand side has coefficient $p!\,b_{\beta}$ there; dividing by $\binom{p}{\beta}$ returns the same family of conditions.
+    Absorbing the constant $p!$ into the coefficients identifies the minimum length with $R_{\C}(\sigma_{\mathcal{P}})$.
+\end{proof}
+
+Theorem~\ref{thm_main} is the case $\sigma_{\mathcal{P}} = \bz^{a}$.
+Proposition~\ref{prop_symbol} matters because an operator is usually not a monomial, and expanding it into monomials and scheduling each one separately is in general not optimal: the sum of the monomial ranks can exceed the rank of the symbol.
+The polyharmonic operator shows this already in two variables, and there the optimum is available in closed form.
+
+\begin{corollary}[Polyharmonic operator in two variables]\label{cor_polyharmonic}
+    Let $\mathcal{P} = \Delta^{m}$ on $\R^{2}$, of order $p = 2m$.
+    Then $R_{\C}(\sigma_{\mathcal{P}}) = m+1$, and with
+    \begin{equation}\label{eq_poly_schedule}
+        \bv_{r} := \bigl(\cos\tfrac{r\pi}{m+1},\ \sin\tfrac{r\pi}{m+1}\bigr),
+        \qquad
+        c := \frac{p!\,2^{p}}{(m+1)\binom{p}{m}},
+        \qquad r = 0, \ldots, m,
+    \end{equation}
+    the collection $(c, \bv_{r})_{r=0}^{m}$ is a directional schedule for $\Delta^{m}$ of that minimum length.
+    Its directions are real and its coefficients are equal.
+\end{corollary}
+
+\begin{proof}
+    The symbol is $\sigma_{\mathcal{P}}(\bz) = (z_{1}^{2}+z_{2}^{2})^{m}$.
+    Put $\zeta := z_{1}+\mathrm{i}z_{2}$ and $\bar\zeta := z_{1}-\mathrm{i}z_{2}$, an invertible linear change of variables, under which $\sigma_{\mathcal{P}} = \zeta^{m}\bar\zeta^{m}$.
+    Waring rank is invariant under an invertible linear change of variables, because $F = \sum_{r}c_{r}L_{r}^{p}$ holds if and only if $F \circ A^{-1} = \sum_{r}c_{r}(L_{r} \circ A^{-1})^{p}$, so $R_{\C}(\sigma_{\mathcal{P}})$ equals the rank of the monomial $\zeta^{m}\bar\zeta^{m}$, which is $m+1$ by \eqref{eq_rank}.
+
+    For the construction, write $\bv_{r} \cdot \bz = \tfrac{1}{2}(e^{-\mathrm{i}\theta_{r}}\zeta + e^{\mathrm{i}\theta_{r}}\bar\zeta)$ with $\theta_{r} := r\pi/n$ and $n := m+1$.
+    The binomial theorem gives
+    \begin{equation*}
+        \sum_{r=0}^{n-1}(\bv_{r} \cdot \bz)^{p}
+        = 2^{-p}\sum_{k=0}^{p}\binom{p}{k}\zeta^{p-k}\bar\zeta^{k}
+          \sum_{r=0}^{n-1} e^{\mathrm{i}(2k-p)\theta_{r}},
+    \end{equation*}
+    and $\sum_{r} e^{\mathrm{i}(2k-p)\theta_{r}} = n\,\mathbf{1}_{n \mid k-m}$ by Lemma~\ref{lem_filter}, since $(2k-p)\theta_{r} = 2\pi r(k-m)/n$.
+    In the range $0 \le k \le p = 2m$ the only multiple of $n = m+1$ of the form $k-m$ is $k = m$, so
+    \begin{equation}\label{eq_poly_identity}
+        \sum_{r=0}^{n-1}(\bv_{r} \cdot \bz)^{p} = \frac{n}{2^{p}}\binom{p}{m}\,\zeta^{m}\bar\zeta^{m}
+        = \frac{n\binom{p}{m}}{2^{p}}\,\sigma_{\mathcal{P}}(\bz),
+    \end{equation}
+    which is \eqref{eq_symbol_bridge} with the stated $c$.
+    Proposition~\ref{prop_symbol} turns \eqref{eq_poly_identity} into the schedule, and the length $n = m+1$ matches the rank.
+\end{proof}
+
+The saving over scheduling the monomials of $\Delta^{m}$ separately is not marginal.
+Expanding $\Delta^{m}$ in two variables produces the patterns $(2m)$ and $(2m-2k, 2k)$, whose ranks are read from \eqref{eq_rank}, and the totals are $2$, $5$, $12$, and $21$ directions for $m = 1, 2, 3, 4$ against $m+1 = 2$, $3$, $4$, and $5$ from Corollary~\ref{cor_polyharmonic}.
+Two remarks bound what this establishes.
+The choice of a minimal decomposition is not unique, since \eqref{eq_poly_identity} holds for any rotation of the equally spaced set and, more generally, for any $n \ge m+1$ with the corresponding constant; among these the equally spaced choice is the one with equal coefficients.
+And the argument is specific to two variables: for $d \ge 3$ the symbol $(z_{1}^{2}+\cdots+z_{d}^{2})^{m}$ is not a monomial after any change of variables, because its zero locus is an irreducible quadric whereas that of a monomial is a union of hyperplanes, so \eqref{eq_rank} does not apply and we do not claim a minimum there.
+Proposition~\ref{prop_symbol} still applies, and any explicit decomposition of the symbol yields a valid exact schedule of its own length.
+
 \subsection{Algorithm, gradients, and cost}\label{sec_algorithm}
 
 Algorithm~\ref{alg_waring} assembles the pieces.
@@ -572,6 +647,10 @@ For the polyharmonic problem on $(-1,1)^{2}$ we solve
 at the orders $2m \in \{2,4,6\}$, with the Navier boundary targets $u = u_{\star}$ and $\Delta^{j}u = (-2\pi^{2})^{j}u_{\star}$ for $j = 1, \ldots, m-1$, all of which vanish for this $u_{\star}$.
 This family is the reason the derivative order appears as a variable: expanding $\Delta^{m}$ in two dimensions produces the patterns $(2m)$ and, for $m \ge 2$, the mixed patterns whose schedules Table~\ref{tab_patterns} lists.
 At $2m = 4$ the mixed term is $\partial_{1}^{2}\partial_{2}^{2}$, which \eqref{eq_rou} evaluates with three directions; at $2m = 6$ the mixed terms are $\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$, which take five each.
+
+The runs reported below schedule the residual term by term in this way, which is what the implementation did when they were produced, and Corollary~\ref{cor_polyharmonic} shows that this is not optimal for $\Delta^{m}$: scheduling the operator as a whole needs $m+1$ directions against the $5$ and $12$ that the term-by-term route uses at orders four and six.
+The joint schedule is implemented and verified against nested automatic differentiation, but it postdates these measurements, so the numbers below understate what the construction of Section~\ref{sec_operator} delivers on this family; the order-two settings, whose residual terms are pure powers, are unaffected.
+We report the measurements as they were run rather than re-deriving them, and leave the corresponding campaign to future work.
 
 The other two families sit at order two and sweep a frequency instead.
 On $(-1,1)^{2}$ the radial chirp is
