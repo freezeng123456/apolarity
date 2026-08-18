@@ -99,7 +99,6 @@
   We settle that question.
   For a fixed order the directional Taylor coefficients form a homogeneous polynomial in the direction, so extracting one mixed derivative extracts one of its coefficients, and a directional formula is a decomposition of a monomial into powers of linear forms.
   The shortest formula therefore has as many terms as the Waring rank of that monomial, which is known in closed form over the complex numbers and is attained by a roots-of-unity construction that requires no linear solve.
-  The classical polarization identity is the lowest-order case of the same construction, and every repeated index widens the gap between them.
   Realized as one batched Taylor jet with a closed-form adjoint, the schedule becomes a derivative backend that is algebraically exact, differentiable in the model parameters, and able to take complex directions.
   Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients.
   In training runs where the derivative backend is the only quantity that varies, the schedule reduces the time and the memory of one optimizer step by a factor that grows with the derivative order, and the saved time converts into lower error on the higher-order problems.
@@ -152,13 +151,14 @@ Specializations of this kind are exact and fast, but each is tied to the operato
 
 What is missing from all three lines is an answer for the elementary exact case: one prescribed mixed partial derivative, computed deterministically, of a model that can be evaluated along any direction.
 Taylor mode supplies the derivative along whichever direction it is given, and it is silent about how many directions the target requires.
-The classical answer is the polarization identity, which reconstructs a mixed derivative from signed evaluations along sums of coordinate directions; its count is exponential in the order and depends on the order alone, so it treats a derivative that repeats a few coordinates exactly like one that touches many.
-That insensitivity is suspicious, since a repeated index carries less information than a square-free one, and it raises a question that seems not to have been asked: for a given mixed derivative, what is the smallest number of directional evaluations that can reconstruct it exactly, and which directions attain it?
+One can of course write down formulas: a mixed derivative is recoverable from directional evaluations along suitable combinations of coordinate directions, and such reconstructions are elementary to produce.
+What is not elementary is knowing when one has finished, because a formula obtained by hand carries no certificate that fewer evaluations would not do.
+The question we ask is therefore the sharp one: for a given mixed derivative, what is the smallest number of directional evaluations that reconstructs it exactly, and which directions attain that minimum?
 
 This paper answers that question and turns the answer into an implementation.
 The route is to stop thinking of the directions as a stencil and to look at what the directional Taylor coefficients are as a function of the direction: for a fixed order they form a homogeneous polynomial, and extracting one mixed derivative is extracting one of its coefficients.
 A directional formula is then a decomposition of a monomial into powers of linear forms, so the shortest formula has as many terms as the Waring rank of that monomial, a quantity the algebraic-geometry literature settled in closed form.
-Over the complex numbers the minimizing directions are roots of unity and are written down without solving anything, the classical polarization identity reappears as the lowest-order instance of the same construction, and every repeated index widens the gap between them.
+That rank is known in closed form over the complex numbers, the minimizing directions are roots of unity written down without solving anything, and the answer is a minimum rather than an upper bound, so it also says when no further saving is available.
 Because the construction is exact rather than approximate, it composes with the training loop in the ordinary way: we evaluate the whole schedule in one batched Taylor jet through an entire activation, and give the jet a closed-form adjoint so that the result stays differentiable in the model parameters.
 
 The contributions of this work are as follows:
@@ -169,7 +169,7 @@ The contributions of this work are as follows:
 \end{enumerate}
 
 The remainder of this paper is organized as follows.
-Section~\ref{sec_prelim} fixes the evaluation problem, reviews Taylor-mode evaluation of directional derivatives, and recalls the polarization identity that our construction replaces.
+Section~\ref{sec_prelim} fixes the evaluation problem and reviews Taylor-mode evaluation of directional derivatives.
 Section~\ref{sec_formulation} identifies the shortest directional formula with a monomial Waring decomposition, states and proves the main theorem, and gives the resulting algorithm.
 Section~\ref{sec_experiments} verifies the implementation against nested automatic differentiation and then demonstrates it inside complete training runs on three benchmark families.
 Section~\ref{sec_concl} concludes.
@@ -182,8 +182,9 @@ The roots-of-unity filter, the explicit schedules used in the experiments, and t
 
 \subsection{The evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \R$ be a neural surrogate with parameters $\theta$, smooth in its inputs, and let $\nu$ be a multi-index of order $p$.
-The task addressed in this paper is the evaluation of the single mixed partial derivative $\partial^{\nu}u_{\theta}$ at a given point, subject to three requirements that together rule out most of the alternatives surveyed in Section~\ref{sec_intro}.
+Let $u_{\theta} \colon \R^{d} \to \R$ be a neural surrogate with parameters $\theta$, smooth in its inputs.
+Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and write $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the associated derivative.
+The task addressed in this paper is the evaluation of the single mixed partial derivative $\dal u_{\theta}$ at a given point, subject to three requirements that together rule out most of the alternatives surveyed in Section~\ref{sec_intro}.
 The value must be exact, so that no step size and no sampling budget enters the result.
 The multi-index is fixed and prescribed, rather than being contracted against a structured family such as a trace, so an operator-specific specialization does not apply.
 And the value must remain differentiable in $\theta$, since it is consumed by an optimizer that updates the surrogate.
@@ -240,32 +241,17 @@ The recurrence \eqref{eq_jet_sinh} has the same coupled form as the one for $\si
 The implementation also contains the recurrences for $\sin$ and for the logistic sigmoid, which the benchmark architectures of Section~\ref{sec_experiments} require.
 Every coefficient $y_{k}$ is an ordinary tensor, and the propagation stores $p+1$ coefficient tensors per activation without nesting input-gradient graphs.
 
-\subsection{Polarization: a second-order warm-up}\label{sec_polar}
-
-Throughout the paper, $\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ denotes a multi-index of order $p = \abs{\nu}$, and $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ denotes the associated derivative.
-The classical route from directional coefficients to $\dal$ is the polarization identity.
-Writing the differentiated coordinates as a list $i_{1}, \ldots, i_{p}$ in which coordinate $k$ occurs $\nu_{k}$ times, it reads
-\begin{equation}\label{eq_polarization}
-    \dal u(\bx) = \frac{1}{2^{p}} \sum_{\epsilon \in \{\pm1\}^{p}}
-    \Bigl(\textstyle\prod_{r=1}^{p}\epsilon_{r}\Bigr)\,
-    \Tp\Bigl(\bx;\, \textstyle\sum_{r=1}^{p}\epsilon_{r} e_{i_{r}}\Bigr).
-\end{equation}
-The smallest instance is instructive.
-For $p = 2$ and $\dal = \partial_{1}\partial_{2}$, expanding $\Tp(\bx; \bv) = \tfrac{1}{2}(u_{11}v_{1}^{2} + 2u_{12}v_{1}v_{2} + u_{22}v_{2}^{2})$ gives $\Tp(\bx; e_{1} \pm e_{2}) = \tfrac{1}{2}(u_{11} \pm 2u_{12} + u_{22})$, so the two probes $e_{1}+e_{2}$ and $e_{1}-e_{2}$ suffice:
-\begin{equation}\label{eq_polar_two}
-    \partial_{1}\partial_{2} u(\bx) = \tfrac{1}{2}\Tp(\bx; e_{1}+e_{2}) - \tfrac{1}{2}\Tp(\bx; e_{1}-e_{2}).
-\end{equation}
-The diagonal terms cancel in the difference, and this cancellation is the entire mechanism of \eqref{eq_polarization}.
-
-Beyond second order the identity is no longer economical.
-The sum in \eqref{eq_polarization} has $2^{p}$ terms; duplicate directions arising from repeated coordinates and antipodal pairs can be merged, which leaves at most $2^{p-1}$ distinct probes, and a further merge of proportional directions is possible because $\Tp(\bx; \lambda \bv) = \lambda^{p}\Tp(\bx; \bv)$.
-The resulting count is still exponential in $p$, and, more importantly, it barely responds to the structure of $\nu$: the sixth-order derivative $\partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}$ and the square-free $\partial_{1}\partial_{2}\cdots\partial_{6}$ receive 13 and 32 probes respectively, although the first involves only three coordinates.
-Section~\ref{sec_formulation} shows that 9 probes are necessary and sufficient in the first case, and that 32 cannot be improved in the second.
-
 %% ====================================================================
 %%  SECTION 3: RANK-OPTIMAL DIRECTIONAL SCHEDULES
 %% ====================================================================
 \section{Rank-optimal directional schedules}\label{sec_formulation}
+
+The argument of this section is short, and it is worth naming its four steps before the details arrive.
+First, the directional Taylor coefficients of order $p$, read as a function of the direction rather than of the point, are the coefficients of a homogeneous polynomial of degree $p$, and the target derivative is one of them.
+Second, a formula that reconstructs the derivative from finitely many directional evaluations is therefore a linear identity among such coefficients, which reduces the design problem to a finite system of moment conditions.
+Third, pairing each direction with the polynomial variable turns that system into a single polynomial identity: the monomial belonging to the target derivative, written as a linear combination of $p$th powers of linear forms.
+Fourth, the least number of terms in such a combination is by definition the Waring rank of that monomial, a quantity known in closed form, and one set of minimizing linear forms consists of roots of unity.
+The four steps together replace a search for a stencil by a rank computation, and because the outcome is a minimum, it certifies that no shorter formula exists.
 
 We introduce some notation used throughout this section.
 Let $\N_{0} := \{0, 1, 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional complex space.
@@ -334,11 +320,10 @@ and comparing \eqref{eq_schedule_sum} with the target $\dal u(\bx) = \partial^{a
 where $\delta_{a\beta} := 1$ if $\beta = a$ and $\delta_{a\beta} := 0$ otherwise.
 The design problem is thus to solve the moment conditions \eqref{eq_moment} with as few directions as possible.
 
-\begin{remark}[Polarization is far from minimal]\label{rmk_polar}
-The merged polarization identity of Section~\ref{sec_polar} solves \eqref{eq_moment} with at most $2^{p-1}$ real directions, a count that depends on $p$ alone.
-The moment conditions, by contrast, are only $\binom{p+n}{n}$ equations on the $n+1$ active variables, and their number is governed by the number of active coordinates rather than by $p$.
-For a derivative such as $\partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}$, which has $p = 6$ but only three active coordinates, the gap between the two counts is large, and Theorem~\ref{thm_main} shows how to close it.
-\end{remark}
+Two features of \eqref{eq_moment} decide how short a schedule can be.
+The conditions number $\binom{p+n}{n}$, so their count is governed by how many coordinates the derivative touches and not by the order alone: a derivative of order six on three coordinates imposes far fewer conditions than one of order six on six coordinates.
+They are also nonlinear in the unknowns, since each direction enters through the monomials $\bv_{r}^{\beta}$, which is why the minimum is not read off by counting equations and unknowns.
+Section~\ref{sec_main} resolves both by recognizing \eqref{eq_moment} as a polynomial identity whose shortest solution is classical.
 
 \subsection{Minimal schedules and monomial Waring rank}\label{sec_main}
 
@@ -429,10 +414,14 @@ Its three parts identify the design problem with a Waring decomposition, evaluat
 Theorem~\ref{thm_main} converts a question about derivative evaluation into a rank computation whose answer is a product of the incremented exponents, and it delivers the minimizing directions without solving a linear system: the coefficients in \eqref{eq_rou} are roots of unity scaled by $\nu!/R_{\C}(\bz^{a})$, so their magnitudes are known in advance.
 Three consequences deserve separate mention.
 
-\begin{remark}[Polarization as a special case]\label{rmk_special}
-For $\dal = \partial_{1}\partial_{2}$ we have $n = 1$, $a_{0} = a_{1} = 1$, $m_{1} = 2$, and $U_{2} = \{+1, -1\}$, so \eqref{eq_rou} returns the two pairs $(\tfrac{1}{2}, e_{1}+e_{2})$ and $(-\tfrac{1}{2}, e_{1}-e_{2})$.
-This is precisely the two-point identity \eqref{eq_polar_two}, so the second-order polarization warm-up of Section~\ref{sec_polar} is the case $p = n+1 = 2$ of the construction, and it is already rank-optimal.
-The construction departs from polarization exactly when some exponent exceeds $1$.
+\begin{remark}[The smallest instance]\label{rmk_special}
+For $\dal = \partial_{1}\partial_{2}$ we have $n = 1$, $a_{0} = a_{1} = 1$, $m_{1} = 2$, and $U_{2} = \{+1, -1\}$, so the roots of unity are real and \eqref{eq_rou} returns the two pairs $(\tfrac{1}{2}, e_{1}+e_{2})$ and $(-\tfrac{1}{2}, e_{1}-e_{2})$, that is, the elementary identity
+\begin{equation}\label{eq_two_point}
+    \partial_{1}\partial_{2}u(\bx) = \tfrac{1}{2}\Tp(\bx; e_{1}+e_{2}) - \tfrac{1}{2}\Tp(\bx; e_{1}-e_{2}),
+\end{equation}
+in which the pure second derivatives cancel between the two probes.
+Theorem~\ref{thm_main} adds to \eqref{eq_two_point} the information that two evaluations are not merely sufficient but necessary.
+Complex directions appear as soon as some exponent exceeds one.
 \end{remark}
 
 \begin{remark}[Entire activations are essential]\label{rmk_entire}
@@ -444,37 +433,35 @@ Entire activations are therefore a requirement of the construction rather than a
 
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
 Theorem~\ref{thm_main} concerns one monomial derivative at a time.
-For the square-free multi-index $a = (1, \ldots, 1)$ of order $p$ the rank \eqref{eq_rank} equals $2^{p-1}$, which is exactly the merged polarization count, so the construction saves nothing.
+For the square-free multi-index $a = (1, \ldots, 1)$ of order $p$ the rank \eqref{eq_rank} equals $2^{p-1}$, so the schedule is exponentially long; since the theorem gives a minimum, this is a statement about the problem and not about the construction, and no directional formula for such a derivative can be shorter.
 An operator sum such as $\Delta^{m}$ must be expanded and evaluated term by term, and the theorem then applies to each term separately; it makes no claim of joint optimality for the sum, and a trace-collapsing method~\cite{Li2024forwardLaplacian,Gao2023folx} can be preferable when only a Laplacian is required.
 The stochastic Taylor derivative estimator~\cite{Shi2024stde} solves the strictly broader problem of an arbitrary contraction of the order-$p$ derivative tensor, with unbiased estimates whose variance is controlled by a sampling budget; the two approaches are complementary, and the schedule of Theorem~\ref{thm_main} is the deterministic minimum for one fixed multi-index.
 \end{remark}
 
-Table~\ref{tab_patterns} lists the counts produced by the three rules for the active-exponent patterns up to $p = 6$.
-The complex rank never exceeds a real count, and it falls strictly below the projectively consolidated count exactly for the three patterns in which at least two coordinates carry a repeated exponent.
-The explicit schedules for the patterns used in Section~\ref{sec_experiments} are listed in Appendix~\ref{sec_lowschedules}.
+Table~\ref{tab_patterns} evaluates \eqref{eq_rank} for the active-exponent patterns up to $p = 6$.
+Because every entry is a minimum, the table reads as a statement about which derivatives are cheap to extract from directional evaluations and which are not: a pure power needs one direction at any order, a derivative that repeats every index stays modest as the order grows, and a square-free derivative is intrinsically exponential.
+The explicit schedules for the patterns that occur in Section~\ref{sec_experiments} are listed in Appendix~\ref{sec_lowschedules}.
 
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Directional counts for representative active-exponent patterns.
-$R_{\C}$ is the rank \eqref{eq_rank}; $R_{\mathrm{B2}}$ is the implemented rule that merges duplicate and antipodal integer directions in \eqref{eq_polarization}; $R_{\mathrm{proj}}$ additionally merges proportional directions.
-Bold complex ranks are strictly smaller than $R_{\mathrm{proj}}$.
-The square-free pattern $(1^{p})$ receives no reduction.}
+\caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for the active-exponent patterns up to $p = 6$.
+Repeating an index keeps the count low; the square-free pattern $(1^{p})$ is exponential in the order.}
 \label{tab_patterns}
-\begin{tabular}{@{}llrrr@{}}
+\begin{tabular}{@{}llr@{}}
 \toprule
-pattern & example multi-index & $R_{\C}$ & $R_{\mathrm{B2}}$ & $R_{\mathrm{proj}}$ \\
+pattern & example multi-index & $R_{\C}$ \\
 \midrule
-$(p)$        & $\partial_{1}^{p}u$ & $1$ & $\lceil p/2 \rceil$ & $1$ \\
-$(2,1)$      & $u_{112}$    & $3$ & $3$ & $3$ \\
-$(1,1,1)$    & $u_{123}$    & $4$ & $4$ & $4$ \\
-$(3,1)$      & $u_{1112}$   & $4$ & $4$ & $4$ \\
-$(2,2)$      & $u_{1122}$   & $\mathbf{3}$ & $4$ & $4$ \\
-$(2,1,1)$    & $u_{1123}$   & $6$ & $6$ & $6$ \\
-$(1,1,1,1)$  & $u_{1234}$   & $8$ & $8$ & $8$ \\
-$(4,2)$      & $u_{111122}$ & $\mathbf{5}$ & $7$ & $6$ \\
-$(2,2,2)$    & $u_{112233}$ & $\mathbf{9}$ & $13$ & $13$ \\
-$(1^{6})$    & $u_{123456}$ & $32$ & $32$ & $32$ \\
+$(p)$        & $\partial_{1}^{p}u$ & $1$ \\
+$(2,1)$      & $u_{112}$    & $3$ \\
+$(1,1,1)$    & $u_{123}$    & $4$ \\
+$(3,1)$      & $u_{1112}$   & $4$ \\
+$(2,2)$      & $u_{1122}$   & $3$ \\
+$(2,1,1)$    & $u_{1123}$   & $6$ \\
+$(1,1,1,1)$  & $u_{1234}$   & $8$ \\
+$(4,2)$      & $u_{111122}$ & $5$ \\
+$(2,2,2)$    & $u_{112233}$ & $9$ \\
+$(1^{6})$    & $u_{123456}$ & $32$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -486,7 +473,6 @@ The schedule \eqref{eq_rou} is built once, its directions are stacked into a sin
 The schedule tensors depend on $\nu$, the device, and the scalar type, but not on the trainable parameters.
 The reference implementation builds them at call entry and includes that work in the measured throughput of Section~\ref{sec_experiments}, while a caller that reuses one multi-index may cache them.
 For a real-valued model the conjugate pairing of the roots of unity makes the returned value real in exact arithmetic; the implementation keeps the complex tensor and takes its real part only when the target PDE is real-valued.
-Replacing lines~\ref{alg_line_first}--\ref{alg_line_last} by the merged polarization schedule of Section~\ref{sec_polar} yields the real-direction backend against which we compare.
 
 \begin{algorithm}[htbp]
   \caption{Single-monomial $\dal u(\bx)$ from a rank-optimal schedule and one batched Taylor jet.}
@@ -522,7 +508,7 @@ The backward pass thus costs one more triangular convolution per activation and 
 
 The cost of Algorithm~\ref{alg_waring} separates into a per-direction and a per-schedule factor.
 For one direction, the jet stores $p+1$ coefficient tensors per activation, an affine layer applies $W$ to each of them, and the activation recurrences require $\sum_{k=1}^{p}O(k) = O(p^{2})$ elementwise products per scalar.
-The total work and the directional storage then scale linearly in the schedule length, which is $R_{\C}(\bz^{a})$ for Algorithm~\ref{alg_waring} and the merged count $R_{\mathrm{B2}}$ of Table~\ref{tab_patterns} for the polarization backend.
+The total work and the directional storage then scale linearly in the schedule length $R_{\C}(\bz^{a})$, which by Theorem~\ref{thm_main} is as small as an exact directional formula can be.
 The rank reduction is an exact statement about that factor and not about wall-clock time, which also depends on complex arithmetic, kernel launch overhead, memory traffic, and whether parameter gradients are required; for small networks or small batches these terms can dominate.
 Section~\ref{sec_experiments} therefore reports measured throughput alongside accuracy.
 
@@ -546,7 +532,7 @@ Physics-informed training is the workload rather than the subject: it is a deman
 
 All checks use double precision and are executable tests in the repository.
 The roots-of-unity coefficient filter of Lemma~\ref{lem_filter} is evaluated against every degree-four monomial in five variables for the active-exponent pattern $(2,1,1)$, with a maximum admissible absolute coefficient error of $10^{-12}$.
-The direction counts for all patterns of Table~\ref{tab_patterns} are checked against the closed-form rank \eqref{eq_rank} and against the merging implementation.
+The length of the schedule that the implementation builds is checked against the closed-form rank \eqref{eq_rank} for every pattern of Table~\ref{tab_patterns}.
 
 The two jet backends are then compared with nested automatic differentiation on real-parameter networks using the $\tanh$, logistic, $\sin$, and $\sinh$ activations, for the patterns $(2,2)$, $(1,1,1)$, and $(3)$.
 Values must agree to relative tolerance $2 \times 10^{-10}$ and absolute tolerance $2 \times 10^{-11}$, and the imaginary remainder of a real target must not exceed $2 \times 10^{-11}$.
@@ -585,7 +571,7 @@ For the polyharmonic problem on $(-1,1)^{2}$ we solve
 \end{equation}
 at the orders $2m \in \{2,4,6\}$, with the Navier boundary targets $u = u_{\star}$ and $\Delta^{j}u = (-2\pi^{2})^{j}u_{\star}$ for $j = 1, \ldots, m-1$, all of which vanish for this $u_{\star}$.
 This family is the reason the derivative order appears as a variable: expanding $\Delta^{m}$ in two dimensions produces the patterns $(2m)$ and, for $m \ge 2$, the mixed patterns whose schedules Table~\ref{tab_patterns} lists.
-At $2m = 4$ the mixed term is $\partial_{1}^{2}\partial_{2}^{2}$, which the schedule \eqref{eq_rou} evaluates with three complex directions instead of the four real ones that merged polarization retains; at $2m = 6$ the mixed terms are $\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$, which take five instead of seven.
+At $2m = 4$ the mixed term is $\partial_{1}^{2}\partial_{2}^{2}$, which \eqref{eq_rou} evaluates with three directions; at $2m = 6$ the mixed terms are $\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$, which take five each.
 
 The other two families sit at order two and sweep a frequency instead.
 On $(-1,1)^{2}$ the radial chirp is
@@ -628,7 +614,8 @@ In absolute terms, one step of the sixth-order problem costs $854$ milliseconds 
 
 Two mechanisms compound in that growth, and the design of the study separates them.
 The jet replaces a graph of depth proportional to the derivative order and the network depth by $p+1$ coefficient tensors per activation, which is what the memory column measures; this part is available at every order and is what the order-two settings show.
-The schedule then reduces how many directions that jet is run on, from the merged polarization count to the Waring rank of Table~\ref{tab_patterns}, and this part switches on only when an index repeats, which is why the ratio in panel (c) of Figure~\ref{fig_v3_cost} is flat between the orders where no mixed pattern occurs and rises where they do.
+The schedule then fixes how many times that jet must be run, at the minimum of Table~\ref{tab_patterns}: one direction for each pure power at any order, three for the mixed term at order four, five for each mixed term at order six.
+Nested differentiation has no comparable lever, since it must traverse the retained graph once per coordinate derivative of every term, which is why the ratio in panel (c) of Figure~\ref{fig_v3_cost} widens with the order.
 Neither mechanism is a claim about asymptotics: both counts are exact, and what Table~\ref{tab_v3_cost} adds is that on this hardware the algebraic reduction survives contact with complex arithmetic, kernel launches, and the backward pass.
 
 \subsection{What the saving buys}\label{sec_num_outcome}
@@ -664,14 +651,14 @@ What the comparison does establish is the claim the method makes: for one prescr
 Evaluating one prescribed high-order mixed derivative exactly is a question about how few directions suffice, and we have shown that it is the Waring problem for the associated monomial.
 The identification is an equivalence rather than a bound: a directional formula of a given length exists precisely when the monomial decomposes into that many powers of linear forms.
 The rank formula of Carlini, Catalisano, and Geramita then evaluates the minimum over the complex numbers as the product of the incremented active exponents, and a roots-of-unity construction attains it in closed form, with coefficients known in advance rather than obtained from a linear solve.
-The classical polarization identity is the lowest-order case of that construction, which is why the gap between them opens only when an index repeats.
+Because the answer is a minimum, it also delimits itself: it says where a shorter formula is impossible, and the elementary two-point identity for a second mixed derivative is recovered as its smallest instance.
 
 Combined with a batched Taylor jet through an entire activation and a closed-form vector-Jacobian product, the schedule becomes a derivative backend that is algebraically exact and differentiable in the model parameters.
 Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients through order six.
 Measured against nested differentiation in training runs where nothing else varies, the backend reduces the time of one optimizer step by factors of about $1.4$, $2.3$, and $4.1$ at derivative orders two, four, and six, and its peak memory by about $1.5$, $3.1$, and $6.5$; on the higher-order problems the steps thus gained lower the error reached within a fixed budget.
 The two mechanisms behind that growth are separable in the measurements: Taylor-mode evaluation removes the nested graph at every order, and the rank reduction shortens the schedule wherever an index repeats.
 
-The reduction is sharpest for repeated-index multi-indices and vanishes for square-free ones, where the rank coincides with the merged polarization count.
+The schedule is shortest for repeated-index multi-indices and exponentially long for square-free ones, which by the same theorem is a property of the problem rather than of the method.
 Operator sums are handled term by term, so the construction carries no joint optimality claim for a sum, and trace-collapsing or stochastic methods remain preferable for a Laplacian or for a broad tensor contraction.
 At low derivative order a cheaper derivative also buys little in a complete run, since the derivative is not what limits it.
 Natural continuations are a rank-aware expansion of an operator sum that reuses directions across its terms, a conditioning analysis of the schedule at high order and in reduced precision, and the extension of the same apolarity argument to derivative tensors contracted against a fixed structured family.
@@ -720,17 +707,15 @@ For a pure power $\dal = \partial_{1}^{p}$ we have $n = 0$, the schedule has one
 For the fourth-order mixed term $\dal = \partial_{1}^{2}\partial_{2}^{2}$ we have $n = 1$, $a = (2,2)$, and $m_{1} = 3$; with $\omega := \exp(2\pi\mathrm{i}/3)$ and $U_{3} = \{1, \omega, \omega^{2}\}$, formula \eqref{eq_rou} gives the three directions
 \begin{equation}\label{eq_sched_22}
     \partial_{1}^{2}\partial_{2}^{2}u(\bx)
-    = \frac{4}{3}\sum_{\zeta \in U_{3}} \zeta\,\Tp(\bx;\, e_{1}+\zeta e_{2}),
+    = \frac{4}{3}\sum_{\zeta \in U_{3}} \zeta\,\Tp(\bx;\, e_{1}+\zeta e_{2}).
 \end{equation}
-against the four real directions retained by merged polarization.
 
 For the sixth-order mixed term $\dal = \partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}$ we have $n = 2$, $a = (2,2,2)$, and $m_{1} = m_{2} = 3$, so \eqref{eq_rou} gives $R_{\C}(\bz^{a}) = 9$ directions,
 \begin{equation}\label{eq_sched_222}
     \partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}u(\bx)
     = \frac{8}{9}\sum_{\zeta_{1},\zeta_{2} \in U_{3}} \zeta_{1}\zeta_{2}\,
-      \Tp\bigl(\bx;\, e_{1}+\zeta_{1}e_{2}+\zeta_{2}e_{3}\bigr),
+      \Tp\bigl(\bx;\, e_{1}+\zeta_{1}e_{2}+\zeta_{2}e_{3}\bigr).
 \end{equation}
-against the 13 real directions of Table~\ref{tab_patterns}.
 The equivalent polynomial identity \eqref{eq_bridge} for \eqref{eq_sched_222} reads
 \begin{equation}\label{eq_sched_222_poly}
     6!\,z_{0}^{2}z_{1}^{2}z_{2}^{2}
