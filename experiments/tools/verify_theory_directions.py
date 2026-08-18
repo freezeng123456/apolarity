@@ -272,6 +272,45 @@ def action_matrix(g: np.ndarray, p: int) -> np.ndarray:
     return mat
 
 
+def check_abelian_orbit() -> None:
+    """Example 4.4: the character-weighted grid orbit average is a monomial.
+
+    Checks ``A^{chi_a}_v = binom(p, a) z^a``, which is what makes the isotypic
+    component one-dimensional and so recovers Theorem 2.1 from Theorem 4.3.
+    """
+    print("Example 4.4  the Fourier grid as a character-weighted abelian orbit")
+    print(f"  {'exponent a':16s} {'p':>2} {'orbit':>6} {'binom(p,a)':>11} {'error':>10}")
+    for a in [(1, 2), (2, 2), (1, 1, 2), (2, 1, 3), (1, 2, 2)]:
+        p = sum(a)
+        n_vars = len(a)
+        m = [x + 1 for x in a]
+        base = int(np.argmin(m))
+        others = [j for j in range(n_vars) if j != base]
+        size = prod(m[j] for j in others)
+
+        avg: dict[Multi, complex] = {e: 0j for e in monomials(p, n_vars)}
+        for ks in itertools.product(*[range(m[j]) for j in others]):
+            zeta = {j: np.exp(2j * np.pi * k / m[j]) for j, k in zip(others, ks)}
+            v = np.ones(n_vars, dtype=complex)
+            for j in others:
+                v[j] = zeta[j]
+            char = prod(zeta[j] ** a[j] for j in others)
+            for e in avg:
+                avg[e] += (
+                    np.conj(char)
+                    * multinomial(p, e)
+                    * prod(v[j] ** e[j] for j in range(n_vars))
+                    / size
+                )
+        want = {e: (multinomial(p, a) if e == a else 0.0) for e in avg}
+        err = max(abs(avg[e] - want[e]) for e in avg)
+        assert err < 1e-9, f"a={a}: orbit average is not a monomial, error {err:.2e}"
+        print(
+            f"  {str(a):16s} {p:>2} {size:>6} {multinomial(p, a):>11.0f} {err:>10.1e}"
+        )
+    print()
+
+
 def check_orbit_filter() -> None:
     print("Theorem 4.3 and Example 4.5  a nonabelian orbit filter")
     group = icosahedral_group()
@@ -499,6 +538,7 @@ def main() -> None:
     check_theorem_grid(rng)
     check_remark_base()
     check_price(np.random.default_rng(1))
+    check_abelian_orbit()
     check_orbit_filter()
     check_real_search(args.fast)
     check_shared(np.random.default_rng(7))

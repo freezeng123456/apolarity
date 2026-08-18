@@ -13,7 +13,7 @@
 \usepackage{bm}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\usepackage{cleveref}
+\usepackage[capitalise]{cleveref}
 \usepackage{aliascnt}
 \usepackage{enumitem}
 
@@ -22,6 +22,35 @@
 \DeclareMathOperator{\spanop}{span}
 \DeclareMathOperator{\Cat}{Cat}
 \DeclareMathOperator{\Stab}{Stab}
+
+%% siamltex hangs lemma, corollary, proposition and definition off the theorem
+%% counter, which leaves cleveref unable to tell them apart and referring to all
+%% of them as theorems.  Redefining them through aliascnt keeps the shared
+%% numbering and the class formatting while restoring the names.
+\let\lemma\relax        \let\endlemma\relax
+\let\corollary\relax    \let\endcorollary\relax
+\let\proposition\relax  \let\endproposition\relax
+\let\definition\relax   \let\enddefinition\relax
+
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\crefname{lemma}{Lemma}{Lemmas}
+
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
+\crefname{corollary}{Corollary}{Corollaries}
+
+\newaliascnt{proposition}{theorem}
+\newtheorem{proposition}[proposition]{Proposition}
+\aliascntresetthe{proposition}
+\crefname{proposition}{Proposition}{Propositions}
+
+\newaliascnt{definition}{theorem}
+\newtheorem{definition}[definition]{Definition}
+\aliascntresetthe{definition}
+\crefname{definition}{Definition}{Definitions}
 
 \newaliascnt{remark}{theorem}
 \newtheorem{remark}[remark]{Remark}
@@ -50,6 +79,7 @@
 \newcommand{\norm}[1]{\left\|#1\right\|}
 
 \emergencystretch=1.5em
+\raggedbottom
 
 \begin{document}
 
@@ -288,23 +318,39 @@ It remains to locate $\delta(\sigma)$ for a symbol with no special structure.
 
 \begin{proof}
   By \eqref{eq_cat}, $(\sigma^{\perp})_{q} \neq 0$ if and only if
-  $\Cat_{q}(\sigma)$ has nontrivial kernel.  The rank of $\Cat_{q}$ is a lower
-  semicontinuous function of $\sigma$, so it suffices to exhibit one $\sigma$
-  for which $\Cat_{q}$ has the maximal possible rank
-  $\min(D_{q,N}, D_{p-q,N})$ for every $q$; genericity then gives maximal rank
-  for all $q$ simultaneously.  Take $\sigma = \sum_{i=1}^{s}\ell_{i}^{p}$ with
-  $s \ge \max_{q}\min(D_{q,N},D_{p-q,N})$ and $\ell_{i}$ generic linear forms.
-  Then $\Cat_{q}(\ell^{p})$ is the rank-one map
-  $\Theta \mapsto \frac{p!}{(p-q)!}\Theta(\ell)\,\ell^{p-q}$, so
-  $\Cat_{q}(\sigma)$ has image inside $\spanop\{\ell_{i}^{p-q}\}$ and rank equal
-  to the rank of the $s \times D_{q,N}$ evaluation matrix
-  $(\Theta_{k}(\ell_{i}))$ composed with the independence of
-  $\{\ell_{i}^{p-q}\}$.  For generic $\ell_{i}$ both are of maximal rank, because
-  the Veronese variety is nondegenerate and therefore no nonzero form of degree
-  $q$ vanishes at $D_{q,N}$ generic points, and likewise
-  $\{\ell_{i}^{p-q}\}$ spans $\K[\bz]_{p-q}$ once $s \ge D_{p-q,N}$.  Hence
-  $\Cat_{q}$ has maximal rank, and its kernel is nonzero exactly when
-  $D_{q,N} > D_{p-q,N}$, that is when $q > p-q$.  The least such $q$ is
+  $\Cat_{q}(\sigma)$ has nontrivial kernel, so the claim is that a generic
+  $\sigma$ has $\Cat_{q}$ of maximal rank $\min(D_{q,N},D_{p-q,N})$ for every
+  $q$.  Rank is lower semicontinuous, and there are finitely many values of $q$,
+  so it suffices to exhibit for each $q$ one form of maximal rank.
+
+  We use one fact throughout: any $k \le D_{d,N}$ generic points of the
+  degree-$d$ Veronese are linearly independent.  This holds because the Veronese
+  spans $\mathbb{P}(\K[\bz]_{d})$, so some $D_{d,N}$ of its points are
+  independent, and independence is an open condition.  Applied to $\bz$ it says
+  that generic powers $\ell_{1}^{d},\ldots,\ell_{k}^{d}$ are independent;
+  applied to the dual variables it says that $k$ generic points
+  $\ell_{1},\ldots,\ell_{k}$ impose independent conditions on $\K[\by]_{d}$, so
+  that $\Theta \mapsto (\Theta(\ell_{i}))_{i}$ is onto $\K^{k}$.
+
+  Fix $q$ and set $s := \min(D_{q,N},D_{p-q,N})$; take
+  $\sigma := \sum_{i=1}^{s}\ell_{i}^{p}$ with generic $\ell_{i}$.  Since
+  $\Theta(\partial)\ell^{p} = \frac{p!}{(p-q)!}\Theta(\ell)\,\ell^{p-q}$ for
+  $\Theta \in \K[\by]_{q}$,
+  \begin{equation}\label{eq_cat_split}
+    \Cat_{q}(\sigma)(\Theta) \;=\; \frac{p!}{(p-q)!}\sum_{i=1}^{s}\Theta(\ell_{i})\,\ell_{i}^{p-q}.
+  \end{equation}
+  If $q \le p-q$ then $s = D_{q,N} \le D_{p-q,N}$, so the powers
+  $\ell_{i}^{p-q}$ are independent; a kernel element would force
+  $\Theta(\ell_{i})=0$ for every $i$, and the $s = D_{q,N}$ generic points
+  impose independent conditions in degree $q$, whence $\Theta = 0$.  Thus
+  $\Cat_{q}$ is injective of rank $D_{q,N}$, which is maximal.  If $q > p-q$
+  then $s = D_{p-q,N} \le D_{q,N}$, the vector $(\Theta(\ell_{i}))_{i}$ ranges
+  over all of $\K^{s}$, and the $s$ independent powers $\ell_{i}^{p-q}$ form a
+  basis of $\K[\bz]_{p-q}$; by \eqref{eq_cat_split} the map is onto, of maximal
+  rank $D_{p-q,N}$.
+
+  A maximal-rank $\Cat_{q}$ has nonzero kernel exactly when
+  $D_{q,N} > D_{p-q,N}$, that is when $q > p-q$, and the least such $q$ is
   $\lfloor p/2\rfloor+1$.
 \end{proof}
 
@@ -365,14 +411,21 @@ Identity \eqref{eq_filter} is character orthogonality for the cyclic group
 $U_{m}$.  Read that way, the roots-of-unity construction is one instance of a
 principle that does not require the group to be abelian, and the nonabelian
 instances are the interesting ones.  Throughout this section $G$ is a finite
-subgroup of the orthogonal group $O(N)$, acting on $\K[\bz]_{p}$ by
-$(g \cdot F)(\bz) := F(g^{-1}\bz)$.  Orthogonality gives the compatibility we
-need,
-\begin{equation}\label{eq_compat}
-  (g\bv)\cdot\bz \;=\; \bv \cdot (g^{-1}\bz),
+subgroup of $GL_{N}(\K)$ acting on $\K[\bz]_{p}$ by
+\begin{equation}\label{eq_action}
+  (g \cdot F)(\bz) \;:=\; F(g^{\mathsf{T}}\bz).
 \end{equation}
-and we write $\pi_{G} := \abs{G}^{-1}\sum_{g\in G} g$ for the Reynolds operator,
-a projection of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
+This is a left action, since $(gh)^{\mathsf{T}} = h^{\mathsf{T}}g^{\mathsf{T}}$,
+and it is the action matched to the pairing: because
+$\bv \cdot g^{\mathsf{T}}\bz = (g\bv)\cdot\bz$, it satisfies
+\begin{equation}\label{eq_compat}
+  g \cdot (\bv\cdot\bz)^{p} \;=\; \bigl((g\bv)\cdot\bz\bigr)^{p}
+\end{equation}
+for every $g$, with no orthogonality assumed.  When $G$ happens to be
+orthogonal, $g^{\mathsf{T}} = g^{-1}$ and \eqref{eq_action} is the familiar
+substitution $F(g^{-1}\bz)$.  We write
+$\pi_{G} := \abs{G}^{-1}\sum_{g\in G} g$ for the Reynolds operator, a projection
+of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
 
 \begin{definition}[Orbit average]\label{def_orbit_avg}
   For $\bv \in \K^{N}$ and a linear character $\chi \colon G \to \K^{\times}$ put
@@ -396,16 +449,17 @@ a projection of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
 \end{lemma}
 
 \begin{proof}
-  Using \eqref{eq_compat} and then reindexing $g \mapsto h^{-1}g$,
+  Applying $h$ to \eqref{eq_orbit_avg} and using \eqref{eq_compat} twice,
   \begin{equation*}
-    (h\cdot A^{\chi}_{\bv})(\bz)
-    = \frac{1}{\abs{G}}\sum_{g}\overline{\chi(g)}\bigl((g\bv)\cdot h^{-1}\bz\bigr)^{p}
+    h\cdot A^{\chi}_{\bv}
+    = \frac{1}{\abs{G}}\sum_{g}\overline{\chi(g)}\;h \cdot \bigl((g\bv)\cdot \bz\bigr)^{p}
     = \frac{1}{\abs{G}}\sum_{g}\overline{\chi(g)}\bigl((hg\bv)\cdot \bz\bigr)^{p}
-    = \chi(h)\,A^{\chi}_{\bv}(\bz),
+    = \chi(h)\,A^{\chi}_{\bv},
   \end{equation*}
-  where the last step substitutes $g \mapsto h^{-1}g$ and uses
-  $\overline{\chi(h^{-1}g)} = \chi(h)\overline{\chi(g)}$ for a character of
-  modulus one.  The same computation with \eqref{eq_compat} shows
+  the last step substituting $g \mapsto h^{-1}g$ and using
+  $\overline{\chi(h^{-1}g)} = \chi(h)\overline{\chi(g)}$, valid because a linear
+  character of a finite group takes values in the roots of unity.  The same use
+  of \eqref{eq_compat} shows
   $\pi^{\chi}_{G}\bigl((\bv\cdot\bz)^{p}\bigr) = A^{\chi}_{\bv}$.  Since powers
   of linear forms span $\K[\bz]_{p}$ and $\pi^{\chi}_{G}$ is a surjection onto
   $\K[\bz]_{p}^{(\chi)}$, the images $A^{\chi}_{\bv}$ span that component.
@@ -415,13 +469,12 @@ a projection of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
   Let $\bv \in \K^{N}$ with orbit $X := G\bv$, and let $\chi$ be a linear
   character of $G$.
   \begin{enumerate}[label=\textup{(\roman*)}]
-    \item If $\sigma \in \K[\bz]_{p}^{(\chi)}$ and $\sigma$ is a scalar multiple
-      of $A^{\chi}_{\bv} \neq 0$, then $\mathcal{P}$ admits a directional
-      schedule supported on $X$, with coefficients
-      $c_{g\bv} = \lambda\,\overline{\chi(g)}$ constant along $\chi$ up to the
-      character.  Its length is
-      $\abs{X} = \abs{G}/\abs{\Stab(\bv)}$, and $\abs{X}/2$ if $p$ is even and
-      $-I \in G$.
+    \item If $\sigma$ is a nonzero scalar multiple of $A^{\chi}_{\bv} \neq 0$,
+      then $\mathcal{P}$ admits a directional schedule supported on $X$, whose
+      coefficient at the direction $g\bv$ is
+      $\lambda\sum_{h \in \Stab(\bv)}\overline{\chi(gh)}$ for a constant
+      $\lambda$.  Its length is $\abs{X} = \abs{G}/\abs{\Stab(\bv)}$, and
+      $\abs{X}/2$ if $p$ is even and $-I \in G$.
     \item In particular, if $\dim_{\K}\K[\bz]_{p}^{(\chi)} = 1$ then the
       hypothesis of \textup{(i)} holds for every $\sigma$ in that component and
       every $\bv$ with $A^{\chi}_{\bv} \neq 0$, with no equation to solve.
@@ -438,9 +491,13 @@ a projection of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
   (i) Write $\sigma = \mu\,A^{\chi}_{\bv}$ with $\mu \in \K^{\times}$.  By
   \eqref{eq_orbit_avg},
   $p!\,\sigma = \frac{p!\mu}{\abs{G}}\sum_{g}\overline{\chi(g)}((g\bv)\cdot\bz)^{p}$,
-  which is \eqref{eq_bridge} with $\lambda := p!\mu/\abs{G}$; collecting the
-  $\abs{\Stab(\bv)}$ group elements that produce the same direction turns the
-  sum over $G$ into a sum over $X$.  If $p$ is even and $-I \in G$, then
+  which is \eqref{eq_bridge} with $\lambda := p!\mu/\abs{G}$.  The elements of
+  $G$ producing a given direction $g\bv$ are the coset $g\Stab(\bv)$, so
+  collecting them turns the sum over $G$ into a sum over $X$ with the stated
+  coefficients.  Note that these are not all zero: were
+  $\sum_{h\in\Stab(\bv)}\overline{\chi(gh)} = 0$ for every $g$, the same
+  collection would give $A^{\chi}_{\bv}=0$, contrary to hypothesis.  If $p$ is
+  even and $-I \in G$, then
   $((-\bw)\cdot\bz)^{p} = (\bw\cdot\bz)^{p}$, so antipodal members of $X$ carry
   identical powers and may be merged, halving the count.  (ii) is immediate from
   (i) because a one-dimensional space contains no directions other than
@@ -456,17 +513,24 @@ one there are no conditions at all.  The two constructions of this note are the
 two extremes of the principle.
 
 \begin{example}[The Fourier grid is the abelian case]\label{ex_abelian}
-  Let $G := U_{m_{1}} \times \cdots \times U_{m_{n}}$ act diagonally by
-  $z_{j} \mapsto \zeta_{j}z_{j}$ for $j \ge 1$ and trivially on $z_{0}$.  Then
-  $g\cdot\bz^{\beta} = \bigl(\prod_{j\ge1}\zeta_{j}^{-\beta_{j}}\bigr)\bz^{\beta}$,
-  so every monomial spans an isotypic component, and two monomials $\beta$,
-  $\beta'$ of degree $p$ share a component if and only if
+  Let $G := U_{m_{1}} \times \cdots \times U_{m_{n}}$ act by the diagonal
+  matrices $g_{\zeta} := \operatorname{diag}(1,\zeta_{1},\ldots,\zeta_{n})$.
+  These are symmetric, so \eqref{eq_action} reads
+  $(g_{\zeta}\cdot F)(\bz) = F(g_{\zeta}\bz)$ and
+  $g_{\zeta}\cdot\bz^{\beta} = \bigl(\prod_{j\ge1}\zeta_{j}^{\beta_{j}}\bigr)\bz^{\beta}$.
+  Note that $G$ is not orthogonal, which is why \cref{sec_orbit} was set up
+  without that hypothesis.  Every monomial spans an isotypic component, with
+  character $\chi_{\beta}(g_{\zeta}) = \prod_{j\ge1}\zeta_{j}^{\beta_{j}}$, and
+  two monomials of degree $p$ share a component exactly when
   $m_{j} \mid \beta_{j}-\beta'_{j}$ for all $j \ge 1$.  When
-  $m_{0} = \min_{j}m_{j}$, the argument around \eqref{eq_alias} shows this forces
+  $m_{0} = \min_{j}m_{j}$, the argument around \eqref{eq_alias} forces
   $\beta = \beta'$, so \emph{every} component meeting the symbol is
-  one-dimensional.  Applying \cref{thm_orbit}(iii) to
-  $\bv = e_{0}+e_{1}+\cdots+e_{n}$, whose orbit is exactly the grid of
-  \eqref{eq_grid}, recovers \cref{thm_grid}.  The cost of the abelian choice is
+  one-dimensional.  Take $\bv := e_{0}+e_{1}+\cdots+e_{n}$, whose orbit
+  $\{g_{\zeta}\bv\}$ is exactly the grid of \eqref{eq_grid}.  Expanding
+  \eqref{eq_orbit_avg} and applying \eqref{eq_filter} coordinatewise gives
+  $A^{\chi_{a}}_{\bv} = \binom{p}{a}\bz^{a}$, so \cref{thm_orbit}(ii) reproduces
+  each monomial of the symbol on that one orbit and \cref{thm_orbit}(iii)
+  assembles them, recovering \cref{thm_grid}.  The cost of the abelian choice is
   visible here: the group has as many one-dimensional components as the grid has
   points, so the orbit must be as large as the box of monomials it separates,
   which is $\prod_{j\ge1}m_{j}$ rather than the far smaller $D_{p,N}$.
