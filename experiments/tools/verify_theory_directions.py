@@ -14,7 +14,9 @@ from __future__ import annotations
 
 import argparse
 import itertools
+import sys
 from math import comb, factorial, prod
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -469,6 +471,40 @@ def check_real_search(fast: bool) -> None:
 # --------------------------------------------------------------------------
 # Corollary 6.3 and Remark 6.4: shared sets and conditioning
 # --------------------------------------------------------------------------
+def check_implemented_rules() -> None:
+    """Table 7.2: the rules that ``apolarity.cubature`` actually builds."""
+    root = Path(__file__).resolve().parents[2] / "src"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    try:
+        from apolarity.cubature import laplacian_power_cubature_directions
+    except ImportError:  # pragma: no cover - only when run outside the repo
+        print("Table 7.2  skipped: apolarity is not importable\n")
+        return
+
+    print("Table 7.2  rules built by apolarity.cubature")
+    print(
+        f"  {'d':>2} {'m':>2} {'nodes':>6} {'bound':>6} {'term-by-term':>13} "
+        f"{'positive':>9}  rule"
+    )
+    recorded = {
+        (3, 1): 3, (3, 2): 6, (3, 3): 13, (3, 4): 25,
+        (4, 1): 4, (4, 2): 12, (4, 3): 24, (4, 4): 64,
+        (5, 1): 5, (5, 2): 21, (5, 3): 41, (5, 4): 121,
+        (6, 1): 6, (6, 2): 36, (6, 3): 68, (6, 4): 208,
+    }
+    for (d, m), want in sorted(recorded.items()):
+        _nodes, _coeff, info = laplacian_power_cubature_directions(m, d)
+        assert info.nodes == want, f"d={d}, m={m}: {info.nodes} nodes, note records {want}"
+        assert info.nodes >= info.lower_bound, "a rule came in below the lower bound"
+        star = " *" if info.meets_lower_bound else ""
+        print(
+            f"  {d:>2} {m:>2} {info.nodes:>6} {info.lower_bound:>6} "
+            f"{info.termwise_rank:>13} {str(info.weights_positive):>9}  {info.rule}{star}"
+        )
+    print()
+
+
 def veronese(dirs: np.ndarray, p: int, n_vars: int) -> np.ndarray:
     basis = monomials(p, n_vars)
     mat = np.zeros((len(dirs), len(basis)), dtype=dirs.dtype)
@@ -541,6 +577,7 @@ def main() -> None:
     check_abelian_orbit()
     check_orbit_filter()
     check_real_search(args.fast)
+    check_implemented_rules()
     check_shared(np.random.default_rng(7))
     print("all checks passed")
 

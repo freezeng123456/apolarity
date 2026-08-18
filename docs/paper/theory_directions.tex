@@ -804,6 +804,41 @@ when many derivatives are wanted at once: the full order-six tensor in three
 variables costs $192$ directions term by term against the exact optimum $28$ of
 \cref{cor_fulltensor}, which requires no search at all.
 
+\cref{tab_implemented} records the rules that the accompanying implementation
+actually builds for $\Delta^{m}$, following \cref{thm_cubature}.  They come from
+orbits of the group of signed permutations, so by \cref{thm_orbit} the weights
+follow from one linear condition per invariant of degree $2m$ rather than from a
+search, and the resulting nodes are real with weights that are positive in all
+but four of the sixteen tabulated cases.  Two families of entries meet the bound of
+\cref{thm_lower} exactly: an orthonormal frame at $m=1$ in every dimension, and
+the icosahedral axes at $(d,m) = (3,2)$.  Elsewhere the constructive rule sits
+above the shortest schedule that numerical search can find, by two directions at
+$(3,3)$ and one at $(4,2)$, which is the price of insisting on a deterministic
+construction with a linear solve.  Beyond the orders tabulated here the orbits
+considered supply too few invariant conditions, and the implementation raises
+rather than returning an approximation.
+
+\begin{table}[t]
+\caption{Rules built by the implementation for $\Delta^{m}$ on $\R^{d}$, against
+the lower bound of \cref{thm_lower} and the term-by-term total.  Entries marked
+$\star$ meet the bound.}
+\label{tab_implemented}
+\centering
+\begin{tabular}{rrrrrrrrrrrr}
+\toprule
+& \multicolumn{3}{c}{$m=1$} & \multicolumn{3}{c}{$m=2$}
+& \multicolumn{3}{c}{$m=3$} & \multicolumn{2}{c}{$m=4$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-12}
+$d$ & rule & bnd & t-b-t & rule & bnd & t-b-t & rule & bnd & t-b-t & rule & bnd \\
+\midrule
+$3$ & $3^{\star}$ & $3$ & $3$   & $6^{\star}$ & $6$  & $12$ & $13$ & $10$ & $42$  & $25$  & $15$ \\
+$4$ & $4^{\star}$ & $4$ & $4$   & $12$ & $10$ & $22$ & $24$ & $20$ & $100$ & $64$  & $35$ \\
+$5$ & $5^{\star}$ & $5$ & $5$   & $21$ & $15$ & $35$ & $41$ & $35$ & $195$ & $121$ & $70$ \\
+$6$ & $6^{\star}$ & $6$ & $6$   & $36$ & $21$ & $51$ & $68$ & $56$ & $336$ & $208$ & $126$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \cref{tab_cond} quantifies \cref{rmk_cond}.  The grid buys its extra length back
 in stability, which is the reason it should not be discarded even where shorter
 schedules exist.
@@ -843,6 +878,10 @@ cases, provable minimality.  If $\sigma$ is invariant under any finite group,
 isotypic component.  And if several operators or a whole derivative tensor are
 wanted, \cref{cor_fulltensor} gives an exactly optimal shared set of length equal
 to the dimension of the span, with no search.
+
+Of these, the cubature branch is implemented: \texttt{apolarity.cubature} builds
+the rules of \cref{tab_implemented} and routes $\Delta^{m}$ in three or more
+variables through them, while two variables continue to use the closed form.
 
 What is not settled is the general case.  For a symbol with no symmetry and no
 quadratic structure in $N \ge 3$ active variables, no constructive procedure is
