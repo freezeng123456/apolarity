@@ -309,58 +309,74 @@ def fit_real_schedule(
     p: int,
     n_vars: int,
     size: int,
-    restarts: int = 6,
-    steps: int = 4000,
+    restarts: int = 8,
+    steps: int = 2500,
 ) -> tuple[float, torch.Tensor, torch.Tensor]:
     basis = monomials(p, n_vars)
     mult = torch.tensor([multinomial(p, e) for e in basis])
-    tgt = torch.tensor([factorial(p) * target.get(e, 0.0) for e in basis])
+    tgt = torch.tensor([target.get(e, 0.0) for e in basis])
+    # Fit the normalized symbol so that the tolerance means the same thing at
+    # every order; the discarded scale is put back into the weights at the end.
+    scale = float(tgt.abs().max())
+    tgt = tgt / scale
     exps = torch.tensor(basis, dtype=torch.float64)
 
-    def powers(dirs: torch.Tensor) -> torch.Tensor:
+    def design(dirs: torch.Tensor) -> torch.Tensor:
+        """Rows are ``mult * (v_r . z)^p`` in the monomial basis."""
         unit = dirs / dirs.norm(dim=1, keepdim=True)
         mag = torch.exp(torch.log(unit.abs().clamp_min(1e-300)) @ exps.T)
         sign = torch.prod(torch.sign(unit).unsqueeze(1) ** exps.unsqueeze(0), dim=2)
-        return mag * sign
+        return mult * mag * sign
 
-    best, best_pair = float("inf"), None
+    def residual(dirs: torch.Tensor) -> torch.Tensor:
+        """Distance from the target to the span of the current directions.
+
+        The weights enter the fit linearly, so they are eliminated by an
+        orthogonal projection rather than optimized.  What remains is a much
+        better conditioned problem in the directions alone.
+        """
+        mat = design(dirs).T
+        basis_q, _ = torch.linalg.qr(mat, mode="reduced")
+        return tgt - basis_q @ (basis_q.T @ tgt)
+
+    best, best_dirs = float("inf"), None
     for seed in range(restarts):
         gen = torch.Generator().manual_seed(1000 * size + seed)
         dirs = torch.randn(size, n_vars, generator=gen, requires_grad=True)
-        wts = torch.randn(size, generator=gen, requires_grad=True)
 
-        adam = torch.optim.Adam([dirs, wts], lr=5e-2)
+        adam = torch.optim.Adam([dirs], lr=5e-2)
         for step in range(steps):
             adam.zero_grad()
-            loss = (((wts.unsqueeze(1) * mult * powers(dirs)).sum(0) - tgt) ** 2).sum()
-            loss.backward()
+            (residual(dirs) ** 2).sum().backward()
             adam.step()
             if step == steps // 2:
                 for group in adam.param_groups:
                     group["lr"] = 5e-3
 
         lbfgs = torch.optim.LBFGS(
-            [dirs, wts], max_iter=400, tolerance_grad=1e-14, line_search_fn="strong_wolfe"
+            [dirs], max_iter=500, tolerance_grad=1e-16, line_search_fn="strong_wolfe"
         )
 
         def closure() -> torch.Tensor:
             lbfgs.zero_grad()
-            loss = (((wts.unsqueeze(1) * mult * powers(dirs)).sum(0) - tgt) ** 2).sum()
+            loss = (residual(dirs) ** 2).sum()
             loss.backward()
             return loss
 
         lbfgs.step(closure)
         with torch.no_grad():
-            res = float(
-                ((wts.unsqueeze(1) * mult * powers(dirs)).sum(0) - tgt).abs().max()
-            )
+            res = float(residual(dirs).abs().max())
         if res < best:
-            unit = (dirs / dirs.norm(dim=1, keepdim=True)).detach()
-            best, best_pair = res, (unit, wts.detach().clone())
-        if best < 1e-10:
+            best = res
+            best_dirs = (dirs / dirs.norm(dim=1, keepdim=True)).detach().clone()
+        if best < 1e-12:
             break
-    assert best_pair is not None
-    return best, best_pair[0], best_pair[1]
+
+    assert best_dirs is not None
+    with torch.no_grad():
+        mat = design(best_dirs).T
+        wts = torch.linalg.lstsq(mat, tgt).solution * scale * factorial(p)
+    return best, best_dirs, wts
 
 
 def termwise_total(target: dict[Multi, float]) -> int:
@@ -373,7 +389,7 @@ def check_real_search(fast: bool) -> None:
         f"  {'target':10s} {'N':>2} {'grid':>6} {'term-by-term':>13} "
         f"{'bound':>6} {'search':>7} {'weights':>12}"
     )
-    recorded = {(3, 1): 3, (3, 2): 6, (3, 3): 11, (4, 1): 4, (4, 2): 12}
+    recorded = {(3, 1): 3, (3, 2): 6, (3, 3): 11, (4, 1): 4, (4, 2): 11}
     for n_vars in (3, 4):
         for m in (1, 2, 3):
             if n_vars == 4 and m == 3:
@@ -388,13 +404,22 @@ def check_real_search(fast: bool) -> None:
             else:
                 size, note = None, ""
                 for cand in range(bound, bound + 4):
-                    res, _, wts = fit_real_schedule(target, p, n_vars, cand)
+                    res, dirs, wts = fit_real_schedule(target, p, n_vars, cand)
                     if res < 1e-9:
+                        # Confirm end to end against the identity of Proposition 1.1.
+                        err = schedule_error(
+                            dirs.numpy(), wts.numpy(), target, p, n_vars
+                        )
+                        assert err < 1e-6, f"Delta^{m}, N={n_vars}: error {err:.2e}"
                         size = cand
                         note = "positive" if float(wts.min()) > 0 else "mixed sign"
                         break
                 assert size is not None, f"no real schedule found for Delta^{m}, N={n_vars}"
-                assert size >= bound, f"search beat the lower bound of Theorem 5.3"
+                assert size >= bound, "search beat the lower bound of Theorem 5.3"
+                assert size == recorded[(n_vars, m)], (
+                    f"Delta^{m}, N={n_vars}: found {size}, note records "
+                    f"{recorded[(n_vars, m)]}"
+                )
             print(
                 f"  {'Delta^' + str(m):10s} {n_vars:>2} {grid:>6} {term:>13} "
                 f"{bound:>6} {size:>7} {note:>12}"
