@@ -1,8 +1,8 @@
 """Directional-schedule operators.
 
 :func:`single_monomial_partial` handles one expanded multi-index at a time.
-:func:`laplacian_power` schedules a whole polyharmonic operator from the Waring
-decomposition of its symbol, which for that operator is strictly shorter than
+:func:`laplacian_power` schedules a whole polyharmonic operator from a
+decomposition of its symbol, in any dimension, which is strictly shorter than
 scheduling its monomials separately.  Trace contractions and general
 contractable operator sums are not implemented.
 """
@@ -14,6 +14,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
+from .cubature import laplacian_power_cubature_directions
 from .polarization import polarization_directions as _polarization_directions
 from .symbol import laplacian_power_directions
 from .taylor_jet import tp_directional_via_jet
@@ -178,21 +179,35 @@ def laplacian_power(
     *,
     offset: float = 0.0,
 ) -> Tensor:
-    """Evaluate ``Delta^m u(x)`` for ``d = 2`` from the symbol's Waring decomposition.
+    """Evaluate ``Delta^m u(x)`` from a directional schedule for the whole symbol.
 
-    The schedule has ``m + 1`` directions, the minimum for this operator, against
-    the larger count that scheduling each monomial of ``Delta^m`` separately
-    requires.  The directions are real, so no complex arithmetic is introduced.
+    In two variables the symbol factors into linear forms, so the closed-form
+    schedule of :mod:`apolarity.symbol` applies and uses ``m + 1`` directions,
+    the minimum for this operator.  In higher dimensions the quadric is
+    irreducible and that formula does not apply; :mod:`apolarity.cubature`
+    supplies a spherical cubature rule instead.  Either way the directions are
+    real, so no complex arithmetic is introduced, and both are far shorter than
+    scheduling each monomial of ``Delta^m`` separately.
 
     Args:
         model: Scalar model supported by :mod:`apolarity.taylor_jet`.
-        x: Input tensor of shape ``(B, 2)``.
+        x: Input tensor of shape ``(B, d)``.
         m: Power of the Laplacian; the derivative order is ``2m``.
-        offset: Rotation of the equally spaced direction set, in radians.
+        offset: Rotation of the equally spaced direction set, in radians.  Used
+            only when ``d == 2``, where every rotation gives a minimal schedule.
     """
-    if x.ndim != 2 or x.shape[1] != 2:
-        raise ValueError(f"laplacian_power expects x of shape (B, 2), got {tuple(x.shape)}")
-    V, coeff, info = laplacian_power_directions(
-        m, 2, device=x.device, dtype=x.dtype, offset=offset
-    )
-    return _evaluate_direction_formula(model, x, V, coeff, info.order)
+    if x.ndim != 2:
+        raise ValueError(f"laplacian_power expects x of shape (B, d), got {tuple(x.shape)}")
+    d = x.shape[1]
+
+    if d == 2:
+        V, coeff, info = laplacian_power_directions(
+            m, 2, device=x.device, dtype=x.dtype, offset=offset
+        )
+        order = info.order
+    else:
+        V, coeff, cinfo = laplacian_power_cubature_directions(
+            m, d, device=x.device, dtype=x.dtype
+        )
+        order = cinfo.order
+    return _evaluate_direction_formula(model, x, V, coeff, order)

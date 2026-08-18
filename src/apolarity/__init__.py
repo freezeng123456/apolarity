@@ -9,6 +9,11 @@ from .symbol import (
     laplacian_power_directions,
     laplacian_power_termwise_rank,
 )
+from .cubature import (
+    CubatureInfo,
+    laplacian_power_cubature_directions,
+    laplacian_power_lower_bound,
+)
 
 __all__ = [
     "WaringInfo",
@@ -23,4 +28,7 @@ __all__ = [
     "SymbolScheduleInfo",
     "laplacian_power_directions",
     "laplacian_power_termwise_rank",
+    "CubatureInfo",
+    "laplacian_power_cubature_directions",
+    "laplacian_power_lower_bound",
 ]

@@ -29,8 +29,10 @@ four and 12 at order six against 3 and 4 here.
 """
 from __future__ import annotations
 
+import itertools
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Tuple
 
 import torch
@@ -56,14 +58,26 @@ def _monomial_rank(exponents: Tuple[int, ...]) -> int:
     return math.prod(e + 1 for e in active[1:]) if len(active) > 1 else 1
 
 
+@lru_cache(maxsize=None)
+def quadric_power_coefficients(m: int, d: int) -> dict[Tuple[int, ...], float]:
+    """Coefficients of ``(z_1^2 + ... + z_d^2)^m`` in the monomial basis."""
+    if m < 1 or d < 1:
+        raise ValueError("m and d must be positive")
+    out: dict[Tuple[int, ...], float] = {}
+    for ks in itertools.product(range(m + 1), repeat=d):
+        if sum(ks) != m:
+            continue
+        exponents = tuple(2 * k for k in ks)
+        weight = math.factorial(m) / math.prod(math.factorial(k) for k in ks)
+        out[exponents] = out.get(exponents, 0.0) + weight
+    return out
+
+
 def laplacian_power_termwise_rank(m: int, d: int = 2) -> int:
     """Directions used by scheduling every monomial of ``Delta^m`` separately."""
-    if d != 2:
-        raise NotImplementedError("only d = 2 is implemented")
-    total = 0
-    for k in range(m + 1):
-        total += _monomial_rank((2 * m - 2 * k, 2 * k))
-    return total
+    return sum(
+        _monomial_rank(exponents) for exponents in quadric_power_coefficients(m, d)
+    )
 
 
 def laplacian_power_directions(
