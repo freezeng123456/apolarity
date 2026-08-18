@@ -1,0 +1,786 @@
+%% theory_directions.tex
+%% Theory note: orbit filters, symbol structure, and how few directions an
+%% operator really needs.
+%%
+%% Companion to jsc_paper_main.tex.  Self-contained; every statement is proved.
+%% Build sequence: pdflatex, pdflatex.
+
+\documentclass[final]{siamltex}
+
+\usepackage{amsmath,amssymb}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{aliascnt}
+\usepackage{enumitem}
+
+\hypersetup{hidelinks}
+
+\DeclareMathOperator{\spanop}{span}
+\DeclareMathOperator{\Cat}{Cat}
+\DeclareMathOperator{\Stab}{Stab}
+
+\newaliascnt{remark}{theorem}
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}
+\crefname{remark}{Remark}{Remarks}
+\Crefname{remark}{Remark}{Remarks}
+
+\newaliascnt{example}{theorem}
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}
+\crefname{example}{Example}{Examples}
+\Crefname{example}{Example}{Examples}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\by}{\bm{y}}
+\newcommand{\bz}{\bm{z}}
+\newcommand{\bv}{\bm{v}}
+\newcommand{\bw}{\bm{w}}
+\newcommand{\Tp}{T_{p}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+
+\emergencystretch=1.5em
+
+\begin{document}
+
+\title{How Few Directions Does an Operator Need?\\
+Orbit Filters, Symbol Structure, and Shared Schedules}
+
+\author{Theory note accompanying\\
+\emph{Rank-Optimal Directional Taylor Jets for High-Order Mixed Derivatives}}
+
+\maketitle
+
+\begin{abstract}
+  The directional schedule of the main paper is built from roots of unity, and
+  it is minimal for a single monomial derivative.  This note asks what that
+  construction is really doing and how far it goes.  Three answers follow.
+  First, the roots-of-unity grid is not specific to monomials at all: for an
+  arbitrary homogeneous constant-coefficient operator it produces an exact
+  schedule whose coefficients are a discrete Fourier transform of the symbol,
+  with no linear solve and no dimension restriction.  Second, that grid is a
+  complete intersection, and complete intersections are provably far from
+  minimal once three or more coordinates are active; for a generic symbol the
+  grid costs about $N!$ times the minimum in $N$ active variables.  Third, both
+  the roots-of-unity schedule and its correct generalization are instances of a
+  single principle: a character-weighted orbit of a finite group reproduces any
+  symbol lying in a one-dimensional isotypic component.  Choosing an abelian
+  group recovers the Fourier grid; choosing a nonabelian group turns the design
+  problem for powers of the Laplacian into the classical problem of cubature on
+  the sphere, whose solutions are real, positively weighted, and in the smallest
+  cases provably minimal.  We also record that scheduling several operators, or
+  a whole derivative tensor, on one shared direction set is exactly optimal at
+  length equal to the dimension of the span, which quantifies how much
+  term-by-term scheduling wastes.
+\end{abstract}
+
+%% ====================================================================
+\section{Scope and notation}\label{sec_scope}
+
+Throughout, $\K \in \{\R,\C\}$ and $\bz = (z_{0},\ldots,z_{n})$ are coordinates
+on the active subspace of the problem, so that $N := n+1$ is the number of
+active variables.  We write $\K[\bz]_{p}$ for the homogeneous polynomials of
+degree $p$, whose dimension is
+\begin{equation}\label{eq_dim}
+  D_{p,N} \;:=\; \dim \K[\bz]_{p} \;=\; \binom{p+N-1}{N-1}.
+\end{equation}
+A homogeneous constant-coefficient operator of order $p$ and its symbol are
+\begin{equation}\label{eq_symbol}
+  \mathcal{P} \;=\; \sum_{\abs{\beta}=p} b_{\beta}\,\partial^{\beta},
+  \qquad
+  \sigma(\bz) \;=\; \sum_{\abs{\beta}=p} b_{\beta}\,\bz^{\beta} \in \K[\bz]_{p}.
+\end{equation}
+For a direction $\bv$ we write $\bv \cdot \bz = \sum_{j} v_{j} z_{j}$, and
+$\Tp(\bx;\bv)$ for the order-$p$ coefficient of $\tau \mapsto u(\bx + \tau\bv)$,
+as in the main paper.  A \emph{directional schedule} for $\mathcal{P}$ of length
+$R$ is a family $(c_{r},\bv_{r})_{r=1}^{R}$ with
+$\mathcal{P}u(\bx) = \sum_{r} c_{r}\,\Tp(\bx;\bv_{r})$ for all admissible $u$.
+We take the following bridge as given; it is Proposition~3.6 of the main paper.
+
+\begin{proposition}[Bridge]\label{prop_bridge}
+  A family $(c_{r},\bv_{r})_{r=1}^{R}$ is a directional schedule for
+  $\mathcal{P}$ if and only if
+  \begin{equation}\label{eq_bridge}
+    p!\,\sigma(\bz) \;=\; \sum_{r=1}^{R} c_{r}\,(\bv_{r}\cdot\bz)^{p}
+    \qquad\text{in }\K[\bz]_{p},
+  \end{equation}
+  and the least length of a schedule over $\K$ is the Waring rank
+  $R_{\K}(\sigma)$.
+\end{proposition}
+
+Everything below is therefore a statement about writing one fixed form $\sigma$
+as a short combination of $p$th powers of linear forms.  Two standard devices
+are used.  Let $\K[\by] = \K[y_{0},\ldots,y_{n}]$ act on $\K[\bz]$ by
+$y_{j} \mapsto \partial/\partial z_{j}$.  The \emph{apolar ideal} of $\sigma$ is
+\begin{equation}\label{eq_apolar}
+  \sigma^{\perp} \;:=\; \{\Theta \in \K[\by] \;:\; \Theta(\partial)\,\sigma = 0\},
+\end{equation}
+a homogeneous ideal, and the \emph{catalecticant} in degree $q$ is the linear map
+\begin{equation}\label{eq_cat}
+  \Cat_{q}(\sigma) \colon \K[\by]_{q} \to \K[\bz]_{p-q},
+  \qquad
+  \Theta \mapsto \Theta(\partial)\sigma,
+  \qquad
+  \ker \Cat_{q}(\sigma) = (\sigma^{\perp})_{q}.
+\end{equation}
+We use the apolarity lemma in the form: for a finite reduced
+$X \subset \mathbb{P}(\K^{N})$ with homogeneous vanishing ideal $I_{X}$,
+\begin{equation}\label{eq_apolarity}
+  \sigma \in \spanop\{(\bv\cdot\bz)^{p} : [\bv] \in X\}
+  \iff
+  I_{X} \subseteq \sigma^{\perp}.
+\end{equation}
+Finally, $U_{m} := \{\zeta \in \C : \zeta^{m}=1\}$, and we use repeatedly that
+\begin{equation}\label{eq_filter}
+  \sum_{\zeta \in U_{m}} \zeta^{k} \;=\; m \cdot \mathbf{1}_{m \mid k},
+  \qquad k \in \Z .
+\end{equation}
+
+%% ====================================================================
+\section{The Fourier grid is not about monomials}\label{sec_grid}
+
+The schedule of the main paper attaches roots of unity to a monomial
+$\bz^{a}$.  The next theorem shows that the same point set serves an arbitrary
+symbol, with coefficients given in closed form by a discrete Fourier transform.
+No linear system is solved, and no restriction is placed on $N$.
+
+\begin{theorem}[Universal Fourier schedule]\label{thm_grid}
+  Let $\sigma \in \K[\bz]_{p}$ be nonzero with coefficients $b_{\beta}$ as in
+  \eqref{eq_symbol}.  Put
+  \begin{equation}\label{eq_degrees}
+    d_{j} := \deg_{z_{j}} \sigma,
+    \qquad
+    m_{j} := d_{j}+1,
+    \qquad j = 0,\ldots,n,
+  \end{equation}
+  and relabel the coordinates so that $m_{0} = \min_{j} m_{j}$.  Set
+  $M := \prod_{j=1}^{n} m_{j}$.  For
+  $\zeta = (\zeta_{1},\ldots,\zeta_{n}) \in U_{m_{1}} \times \cdots \times U_{m_{n}}$
+  define
+  \begin{equation}\label{eq_grid}
+    \bv_{\zeta} \;:=\; e_{0} + \sum_{j=1}^{n} \zeta_{j}\,e_{j},
+    \qquad
+    c_{\zeta} \;:=\; \frac{1}{M}\sum_{\abs{\gamma}=p} \gamma!\,b_{\gamma}
+      \prod_{j=1}^{n} \zeta_{j}^{-\gamma_{j}} .
+  \end{equation}
+  Then $(c_{\zeta},\bv_{\zeta})_{\zeta}$ is a directional schedule for
+  $\mathcal{P}$ of length $M$.
+\end{theorem}
+
+\begin{proof}
+  By \cref{prop_bridge} it suffices to verify \eqref{eq_bridge}.  Since
+  $\bv_{\zeta} \cdot \bz = z_{0} + \sum_{j \ge 1}\zeta_{j}z_{j}$, the
+  multinomial theorem gives
+  \begin{equation*}
+    \sum_{\zeta} c_{\zeta}(\bv_{\zeta}\cdot\bz)^{p}
+    = \sum_{\abs{\beta}=p} \frac{p!}{\beta!}\, \bz^{\beta}
+      \underbrace{\sum_{\zeta} c_{\zeta} \prod_{j=1}^{n}\zeta_{j}^{\beta_{j}}}_{=:\,S_{\beta}},
+  \end{equation*}
+  so \eqref{eq_bridge} is equivalent to $S_{\beta} = \beta!\,b_{\beta}$ for every
+  $\beta$ with $\abs{\beta}=p$.  Substituting \eqref{eq_grid} and applying
+  \eqref{eq_filter} in each factor,
+  \begin{equation}\label{eq_Sbeta}
+    S_{\beta}
+    = \frac{1}{M}\sum_{\abs{\gamma}=p}\gamma!\,b_{\gamma}
+      \prod_{j=1}^{n}\Bigl(\sum_{\zeta_{j}\in U_{m_{j}}}\zeta_{j}^{\beta_{j}-\gamma_{j}}\Bigr)
+    = \sum_{\abs{\gamma}=p}\gamma!\,b_{\gamma}
+      \prod_{j=1}^{n}\mathbf{1}_{m_{j}\,\mid\,\beta_{j}-\gamma_{j}} .
+  \end{equation}
+
+  We claim that for $\gamma$ with $b_{\gamma}\neq 0$ the product of indicators in
+  \eqref{eq_Sbeta} equals $1$ precisely when $\gamma = \beta$.  Sufficiency is
+  clear.  For necessity, write $\beta_{j}-\gamma_{j} = k_{j}m_{j}$ with
+  $k_{j}\in\Z$ for $j = 1,\ldots,n$.  Because $b_{\gamma}\neq 0$, the definition
+  \eqref{eq_degrees} forces $\gamma_{j} \le d_{j} = m_{j}-1$ for \emph{every}
+  $j$, including $j=0$.  If $k_{j} \le -1$ for some $j \ge 1$, then
+  $\gamma_{j} \ge \beta_{j}+m_{j} \ge m_{j} > d_{j}$, a contradiction; hence
+  $k_{j}\ge 0$ for all $j \ge 1$.  Summing $\abs{\beta} = \abs{\gamma} = p$ gives
+  $\sum_{j\ge 0}(\beta_{j}-\gamma_{j}) = 0$, that is,
+  \begin{equation}\label{eq_alias}
+    \sum_{j=1}^{n} k_{j}m_{j} \;=\; \gamma_{0}-\beta_{0} \;\le\; \gamma_{0} \;\le\; d_{0} \;=\; m_{0}-1 .
+  \end{equation}
+  If some $k_{j} \ge 1$ then the left side of \eqref{eq_alias} is at least
+  $m_{j} \ge m_{0}$, contradicting the bound $m_{0}-1$.  Therefore $k_{j}=0$ for
+  all $j \ge 1$, so $\beta_{j}=\gamma_{j}$ for $j\ge1$, and then
+  $\beta_{0}=\gamma_{0}$ because $\abs{\beta}=\abs{\gamma}$.  This proves the
+  claim.
+
+  Consequently the sum \eqref{eq_Sbeta} retains at most the single term
+  $\gamma=\beta$.  If $b_{\beta}\neq0$ it retains exactly that term and
+  $S_{\beta} = \beta!\,b_{\beta}$.  If $b_{\beta}=0$, no $\gamma$ with
+  $b_{\gamma}\neq0$ survives, since surviving would force $\gamma=\beta$ and
+  hence $b_{\beta}\neq0$; thus $S_{\beta}=0=\beta!\,b_{\beta}$.
+\end{proof}
+
+Two features of \cref{thm_grid} deserve comment.
+
+\begin{remark}[The base coordinate must be one of least degree]\label{rmk_base}
+  The relabelling $m_{0}=\min_{j}m_{j}$ is not cosmetic; it is exactly what
+  \eqref{eq_alias} consumes.  Take $\sigma = z_{0}^{4} + z_{0}z_{1}^{3}$, so
+  $p=4$, $d_{0}=4$, $d_{1}=3$ and the least degree occurs at $j=1$.  Building
+  the grid on the base $j=0$ instead uses $\zeta \in U_{4}$ and the pair
+  $\beta=(0,4)$, $\gamma=(4,0)$ satisfies $4 \mid \beta_{1}-\gamma_{1}$ with
+  $\gamma \neq \beta$.  The aliased term survives and the construction returns
+  $\sigma + z_{1}^{4}$ rather than $\sigma$.  Choosing the base correctly makes
+  every alias impossible at once.
+\end{remark}
+
+\begin{remark}[Recovering the monomial case]\label{rmk_monomial}
+  For $\sigma = \bz^{a}$ with $a$ the active exponent vector, only
+  $\gamma = a$ contributes to \eqref{eq_grid}, so
+  $c_{\zeta} = (a!/M)\prod_{j}\zeta_{j}^{-a_{j}}$ and $M = \prod_{j\ge1}(a_{j}+1)$.
+  This is Theorem~3.4 of the main paper, up to replacing $\zeta_{j}$ by
+  $\zeta_{j}^{-1}$, which permutes the grid.  So the monomial schedule is the
+  one-term instance of \cref{thm_grid}.
+\end{remark}
+
+The practical reading of \cref{thm_grid} is that the grid is a
+\emph{universal} device: it needs nothing from $\sigma$ beyond its coordinate
+degrees, it never solves a linear system, and its length
+$M = \prod_{j\ge1}m_{j}$ is available in advance.  The rest of this note is
+about the price of that universality.
+
+%% ====================================================================
+\section{What grid structure costs}\label{sec_cost}
+
+The grid of \cref{thm_grid} is the zero set of the $n$ binomials
+$y_{j}^{m_{j}} - y_{0}^{m_{j}}$, $j = 1,\ldots,n$, hence a complete intersection
+in $\mathbb{P}^{n}$.  That single structural fact bounds how good it can ever be.
+
+\begin{definition}[Initial degree]\label{def_initial}
+  For $0 \neq \sigma \in \K[\bz]_{p}$ set
+  $\delta(\sigma) := \min\{q \ge 1 : (\sigma^{\perp})_{q} \neq 0\}$.
+\end{definition}
+
+\begin{proposition}[Complete intersections are large]\label{prop_ci}
+  Let $X \subset \mathbb{P}^{n}$ be a finite apolar scheme for $\sigma$, that is
+  $I_{X} \subseteq \sigma^{\perp}$, and suppose $X$ is a complete intersection of
+  $n$ forms of degrees $e_{1},\ldots,e_{n}$.  Then
+  \begin{equation}\label{eq_ci}
+    \abs{X} \;=\; \prod_{i=1}^{n} e_{i} \;\ge\; \delta(\sigma)^{\,n}.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  The $n$ defining forms lie in $I_{X} \subseteq \sigma^{\perp}$, so each has
+  degree at least $\delta(\sigma)$ by \cref{def_initial}.  Since $X$ is a
+  complete intersection of these forms, B\'ezout's theorem gives
+  $\deg X = \prod_{i} e_{i}$, and $X$ is finite and reduced so
+  $\abs{X} = \deg X$.
+\end{proof}
+
+It remains to locate $\delta(\sigma)$ for a symbol with no special structure.
+
+\begin{lemma}[Initial degree of a generic symbol]\label{lem_generic_delta}
+  For $\sigma$ generic in $\K[\bz]_{p}$ one has
+  $\delta(\sigma) = \lfloor p/2 \rfloor + 1$.
+\end{lemma}
+
+\begin{proof}
+  By \eqref{eq_cat}, $(\sigma^{\perp})_{q} \neq 0$ if and only if
+  $\Cat_{q}(\sigma)$ has nontrivial kernel.  The rank of $\Cat_{q}$ is a lower
+  semicontinuous function of $\sigma$, so it suffices to exhibit one $\sigma$
+  for which $\Cat_{q}$ has the maximal possible rank
+  $\min(D_{q,N}, D_{p-q,N})$ for every $q$; genericity then gives maximal rank
+  for all $q$ simultaneously.  Take $\sigma = \sum_{i=1}^{s}\ell_{i}^{p}$ with
+  $s \ge \max_{q}\min(D_{q,N},D_{p-q,N})$ and $\ell_{i}$ generic linear forms.
+  Then $\Cat_{q}(\ell^{p})$ is the rank-one map
+  $\Theta \mapsto \frac{p!}{(p-q)!}\Theta(\ell)\,\ell^{p-q}$, so
+  $\Cat_{q}(\sigma)$ has image inside $\spanop\{\ell_{i}^{p-q}\}$ and rank equal
+  to the rank of the $s \times D_{q,N}$ evaluation matrix
+  $(\Theta_{k}(\ell_{i}))$ composed with the independence of
+  $\{\ell_{i}^{p-q}\}$.  For generic $\ell_{i}$ both are of maximal rank, because
+  the Veronese variety is nondegenerate and therefore no nonzero form of degree
+  $q$ vanishes at $D_{q,N}$ generic points, and likewise
+  $\{\ell_{i}^{p-q}\}$ spans $\K[\bz]_{p-q}$ once $s \ge D_{p-q,N}$.  Hence
+  $\Cat_{q}$ has maximal rank, and its kernel is nonzero exactly when
+  $D_{q,N} > D_{p-q,N}$, that is when $q > p-q$.  The least such $q$ is
+  $\lfloor p/2\rfloor+1$.
+\end{proof}
+
+\begin{corollary}[The price of grid structure]\label{cor_price}
+  Fix $N \ge 2$ and let $\sigma \in \K[\bz]_{p}$ be generic.  Every complete
+  intersection apolar scheme for $\sigma$ has at least
+  $(\lfloor p/2\rfloor+1)^{N-1}$ points, while $R_{\C}(\sigma)$ is asymptotic to
+  $D_{p,N}/N$ as $p \to \infty$.  Consequently
+  \begin{equation}\label{eq_price}
+    \lim_{p\to\infty}
+    \frac{(\lfloor p/2\rfloor+1)^{N-1}}{R_{\C}(\sigma)}
+    \;=\; \frac{N!}{2^{\,N-1}},
+    \qquad\text{and}\qquad
+    \lim_{p\to\infty}\frac{M}{R_{\C}(\sigma)} \;=\; N!,
+  \end{equation}
+  where $M = (p+1)^{N-1}$ is the length of the grid of \cref{thm_grid} for a
+  generic symbol.
+\end{corollary}
+
+\begin{proof}
+  The first bound is \cref{prop_ci} together with \cref{lem_generic_delta}.
+  The generic Waring rank is $\lceil D_{p,N}/N \rceil$ outside the finite list of
+  Alexander--Hirschowitz exceptions, and
+  $D_{p,N} = \binom{p+N-1}{N-1} \sim p^{N-1}/(N-1)!$, so
+  $R_{\C}(\sigma) \sim p^{N-1}/N!$.  Dividing
+  $(\lfloor p/2\rfloor+1)^{N-1} \sim (p/2)^{N-1}$ by this gives
+  $N!/2^{N-1}$.  A generic $\sigma$ has $d_{j}=p$ for every $j$, so
+  $M = (p+1)^{N-1} \sim p^{N-1}$, and dividing gives $N!$.
+\end{proof}
+
+The two limits in \eqref{eq_price} separate two different losses.  The factor
+$N!/2^{N-1}$ is the intrinsic cost of insisting on complete intersection
+structure, and the remaining factor $2^{N-1}$ is the cost of building the grid
+from the coordinate degrees rather than from $\sigma^{\perp}$.  Both vanish when
+$N = 2$: there $N!/2^{N-1} = 1$, which is the algebraic reason binary forms are
+easy, since every finite subscheme of $\mathbb{P}^{1}$ is cut out by a single
+form and the complete intersection hypothesis is vacuous.  For $N=3$ the
+intrinsic factor is $3/2$, for $N=4$ it is $3$, for $N=5$ it is $15/2$, and it
+grows superexponentially.
+
+\begin{remark}[When the grid is exactly minimal]\label{rmk_tight}
+  Suppose $\sigma = \ell_{0}^{a_{0}}\cdots\ell_{n}^{a_{n}}$ for linearly
+  independent linear forms $\ell_{j}$, that is, $\sigma$ is projectively
+  equivalent to a monomial.  Waring rank is invariant under invertible linear
+  changes of variables, so running \cref{thm_grid} in the coordinate system dual
+  to $(\ell_{j})$ yields a schedule of length $\prod_{j\ge1}(a_{j}+1)$, which is
+  the rank of that monomial and hence minimal.  Corollary~3.7 of the main paper
+  is the case $\sigma = (z_{1}^{2}+z_{2}^{2})^{m} = (z_{1}+\mathrm{i}z_{2})^{m}(z_{1}-\mathrm{i}z_{2})^{m}$
+  in two variables.  The hypothesis is restrictive: forms equivalent to
+  monomials constitute a subvariety of dimension at most $N^{2}$ inside the
+  $D_{p,N}$-dimensional space of all symbols.
+\end{remark}
+
+%% ====================================================================
+\section{Orbit filters}\label{sec_orbit}
+
+Identity \eqref{eq_filter} is character orthogonality for the cyclic group
+$U_{m}$.  Read that way, the roots-of-unity construction is one instance of a
+principle that does not require the group to be abelian, and the nonabelian
+instances are the interesting ones.  Throughout this section $G$ is a finite
+subgroup of the orthogonal group $O(N)$, acting on $\K[\bz]_{p}$ by
+$(g \cdot F)(\bz) := F(g^{-1}\bz)$.  Orthogonality gives the compatibility we
+need,
+\begin{equation}\label{eq_compat}
+  (g\bv)\cdot\bz \;=\; \bv \cdot (g^{-1}\bz),
+\end{equation}
+and we write $\pi_{G} := \abs{G}^{-1}\sum_{g\in G} g$ for the Reynolds operator,
+a projection of $\K[\bz]_{p}$ onto the invariants $\K[\bz]_{p}^{G}$.
+
+\begin{definition}[Orbit average]\label{def_orbit_avg}
+  For $\bv \in \K^{N}$ and a linear character $\chi \colon G \to \K^{\times}$ put
+  \begin{equation}\label{eq_orbit_avg}
+    A^{\chi}_{\bv}(\bz) \;:=\; \frac{1}{\abs{G}}\sum_{g \in G}
+    \overline{\chi(g)}\,\bigl((g\bv)\cdot\bz\bigr)^{p},
+  \end{equation}
+  and write $A_{\bv} := A^{\mathbf{1}}_{\bv}$ for the trivial character.  The
+  \emph{isotypic component} of $\chi$ is
+  $\K[\bz]_{p}^{(\chi)} := \{F : g\cdot F = \chi(g)F \text{ for all } g\}$; for
+  $\chi = \mathbf{1}$ it is $\K[\bz]_{p}^{G}$.
+\end{definition}
+
+\begin{lemma}[Orbit averages are isotypic]\label{lem_isotypic}
+  $A^{\chi}_{\bv} \in \K[\bz]_{p}^{(\chi)}$ for every $\bv$ and every linear
+  character $\chi$.  Moreover $A^{\chi}_{\bv}$ is the image of
+  $(\bv\cdot\bz)^{p}$ under the projection
+  $\pi^{\chi}_{G} := \abs{G}^{-1}\sum_{g}\overline{\chi(g)}\,g$ onto
+  $\K[\bz]_{p}^{(\chi)}$, and consequently
+  $\{A^{\chi}_{\bv} : \bv \in \K^{N}\}$ spans $\K[\bz]_{p}^{(\chi)}$.
+\end{lemma}
+
+\begin{proof}
+  Using \eqref{eq_compat} and then reindexing $g \mapsto h^{-1}g$,
+  \begin{equation*}
+    (h\cdot A^{\chi}_{\bv})(\bz)
+    = \frac{1}{\abs{G}}\sum_{g}\overline{\chi(g)}\bigl((g\bv)\cdot h^{-1}\bz\bigr)^{p}
+    = \frac{1}{\abs{G}}\sum_{g}\overline{\chi(g)}\bigl((hg\bv)\cdot \bz\bigr)^{p}
+    = \chi(h)\,A^{\chi}_{\bv}(\bz),
+  \end{equation*}
+  where the last step substitutes $g \mapsto h^{-1}g$ and uses
+  $\overline{\chi(h^{-1}g)} = \chi(h)\overline{\chi(g)}$ for a character of
+  modulus one.  The same computation with \eqref{eq_compat} shows
+  $\pi^{\chi}_{G}\bigl((\bv\cdot\bz)^{p}\bigr) = A^{\chi}_{\bv}$.  Since powers
+  of linear forms span $\K[\bz]_{p}$ and $\pi^{\chi}_{G}$ is a surjection onto
+  $\K[\bz]_{p}^{(\chi)}$, the images $A^{\chi}_{\bv}$ span that component.
+\end{proof}
+
+\begin{theorem}[Orbit filter]\label{thm_orbit}
+  Let $\bv \in \K^{N}$ with orbit $X := G\bv$, and let $\chi$ be a linear
+  character of $G$.
+  \begin{enumerate}[label=\textup{(\roman*)}]
+    \item If $\sigma \in \K[\bz]_{p}^{(\chi)}$ and $\sigma$ is a scalar multiple
+      of $A^{\chi}_{\bv} \neq 0$, then $\mathcal{P}$ admits a directional
+      schedule supported on $X$, with coefficients
+      $c_{g\bv} = \lambda\,\overline{\chi(g)}$ constant along $\chi$ up to the
+      character.  Its length is
+      $\abs{X} = \abs{G}/\abs{\Stab(\bv)}$, and $\abs{X}/2$ if $p$ is even and
+      $-I \in G$.
+    \item In particular, if $\dim_{\K}\K[\bz]_{p}^{(\chi)} = 1$ then the
+      hypothesis of \textup{(i)} holds for every $\sigma$ in that component and
+      every $\bv$ with $A^{\chi}_{\bv} \neq 0$, with no equation to solve.
+    \item If $\sigma = \sum_{\chi} \sigma^{(\chi)}$ is the decomposition of a
+      general $\sigma$ into components over the linear characters, and each
+      $\sigma^{(\chi)}$ satisfies the hypothesis of \textup{(i)} for the same
+      $\bv$ with multiplier $\lambda_{\chi}$, then $\mathcal{P}$ admits a
+      schedule supported on the \emph{same} set $X$, with
+      $c_{g\bv} = \sum_{\chi}\lambda_{\chi}\overline{\chi(g)}$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (i) Write $\sigma = \mu\,A^{\chi}_{\bv}$ with $\mu \in \K^{\times}$.  By
+  \eqref{eq_orbit_avg},
+  $p!\,\sigma = \frac{p!\mu}{\abs{G}}\sum_{g}\overline{\chi(g)}((g\bv)\cdot\bz)^{p}$,
+  which is \eqref{eq_bridge} with $\lambda := p!\mu/\abs{G}$; collecting the
+  $\abs{\Stab(\bv)}$ group elements that produce the same direction turns the
+  sum over $G$ into a sum over $X$.  If $p$ is even and $-I \in G$, then
+  $((-\bw)\cdot\bz)^{p} = (\bw\cdot\bz)^{p}$, so antipodal members of $X$ carry
+  identical powers and may be merged, halving the count.  (ii) is immediate from
+  (i) because a one-dimensional space contains no directions other than
+  multiples of a fixed nonzero vector, and $\sigma \neq 0$ forces
+  proportionality.  (iii) follows by summing the identities of (i) over $\chi$,
+  which changes only the coefficients and not the support.
+\end{proof}
+
+\cref{thm_orbit} is the statement that a symmetry group acts as a filter: the
+$\binom{p+n}{n}$ moment conditions of the design problem collapse to
+$\dim \K[\bz]_{p}^{(\chi)}$ conditions per character, and when that dimension is
+one there are no conditions at all.  The two constructions of this note are the
+two extremes of the principle.
+
+\begin{example}[The Fourier grid is the abelian case]\label{ex_abelian}
+  Let $G := U_{m_{1}} \times \cdots \times U_{m_{n}}$ act diagonally by
+  $z_{j} \mapsto \zeta_{j}z_{j}$ for $j \ge 1$ and trivially on $z_{0}$.  Then
+  $g\cdot\bz^{\beta} = \bigl(\prod_{j\ge1}\zeta_{j}^{-\beta_{j}}\bigr)\bz^{\beta}$,
+  so every monomial spans an isotypic component, and two monomials $\beta$,
+  $\beta'$ of degree $p$ share a component if and only if
+  $m_{j} \mid \beta_{j}-\beta'_{j}$ for all $j \ge 1$.  When
+  $m_{0} = \min_{j}m_{j}$, the argument around \eqref{eq_alias} shows this forces
+  $\beta = \beta'$, so \emph{every} component meeting the symbol is
+  one-dimensional.  Applying \cref{thm_orbit}(iii) to
+  $\bv = e_{0}+e_{1}+\cdots+e_{n}$, whose orbit is exactly the grid of
+  \eqref{eq_grid}, recovers \cref{thm_grid}.  The cost of the abelian choice is
+  visible here: the group has as many one-dimensional components as the grid has
+  points, so the orbit must be as large as the box of monomials it separates,
+  which is $\prod_{j\ge1}m_{j}$ rather than the far smaller $D_{p,N}$.
+\end{example}
+
+\begin{example}[A nonabelian filter]\label{ex_icosa}
+  Let $G \subset O(3)$ be the icosahedral group of order $60$ and let
+  $\bv$ be a vertex of a regular icosahedron inscribed in $S^{2}$, whose orbit
+  has $12$ points forming $6$ antipodal pairs.  The invariant ring of $G$ acting
+  on $\R^{3}$ is generated in degrees $2$, $6$, $10$ and one degree-$15$
+  element, so its Molien series gives
+  $\dim \R[\bz]_{4}^{G} = 1$, spanned by $(z\cdot z)^{2}$, while
+  $\dim\R[\bz]_{4} = 15$.  By \cref{thm_orbit}(ii) the single orbit reproduces
+  $(z \cdot z)^{2}$ with equal weights, so $\Delta^{2}$ on $\R^{3}$ has a real
+  schedule of length $6$.  \cref{sec_cubature} shows that $6$ is minimal.
+\end{example}
+
+%% ====================================================================
+\section{Powers of the Laplacian are a cubature problem}\label{sec_cubature}
+
+\cref{ex_icosa} is not a coincidence but an instance of a general equivalence.
+Let $q(\bz) := \bz\cdot\bz$ on $\R^{N}$, let $\sigma = q^{m}$ so that
+$\mathcal{P} = \Delta^{m}$ and $p = 2m$, and let $\mu$ denote the uniform
+probability measure on $S^{N-1}$.
+
+\begin{theorem}[Schedules for $\Delta^{m}$ are spherical cubature rules]\label{thm_cubature}
+  Let $\bv_{1},\ldots,\bv_{R} \in S^{N-1}$ and $w_{1},\ldots,w_{R} \in \R$ with
+  $\sum_{r} w_{r} = 1$.  The following are equivalent.
+  \begin{enumerate}[label=\textup{(\roman*)}]
+    \item $\sum_{r=1}^{R} w_{r}(\bv_{r}\cdot\bz)^{2m} = \kappa_{N,m}\,q(\bz)^{m}$
+      for all $\bz \in \R^{N}$, where
+      $\kappa_{N,m} := (2m-1)!!\,/\,\bigl(N(N+2)\cdots(N+2m-2)\bigr)$;
+    \item $\displaystyle\sum_{r=1}^{R} w_{r}f(\bv_{r}) = \int_{S^{N-1}} f\,d\mu$
+      for every $f \in \R[\bv]_{2m}$;
+    \item the rule $(\bv_{r},w_{r})$ integrates exactly every polynomial of even
+      degree at most $2m$ on $S^{N-1}$.
+  \end{enumerate}
+  In particular a real directional schedule for $\Delta^{m}$ with unit directions
+  is the same thing as a cubature rule on $S^{N-1}$ exact in even degrees up to
+  $2m$; if in addition the weights are equal and the node set is centrally
+  symmetric, it is a spherical $(2m{+}1)$-design.
+\end{theorem}
+
+\begin{proof}
+  First we identify the constant.  The map
+  $\bz \mapsto \int_{S^{N-1}}(\bv\cdot\bz)^{2m}d\mu(\bv)$ is a polynomial of
+  degree $2m$, and it is $O(N)$-invariant because $\mu$ is.  The ring of
+  $O(N)$-invariant polynomials on $\R^{N}$ is $\R[q]$, so the integral equals
+  $\kappa\,q^{m}$ for a constant $\kappa$, which we evaluate at a unit vector
+  $\bz = e$: writing $t := \bv \cdot e$ for the first coordinate of a uniform
+  point of $S^{N-1}$, $\kappa = \mathbb{E}[t^{2m}]$.  The density of $t$ is
+  proportional to $(1-t^{2})^{(N-3)/2}$, and the resulting Beta integral gives
+  $\mathbb{E}[t^{2m}] = (2m-1)!!/\bigl(N(N+2)\cdots(N+2m-2)\bigr) = \kappa_{N,m}$.
+
+  (i) $\Leftrightarrow$ (ii).  For fixed $\bz$ the function
+  $f_{\bz}(\bv) := (\bv\cdot\bz)^{2m}$ is homogeneous of degree $2m$ in $\bv$,
+  and $\int f_{\bz}\,d\mu = \kappa_{N,m}q(\bz)^{m}$ by the previous paragraph.
+  Hence (i) states precisely that the rule is exact on every $f_{\bz}$.  Both
+  sides of (ii) are linear in $f$, and $\{f_{\bz} : \bz \in \R^{N}\}$ spans
+  $\R[\bv]_{2m}$ because powers of linear forms span the space of forms of a
+  given degree.  Exactness on a spanning set is exactness on the span, so (i)
+  and (ii) are equivalent.
+
+  (ii) $\Leftrightarrow$ (iii).  On $S^{N-1}$ we have $q \equiv 1$, so for
+  $k \le m$ and $h \in \R[\bv]_{2k}$ the function $h$ and the form
+  $q^{m-k}h \in \R[\bv]_{2m}$ agree at every node and have the same integral;
+  thus exactness in degree $2m$ implies exactness in every even degree at most
+  $2m$, and the converse is trivial.
+
+  For the final sentence, \cref{prop_bridge} converts (i) into a schedule for
+  $\Delta^{m}$ after rescaling the coefficients by
+  $(2m)!/\kappa_{N,m}$, and a centrally symmetric equal-weight rule is exact in
+  odd degrees automatically, so exactness through degree $2m+1$ holds, which is
+  the definition of a spherical $(2m{+}1)$-design.
+\end{proof}
+
+\begin{theorem}[Lower bound]\label{thm_lower}
+  $R_{\C}(q^{m}) \ge \binom{N+m-1}{m} = D_{m,N}$, and hence every directional
+  schedule for $\Delta^{m}$ on $\R^{N}$, real or complex, has at least
+  $D_{m,N}$ directions.
+\end{theorem}
+
+\begin{proof}
+  Consider the symmetric bilinear form on $\R[\by]_{m}$ defined by
+  $\langle \Theta,\Psi\rangle := (\Theta\Psi)(\partial)\,q^{m}$, a scalar because
+  $\Theta\Psi$ has degree $2m = \deg q^{m}$.  Using the integral representation
+  $q^{m} = \kappa_{N,m}^{-1}\int_{S^{N-1}}(\bv\cdot\bz)^{2m}d\mu(\bv)$ from the
+  proof of \cref{thm_cubature} and
+  $(\Theta\Psi)(\partial)(\bv\cdot\bz)^{2m} = (2m)!\,\Theta(\bv)\Psi(\bv)$,
+  \begin{equation*}
+    \langle\Theta,\Psi\rangle
+    = \frac{(2m)!}{\kappa_{N,m}}\int_{S^{N-1}}\Theta(\bv)\Psi(\bv)\,d\mu(\bv),
+  \end{equation*}
+  a positive multiple of the $L^{2}(\mu)$ inner product.  It is therefore
+  positive definite on $\R[\by]_{m}$, so the middle catalecticant
+  $\Cat_{m}(q^{m})$, whose associated bilinear form this is, is nonsingular and
+  has rank $D_{m,N}$.
+
+  Now let $q^{m} = \sum_{r=1}^{R}c_{r}(\bv_{r}\cdot\bz)^{2m}$ be any complex
+  decomposition.  For $\Theta \in \K[\by]_{m}$,
+  $\Theta(\partial)(\bv\cdot\bz)^{2m} = \frac{(2m)!}{m!}\Theta(\bv)(\bv\cdot\bz)^{m}$,
+  so the image of $\Cat_{m}(q^{m})$ is contained in
+  $\spanop\{(\bv_{r}\cdot\bz)^{m} : r \le R\}$, a space of dimension at most
+  $R$.  Comparing with the rank just computed gives $R \ge D_{m,N}$.
+\end{proof}
+
+\begin{corollary}[Tight cases]\label{cor_tight}
+  For $\Delta^{2}$ on $\R^{3}$ the minimum number of directions is $6$, attained
+  over $\R$ by the six icosahedral axes with equal positive weights.  For
+  $\Delta^{1}$ on $\R^{N}$ the minimum is $N$, attained by any orthonormal frame.
+\end{corollary}
+
+\begin{proof}
+  \cref{thm_lower} gives $R \ge D_{2,3} = 6$ and $R \ge D_{1,N} = N$
+  respectively.  \cref{ex_icosa} attains the first, and
+  $q = \sum_{j}z_{j}^{2}$ attains the second.
+\end{proof}
+
+Three consequences are worth stating plainly.  The equivalence removes the
+search: for $\Delta^{m}$ one does not look for Waring decompositions but reads
+off a cubature rule, of which large tabulated families exist in every dimension.
+The nodes are real and the weights are positive, so no complex arithmetic is
+needed for polyharmonic operators, in contrast to the roots-of-unity schedule.
+And the classical lower bound for centrally symmetric cubature coincides with
+the catalecticant bound of \cref{thm_lower}, so the two literatures agree on what
+is possible.
+
+\begin{remark}[The bound is not always attained over $\R$]\label{rmk_realgap}
+  Attainment is a genuinely finer question than the bound.  A numerical search
+  over real nodes and weights, described in \cref{sec_numerics}, reaches
+  $D_{m,N}$ for $(N,m) = (3,1)$, $(3,2)$ and $(4,1)$, but for $(N,m) = (3,3)$
+  the smallest real rule found has $11$ nodes against the bound $10$, and for
+  $(N,m) = (4,2)$ it has $12$ nodes against the bound $10$ and requires weights
+  of both signs.  This is consistent with the general fact that real Waring rank
+  can exceed complex Waring rank, and with \cref{thm_orbit}: in degree $6$ the
+  icosahedral group has a two-dimensional invariant space, so a single orbit no
+  longer suffices.
+\end{remark}
+
+%% ====================================================================
+\section{One direction set for many operators}\label{sec_shared}
+
+The implementation described in the main paper schedules an operator by
+expanding it into monomials and scheduling each monomial separately.  The
+following elementary observations quantify what that costs and identify the
+right object to optimize.
+
+\begin{definition}[Shared schedule]\label{def_shared}
+  Let $\mathcal{P}_{1},\ldots,\mathcal{P}_{K}$ have symbols
+  $\sigma_{1},\ldots,\sigma_{K} \in \K[\bz]_{p}$ and put
+  $U := \spanop_{\K}\{\sigma_{1},\ldots,\sigma_{K}\}$.  A \emph{shared schedule}
+  is a finite set $X = \{\bv_{1},\ldots,\bv_{R}\}$ together with coefficient
+  vectors $c^{(i)} \in \K^{R}$ such that $(c^{(i)}_{r},\bv_{r})_{r}$ is a
+  schedule for $\mathcal{P}_{i}$, for each $i$.  Write $R_{\K}(U)$ for the least
+  such $R$.
+\end{definition}
+
+\begin{proposition}[Shared rank]\label{prop_shared}
+  With $W_{X} := \spanop_{\K}\{(\bv\cdot\bz)^{p} : \bv \in X\}$, a shared
+  schedule on $X$ exists if and only if $U \subseteq W_{X}$.  Moreover
+  \begin{equation}\label{eq_shared_bounds}
+    \max\Bigl(\dim_{\K} U,\ \max_{i} R_{\K}(\sigma_{i})\Bigr)
+    \;\le\; R_{\K}(U)
+    \;\le\; \min\Bigl(\sum_{i} R_{\K}(\sigma_{i}),\ D_{p,N}\Bigr).
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  By \cref{prop_bridge} a schedule for $\mathcal{P}_{i}$ on $X$ exists exactly
+  when $\sigma_{i} \in W_{X}$, and this for all $i$ is $U \subseteq W_{X}$ since
+  $W_{X}$ is a subspace.  For the lower bounds, $\dim W_{X} \le \abs{X}$ gives
+  $\dim U \le R_{\K}(U)$, and $U \subseteq W_{X}$ contains each $\sigma_{i}$ so
+  $\abs{X} \ge R_{\K}(\sigma_{i})$.  For the upper bounds, the union of
+  individually minimal sets is admissible, and any $X$ of size $D_{p,N}$ whose
+  power images are independent has $W_{X} = \K[\bz]_{p} \supseteq U$.
+\end{proof}
+
+\begin{corollary}[The full derivative tensor]\label{cor_fulltensor}
+  Taking $U = \K[\bz]_{p}$, that is, requiring every partial derivative of order
+  $p$ in the $N$ active variables, gives
+  \begin{equation}\label{eq_fulltensor}
+    R_{\K}(\K[\bz]_{p}) \;=\; D_{p,N} \;=\; \binom{p+N-1}{N-1},
+  \end{equation}
+  attained by any $X$ of that cardinality whose power images are linearly
+  independent, hence by a generic $X$.  No optimization is involved and no
+  smaller set can work.
+\end{corollary}
+
+\begin{proof}
+  Both bounds of \eqref{eq_shared_bounds} equal $D_{p,N}$.  Independence of
+  $\{(\bv_{r}\cdot\bz)^{p}\}$ for generic $\bv_{r}$ holds because the Veronese
+  variety is nondegenerate, so no nonzero linear functional on $\K[\bz]_{p}$
+  annihilates all $p$th powers.
+\end{proof}
+
+\cref{cor_fulltensor} is the sharpest available answer to the efficiency
+question when several derivatives are wanted at once: the correct cost is the
+dimension of what is being asked for, not the sum of the individual ranks.  The
+gap between the two is large already in modest cases; \cref{tab_numbers}
+records it.
+
+\begin{remark}[Conditioning is a separate objective]\label{rmk_cond}
+  Minimal length does not imply minimal cost.  Let $M_{X}$ be the matrix of the
+  map $c \mapsto \sum_{r}c_{r}(\bv_{r}\cdot\bz)^{p}$ in the monomial basis; the
+  coefficients of a schedule are obtained by solving with $M_{X}$, so the
+  relative error of the assembled derivative is governed by the condition number
+  of $M_{X}$.  The Fourier grid of \cref{thm_grid} is a discrete Fourier matrix
+  up to diagonal scaling and is extremely well conditioned, whereas generic
+  minimal sets are not; \cref{tab_cond} measures both.  Orbit constructions are
+  attractive precisely because they achieve short length and equal weights
+  simultaneously, the icosahedral schedule of \cref{cor_tight} being minimal and
+  perfectly balanced at once.  A realistic objective is therefore a weighted
+  count of real and complex jet passes subject to a conditioning constraint,
+  rather than the raw Waring rank.
+\end{remark}
+
+%% ====================================================================
+\section{Numerical corroboration}\label{sec_numerics}
+
+Every statement above that asserts a specific number has been checked
+numerically by the script \texttt{verify\_theory\_directions.py} in
+\texttt{experiments/tools}, which also
+reproduces the tables of this section.  \cref{tab_numbers} compares, for
+$\Delta^{m}$ and for the full derivative tensor, the length of the Fourier grid
+of \cref{thm_grid}, the term-by-term total used by the current implementation,
+the lower bound of \cref{thm_lower} or \cref{cor_fulltensor}, and the shortest
+real schedule located by direct search.
+
+\begin{table}[t]
+\caption{Directions required, by construction.  The grid is
+\cref{thm_grid} in the given coordinates; term-by-term sums the monomial ranks of
+the main paper; the bound is \cref{thm_lower} for $\Delta^{m}$ and
+\cref{cor_fulltensor} for the full tensor; the last column is the shortest real
+schedule found by numerical search.}
+\label{tab_numbers}
+\centering
+\begin{tabular}{llrrrrl}
+\toprule
+target & $N$ & grid & term-by-term & bound & search & weights \\
+\midrule
+$\Delta^{1}$ & $3$ & $9$   & $3$   & $3$  & $3$  & positive \\
+$\Delta^{2}$ & $3$ & $25$  & $12$  & $6$  & $6$  & positive, equal \\
+$\Delta^{3}$ & $3$ & $49$  & $42$  & $10$ & $11$ & positive \\
+$\Delta^{1}$ & $4$ & $27$  & $4$   & $4$  & $4$  & positive \\
+$\Delta^{2}$ & $4$ & $125$ & $22$  & $10$ & $12$ & mixed sign \\
+\midrule
+all order $4$ & $3$ & --- & $54$  & $15$ & $15$ & --- \\
+all order $6$ & $3$ & --- & $192$ & $28$ & $28$ & --- \\
+all order $4$ & $4$ & --- & $150$ & $35$ & $35$ & --- \\
+all order $6$ & $4$ & --- & $776$ & $84$ & $84$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three readings of \cref{tab_numbers} matter.  First, the universal grid is a
+poor choice for a structured operator: at $\Delta^{2}$ on $\R^{3}$ it needs $25$
+directions where the term-by-term expansion needs $12$, so \cref{thm_grid} is a
+fallback for symbols about which nothing is known, not a replacement for the
+monomial schedule.  Second, term-by-term is nonetheless not optimal once the
+operator couples coordinates: the same $\Delta^{2}$ needs only the six real
+icosahedral axes, which \cref{cor_tight} certifies as minimal, and $\Delta^{3}$
+on $\R^{3}$ drops from $42$ to $11$.  The saving grows with $m$ because the
+term-by-term total grows like the number of monomials times their individual
+ranks while the bound grows only like $D_{m,N}$.  Third, the largest gap appears
+when many derivatives are wanted at once: the full order-six tensor in three
+variables costs $192$ directions term by term against the exact optimum $28$ of
+\cref{cor_fulltensor}, which requires no search at all.
+
+\cref{tab_cond} quantifies \cref{rmk_cond}.  The grid buys its extra length back
+in stability, which is the reason it should not be discarded even where shorter
+schedules exist.
+
+\begin{table}[t]
+\caption{Length against conditioning for a symbol of degree $p$ in $N$
+variables: a generic minimal set attaining \cref{cor_fulltensor} versus the
+Fourier grid of \cref{thm_grid}.}
+\label{tab_cond}
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+$p$ & $N$ & generic minimal & $\kappa(M_{X})$ & grid & $\kappa(M_{X})$ \\
+\midrule
+$4$ & $2$ & $5$  & $2.0\times10^{2}$ & $5$  & $6.0\times10^{0}$ \\
+$6$ & $2$ & $7$  & $1.2\times10^{2}$ & $7$  & $2.0\times10^{1}$ \\
+$4$ & $3$ & $15$ & $4.9\times10^{2}$ & $25$ & $1.2\times10^{1}$ \\
+$6$ & $3$ & $28$ & $2.2\times10^{4}$ & $49$ & $9.0\times10^{1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ====================================================================
+\section{Summary}\label{sec_summary}
+
+The results assemble into a selection rule for building a schedule, ordered by
+how much structure the symbol has.  If nothing is known about $\sigma$ beyond
+its coordinate degrees, \cref{thm_grid} applies unconditionally, needs no solve,
+and is well conditioned, at length $\prod_{j\ge1}m_{j}$.  If $\sigma$ is
+projectively equivalent to a monomial, running the same construction in the
+coordinates that make it a monomial is minimal, by \cref{rmk_tight}; this covers
+the polyharmonic operator in two variables.  If $\sigma$ is a power of a
+nondegenerate quadratic form, \cref{thm_cubature} replaces the design problem by
+spherical cubature, giving real nodes, positive weights and, in the smallest
+cases, provable minimality.  If $\sigma$ is invariant under any finite group,
+\cref{thm_orbit} reduces the moment conditions to the dimension of the relevant
+isotypic component.  And if several operators or a whole derivative tensor are
+wanted, \cref{cor_fulltensor} gives an exactly optimal shared set of length equal
+to the dimension of the span, with no search.
+
+What is not settled is the general case.  For a symbol with no symmetry and no
+quadratic structure in $N \ge 3$ active variables, no constructive procedure is
+known that attains $R_{\C}(\sigma)$; computing the rank is already NP-hard, and
+numerical decomposition can fail because the border rank may be strictly
+smaller.  \cref{cor_price} makes the stakes concrete: the universal grid is off
+by a factor tending to $N!$, so the gap is worth closing wherever structure
+permits, and the four structured cases above are where it does.
+
+\end{document}
