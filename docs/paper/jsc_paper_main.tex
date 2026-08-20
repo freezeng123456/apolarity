@@ -195,8 +195,6 @@ roots-of-unity schedule that attains it.
 The schedule is realized as a batched Taylor jet through an entire activation,
 with a closed-form adjoint so that the result remains differentiable in the
 model parameters.
-A residual that is a sum of mixed partials is obtained by applying the schedule
-to each term.
 The experiments compare this method with nested automatic differentiation on
 otherwise identical training runs: the two agree in double precision, and the
 reduction in the number of directions appears as a reduction in time and memory.
