@@ -93,23 +93,24 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Mixed partial derivatives of a neural network appear in the residual of a
-  high-order partial differential equation in several variables. Nested
-  automatic differentiation computes these derivatives exactly, but each
-  additional coordinate derivative deepens the computational graph. Finite
-  differences and randomized estimators avoid that nesting only by introducing a
-  step size or a sampling variance. Taylor-mode automatic differentiation
-  removes the nesting by propagating truncated Taylor coefficients along one
-  direction at a time. The cost is then the number of directions needed for a
-  given mixed partial. We construct a directional Taylor-jet schedule whose
-  length equals the Waring rank of the associated monomial, which is known in
-  closed form over the complex numbers, and we realize it by a roots-of-unity
-  formula together with a batched Taylor jet and a closed-form adjoint. The
-  method is exact, differentiable with respect to the network parameters, and
-  admits complex directions. Compared with nested automatic differentiation, the
-  two methods agree in double precision for derivative values and for parameter
-  gradients, and the schedule reduces the time and the memory of one optimizer
-  step as the derivative order grows.
+  Mixed partial derivatives of a neural network appear among the monomials of a
+  polyharmonic residual in several variables, and in other high-order operators
+  that include mixed terms. Nested automatic differentiation computes these
+  derivatives exactly, but each additional coordinate derivative deepens the
+  computational graph. Finite differences and randomized estimators avoid that
+  nesting only by introducing a step size or a sampling variance. Taylor-mode
+  automatic differentiation removes the nesting by propagating truncated Taylor
+  coefficients along one direction at a time. The cost is then the number of
+  directions needed for a given mixed partial. We construct a directional
+  Taylor-jet schedule whose length equals the Waring rank of the associated
+  monomial, which is known in closed form over the complex numbers, and we
+  realize it by a roots-of-unity formula together with a batched Taylor jet and
+  a closed-form adjoint. The directional identity is algebraically exact,
+  differentiable with respect to the network parameters, and admits complex
+  directions. Compared with nested automatic differentiation, the two methods
+  agree in double precision for derivative values and for parameter gradients,
+  and the schedule reduces the time and the memory of one optimizer step as the
+  derivative order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -132,12 +133,12 @@ physics-informed neural networks
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-Mixed partial derivatives of a neural network appear in residual training of a
-high-order partial differential equation in several
-variables~\cite{Raissi2019,Karniadakis2021}. In that setting the derivative is
-taken repeatedly, at many points, on the same model, and the cost of those
-evaluations grows with the order of the derivative and with the depth of the
-model.
+Mixed partial derivatives of a neural network appear among the monomials of a
+polyharmonic residual in several variables, and in other high-order operators
+that include mixed terms~\cite{Raissi2019,Karniadakis2021}. In that setting the
+derivative is taken repeatedly, at many points, on the same model, and the cost
+of those evaluations grows with the order of the derivative and with the depth
+of the model.
 
 The exact methods are classical, and each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
@@ -174,8 +175,8 @@ coefficient of that polynomial, so a directional formula is a decomposition of a
 monomial into powers of linear forms. The length of a shortest formula is the
 Waring rank of that monomial, which the algebraic-geometry literature has
 evaluated in closed form over the complex numbers. A roots-of-unity construction
-attains the rank. Because the rank is a minimum, the same statement also
-identifies those mixed partials for which no shorter directional formula exists.
+attains the rank. Because the rank is a minimum, no shorter linear combination
+of order-$p$ directional Taylor coefficients exists.
 
 We identify that shortest formula with the monomial Waring rank, and we give the
 roots-of-unity schedule that attains it. The schedule is realized as a batched
@@ -202,21 +203,20 @@ bound are collected in Appendix~\ref{sec_schedules}.
 
 \subsection{The evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \R$ be a neural network with parameters
-$\theta$, smooth in its inputs. Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in
-\Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and write $\dal :=
-\partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the associated
-derivative. The task is the evaluation of the mixed partial $\dal u_{\theta}$ at
-a given point. The value must be exact, and it must remain differentiable in
-$\theta$, since an optimizer consumes it when it updates the network. The
-multi-index is fixed and prescribed. The derivative is evaluated at many points
-at once and re-evaluated at every step, so the cost that matters is one
-evaluation of one derivative, amortized over a batch.
+Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be a neural
+network with parameters $\theta$, smooth in its inputs. Let $\nu = (\nu_{1},
+\ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$,
+and write $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the
+associated derivative. The task is the evaluation of the mixed partial $\dal
+u_{\theta}$ at a given point. The value must be algebraically exact, and it must
+remain differentiable in $\theta$, since an optimizer consumes it when it
+updates the network. The multi-index is fixed and prescribed. The derivative is
+evaluated at many points at once and re-evaluated at every step, so the cost
+that matters is one evaluation of one derivative, amortized over a batch.
 
-The benchmarks of Section~\ref{sec_experiments} instantiate this task in its
-most demanding common form, the residual of a boundary-value problem. Let
-$\Omega \subset \R^{d}$ be a bounded domain with boundary $\Gamma :=
-\partial\Omega$, and consider
+The benchmarks of Section~\ref{sec_experiments} instantiate this task as the
+residual of a boundary-value problem. Let $\Omega \subset \R^{d}$ be a bounded
+domain with boundary $\Gamma := \partial\Omega$, and consider
 \begin{equation}\label{eq_pde}
     \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
 \end{equation}
@@ -228,15 +228,17 @@ physics-informed network fits \eqref{eq_pde} by minimizing
     \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
 \end{equation}
 Expanding $\mathcal{P}$ into monomials turns one residual evaluation in
-\eqref{eq_pinn_loss} into several mixed partials of the same network on the same
-batch; a polyharmonic operator $\mathcal{P} = \Delta^{m}$, for example, expands
-into $\binom{d+m-1}{m}$ of them.
+\eqref{eq_pinn_loss} into several derivatives $\partial^{\alpha}u_{\theta}$ of
+the same network on the same batch. The operator $\Delta^{m}$ expands into
+$\binom{d+m-1}{m}$ distinct monomials: the pure terms $\partial_{x_{i}}^{2m}$
+and, for $m \ge 2$, mixed terms such as
+$\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
 
 \subsection{Taylor-mode evaluation of directional derivatives}\label{sec_taylor}
 
-Let $u \colon \R^{d} \to \R$ be sufficiently smooth near a fixed point $\bx$.
-For a direction $\bv \in \R^{d}$, the directional Taylor coefficient of order
-$p$ at $\bx$ along $\bv$ is
+Let $u \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be sufficiently smooth
+near a fixed point $\bx$. For a direction $\bv \in \R^{d}$, the directional
+Taylor coefficient of order $p$ at $\bx$ along $\bv$ is
 \begin{equation}\label{eq_tp}
     \Tp(\bx; \bv) := \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0} = \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv].
 \end{equation}
@@ -265,10 +267,9 @@ For $\sinh$ the auxiliary jet is $z = \cosh(x)$, initialized by $y_{0} =
 The recurrence \eqref{eq_jet_sinh} has the same coupled form as the one for
 $\sin$ and $\cos$, except that the $\cosh$ update carries no sign flip. The
 implementation also contains the recurrences for $\sin$ and for the logistic
-sigmoid, which the benchmark architectures of Section~\ref{sec_experiments}
-require. Every coefficient $y_{k}$ is an ordinary tensor, and the propagation
-stores $p+1$ coefficient tensors per activation without nesting input-gradient
-graphs.
+sigmoid, which the verification tests of Section~\ref{sec_experiments} use.
+Every coefficient $y_{k}$ is an ordinary tensor, and the propagation stores
+$p+1$ coefficient tensors per activation without nesting input-gradient graphs.
 
 %% ====================================================================
 %%  SECTION 3: RANK-OPTIMAL DIRECTIONAL SCHEDULES
@@ -289,7 +290,8 @@ least number of terms in such a combination is by definition the Waring rank of
 that monomial, a quantity known in closed form, and one set of minimizing linear
 forms consists of roots of unity. The four steps together replace a search for a
 reconstruction formula by a rank computation, and because the outcome is a
-minimum, it certifies that no shorter formula exists.
+minimum, it certifies that no shorter linear combination of those coefficients
+exists.
 
 We introduce some notation used throughout this section. Let $\N_{0} := \{0, 1,
 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional complex space. The
@@ -312,14 +314,15 @@ coefficient of $\bz^{a} = z_{0}^{a_{0}} \cdots z_{n}^{a_{n}}$ in $F$. For $m \ge
 1$, let $U_{m} := \{\zeta \in \C : \zeta^{m} = 1\}$, and let $\mathbf{1}_{A}$ be
 the indicator of a condition $A$.
 
-The construction of this section uses complex directions, so we fix their
-meaning once. For $\bv \in V_{\C}$ we define $\Tp(\bx; \bv)$ by the complex
-multilinear extension of $D^{p}u(\bx)$ on the right-hand side of \eqref{eq_tp}.
+The minimizing schedule of this section is in general complex, so we fix the
+meaning of a complex direction once. For $\bv \in V_{\C}$ we define
+$\Tp(\bx; \bv)$ by the complex multilinear extension of $D^{p}u(\bx)$ on the
+right-hand side of \eqref{eq_tp}.
 When $u$ admits a holomorphic extension to a neighborhood of $\bx$ in $\C^{d}$,
 this definition agrees with the order-$p$ coefficient of $\tau \mapsto u(\bx +
 \tau \bv)$, and the recurrences \eqref{eq_jet_affine}--\eqref{eq_jet_sinh}
-evaluate it on complex tensors. In practice the extension is guaranteed by
-entire activations such as $\sinh(z) = (e^{z}-e^{-z})/2$; see
+evaluate it on complex tensors. When the directions are complex, the extension
+is guaranteed by entire activations such as $\sinh(z) = (e^{z}-e^{-z})/2$; see
 Remark~\ref{rmk_entire}. The distinction matters because an arbitrary $C^{p}$
 function on $\R^{d}$ need not be defined at complex arguments.
 
@@ -505,7 +508,7 @@ exhibit a schedule of that length in closed form.
 \end{proof}
 
 Theorem~\ref{thm_main} converts a question about derivative evaluation into a
-rank computation whose answer is a product of the incremented exponents. The
+rank computation whose answer is the product \eqref{eq_rank}. The
 minimizing directions and coefficients in \eqref{eq_rou} are roots of unity
 scaled by $\nu!/R_{\C}(\bz^{a})$, so their magnitudes are known in advance.
 Three consequences deserve separate mention.
@@ -520,21 +523,23 @@ Three consequences deserve separate mention.
     \end{equation}
     in which the pure second derivatives cancel between the two probes.
     Theorem~\ref{thm_main} adds to \eqref{eq_two_point} the information that two
-    evaluations are necessary as well as sufficient. Complex directions appear as
-    soon as some exponent exceeds one.
+    evaluations are necessary as well as sufficient. Complex directions appear
+    once two or more coordinates are active and some exponent is at least two.
+    A pure power $\partial_{1}^{p}u$ uses one real direction, and a square-free
+    monomial uses only the real pair $U_{2} = \{\pm 1\}$.
 \end{remark}
 
 \begin{remark}[Entire activations are essential]\label{rmk_entire}
-    The directions \eqref{eq_rou} are complex whenever $m_{j} \ge 3$ for some $j$,
-    so the network is evaluated at complex arguments and its activations must admit
-    a holomorphic extension there. The functions $\sinh$ and $\cosh$ are entire, and
+    The directions \eqref{eq_rou} are complex whenever some factor $U_{m_{j}}$
+    with $j \ge 1$ has $m_{j} \ge 3$, so the network is then evaluated at complex
+    arguments and its activations must admit a holomorphic extension there. The functions $\sinh$ and $\cosh$ are entire, and
     the recurrence \eqref{eq_jet_sinh} is an algebraic identity that holds verbatim
     on complex tensors. By contrast $\tanh$ is meromorphic, with poles at
     $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for $k \in \Z$, so its jet is defined only
     away from those points and the admissible directions depend on the activation
-    input. Entire activations are therefore a requirement of the construction rather
-    than a convenience, which is why Section~\ref{sec_experiments} uses a $\sinh$
-    network.
+    input. The training protocol of Section~\ref{sec_experiments} uses $\sinh$
+    at every order, including the order-two residuals whose directions remain
+    real.
 \end{remark}
 
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
@@ -542,17 +547,17 @@ Three consequences deserve separate mention.
     square-free multi-index $a = (1, \ldots, 1)$ of order $p$ the rank
     \eqref{eq_rank} equals $2^{p-1}$, so the schedule is exponentially long; since
     the theorem gives a minimum, this is a statement about the problem and not about
-    the construction, and no directional formula for such a derivative can be
+    the construction, and no schedule of the form \eqref{eq_schedule} can be
     shorter. A differential operator that is a linear combination of mixed partials
     is evaluated by applying the schedule to each monomial. The stochastic Taylor
-    derivative estimator~\cite{Shi2024stde} solves the strictly broader problem of
+    derivative estimator~\cite{Shi2024stde} treats the strictly broader problem of
     an arbitrary contraction of the order-$p$ derivative tensor, with unbiased
     estimates whose variance is controlled by a sampling budget; the two approaches
     are complementary, and the schedule of Theorem~\ref{thm_main} is the
     deterministic minimum for one fixed multi-index.
 \end{remark}
 
-Table~\ref{tab_patterns} evaluates \eqref{eq_rank} for the active-exponent
+Table~\ref{tab_patterns} evaluates \eqref{eq_rank} for selected active-exponent
 patterns up to $p = 6$. Because every entry is a minimum, the table reads as a
 statement about which derivatives are cheap to extract from directional
 evaluations and which are not: a pure power needs one direction at any order, a
@@ -564,7 +569,7 @@ Appendix~\ref{sec_lowschedules}.
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for the active-exponent patterns up to $p = 6$.
+\caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for selected active-exponent patterns up to $p = 6$.
 Repeating an index keeps the count low; the square-free pattern $(1^{p})$ is exponential in the order.}
 \label{tab_patterns}
 \begin{tabular}{@{}llr@{}}
@@ -677,18 +682,19 @@ $(2,1,1)$, with a maximum admissible absolute coefficient error of $10^{-12}$.
 The length of the schedule that the implementation builds is checked against the
 closed-form rank \eqref{eq_rank} for every pattern of Table~\ref{tab_patterns}.
 
-The two jet backends are then compared with nested automatic differentiation on
-real-parameter networks using the $\tanh$, logistic, $\sin$, and $\sinh$
-activations, for the patterns $(2,2)$, $(1,1,1)$, and $(3)$. Values must agree
-to relative tolerance $2 \times 10^{-10}$ and absolute tolerance $2 \times
-10^{-11}$, and the imaginary remainder of a real target must not exceed $2
-\times 10^{-11}$. Gradients of a squared derivative loss with respect to every
-network parameter are compared in the same way, with tolerances $2 \times
-10^{-9}$ relative and $2 \times 10^{-11}$ absolute, for both real- and
-complex-parameter networks; additional analytic checks cover the orders $1$,
-$2$, $3$, $4$, and $6$ for a scalar complex $\sinh$ network. Every check passes
-at the tolerance stated for it. These tests establish that the implementation
-computes what Theorem~\ref{thm_main} predicts.
+The Waring jet of Algorithm~\ref{alg_waring} is then compared with nested
+automatic differentiation on real-parameter networks using the $\tanh$,
+logistic, $\sin$, and $\sinh$ activations, for the patterns $(2,2)$,
+$(1,1,1)$, and $(3)$. Values must agree to relative tolerance
+$2 \times 10^{-10}$ and absolute tolerance $2 \times 10^{-11}$, and the
+imaginary remainder of a real target must not exceed $2 \times 10^{-11}$.
+Parameter gradients of a squared derivative loss are compared at tolerances
+$2 \times 10^{-9}$ relative and $2 \times 10^{-11}$ absolute, on a real
+$\tanh$ network and on a complex $\sinh$ network; additional analytic checks
+cover the orders $1$, $2$, $3$, $4$, and $6$ for a scalar complex $\sinh$
+network. Every check passes at the tolerance stated for it. These tests
+establish that the implementation computes what Theorem~\ref{thm_main}
+predicts.
 
 \subsection{A controlled comparison of derivative backends}\label{sec_num_protocol}
 
@@ -735,13 +741,14 @@ polyharmonic problem on $(-1,1)^{2}$ we solve
 \end{equation}
 at the orders $2m \in \{2,4,6\}$, with the Navier boundary targets $u =
 u_{\star}$ and $\Delta^{j}u = (-2\pi^{2})^{j}u_{\star}$ for $j = 1, \ldots,
-m-1$, all of which vanish for this $u_{\star}$. This family is the reason the
-derivative order appears as a variable: expanding $\Delta^{m}$ in two dimensions
-produces the patterns $(2m)$ and, for $m \ge 2$, the mixed patterns whose
-schedules Table~\ref{tab_patterns} lists. At $2m = 4$ the mixed term is
-$\partial_{1}^{2}\partial_{2}^{2}$, which \eqref{eq_rou} evaluates with three
-directions; at $2m = 6$ the mixed terms are $\partial_{1}^{4}\partial_{2}^{2}$
-and $\partial_{1}^{2}\partial_{2}^{4}$, which take five each.
+m-1$. Those traces vanish on $\partial(-1,1)^{2}$ because $u_{\star}$ does.
+This family is the reason the derivative order appears as a variable: expanding
+$\Delta^{m}$ in two dimensions produces the patterns $(2m)$ and, for $m \ge 2$,
+the mixed patterns whose schedules Table~\ref{tab_patterns} lists. At $2m = 4$
+the mixed term is $\partial_{1}^{2}\partial_{2}^{2}$, which \eqref{eq_rou}
+evaluates with three directions; at $2m = 6$ the mixed terms are
+$\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$,
+which take five each.
 
 The other two families sit at order two and sweep a frequency instead. On
 $(-1,1)^{2}$ the radial chirp is
@@ -760,11 +767,12 @@ out-of-plane field $E$,
 \end{equation}
 with $\beta = 0.2$, exact Dirichlet data, $a \in \{2,4,6\}$, and $f =
 [-2(a\pi)^{2}+\kappa^{2}]E_{\star}$. The Maxwell family has a complex-valued
-solution, which the schedule of Theorem~\ref{thm_main} handles without change:
-the network is already evaluated at complex directions, so a complex target
-costs nothing extra. Since both families are of order two, every monomial term
-of their residuals is a pure power, which the schedule evaluates with a single
-direction. They therefore isolate the cost of the Taylor jet on one direction.
+solution. The training protocol already propagates complex tensors through a
+complex-parameter $\sinh$ network, so a complex residual uses the same jet as
+the real ones. Since both families are of order two, every monomial term of
+their residuals is a pure power, which the schedule evaluates with a single
+real direction. They therefore isolate the cost of the Taylor jet on one
+direction.
 
 \subsection{Cost of one derivative evaluation}\label{sec_num_cost}
 
@@ -836,9 +844,9 @@ panels (b) and (c) of Figure~\ref{fig_v3_history}, and in five of the six
 frequency-swept settings the two means differ by less than one seed standard
 deviation. A cheaper derivative is not by itself a better optimizer, and at low
 order the derivative is not what limits the run. For a prescribed mixed
-derivative the schedule is exact, and its cost advantage grows with the
-derivative order, in wall time and in memory, with the model, the loss, and the
-optimizer held fixed.
+derivative the schedule is algebraically exact, and its cost advantage grows
+with the derivative order, in wall time and in memory, with the model, the
+loss, and the optimizer held fixed.
 
 %% ====================================================================
 %%  SECTION 5: CONCLUSION
@@ -850,11 +858,11 @@ about how few directions suffice, and we have shown that it is the Waring
 problem for the associated monomial. The identification is an equivalence rather
 than a bound: a directional formula of a given length exists precisely when the
 monomial decomposes into that many powers of linear forms. The rank formula of
-Carlini, Catalisano, and Geramita then evaluates the minimum over the complex
-numbers as the product of the incremented active exponents, and a roots-of-unity
-construction attains it in closed form. Because the rank is a minimum, a shorter
-directional formula is impossible, and the elementary two-point identity for a
-second mixed derivative is the smallest instance.
+Carlini, Catalisano, and Geramita then supplies the complex minimum
+\eqref{eq_rank}, and a roots-of-unity construction attains it in closed form.
+Because the rank is a minimum, a shorter linear combination of order-$p$
+directional Taylor coefficients is impossible, and the elementary two-point
+identity for a second mixed derivative is the smallest instance.
 
 Combined with a batched Taylor jet through an entire activation and a
 closed-form vector-Jacobian product, the schedule becomes a derivative backend
@@ -935,25 +943,27 @@ have $n = 1$, $a = (2,2)$, and $m_{1} = 3$; with $\omega :=
     \partial_{1}^{2}\partial_{2}^{2}u(\bx) = \frac{4}{3}\sum_{\zeta \in U_{3}} \zeta\,\Tp(\bx;\, e_{1}+\zeta e_{2}).
 \end{equation}
 
-For the sixth-order mixed term $\dal =
-\partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}$ we have $n = 2$, $a =
-(2,2,2)$, and $m_{1} = m_{2} = 3$, so \eqref{eq_rou} gives $R_{\C}(\bz^{a}) = 9$
-directions,
-\begin{equation}\label{eq_sched_222}
-    \partial_{1}^{2}\partial_{2}^{2}\partial_{3}^{2}u(\bx) = \frac{8}{9}\sum_{\zeta_{1},\zeta_{2} \in U_{3}} \zeta_{1}\zeta_{2}\,\Tp\bigl(\bx;\, e_{1}+\zeta_{1}e_{2}+\zeta_{2}e_{3}\bigr).
+For the sixth-order mixed term $\dal = \partial_{1}^{2}\partial_{2}^{4}$ we
+have $n = 1$, $a = (2,4)$, and $m_{1} = 5$; with $U_{5}$ the fifth roots of
+unity, \eqref{eq_rou} takes the coordinate of smaller exponent as base and
+gives the five directions
+\begin{equation}\label{eq_sched_24}
+    \partial_{1}^{2}\partial_{2}^{4}u(\bx) = \frac{48}{5}\sum_{\zeta \in U_{5}} \zeta\,\Tp(\bx;\, e_{1}+\zeta e_{2}).
 \end{equation}
-The equivalent polynomial identity \eqref{eq_bridge} for \eqref{eq_sched_222}
-reads
-\begin{equation}\label{eq_sched_222_poly}
-    6!\,z_{0}^{2}z_{1}^{2}z_{2}^{2} = \frac{8}{9}\sum_{\zeta_{1},\zeta_{2} \in U_{3}} \zeta_{1}\zeta_{2}\,(z_{0}+\zeta_{1}z_{1}+\zeta_{2}z_{2})^{6},
+The companion term $\partial_{1}^{4}\partial_{2}^{2}$ is the same formula with
+the two coordinates exchanged. The equivalent polynomial identity
+\eqref{eq_bridge} for \eqref{eq_sched_24} reads
+\begin{equation}\label{eq_sched_24_poly}
+    6!\,z_{0}^{2}z_{1}^{4} = \frac{48}{5}\sum_{\zeta \in U_{5}} \zeta\,(z_{0}+\zeta z_{1})^{6},
 \end{equation}
-and it can be checked directly: expanding the right-hand side and collecting the
-coefficient of $z_{0}^{\beta_{0}}z_{1}^{\beta_{1}}z_{2}^{\beta_{2}}$ produces
-the product $\prod_{j=1}^{2}\sum_{\zeta_{j} \in U_{3}}\zeta_{j}^{1+\beta_{j}}$,
-which by Lemma~\ref{lem_filter} is nonzero only when $\beta_{j} \equiv 2 \pmod
-3$ for $j = 1, 2$. Together with $\beta_{0}+\beta_{1}+\beta_{2} = 6$ this forces
-$\beta = (2,2,2)$, and the surviving constant is $\tfrac{8}{9} \cdot
-\tfrac{6!}{2!\,2!\,2!} \cdot 9 = 720 = 6!$.
+and it can be checked directly: the coefficient of
+$z_{0}^{\beta_{0}}z_{1}^{\beta_{1}}$ on the right-hand side contains the factor
+$\sum_{\zeta \in U_{5}}\zeta^{1+\beta_{1}}$, which by Lemma~\ref{lem_filter} is
+nonzero only when $\beta_{1} \equiv 4 \pmod{5}$.
+Together with $\beta_{0}+\beta_{1} = 6$ this forces $\beta = (2,4)$, and the
+surviving constant is $\tfrac{48}{5} \cdot \tfrac{6!}{2!\,4!} \cdot 5 = 720 =
+6!$. The three-variable pattern $(2,2,2)$ of Table~\ref{tab_patterns} is the
+same construction with two cube-root factors and nine directions.
 
 \subsection{Apolar form of the rank bound}\label{sec_apolar}
 
