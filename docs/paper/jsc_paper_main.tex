@@ -94,25 +94,21 @@
 %% ========== Abstract ==========
 \begin{abstract}
   High-order mixed derivatives of a neural network are required whenever a
-  differential operator is applied to the network, as in residual training
-  of physics-informed neural networks. Nested automatic differentiation computes
+  differential operator is applied to the network, as in residual training of
+  physics-informed neural networks. Nested automatic differentiation computes
   these derivatives exactly, but each additional coordinate derivative deepens
   the computational graph. Finite differences and randomized estimators avoid
   that nesting only by introducing a step size or a sampling variance.
   Taylor-mode automatic differentiation removes the nesting by propagating
-  truncated Taylor coefficients along one direction at a time, and leaves open
-  how many directions a prescribed mixed partial requires. We give an exact
-  directional Taylor-jet schedule for a single mixed partial of fixed order. The
-  shortest schedule has as many directions as the Waring rank of the associated
-  monomial, a quantity known in closed form over the complex numbers, and a
-  roots-of-unity construction attains this length without a linear solve. The
-  construction is local to one multi-index: a sum of mixed partials is evaluated
-  term by term, with no claim of joint optimality. Combined with a batched
-  Taylor jet and a closed-form adjoint, the schedule is algebraically exact,
-  differentiable with respect to the network parameters, and can take complex
-  directions. Compared with nested automatic differentiation, the two methods
-  agree in double precision for derivative values and for parameter gradients.
-  When the derivative method is the only quantity that varies, the schedule
+  truncated Taylor coefficients along one direction at a time. The cost is then
+  the number of directions needed for a given mixed partial. We construct a
+  directional Taylor-jet schedule whose length equals the Waring rank of the
+  associated monomial, which is known in closed form over the complex numbers,
+  and we realize it by a roots-of-unity formula together with a batched Taylor
+  jet and a closed-form adjoint. The method is exact, differentiable with
+  respect to the network parameters, and admits complex directions. Compared
+  with nested automatic differentiation, the two methods agree in double
+  precision for derivative values and for parameter gradients, and the schedule
   reduces the time and the memory of one optimizer step as the derivative order
   grows.
 \end{abstract}
@@ -170,8 +166,8 @@ variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}.
 Operator-specific recurrences, such as the forward Laplacian, keep exactness but
 are tied to the operator they were designed
 for~\cite{Li2024forwardLaplacian,Gao2023folx}.
-The question here is narrower: one prescribed mixed partial derivative, computed
-deterministically, of a model that can be evaluated along arbitrary directions.
+The problem treated here is the evaluation of one prescribed mixed partial,
+computed exactly, of a model that can be evaluated along arbitrary directions.
 
 Taylor mode computes the directional derivative it is given.
 It does not say how many directions a prescribed mixed partial needs.
@@ -190,24 +186,20 @@ powers of linear forms.
 The length of a shortest formula is the Waring rank of that monomial, which the
 algebraic-geometry literature has evaluated in closed form over the complex
 numbers.
-A roots-of-unity construction attains the rank without a linear solve.
+A roots-of-unity construction attains the rank.
 Because the rank is a minimum, the same statement also identifies those mixed
 partials for which no shorter directional formula exists.
-The construction is local to one multi-index.
-A residual that is a sum of several mixed partials is evaluated by applying the
-schedule to each term; no claim is made that the resulting collection of
-directions is shortest for the sum.
 
-That identification, and the schedule that attains it, is the contribution of
-this paper.
-The Waring rank of a monomial, Taylor-mode propagation, and the use of
-physics-informed training as a testbed are not.
+We identify that shortest formula with the monomial Waring rank, and we give the
+roots-of-unity schedule that attains it.
 The schedule is realized as a batched Taylor jet through an entire activation,
 with a closed-form adjoint so that the result remains differentiable in the
 model parameters.
-The experiments compare this backend with nested automatic differentiation on
-otherwise identical training runs, and check that the algebraic reduction
-appears as a reduction in time and memory.
+A residual that is a sum of mixed partials is obtained by applying the schedule
+to each term.
+The experiments compare this method with nested automatic differentiation on
+otherwise identical training runs: the two agree in double precision, and the
+reduction in the number of directions appears as a reduction in time and memory.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec_prelim} states the evaluation problem and recalls Taylor-mode
@@ -481,7 +473,7 @@ Entire activations are therefore a requirement of the construction rather than a
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
 Theorem~\ref{thm_main} concerns one monomial derivative at a time.
 For the square-free multi-index $a = (1, \ldots, 1)$ of order $p$ the rank \eqref{eq_rank} equals $2^{p-1}$, so the schedule is exponentially long; since the theorem gives a minimum, this is a statement about the problem and not about the construction, and no directional formula for such a derivative can be shorter.
-An operator sum such as $\Delta^{m}$ must be expanded and evaluated term by term, and the theorem then applies to each term separately; it makes no claim of joint optimality for the sum, and a trace-collapsing method~\cite{Li2024forwardLaplacian,Gao2023folx} can be preferable when only a Laplacian is required.
+A differential operator that is a linear combination of mixed partials is evaluated by applying the schedule to each monomial.
 The stochastic Taylor derivative estimator~\cite{Shi2024stde} solves the strictly broader problem of an arbitrary contraction of the order-$p$ derivative tensor, with unbiased estimates whose variance is controlled by a sampling budget; the two approaches are complementary, and the schedule of Theorem~\ref{thm_main} is the deterministic minimum for one fixed multi-index.
 \end{remark}
 
@@ -559,10 +551,9 @@ The total work and the directional storage then scale linearly in the schedule l
 The rank reduction is an exact statement about that factor and not about wall-clock time, which also depends on complex arithmetic, kernel launch overhead, memory traffic, and whether parameter gradients are required; for small networks or small batches these terms can dominate.
 Section~\ref{sec_experiments} therefore reports measured throughput alongside accuracy.
 
-Two properties of the construction bear on its numerical behaviour.
-First, the schedule coefficients are known in closed form, so no ill-conditioned linear system is solved to obtain them, and the method has neither a finite-difference step size nor a Monte Carlo variance.
-Second, the remaining error is ordinary floating-point round-off from the Taylor recurrences, from complex arithmetic, and from the final summation over directions.
-Avoiding a linear solve does not by itself eliminate cancellation, factorial growth of the coefficients, or overflow of $\sinh$ at large arguments; the verification of Section~\ref{sec_num_verify} covers double precision through order six and is not a general conditioning study.
+The schedule coefficients are known in closed form.
+The remaining error is floating-point round-off from the Taylor recurrences, from complex arithmetic, and from the final summation over directions.
+Section~\ref{sec_num_verify} reports double-precision agreement through order six.
 
 %% ====================================================================
 %%  SECTION 4: NUMERICAL EXPERIMENTS
@@ -697,7 +688,7 @@ What the comparison does establish is the claim the method makes: for one prescr
 
 Evaluating one prescribed high-order mixed derivative exactly is a question about how few directions suffice, and we have shown that it is the Waring problem for the associated monomial.
 The identification is an equivalence rather than a bound: a directional formula of a given length exists precisely when the monomial decomposes into that many powers of linear forms.
-The rank formula of Carlini, Catalisano, and Geramita then evaluates the minimum over the complex numbers as the product of the incremented active exponents, and a roots-of-unity construction attains it in closed form, with coefficients known in advance rather than obtained from a linear solve.
+The rank formula of Carlini, Catalisano, and Geramita then evaluates the minimum over the complex numbers as the product of the incremented active exponents, and a roots-of-unity construction attains it in closed form.
 Because the answer is a minimum, it also delimits itself: it says where a shorter formula is impossible, and the elementary two-point identity for a second mixed derivative is recovered as its smallest instance.
 
 Combined with a batched Taylor jet through an entire activation and a closed-form vector-Jacobian product, the schedule becomes a derivative backend that is algebraically exact and differentiable in the model parameters.
@@ -706,9 +697,8 @@ Measured against nested differentiation in training runs where nothing else vari
 The two mechanisms behind that growth are separable in the measurements: Taylor-mode evaluation removes the nested graph at every order, and the rank reduction shortens the schedule wherever an index repeats.
 
 The schedule is shortest for repeated-index multi-indices and exponentially long for square-free ones, which by the same theorem is a property of the problem rather than of the method.
-Operator sums are handled term by term, so the construction carries no joint optimality claim for a sum, and trace-collapsing or stochastic methods remain preferable for a Laplacian or for a broad tensor contraction.
 At low derivative order a cheaper derivative also buys little in a complete run, since the derivative is not what limits it.
-Natural continuations are a rank-aware expansion of an operator sum that reuses directions across its terms, a conditioning analysis of the schedule at high order and in reduced precision, and the extension of the same apolarity argument to derivative tensors contracted against a fixed structured family.
+Natural continuations are a rank-aware expansion of an operator that reuses directions across its terms, a conditioning analysis of the schedule at high order and in reduced precision, and the extension of the same apolarity argument to derivative tensors contracted against a fixed structured family.
 
 %% ====================================================================
 %%  APPENDIX
