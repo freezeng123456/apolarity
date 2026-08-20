@@ -93,24 +93,23 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  High-order mixed derivatives of a neural network are required whenever a
-  differential operator is applied to the network, as in residual training of
-  physics-informed neural networks. Nested automatic differentiation computes
-  these derivatives exactly, but each additional coordinate derivative deepens
-  the computational graph. Finite differences and randomized estimators avoid
-  that nesting only by introducing a step size or a sampling variance.
-  Taylor-mode automatic differentiation removes the nesting by propagating
-  truncated Taylor coefficients along one direction at a time. The cost is then
-  the number of directions needed for a given mixed partial. We construct a
-  directional Taylor-jet schedule whose length equals the Waring rank of the
-  associated monomial, which is known in closed form over the complex numbers,
-  and we realize it by a roots-of-unity formula together with a batched Taylor
-  jet and a closed-form adjoint. The method is exact, differentiable with
-  respect to the network parameters, and admits complex directions. Compared
-  with nested automatic differentiation, the two methods agree in double
-  precision for derivative values and for parameter gradients, and the schedule
-  reduces the time and the memory of one optimizer step as the derivative order
-  grows.
+  Mixed partial derivatives of a neural network appear in the residual of a
+  high-order partial differential equation in several variables. Nested
+  automatic differentiation computes these derivatives exactly, but each
+  additional coordinate derivative deepens the computational graph. Finite
+  differences and randomized estimators avoid that nesting only by introducing a
+  step size or a sampling variance. Taylor-mode automatic differentiation
+  removes the nesting by propagating truncated Taylor coefficients along one
+  direction at a time. The cost is then the number of directions needed for a
+  given mixed partial. We construct a directional Taylor-jet schedule whose
+  length equals the Waring rank of the associated monomial, which is known in
+  closed form over the complex numbers, and we realize it by a roots-of-unity
+  formula together with a batched Taylor jet and a closed-form adjoint. The
+  method is exact, differentiable with respect to the network parameters, and
+  admits complex directions. Compared with nested automatic differentiation, the
+  two methods agree in double precision for derivative values and for parameter
+  gradients, and the schedule reduces the time and the memory of one optimizer
+  step as the derivative order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -133,15 +132,12 @@ physics-informed neural networks
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-High-order derivatives of a computed function are required wherever a model is
-constrained, or probed, by a differential relation. They appear in residual
-training of a neural representation of a partial differential
-equation~\cite{Raissi2019,Karniadakis2021,Han2018deepbsde}, in variational Monte
-Carlo for a neural wavefunction~\cite{Li2024forwardLaplacian}, and in any
-computation that evaluates a differential operator on a network. In each setting
-the derivative is taken repeatedly, at many points, on the same model, and the
-cost of those evaluations grows with the order of the derivative and with the
-depth of the model.
+Mixed partial derivatives of a neural network appear in residual training of a
+high-order partial differential equation in several
+variables~\cite{Raissi2019,Karniadakis2021}. In that setting the derivative is
+taken repeatedly, at many points, on the same model, and the cost of those
+evaluations grows with the order of the derivative and with the depth of the
+model.
 
 The exact methods are classical, and each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
