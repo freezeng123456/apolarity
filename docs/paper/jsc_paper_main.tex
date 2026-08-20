@@ -1,5 +1,5 @@
 %% jsc_paper_main.tex
-%% Rank-optimal directional Taylor jets for high-order mixed derivatives
+%% Rank-optimal directional Taylor jets for high-order derivatives
 %% Neural networks appear only as the collocation workload used to time the
 %% schedule against nested automatic differentiation.
 %%
@@ -85,7 +85,7 @@
 \begin{document}
 
 %% ========== Title ==========
-\title{Rank-Optimal Directional Taylor Jets for\\High-Order Mixed Derivatives}
+\title{Rank-Optimal Directional Taylor Jets for\\High-Order Derivatives}
 
 %% ========== Authors (to be filled) ==========
 \author{Author One\thanks{Institution One (\tt author1@example.com).}
@@ -95,31 +95,29 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  A mixed partial of a prescribed multi-index is one monomial in a high-order
-  residual in several variables, as in a polyharmonic operator. Nested
-  automatic differentiation computes it exactly, but each additional coordinate
-  derivative deepens the computational graph. Finite differences and randomized
-  estimators avoid that nesting only by introducing a step size or a sampling
-  variance. Taylor-mode automatic differentiation removes the nesting by
-  propagating truncated Taylor coefficients along one direction at a time. The
-  cost is then the number of directions needed for that mixed partial. We
-  construct a directional Taylor-jet schedule whose length equals the Waring
-  rank of the associated monomial, which is known in closed form over the
-  complex numbers, and we realize it by a roots-of-unity formula together with
-  a batched Taylor jet and a closed-form adjoint. The directional identity is
-  algebraically exact and admits complex directions. Compared with nested
-  automatic differentiation on the same collocation residual in double
-  precision, the two methods agree for derivative values and for parameter
-  gradients, and the schedule reduces the time and the memory of one evaluation
-  as the derivative order grows.
+  A prescribed monomial derivative is one term in a high-order residual in
+  several variables, as in a polyharmonic operator. Nested automatic
+  differentiation computes it exactly, but each additional coordinate derivative
+  deepens the computational graph. Finite differences and randomized estimators
+  avoid that nesting only by introducing a step size or a sampling variance.
+  Taylor-mode automatic differentiation removes the nesting by propagating
+  truncated Taylor coefficients along one direction at a time. The cost is then
+  the number of directions needed for that derivative. We construct a
+  directional Taylor-jet schedule whose length equals the Waring rank of the
+  associated monomial, which is known in closed form over the complex numbers,
+  and we realize it by a roots-of-unity formula together with a batched Taylor
+  jet and a closed-form adjoint. The directional identity is algebraically exact
+  and admits complex directions. Compared with nested automatic differentiation
+  on the same collocation residual in double precision, the two methods agree
+  for derivative values and for parameter gradients, and the schedule reduces
+  the time and the memory of one evaluation as the derivative order grows.
 \end{abstract}
 
 \begin{keywords}
 high-order derivatives,
 Taylor-mode automatic differentiation,
 Waring decomposition,
-apolarity,
-mixed partials
+apolarity
 \end{keywords}
 
 \begin{AMS}
@@ -134,12 +132,10 @@ mixed partials
 \section{Introduction}\label{sec_intro}
 
 High-order residuals in several variables are assembled from monomial
-derivatives, including mixed partials when the operator contains mixed terms.
-A polyharmonic operator of order greater than two is the typical case: its
-expansion contains both pure powers and mixed monomials. Each such monomial is
-evaluated repeatedly, at many points, on one composition that can be probed
-along arbitrary directions, and the cost of those evaluations grows with the
-order of the derivative and with the depth of the composition.
+derivatives. Each monomial is evaluated repeatedly, at many points, on one
+composition that can be probed along arbitrary directions, and the cost of those
+evaluations grows with the order of the derivative and with the depth of the
+composition.
 
 The exact methods are classical, and each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
@@ -160,21 +156,22 @@ dimension at the price of
 variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}. Operator-specific
 recurrences, such as the forward Laplacian, keep exactness but are tied to the
 operator they were designed for~\cite{Li2024forwardLaplacian,Gao2023folx}. The
-problem treated here is the evaluation of one prescribed mixed partial, computed
-exactly, of a composition that can be evaluated along arbitrary directions.
+problem treated here is the evaluation of one prescribed monomial derivative,
+computed exactly, of a composition that can be evaluated along arbitrary
+directions.
 
 Taylor mode computes the directional derivative it is given. It does not say how
-many directions a prescribed mixed partial needs. Elementary reconstructions
-exist, obtained by evaluating along combinations of coordinate axes, but a
-formula written by hand does not certify that a shorter one is impossible. The
-question is therefore the minimum: for one mixed partial, of one order, what is
-the smallest number of directional Taylor evaluations that recover it exactly,
-and which directions attain that bound?
+many directions a prescribed monomial needs. Elementary reconstructions exist,
+obtained by evaluating along combinations of coordinate axes, but a formula
+written by hand does not certify that a shorter one is impossible. The question
+is therefore the minimum: for one multi-index, of one order, what is the
+smallest number of directional Taylor evaluations that recover it exactly, and
+which directions attain that bound?
 
 The directional Taylor coefficient of a fixed order is a homogeneous polynomial
-in the direction. Extracting one mixed partial is extracting one monomial
-coefficient of that polynomial, so a directional formula is a decomposition of a
-monomial into powers of linear forms. The length of a shortest formula is the
+in the direction. Extracting the target derivative is extracting one monomial
+coefficient of that polynomial, so a directional formula is a decomposition of
+a monomial into powers of linear forms. The length of a shortest formula is the
 Waring rank of that monomial, which the algebraic-geometry literature has
 evaluated in closed form over the complex numbers. A roots-of-unity construction
 attains the rank. Because the rank is a minimum, no shorter linear combination
@@ -211,9 +208,9 @@ Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be a
 parameterized composition, smooth in its inputs. Let $\nu = (\nu_{1}, \ldots,
 \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and
 write $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the
-associated derivative. The task is the evaluation of the mixed partial $\dal
-u_{\theta}$ at a given point. The value must be algebraically exact, and it must
-remain differentiable in $\theta$. The multi-index is fixed and prescribed. The
+associated derivative. The task is the evaluation of $\dal u_{\theta}$ at a
+given point. The value must be algebraically exact, and it must remain
+differentiable in $\theta$. The multi-index is fixed and prescribed. The
 derivative is evaluated at many points at once and re-evaluated at every step,
 so the cost that matters is one evaluation of one derivative, amortized over a
 batch.
@@ -359,8 +356,8 @@ derivatives of $u$ at $\bx$. Reading off the coefficient of $\bz^{a}$ in
 \begin{equation}\label{eq_extract}
     \dal u(\bx) = \nu!\,[\bz^{a}]\,Q_{u}(\bz).
 \end{equation}
-Extracting one mixed derivative is therefore the extraction of one coefficient
-of a homogeneous polynomial of degree $p$.
+Extracting one monomial derivative is therefore the extraction of one
+coefficient of a homogeneous polynomial of degree $p$.
 
 The evaluations available to us are values of $Q_{u}$ at individual directions,
 so we ask for the shortest linear combination of such values that realizes the
@@ -554,13 +551,14 @@ Three consequences deserve separate mention.
     \eqref{eq_rank} equals $2^{p-1}$, so the schedule is exponentially long; since
     the theorem gives a minimum, this is a statement about the problem and not about
     the construction, and no schedule of the form \eqref{eq_schedule} can be
-    shorter. A differential operator that is a linear combination of mixed partials
-    is evaluated by applying the schedule to each monomial. The stochastic Taylor
-    derivative estimator~\cite{Shi2024stde} treats the strictly broader problem of
-    an arbitrary contraction of the order-$p$ derivative tensor, with unbiased
-    estimates whose variance is controlled by a sampling budget; the two approaches
-    are complementary, and the schedule of Theorem~\ref{thm_main} is the
-    deterministic minimum for one fixed multi-index.
+    shorter. A differential operator that is a linear combination of monomial
+    derivatives is evaluated by applying the schedule to each monomial. The
+    stochastic Taylor derivative estimator~\cite{Shi2024stde} treats the strictly
+    broader problem of an arbitrary contraction of the order-$p$ derivative
+    tensor, with unbiased estimates whose variance is controlled by a sampling
+    budget; the two approaches are complementary, and the schedule of
+    Theorem~\ref{thm_main} is the deterministic minimum for one fixed
+    multi-index.
 \end{remark}
 
 Table~\ref{tab_patterns} evaluates \eqref{eq_rank} for selected active-exponent
@@ -851,7 +849,7 @@ At order two the extra steps buy little: the two backends track each other in
 panels (b) and (c) of Figure~\ref{fig_v3_history}, and in five of the six
 frequency-swept settings the two means differ by less than one seed standard
 deviation. A cheaper derivative is not by itself a better optimizer, and at low
-order the derivative is not what limits the run. For a prescribed mixed
+order the derivative is not what limits the run. For a prescribed monomial
 derivative the schedule is algebraically exact, and its cost advantage grows
 with the derivative order, in wall time and in memory, with the model, the
 loss, and the optimizer held fixed.
@@ -861,19 +859,19 @@ loss, and the optimizer held fixed.
 %% ====================================================================
 \section{Conclusion}\label{sec_concl}
 
-Evaluating one prescribed high-order mixed derivative exactly is a question
-about how few directions suffice, and we have shown that it is the Waring
-problem for the associated monomial. The identification is an equivalence rather
-than a bound: a directional formula of a given length exists precisely when the
-monomial decomposes into that many powers of linear forms. The rank formula of
+Evaluating one prescribed high-order derivative exactly is a question about how
+few directions suffice, and we have shown that it is the Waring problem for the
+associated monomial. The identification is an equivalence rather than a bound:
+a directional formula of a given length exists precisely when the monomial
+decomposes into that many powers of linear forms. The rank formula of
 Carlini, Catalisano, and Geramita then supplies the complex minimum
 \eqref{eq_rank}, and a roots-of-unity construction attains it in closed form.
 Because the rank is a minimum, a shorter linear combination of order-$p$
 directional Taylor coefficients is impossible, and the elementary two-point
-identity for a second mixed derivative is the smallest instance.
+identity for $\partial_{1}\partial_{2}$ is the smallest instance.
 
 Combined with a batched Taylor jet through an entire activation and a
-closed-form vector-Jacobian product, the schedule evaluates the mixed partial
+closed-form vector-Jacobian product, the schedule evaluates the derivative
 exactly and remains differentiable in the parameters of the composition.
 Double-precision tests reproduce nested automatic differentiation for values and
 for parameter gradients through order six. Measured against nested
