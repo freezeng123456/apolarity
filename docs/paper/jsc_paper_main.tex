@@ -93,19 +93,21 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  This paper computes one high-order partial derivative of a function from
-  directional Taylor coefficients of the same order. Nested automatic
-  differentiation computes the derivative exactly, but the computational graph
-  deepens with every additional coordinate derivative. Finite differences and
-  randomized estimators replace the nesting by a step size or a sampling
-  variance. Taylor mode propagates truncated Taylor coefficients along one
-  direction at a time, so the cost is the number of directions. For one
-  multi-index that number is the Waring rank of the corresponding monomial,
-  known in closed form over the complex numbers, and a roots-of-unity formula
-  attains it. We evaluate the formula with a batched Taylor jet and a
-  closed-form adjoint. Against nested automatic differentiation in double
-  precision, values and parameter gradients agree, and the time and memory of
-  one evaluation fall as the derivative order grows.
+  High-order derivatives appear in polyharmonic and plate equations, in
+  Helmholtz and Maxwell models, and in the evaluation of high-order
+  differential operators. Nested automatic differentiation computes them
+  exactly, but the computational graph deepens with every additional
+  coordinate derivative. Finite differences and randomized estimators replace
+  the nesting by a step size or a sampling variance. Taylor mode propagates
+  truncated Taylor coefficients along one direction at a time, so the cost is
+  the number of directions. We recover each partial of that order as a linear
+  combination of those coefficients. The shortest combination is the Waring
+  rank of the corresponding monomial, known in closed form over the complex
+  numbers, and a roots-of-unity formula attains it. We evaluate the formula
+  with a batched Taylor jet and a closed-form adjoint. Against nested
+  automatic differentiation in double precision, values and parameter
+  gradients agree, and the time and memory of one evaluation fall as the
+  derivative order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -126,32 +128,29 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-This paper computes one high-order partial $\partial^{\nu}u$ from directional
-derivatives of exact order. Nested reverse-mode automatic differentiation
-composes coordinate derivatives, and the stored graph grows with the
-order~\cite{Griewank2008}. Finite differences introduce a step
-size~\cite{Chiu2022CAN}. Randomized estimators introduce
-variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}. Recurrences such as the
-forward Laplacian remain exact, but they are written for one
-operator~\cite{Li2024forwardLaplacian,Gao2023folx}.
+High-order derivatives appear in polyharmonic and plate equations, in Helmholtz
+and Maxwell models, and in the evaluation of high-order differential operators.
+Nested reverse-mode automatic differentiation composes coordinate derivatives,
+and the stored graph grows with the order~\cite{Griewank2008}. Finite
+differences introduce a step size~\cite{Chiu2022CAN}. Randomized estimators
+introduce variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}. Recurrences
+such as the forward Laplacian remain exact, but they are written for one
+operator~\cite{Li2024forwardLaplacian,Gao2023folx}. Taylor-mode automatic
+differentiation returns all directional derivatives of a chosen order along one
+vector in a single forward sweep~\cite{Bettencourt2019,Griewank2008}. Every
+partial of that order is a linear combination of such sweeps, so the cost is
+the number of vectors.
 
-Taylor-mode automatic differentiation returns all directional derivatives of a
-chosen order along one vector in a single forward
-sweep~\cite{Bettencourt2019,Griewank2008}. Every derivative of that order is a
-linear combination of such sweeps, so the cost is the number of vectors. The
-order-$p$ directional Taylor coefficient is a homogeneous polynomial in the
-direction, and $\partial^{\nu}u$ is one monomial coefficient of that
-polynomial, so a linear combination of directional values is a decomposition of
-a monomial into powers of linear forms. Evaluating along combinations of
-coordinate axes recovers the derivative; the shortest number of directions,
-for one multi-index $\nu$ of order $p$, is the Waring rank of the corresponding
-monomial, known in closed form over $\C$. A roots-of-unity formula attains the
-rank.
-
-We evaluate the formula with a batched Taylor jet and a closed-form adjoint.
-Against nested automatic differentiation the values and parameter gradients
-match in double precision, and the time and memory of one evaluation fall as
-the order grows.
+We recover $\partial^{\nu}u$ as such a combination. The order-$p$ directional
+Taylor coefficient is a homogeneous polynomial in the direction, and
+$\partial^{\nu}u$ is one monomial coefficient of that polynomial, so the
+combination is a decomposition of a monomial into powers of linear forms. The
+shortest number of directions, for one multi-index $\nu$ of order $p$, is the
+Waring rank of the corresponding monomial, known in closed form over $\C$. A
+roots-of-unity formula attains the rank. We evaluate the formula with a batched
+Taylor jet and a closed-form adjoint. Against nested automatic differentiation
+the values and parameter gradients match in double precision, and the time and
+memory of one evaluation fall as the order grows.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor mode.
