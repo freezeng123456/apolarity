@@ -98,14 +98,18 @@
   systems. Nested automatic differentiation evaluates them exactly, but the
   computational graph grows with every additional coordinate derivative, while
   finite differences and randomized estimators avoid the nesting at the price
-  of a step size or a sampling variance. Taylor mode returns the directional
-  Taylor coefficients of a given order in one sweep, so any partial of that
-  order is a linear combination of those directional values. We show that the
-  shortest such combination is the Waring decomposition of the corresponding
-  monomial, and we give a roots-of-unity formula that attains this length. A
-  batched Taylor jet evaluates the formula; compared with nested automatic
-  differentiation, it reproduces the same values in double precision, and the
-  time and memory of one evaluation fall as the derivative order grows.
+  of a step size or a sampling variance. Taylor-mode automatic differentiation
+  propagates a truncated Taylor series along one direction through the
+  computation in a single forward pass, and returns the directional
+  derivatives of that order. Any partial of the same order can then be
+  recovered by a linear combination of those directional derivatives,
+  evaluated along several directions. We show that the shortest combination
+  for one partial is the Waring decomposition of the corresponding monomial,
+  and we give a roots-of-unity formula that attains this length. We evaluate
+  the formula by applying Taylor mode along those directions in batch;
+  compared with nested automatic differentiation, the values agree in double
+  precision, and the time and memory of one evaluation fall as the derivative
+  order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -132,10 +136,12 @@ Nested reverse-mode automatic differentiation evaluates them exactly, but the
 stored graph grows with the order~\cite{Griewank2008}, while finite differences
 and randomized estimators avoid that nesting at the price of a step size or a
 sampling variance~\cite{Chiu2022CAN,Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}.
-Taylor mode returns all directional derivatives of a chosen order along one
-vector in a single forward sweep~\cite{Bettencourt2019,Griewank2008}, so any
-partial of that order is a linear combination of those sweeps, at a cost
-equal to the number of vectors.
+Taylor-mode automatic differentiation propagates a truncated Taylor series
+along one direction through the computation in a single forward
+pass~\cite{Bettencourt2019,Griewank2008}, returning the directional
+derivatives of that order. Any partial of the same order can then be
+recovered by a linear combination of those directional derivatives,
+evaluated along several directions, at a cost equal to the number of directions.
 
 We recover each partial from such a combination. The order-$p$ directional
 Taylor coefficient is a homogeneous polynomial in the direction, and
