@@ -93,33 +93,30 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Evaluating one prescribed high-order mixed partial derivative of a neural
-  surrogate is a recurring cost in scientific computing, and the price of an
-  evaluation is set by how many passes through the model it takes.
-  Repeated automatic differentiation is exact but nests, numerical
-  differentiation trades exactness for a step size, and randomized estimators
-  trade it for variance.
+  High-order mixed derivatives of a neural surrogate are required whenever a
+  differential operator is evaluated on a learned map, as in residual training
+  of physics-informed neural networks. Nested automatic differentiation computes
+  these derivatives exactly, but each additional coordinate derivative deepens
+  the computational graph. Finite-difference stencils and randomized estimators
+  avoid that nesting only by introducing a step size or a sampling variance.
   Taylor-mode automatic differentiation removes the nesting by propagating
-  truncated Taylor coefficients along one direction at a time, which leaves
-  open how many directions a prescribed derivative needs.
-  We settle that question for a single mixed partial.
-  For a fixed order the directional Taylor coefficients form a homogeneous
-  polynomial in the direction, so extracting one mixed derivative extracts one
-  of its coefficients, and a directional formula is a decomposition of a
-  monomial into powers of linear forms.
-  The shortest formula therefore has as many terms as the Waring rank of that
-  monomial, which is known in closed form over the complex numbers and is
-  attained by a roots-of-unity construction that requires no linear solve.
-  The construction is local to one multi-index: it is a minimum for that
-  derivative and makes no claim for a sum of several.
-  Realized as one batched Taylor jet with a closed-form adjoint, the schedule
-  becomes a derivative backend that is algebraically exact, differentiable in
-  the model parameters, and able to take complex directions.
-  Double-precision tests reproduce nested automatic differentiation for values
-  and for parameter gradients.
-  In training runs where the derivative backend is the only quantity that
-  varies, the schedule reduces the time and the memory of one optimizer step as
-  the derivative order grows.
+  truncated Taylor coefficients along one direction at a time; the remaining
+  question is how many such directions a prescribed mixed partial requires. In
+  this paper we present an exact directional Taylor-jet schedule for a single
+  mixed partial of fixed order. We show that the shortest schedule has as many
+  directions as the Waring rank of the associated monomial, a quantity known in
+  closed form over the complex numbers, and that a roots-of-unity construction
+  attains this length without a linear solve. The construction is local to one
+  multi-index: a sum of mixed partials is evaluated term by term, with no claim
+  of joint optimality.
+  Combined with a batched Taylor jet and a closed-form adjoint, the schedule is
+  algebraically exact, differentiable with respect to the network parameters,
+  and able to take complex directions. The effectiveness of the proposed
+  schedule is demonstrated in a controlled comparison with nested automatic
+  differentiation. The two backends agree in double precision for derivative
+  values and for parameter gradients, and, when the derivative backend is the
+  only quantity that varies, the schedule reduces the time and the memory of one
+  optimizer step as the derivative order grows.
 \end{abstract}
 
 \begin{keywords}
