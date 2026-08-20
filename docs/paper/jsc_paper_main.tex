@@ -93,19 +93,19 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  A high-order residual is built from high-order partial derivatives of the
-  unknown. Nested automatic differentiation computes those derivatives exactly,
-  but the computational graph deepens with every additional coordinate
-  derivative. Finite differences and randomized estimators replace the nesting
-  by a step size or a sampling variance. Taylor mode propagates truncated Taylor
-  coefficients along one direction at a time, so the cost is the number of
-  directions needed to recover one derivative. That number is the Waring rank of
-  the corresponding monomial, known in closed form over the complex numbers, and
-  a roots-of-unity formula attains it. We evaluate the formula with a batched
-  Taylor jet and a closed-form adjoint. Against nested automatic differentiation
-  on the same collocation residual, values and parameter gradients agree in
-  double precision, and the time and memory of one evaluation fall as the
-  derivative order grows.
+  This paper computes one high-order partial derivative of a function from
+  directional Taylor coefficients of the same order. Nested automatic
+  differentiation computes the derivative exactly, but the computational graph
+  deepens with every additional coordinate derivative. Finite differences and
+  randomized estimators replace the nesting by a step size or a sampling
+  variance. Taylor mode propagates truncated Taylor coefficients along one
+  direction at a time, so the cost is the number of directions. For one
+  multi-index that number is the Waring rank of the corresponding monomial,
+  known in closed form over the complex numbers, and a roots-of-unity formula
+  attains it. We evaluate the formula with a batched Taylor jet and a
+  closed-form adjoint. Against nested automatic differentiation in double
+  precision, values and parameter gradients agree, and the time and memory of
+  one evaluation fall as the derivative order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -116,7 +116,7 @@ apolarity
 \end{keywords}
 
 \begin{AMS}
-65D25, 14N07, 35J40
+65D25, 14N07
 \end{AMS}
 
 \pagestyle{myheadings}
@@ -126,11 +126,11 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-A high-order residual requires high-order partial derivatives of a function
-$u$, taken at many points and at every iteration. Nested reverse-mode automatic
-differentiation computes them by composing coordinate derivatives, and the
-stored graph grows with the order~\cite{Griewank2008}. Finite differences
-introduce a step size~\cite{Chiu2022CAN}. Randomized estimators introduce
+This paper computes one high-order partial $\partial^{\nu}u$ from directional
+derivatives of exact order. Nested reverse-mode automatic differentiation
+composes coordinate derivatives, and the stored graph grows with the
+order~\cite{Griewank2008}. Finite differences introduce a step
+size~\cite{Chiu2022CAN}. Randomized estimators introduce
 variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}. Recurrences such as the
 forward Laplacian remain exact, but they are written for one
 operator~\cite{Li2024forwardLaplacian,Gao2023folx}.
@@ -149,16 +149,16 @@ monomial, known in closed form over $\C$. A roots-of-unity formula attains the
 rank.
 
 We evaluate the formula with a batched Taylor jet and a closed-form adjoint.
-On collocation residuals the values and parameter gradients match nested
-automatic differentiation in double precision, and the time and memory of one
-evaluation fall as the order grows.
+Against nested automatic differentiation the values and parameter gradients
+match in double precision, and the time and memory of one evaluation fall as
+the order grows.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor mode.
 Section~\ref{sec_formulation} proves that the shortest directional formula is a
 monomial Waring decomposition and records the algorithm.
 Section~\ref{sec_experiments} compares the implementation with nested automatic
-differentiation on collocation residuals. Section~\ref{sec_concl} concludes.
+differentiation. Section~\ref{sec_concl} concludes.
 The roots-of-unity filter, the schedules used in the experiments, and the
 apolar form of the rank bound are collected in Appendix~\ref{sec_schedules}.
 
@@ -177,17 +177,17 @@ we differentiate the value with respect to $\theta$. The same derivative is
 required at many points on every step, so the cost that matters is one
 evaluation, amortized over a batch.
 
-Section~\ref{sec_experiments} measures that cost on collocation residuals of a
-boundary-value problem~\cite{Raissi2019,Karniadakis2021}. Let $\Omega \subset
-\R^{d}$ be a bounded domain with boundary $\Gamma := \partial\Omega$, and
-consider
+A differential operator of order $p$ is a linear combination of monomials
+$\partial^{\alpha}$. Section~\ref{sec_experiments} times the method on
+repeated evaluations of such an operator. Let $\Omega \subset \R^{d}$ be a
+bounded domain with boundary $\Gamma := \partial\Omega$, and consider
 \begin{equation}\label{eq_pde}
     \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
 \end{equation}
-with $\mathcal{P}$ a differential operator of order $p$ and $\mathcal{B}$ the
-boundary conditions. Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset
-\Omega$ and boundary points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, a
-collocation fit of \eqref{eq_pde} minimizes
+with $\mathcal{P}$ of order $p$ and $\mathcal{B}$ the boundary conditions.
+Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary
+points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, a collocation
+fit~\cite{Raissi2019,Karniadakis2021} of \eqref{eq_pde} minimizes
 \begin{equation}\label{eq_pinn_loss}
     \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
 \end{equation}
@@ -830,8 +830,9 @@ Combined with a batched Taylor jet and a closed-form vector-Jacobian product,
 the schedule evaluates the derivative exactly and remains differentiable in
 $\theta$. Double-precision tests reproduce nested automatic differentiation for
 values and for parameter gradients through order six. Measured against nested
-differentiation on collocation residuals where nothing else varies, the schedule
-reduces the time of one evaluation by factors of about $1.4$, $2.3$, and $4.1$
+differentiation, with the function, the loss, and the optimizer held fixed, the
+schedule reduces the time of one evaluation by factors of about $1.4$, $2.3$,
+and $4.1$
 at derivative orders two, four, and six, and its peak memory by about $1.5$,
 $3.1$, and $6.5$; on the higher-order problems the evaluations thus gained lower
 the error reached within a fixed budget. The two mechanisms behind that growth
