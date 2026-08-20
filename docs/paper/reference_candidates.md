@@ -147,22 +147,111 @@ Cite a short stack so the introduction can say “collocation residuals are one 
 
 ---
 
-## E. Waring rank / apolarity (83–94)
+## E. Algebraic geometry: a small toolkit, not a survey (83–94)
 
-| # | Work | Year | Venue | Seed | Pri. | Why |
-|---|------|------|-------|------|------|-----|
-| 83 | Carlini, Catalisano, Geramita, Waring problem for monomials `(in bib)` | 2012 | J. Algebra | our bib | A | Closed-form rank we use |
-| 84 | Iarrobino and Kanev, *Power Sums, Gorenstein Algebras, and Determinantal Loci* `(in bib)` | 1999 | Springer LNM | CCG 2012 | A | Apolarity |
-| 85 | Landsberg, *Tensors: Geometry and Applications* `(in bib)` | 2012 | AMS GSM | CCG 2012 | B | Waring / tensor rank |
-| 86 | Alexander and Hirschowitz, Polynomial interpolation in several variables | 1995 | J. Algebraic Geom. | CCG 2012 | B | Generic Waring rank |
-| 87 | Geramita, Inverse systems of fat points | 1996 | Queen’s Papers | CCG 2012 | B | Apolarity lemma |
-| 88 | Reznick, Sums of even powers of real linear forms | 1992 | Mem. AMS | CCG 2012 | B | Real Waring |
-| 89 | Comon, Golub, Lim, Mourrain, Symmetric tensors and symmetric tensor rank | 2008 | SIAM J. Matrix Anal. Appl. | Landsberg / CCG line | B | Computational Waring |
-| 90 | Carlini, Reducing the number of variables of a polynomial | 2006 | Algebraic Geometry and Geometric Modeling | CCG 2012 | C | Essential variables |
-| 91 | Ranestad and Schreyer, On the rank of a symmetric form | 2011 | J. Algebra | CCG 2012 | B | Rank vs border rank |
-| 92 | Buczyńska and Buczyński, Secant varieties to high-degree Veronese reembeddings, catalecticant matrices and polarizations | 2014 | J. Symbolic Comput. | CCG line | C | Apolar scheme |
-| 93 | Tevelev, Projective duality and homogeneous spaces | 2005 | Springer | CCG line | C | Duality / apolarity |
-| 94 | Sylvester, On a remarkable discovery in the theory of canonical forms | 1851 | Phil. Mag. | CCG 2012 (historical) | C | Binary Waring |
+The computational list above is large because the methods paragraph has to
+name competing evaluators. Algebraic geometry is the opposite: the paper
+uses **one** closed-form rank and a one-paragraph apolarity sketch. Cite
+six to eight works, not twelve. CCG is a tool; the contribution is the
+identification of a directional derivative schedule with a monomial Waring
+decomposition, plus the jet comparison with nested AD.
+
+### What the manuscript actually uses
+
+- Waring rank of a homogeneous polynomial (Definition 3.1), allowing
+  scalar coefficients so that the same definition works over \(\mathbb{R}\)
+  and \(\mathbb{C}\).
+- The identification: a directional schedule for \(\partial^\nu u\) is
+  exactly a Waring decomposition of \(p!\,z^a\).
+- Complex monomial rank \(R_{\mathbb{C}}(z^a)=\prod_{j=1}^n(a_j+1)\), the
+  theorem of Carlini–Catalisano–Geramita.
+- The explicit roots-of-unity schedule (CCG Corollary 3.8, with
+  coefficients written out as in Buczyńska–Buczyński–Teitler).
+- Appendix: the apolar ideal of a monomial is the complete intersection
+  \((\partial_0^{a_0+1},\ldots,\partial_n^{a_n+1})\); a Hilbert-function
+  lower bound; a reduced apolar scheme of that degree.
+- Complex directions when some factor \(U_{m_j}\) with \(j\ge 1\) has
+  \(m_j\ge 3\). That is a fact about **this construction**, not a theorem
+  that the real Waring rank is strictly larger.
+
+### What the manuscript does not use
+
+Alexander–Hirschowitz generic rank; border rank; cactus versus Waring
+rank; uniqueness of decompositions / \(\mathrm{VSP}\); Segre varieties;
+the 1851 binary history; Veronese secants as a topic. Do not cite those
+unless a later remark actually needs them.
+
+A caution on Ranestad–Schreyer 2011: their Hilbert-type bound is for the
+length of an **arbitrary** (not necessarily reduced) apolar scheme, and
+for a monomial \(x_0^{a_0}\cdots x_n^{a_n}\) with \(a_0\le\cdots\le a_n\)
+it omits the **largest** exponent. CCG’s Waring rank omits the
+**smallest**. The two numbers agree only when all exponents are equal
+(e.g.\ \(xyz^2\) has Waring rank 6 and cactus bound 4). Citing RS2011 in
+the appendix without that distinction would make the lower bound look
+wrong. Skip it unless the appendix is rewritten to say cactus versus
+rank, which a JCP paper does not need.
+
+### Where a cite may appear
+
+- Abstract: the word “Waring”, no citation.
+- Introduction: **at most two sentences**. Name the invariant, point to
+  CCG for the length, and send the apolarity argument to the appendix.
+  Do not open an algebraic-geometry paragraph, and do not mention
+  Veronese varieties or generic rank.
+- Section 3, definition: one SIAM-facing pointer that Waring rank is
+  symmetric-tensor rank.
+- Theorem 3.1(ii): CCG for the length; Buczyńska–Buczyński–Teitler as
+  “see also”, not as the source of the formula.
+- Appendix: Iarrobino–Kanev (and Landsberg) for the general apolar
+  characterization; CCG for the monomial complete intersection.
+
+### Pick list
+
+Already in the `.bib`: 83–85. Add 89 and 92. The rest stay out unless
+you promote them.
+
+| # | Work | Year | Venue | Role | Pri. |
+|---|------|------|-------|------|------|
+| 83 | Carlini, Catalisano, Geramita, The solution to the Waring problem for monomials `(in bib)` | 2012 | J. Algebra | Length formula and the roots-of-unity points | **must** |
+| 84 | Iarrobino and Kanev, *Power Sums, Gorenstein Algebras, and Determinantal Loci* `(in bib)` | 1999 | Springer LNM | Apolarity / inverse systems in the appendix | **must** |
+| 85 | Landsberg, *Tensors: Geometry and Applications* `(in bib)` | 2012 | AMS GSM | Textbook name for Waring / symmetric rank | **must** |
+| 89 | Comon, Golub, Lim, Mourrain, Symmetric tensors and symmetric tensor rank | 2008 | SIMAX | SIAM-facing definition at Def. 3.1 or in the intro clause | **add** |
+| 92 | Buczyńska, Buczyński, Teitler, Waring decompositions of monomials | 2013 | J. Algebra | Sibling of CCG: every monomial decomposition comes from a complete intersection; they write the roots-of-unity coefficients. Cite as “see also”, never as the rank formula | **add** |
+| 87 | Geramita, Inverse systems of fat points | 1996 | Queen’s Papers, vol. 102 | The path CCG names; IK already covers the same ground and is easier to cite in JCP | optional |
+| 93 | Landsberg and Teitler, On the ranks and border ranks of symmetric tensors | 2010 | FoCM | A few monomial ranks before CCG (\(xyz\), \(xyzw\), \(xyz^2\)). Cite only if a historical “some cases were known” sentence is wanted | optional |
+| 91 | Ranestad and Schreyer, On the rank of a symmetric form | 2011 | J. Algebra | Hilbert / cactus lower bound. Skip unless the appendix discusses cactus rank | skip by default |
+| 86 | Alexander and Hirschowitz, Polynomial interpolation in several variables | 1995 | J. Algebraic Geom. | Generic Waring rank. One contrast sentence at most; default is omit | skip |
+| 90 | Reznick, Sums of even powers of real linear forms | 1992 | Mem. AMS | Real Waring. Cite only if we compute or bound \(R_{\mathbb{R}}\). Complex roots of unity in the construction do not need this | skip |
+| 94 | Sylvester 1851; Buczyńska–Buczyński 2014 catalecticants (not the monomial paper); Tevelev; Carlini 2006 essential variables; Landsberg–Manivel Segre; Mammana 1954; Arrondo–Bernardi 2011 | — | — | Adjacent to CCG’s bibliography, unused here | skip |
+
+The 2014 Buczyńska–Buczyński paper on catalecticants is **not** the
+monomial-decomposition paper; do not substitute it for 92.
+
+### Proposed prose (for when the introduction is rewritten)
+
+Introduction, one connected pair of sentences, not a new paragraph:
+
+> The shortest combination is a Waring decomposition of the corresponding
+> monomial~\cite{Comon2008,Landsberg2012}. Over \(\mathbb{C}\) that length
+> is known in closed form~\cite{CCG2012}; the apolarity argument behind
+> the lower bound is recalled in the appendix~\cite{IK1999}.
+
+Theorem 3.1(ii), keep the present attribution and add the sibling:
+
+> The value of the complex rank of a monomial is the theorem of Carlini,
+> Catalisano, and Geramita~\cite{CCG2012}; see also
+> Buczyńska, Buczyński, and Teitler~\cite{BBT2013} for the geometry of
+> all such decompositions.
+
+Appendix sentence, keep close to the present one:
+
+> See~\cite{IK1999,Landsberg2012} for the general theory
+> and~\cite{CCG2012} for the monomial case.
+
+That is five cited AG works (83–85, 89, 92). Geramita 1996 or
+Landsberg–Teitler 2010 can join if you want seven; do not grow the list
+past that. Number 92 replaces the 2014 catalecticant paper that stood
+here in the first draft of this file.
 
 ---
 
@@ -187,7 +276,8 @@ From A: 1–5, 8, 13–14.
 From B: 23–29, 36.
 From C: 43, 45–47, 64–65, 68.
 From D: 73–76.
-From E: 83–86, 89.
+From E: 83–85, 89, 92 (CCG, Iarrobino–Kanev, Landsberg, Comon et al.,
+Buczyńska–Buczyński–Teitler). Not Alexander–Hirschowitz.
 From F: 2 is already in A; 100 if a second AD book is wanted.
 
 That is about 35–40 after dropping duplicates. STDE (23) and the bias-variance paper (25) are in this core.
