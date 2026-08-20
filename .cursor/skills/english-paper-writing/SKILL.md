@@ -1,6 +1,6 @@
 ---
 name: english-paper-writing
-description: Write and edit English academic LaTeX manuscripts (JCP/SIAM, docs/paper/*.tex). Use for 写论文, 改 tex, 摘要, 引言, 排版, equation/label/ref, sentence line breaks, and when removing apologetic or AI-flavoured prose. Enforces TeX source conventions and a non-apologetic scientific voice.
+description: Write and edit English academic LaTeX manuscripts (JCP/SIAM, docs/paper/*.tex). Use for 写论文, 改 tex, 摘要, 引言, 排版, equation/label/ref, source wrapping, and when removing apologetic or AI-flavoured prose. Enforces TeX source conventions and a non-apologetic scientific voice.
 paths:
   - "**/*.tex"
   - "docs/paper/**"
@@ -114,11 +114,14 @@ structure, or citation style.
 
 ### Line breaks
 
-- Start a new source line at the beginning of a sentence.
-- Do not break a sentence across source lines unless a displayed equation
-  interrupts it.
-- Do not wrap mid-sentence to an 80-column ruler. Sentence-based line
-  breaks are the rule, not paragraph fill.
+- Wrap prose to a consistent source width of 80 columns so the TeX is easy
+  to read in an editor. Break at phrase boundaries (commas, conjunctions,
+  prepositional phrases), not in the middle of a word, a citation, or a
+  math token.
+- Do not require one sentence per source line. A long sentence may occupy
+  several wrapped lines; a short sentence may share the wrap with the next
+  only if the width stays even. Prefer filling to the same column rather
+  than leaving ragged one-word lines.
 - Do not insert a blank line inside a paragraph (that starts a new
   paragraph in LaTeX).
 - Avoid line breaks in the middle of displayed equations.
