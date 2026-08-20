@@ -1,9 +1,10 @@
 # Reference candidates for the JCP manuscript
 
-Target: about 40 cited works in the published paper.
+Target: a short on-theme bibliography, not a 40-paper survey.
 This file lists **100** candidates taken from the bibliographies of the
-seed papers below (not from a generic web search). Pick from here; unused
-entries stay out of `jsc_paper_main.bib`.
+seed papers below (not from a generic web search). The strict list at
+the end is the recommendation; unused entries stay out of
+`jsc_paper_main.bib`.
 
 Seed papers (their reference lists were read):
 
@@ -23,11 +24,8 @@ Seed papers (their reference lists were read):
   (standard citations of that paper)
 - Papers already in `jsc_paper_main.bib`
 
-Priority for the eventual 40:
-
-- **A**: almost certainly cite (method landscape or theorem)
-- **B**: cite if the introduction names that method or PDE
-- **C**: background only; easy to drop
+The 100 rows keep A/B/C labels from the seed pass. The recommendation
+is the strict on-theme list at the end, not every A.
 
 Already in the `.bib` is marked `(in bib)`.
 
@@ -152,9 +150,9 @@ Cite a short stack so the introduction can say “collocation residuals are one 
 The computational list above is large because the methods paragraph has to
 name competing evaluators. Algebraic geometry is the opposite: the paper
 uses **one** closed-form rank and a one-paragraph apolarity sketch. Cite
-six to eight works, not twelve. CCG is a tool; the contribution is the
-identification of a directional derivative schedule with a monomial Waring
-decomposition, plus the jet comparison with nested AD.
+the three works already in the appendix. CCG is a tool; the contribution
+is the identification of a directional derivative schedule with a monomial
+Waring decomposition, plus the jet comparison with nested AD.
 
 ### What the manuscript actually uses
 
@@ -165,8 +163,8 @@ decomposition, plus the jet comparison with nested AD.
   exactly a Waring decomposition of \(p!\,z^a\).
 - Complex monomial rank \(R_{\mathbb{C}}(z^a)=\prod_{j=1}^n(a_j+1)\), the
   theorem of Carlini–Catalisano–Geramita.
-- The explicit roots-of-unity schedule (CCG Corollary 3.8, with
-  coefficients written out as in Buczyńska–Buczyński–Teitler).
+- The explicit roots-of-unity schedule (CCG Corollary 3.8); the
+  coefficients are written in the proof of Theorem 3.1(iii).
 - Appendix: the apolar ideal of a monomial is the complete intersection
   \((\partial_0^{a_0+1},\ldots,\partial_n^{a_n+1})\); a Hilbert-function
   lower bound; a reduced apolar scheme of that degree.
@@ -198,60 +196,46 @@ rank, which a JCP paper does not need.
   CCG for the length, and send the apolarity argument to the appendix.
   Do not open an algebraic-geometry paragraph, and do not mention
   Veronese varieties or generic rank.
-- Section 3, definition: one SIAM-facing pointer that Waring rank is
-  symmetric-tensor rank.
-- Theorem 3.1(ii): CCG for the length; Buczyńska–Buczyński–Teitler as
-  “see also”, not as the source of the formula.
+- Section 3, definition: Landsberg for the name of Waring rank.
+- Theorem 3.1(ii): CCG for the length only.
 - Appendix: Iarrobino–Kanev (and Landsberg) for the general apolar
   characterization; CCG for the monomial complete intersection.
 
 ### Pick list
 
-Already in the `.bib`: 83–85. Add 89 and 92. The rest stay out unless
-you promote them.
+Cite only what the manuscript uses: 83–85, already in the `.bib`.
+Comon 2008 and Buczyńska–Buczyński–Teitler 2013 are the same definition
+and a uniqueness theorem, respectively; both are adjacent, not used.
 
 | # | Work | Year | Venue | Role | Pri. |
 |---|------|------|-------|------|------|
 | 83 | Carlini, Catalisano, Geramita, The solution to the Waring problem for monomials `(in bib)` | 2012 | J. Algebra | Length formula and the roots-of-unity points | **must** |
 | 84 | Iarrobino and Kanev, *Power Sums, Gorenstein Algebras, and Determinantal Loci* `(in bib)` | 1999 | Springer LNM | Apolarity / inverse systems in the appendix | **must** |
-| 85 | Landsberg, *Tensors: Geometry and Applications* `(in bib)` | 2012 | AMS GSM | Textbook name for Waring / symmetric rank | **must** |
-| 89 | Comon, Golub, Lim, Mourrain, Symmetric tensors and symmetric tensor rank | 2008 | SIMAX | SIAM-facing definition at Def. 3.1 or in the intro clause | **add** |
-| 92 | Buczyńska, Buczyński, Teitler, Waring decompositions of monomials | 2013 | J. Algebra | Sibling of CCG: every monomial decomposition comes from a complete intersection; they write the roots-of-unity coefficients. Cite as “see also”, never as the rank formula | **add** |
-| 87 | Geramita, Inverse systems of fat points | 1996 | Queen’s Papers, vol. 102 | The path CCG names; IK already covers the same ground and is easier to cite in JCP | optional |
-| 93 | Landsberg and Teitler, On the ranks and border ranks of symmetric tensors | 2010 | FoCM | A few monomial ranks before CCG (\(xyz\), \(xyzw\), \(xyz^2\)). Cite only if a historical “some cases were known” sentence is wanted | optional |
-| 91 | Ranestad and Schreyer, On the rank of a symmetric form | 2011 | J. Algebra | Hilbert / cactus lower bound. Skip unless the appendix discusses cactus rank | skip by default |
-| 86 | Alexander and Hirschowitz, Polynomial interpolation in several variables | 1995 | J. Algebraic Geom. | Generic Waring rank. One contrast sentence at most; default is omit | skip |
-| 90 | Reznick, Sums of even powers of real linear forms | 1992 | Mem. AMS | Real Waring. Cite only if we compute or bound \(R_{\mathbb{R}}\). Complex roots of unity in the construction do not need this | skip |
-| 94 | Sylvester 1851; Buczyńska–Buczyński 2014 catalecticants (not the monomial paper); Tevelev; Carlini 2006 essential variables; Landsberg–Manivel Segre; Mammana 1954; Arrondo–Bernardi 2011 | — | — | Adjacent to CCG’s bibliography, unused here | skip |
-
-The 2014 Buczyńska–Buczyński paper on catalecticants is **not** the
-monomial-decomposition paper; do not substitute it for 92.
+| 85 | Landsberg, *Tensors: Geometry and Applications* `(in bib)` | 2012 | AMS GSM | Name of Waring rank; general theory with IK | **must** |
+| 89 | Comon, Golub, Lim, Mourrain, Symmetric tensors and symmetric tensor rank | 2008 | SIMAX | Same definition as Landsberg, SIAM duplicate | skip |
+| 92 | Buczyńska, Buczyński, Teitler, Waring decompositions of monomials | 2013 | J. Algebra | Geometry of all decompositions; we do not use uniqueness | skip |
+| 87 | Geramita, Inverse systems of fat points | 1996 | Queen’s Papers, vol. 102 | Same ground as IK | skip |
+| 93 | Landsberg and Teitler, On the ranks and border ranks of symmetric tensors | 2010 | FoCM | Special monomial ranks before CCG | skip |
+| 91 | Ranestad and Schreyer, On the rank of a symmetric form | 2011 | J. Algebra | Cactus bound, not our Waring length | skip |
+| 86 | Alexander and Hirschowitz, Polynomial interpolation in several variables | 1995 | J. Algebraic Geom. | Generic Waring rank | skip |
+| 90 | Reznick, Sums of even powers of real linear forms | 1992 | Mem. AMS | Real Waring; we do not bound \(R_{\mathbb{R}}\) | skip |
+| 94 | Sylvester 1851; Buczyńska–Buczyński 2014 catalecticants; Tevelev; Carlini 2006; Landsberg–Manivel Segre; Mammana 1954; Arrondo–Bernardi 2011 | — | — | Unused neighbours of CCG | skip |
 
 ### Proposed prose (for when the introduction is rewritten)
 
 Introduction, one connected pair of sentences, not a new paragraph:
 
 > The shortest combination is a Waring decomposition of the corresponding
-> monomial~\cite{Comon2008,Landsberg2012}. Over \(\mathbb{C}\) that length
-> is known in closed form~\cite{CCG2012}; the apolarity argument behind
-> the lower bound is recalled in the appendix~\cite{IK1999}.
+> monomial~\cite{Landsberg2012}. Over \(\mathbb{C}\) that length is known
+> in closed form~\cite{CCG2012}; the apolarity argument behind the lower
+> bound is recalled in the appendix~\cite{IK1999}.
 
-Theorem 3.1(ii), keep the present attribution and add the sibling:
+Theorem 3.1(ii), keep the present attribution to CCG only.
 
-> The value of the complex rank of a monomial is the theorem of Carlini,
-> Catalisano, and Geramita~\cite{CCG2012}; see also
-> Buczyńska, Buczyński, and Teitler~\cite{BBT2013} for the geometry of
-> all such decompositions.
-
-Appendix sentence, keep close to the present one:
+Appendix sentence, keep the present one:
 
 > See~\cite{IK1999,Landsberg2012} for the general theory
 > and~\cite{CCG2012} for the monomial case.
-
-That is five cited AG works (83–85, 89, 92). Geramita 1996 or
-Landsberg–Teitler 2010 can join if you want seven; do not grow the list
-past that. Number 92 replaces the 2014 catalecticant paper that stood
-here in the first draft of this file.
 
 ---
 
@@ -268,28 +252,59 @@ here in the first draft of this file.
 
 ---
 
-## Suggested core of ~40 (starting point, not a lock)
+## Strict on-theme list (supersedes the ~40 sketch)
 
-If we had to freeze a list tomorrow, the **A** rows plus a few **B**s would be:
+The 100 rows above are a pool taken from seed bibliographies. The theme
+of the manuscript is narrower: exact evaluation of **one** high-order
+partial from order-\(p\) directional Taylor coefficients; the shortest
+linear combination is the Waring rank of the corresponding monomial;
+the comparison is a Taylor jet against nested AD. Cite a paper only if
+it does one of those things, or is the named competing evaluator
+(nested AD, finite differences, a randomized estimator of the same
+derivatives, Taylor-mode interpolation of the full tensor, or an exact
+recurrence for one operator).
 
-From A: 1–5, 8, 13–14.
-From B: 23–29, 36.
-From C: 43, 45–47, 64–65, 68.
-From D: 73–76.
-From E: 83–85, 89, 92 (CCG, Iarrobino–Kanev, Landsberg, Comon et al.,
-Buczyńska–Buczyński–Teitler). Not Alexander–Hirschowitz.
-From F: 2 is already in A; 100 if a second AD book is wanted.
+### Cite (12)
 
-That is about 35–40 after dropping duplicates. STDE (23) and the bias-variance paper (25) are in this core.
+Already in the `.bib` except that Griewank–Utke–Walther 2000 still
+needs an entry. Hu 2025 is in the `.bib` but not yet cited.
 
-## How those two enter the introduction (when we write it)
+| # | Work | Why it is on theme |
+|---|------|--------------------|
+| 1 | Griewank and Walther 2008 | Nested reverse mode and Taylor arithmetic; the exact evaluator we time against, and the book that defines the Taylor jet |
+| 2 | Griewank, Utke, Walther 2000 | Recovers mixed partials from a family of univariate Taylor series. That is the existing combination; this paper asks for the shortest combination for **one** monomial |
+| 3 | Bettencourt, Johnson, Duvenaud 2019 | The Taylor-mode jet we run |
+| 14 | Li et al., Forward Laplacian 2024 | Exact high-order operator by a structured forward recurrence. Neighbour: they fix an operator, we fix a monomial |
+| 36 | Chiu et al., CAN-PINN 2022 | Finite differences coupled with AD; the step-size alternative named in the abstract |
+| 24 | Hu, Shi, Karniadakis, Kawaguchi, HTE 2024 | Hutchinson on high-order operators, with Taylor-mode Hessian-vector products |
+| 26 | He et al. 2023 | Stein / Gaussian smoothing so that a high-order residual does not use stacked reverse mode |
+| 25 | Hu, Yang, Wang, Karniadakis, Kawaguchi 2025 | Bias-variance of randomized smoothing on those residuals; JCP |
+| 23 | Shi, Hu, Lin, Kawaguchi, STDE 2024 | Random contraction of the order-\(p\) tensor from Taylor-mode tangents. Direct counterpart: they estimate an arbitrary contraction; we give the deterministic minimum for one multi-index |
+| 83 | Carlini, Catalisano, Geramita 2012 | The complex monomial rank we use |
+| 84 | Iarrobino and Kanev 1999 | Apolarity in the appendix |
+| 85 | Landsberg 2012 | The name of Waring rank; general theory with IK |
 
-Do not dump PINN training. One connected methods paragraph:
+### One extra, only if Section 2 still writes the collocation residual
+
+| # | Work | Why |
+|---|------|-----|
+| 43 | Raissi, Perdikaris, Karniadakis 2019 | Defines the residual that requests the derivatives. Not a method paper for us; keep it out of the introduction |
+
+### Do not cite (the previous ~40 inflators)
+
+- **Same fact, second pointer:** Bischof et al. 1993 (univariate Taylor, already 2); Neidinger 1992 (multivariate Taylor, not our jet); Baydin 2018 (AD in ML); Naumann 2012 (second AD book); Comon et al. 2008 (Waring = symmetric rank, already Landsberg); DOF 2024 and folx (Forward Laplacian again); Hutchinson 1989 and Stein 1981 (HTE and He already instantiate them).
+- **PINN training / architecture / high-dim solvers:** Karniadakis 2021 review; DGM; Deep Ritz; Deep BSDE; XPINN; adaptive activations; SIREN; Fourier features; PINNacle; GPINN; Deep splitting; Huré et al.; FermiNet / PauliNet. Networks here only time the evaluator.
+- **Randomized, but not an estimator of a given partial:** SDGD (random coordinates for training); Hutch++; Cohen randomized smoothing for adversarial robustness; score matching.
+- **PDE name-dropping:** Vahab biharmonic PINN; Jiang Maxwell DeepONet; Ciarlet plates; Evans textbook. The abstract may name polyharmonic / Helmholtz / Maxwell without those papers. Gazzola is a genuine polyharmonic reference if a PDE cite is required; it is not required to state that high-order derivatives appear.
+- **Algebraic geometry we do not use:** Alexander–Hirschowitz; Ranestad–Schreyer (cactus, wrong product); Buczyńska–Buczyński–Teitler (uniqueness of decompositions); Geramita 1996; Landsberg–Teitler 2010; Reznick real Waring; Sylvester 1851.
+
+### How the twelve enter the introduction
+
+One connected methods paragraph, then the Waring sentence:
 
 - Nested reverse mode grows with order (1).
 - Finite differences / CAN-PINN replace nesting by a step (36).
-- Hutchinson / HTE (24, 28), SDGD (27), Stein / randomized smoothing (26, 29), and the bias-variance analysis of RS-PINN (25) estimate a residual by sampling; they are unbiased or biased according to that analysis, and the variance is a budget.
-- STDE (23) is the randomized method that already uses Taylor-mode tangents: it estimates an *arbitrary contraction* of the derivative tensor.
-- This paper does the deterministic opposite for *one* monomial: shortest exact linear combination, Waring length.
-
-Pick, cut, or promote rows; the next edit of the introduction will cite only the chosen ~40.
+- HTE (24), Stein / randomized smoothing (26), and the bias-variance analysis of that smoothing (25) estimate a residual by sampling.
+- STDE (23) already uses Taylor-mode tangents, and estimates an arbitrary contraction of the derivative tensor.
+- Taylor mode itself is a univariate jet (1, 3); Griewank–Utke–Walther (2) interpolate the full tensor from several such jets; Forward Laplacian (14) is an exact recurrence for one operator.
+- This paper: shortest exact combination for one monomial, length CCG (83), apolarity in the appendix (84, 85).
