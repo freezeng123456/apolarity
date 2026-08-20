@@ -1,7 +1,5 @@
 %% jsc_paper_main.tex
 %% Rank-optimal directional Taylor jets for high-order derivatives
-%% Neural networks appear only as the collocation workload used to time the
-%% schedule against nested automatic differentiation.
 %%
 %% Target journal: Journal of Computational Physics
 %% Document class: siamltex (SIAM)
@@ -95,22 +93,21 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  A prescribed monomial derivative is one term in a high-order residual in
-  several variables, as in a polyharmonic operator. Nested automatic
-  differentiation computes it exactly, but each additional coordinate derivative
-  deepens the computational graph. Finite differences and randomized estimators
-  avoid that nesting only by introducing a step size or a sampling variance.
-  Taylor-mode automatic differentiation removes the nesting by propagating
-  truncated Taylor coefficients along one direction at a time. The cost is then
-  the number of directions needed for that derivative. We construct a
-  directional Taylor-jet schedule whose length equals the Waring rank of the
-  associated monomial, which is known in closed form over the complex numbers,
-  and we realize it by a roots-of-unity formula together with a batched Taylor
-  jet and a closed-form adjoint. The directional identity is algebraically exact
-  and admits complex directions. Compared with nested automatic differentiation
-  on the same collocation residual in double precision, the two methods agree
-  for derivative values and for parameter gradients, and the schedule reduces
-  the time and the memory of one evaluation as the derivative order grows.
+  High-order residuals in several variables are sums of partial derivatives.
+  Nested automatic differentiation computes each derivative exactly, but each
+  additional coordinate derivative deepens the computational graph. Finite
+  differences and randomized estimators avoid that nesting only by introducing a
+  step size or a sampling variance. Taylor-mode automatic differentiation
+  removes the nesting by propagating truncated Taylor coefficients along one
+  direction at a time. The cost is then the number of directions needed for a
+  given partial. We construct a directional Taylor-jet schedule whose length
+  equals the Waring rank of the associated monomial, which is known in closed
+  form over the complex numbers, and we realize it by a roots-of-unity formula
+  together with a batched Taylor jet and a closed-form adjoint. The formula is
+  exact in exact arithmetic. Compared with nested automatic differentiation on
+  the same collocation residual in double precision, the two methods agree for
+  derivative values and for parameter gradients, and the schedule reduces the
+  time and the memory of one evaluation as the derivative order grows.
 \end{abstract}
 
 \begin{keywords}
@@ -131,15 +128,13 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-High-order residuals in several variables are assembled from monomial
-derivatives. Each monomial is evaluated repeatedly, at many points, on one
-composition that can be probed along arbitrary directions, and the cost of those
-evaluations grows with the order of the derivative and with the depth of the
-composition.
+A high-order residual in several variables is a sum of partial derivatives of a
+function. Those derivatives are taken repeatedly, at many points, and the cost
+grows with the order of the derivative and with the depth of the function.
 
 The exact methods are classical, and each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
-Finite differences are insensitive to the internal structure of the composition,
+Finite differences are insensitive to the internal structure of the function,
 but they introduce a step size, and both truncation and cancellation become more
 severe as the order rises~\cite{Chiu2022CAN}. Automatic differentiation
 differentiates the evaluation procedure itself~\cite{Griewank2008}. Reverse mode
@@ -155,36 +150,29 @@ Randomized estimators replace a derivative by an expectation and scale to high
 dimension at the price of
 variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}. Operator-specific
 recurrences, such as the forward Laplacian, keep exactness but are tied to the
-operator they were designed for~\cite{Li2024forwardLaplacian,Gao2023folx}. The
-problem treated here is the evaluation of one prescribed monomial derivative,
-computed exactly, of a composition that can be evaluated along arbitrary
-directions.
+operator they were designed for~\cite{Li2024forwardLaplacian,Gao2023folx}. This
+paper computes one partial $\partial^{\nu}u$ from directional derivatives of
+exact order.
 
-Taylor mode computes the directional derivative it is given. It does not say how
-many directions a prescribed monomial needs. Elementary reconstructions exist,
-obtained by evaluating along combinations of coordinate axes, but a formula
-written by hand does not certify that a shorter one is impossible. The question
-is therefore the minimum: for one multi-index, of one order, what is the
-smallest number of directional Taylor evaluations that recover it exactly, and
-which directions attain that bound?
+Taylor mode returns the directional derivative it is given. It does not say how
+many directions recover a given partial. Elementary reconstructions exist,
+obtained by evaluating along combinations of coordinate axes, but they do not
+show that a shorter formula is impossible. The question is the minimum: for one
+multi-index, of one order, how few directional Taylor evaluations recover it
+exactly, and which directions attain that bound?
 
-The directional Taylor coefficient of a fixed order is a homogeneous polynomial
-in the direction. Extracting the target derivative is extracting one monomial
-coefficient of that polynomial, so a directional formula is a decomposition of
-a monomial into powers of linear forms. The length of a shortest formula is the
-Waring rank of that monomial, which the algebraic-geometry literature has
-evaluated in closed form over the complex numbers. A roots-of-unity construction
-attains the rank. Because the rank is a minimum, no shorter linear combination
+The order-$p$ directional Taylor coefficient is a homogeneous polynomial in the
+direction. The partial $\partial^{\nu}u$ is one monomial coefficient of that
+polynomial, so a directional formula is a decomposition of a monomial into
+powers of linear forms. The length of a shortest formula is the Waring rank of
+that monomial, which is known in closed form over the complex numbers. A
+roots-of-unity construction attains the rank, and no shorter linear combination
 of order-$p$ directional Taylor coefficients exists.
 
-We identify that shortest formula with the monomial Waring rank, and we give the
-roots-of-unity schedule that attains it. The schedule is realized as a batched
-Taylor jet through an entire activation, with a closed-form adjoint so that the
-result remains differentiable in the parameters of the composition. The
-experiments compare this method with nested automatic differentiation on
-otherwise identical collocation residuals: the two agree in double precision,
-and the reduction in the number of directions appears as a reduction in time
-and memory.
+We evaluate the roots-of-unity formula with a batched Taylor jet and a
+closed-form adjoint. On collocation residuals the method agrees with nested
+automatic differentiation in double precision, and the reduction in the number
+of directions appears as a reduction in time and memory.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor-mode directional
@@ -204,16 +192,14 @@ Appendix~\ref{sec_schedules}.
 
 \subsection{The evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be a
-parameterized composition, smooth in its inputs. Let $\nu = (\nu_{1}, \ldots,
-\nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and
-write $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the
-associated derivative. The task is the evaluation of $\dal u_{\theta}$ at a
-given point. The value must be algebraically exact, and it must remain
-differentiable in $\theta$. The multi-index is fixed and prescribed. The
-derivative is evaluated at many points at once and re-evaluated at every step,
-so the cost that matters is one evaluation of one derivative, amortized over a
-batch.
+Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be smooth in its
+inputs. Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a
+multi-index of order $p = \abs{\nu}$, and write $\dal :=
+\partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the corresponding
+derivative. The task is to evaluate $\dal u_{\theta}$ at a given point, exactly,
+and to keep the value differentiable in $\theta$. The same derivative is taken
+at many points and at every step, so the relevant cost is one evaluation,
+amortized over a batch.
 
 Section~\ref{sec_experiments} measures that cost on collocation residuals of a
 boundary-value problem~\cite{Raissi2019,Karniadakis2021}. Let $\Omega \subset
@@ -231,7 +217,7 @@ collocation fit of \eqref{eq_pde} minimizes
 \end{equation}
 Expanding $\mathcal{P}$ into monomials turns one residual evaluation in
 \eqref{eq_pinn_loss} into several derivatives $\partial^{\alpha}u_{\theta}$ of
-the same composition on the same batch. The operator $\Delta^{m}$ expands into
+the same function on the same batch. The operator $\Delta^{m}$ expands into
 $\binom{d+m-1}{m}$ distinct monomials: the pure terms $\partial_{x_{i}}^{2m}$
 and, for $m \ge 2$, mixed terms such as
 $\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
@@ -533,7 +519,7 @@ Three consequences deserve separate mention.
 
 \begin{remark}[Entire activations are essential]\label{rmk_entire}
     The directions \eqref{eq_rou} are complex whenever some factor $U_{m_{j}}$
-    with $j \ge 1$ has $m_{j} \ge 3$, so the composition is then evaluated at
+    with $j \ge 1$ has $m_{j} \ge 3$, so the function is then evaluated at
     complex arguments and its activations must admit a holomorphic extension
     there. The functions $\sinh$ and $\cosh$ are entire, and the recurrence
     \eqref{eq_jet_sinh} is an algebraic identity that holds verbatim on complex
@@ -598,16 +584,15 @@ $(1^{6})$    & $u_{123456}$ & $32$ \\
 
 Algorithm~\ref{alg_waring} assembles the pieces. The schedule \eqref{eq_rou} is
 built once, its directions are stacked into a single batch, and one jet pass
-through the composition returns the order-$p$ coefficient for every direction
-at once; the reported value is then the coefficient-weighted sum. The schedule
-tensors depend on $\nu$, the device, and the scalar type, but not on the
-parameters of the composition. The reference implementation builds them at call
-entry and includes that work in the measured throughput of
-Section~\ref{sec_experiments}, while a caller that reuses one multi-index may
-cache them. For a real-valued composition the conjugate pairing of the roots of
-unity makes the returned value real in exact arithmetic; the implementation
-keeps the complex tensor and takes its real part only when the target PDE is
-real-valued.
+through the function returns the order-$p$ coefficient for every direction at
+once; the reported value is then the coefficient-weighted sum. The schedule
+tensors depend on $\nu$, the device, and the scalar type, but not on $\theta$.
+The reference implementation builds them at call entry and includes that work in
+the measured throughput of Section~\ref{sec_experiments}, while a caller that
+reuses one multi-index may cache them. For a real-valued function the conjugate
+pairing of the roots of unity makes the returned value real in exact arithmetic;
+the implementation keeps the complex tensor and takes its real part only when
+the target PDE is real-valued.
 
 \begin{algorithm}[htbp]
   \caption{Single-monomial $\dal u(\bx)$ from a rank-optimal schedule and one batched Taylor jet.}
@@ -675,7 +660,7 @@ automatic differentiation in double precision, and the time and memory of one
 residual evaluation, including the reverse-mode pass. The first comparison uses
 no PDE. The second repeats the same evaluation inside an otherwise identical
 collocation loop and records the time and memory of one step. Every quantity
-below is a property of the derivative method on a fixed composition, residual,
+below is a property of the derivative method on a fixed function, residual,
 and optimizer.
 
 \subsection{Verification of the derivative backend}\label{sec_num_verify}
@@ -773,8 +758,8 @@ out-of-plane field $E$,
 with $\beta = 0.2$, exact Dirichlet data, $a \in \{2,4,6\}$, and $f =
 [-2(a\pi)^{2}+\kappa^{2}]E_{\star}$. The Maxwell family has a complex-valued
 solution. The measurements already propagate complex tensors through a
-complex-parameter $\sinh$ composition, so a complex residual uses the same jet
-as the real ones. Since both families are of order two, every monomial term of
+complex-parameter $\sinh$ network, so a complex residual uses the same jet as
+the real ones. Since both families are of order two, every monomial term of
 their residuals is a pure power, which the schedule evaluates with a single
 real direction. They therefore isolate the cost of the Taylor jet on one
 direction.
@@ -849,32 +834,29 @@ At order two the extra steps buy little: the two backends track each other in
 panels (b) and (c) of Figure~\ref{fig_v3_history}, and in five of the six
 frequency-swept settings the two means differ by less than one seed standard
 deviation. A cheaper derivative is not by itself a better optimizer, and at low
-order the derivative is not what limits the run. For a prescribed monomial
-derivative the schedule is algebraically exact, and its cost advantage grows
-with the derivative order, in wall time and in memory, with the model, the
-loss, and the optimizer held fixed.
+order the derivative is not what limits the run. The schedule is exact in exact
+arithmetic, and its cost advantage grows with the derivative order, in wall time
+and in memory, with the model, the loss, and the optimizer held fixed.
 
 %% ====================================================================
 %%  SECTION 5: CONCLUSION
 %% ====================================================================
 \section{Conclusion}\label{sec_concl}
 
-Evaluating one prescribed high-order derivative exactly is a question about how
-few directions suffice, and we have shown that it is the Waring problem for the
-associated monomial. The identification is an equivalence rather than a bound:
-a directional formula of a given length exists precisely when the monomial
-decomposes into that many powers of linear forms. The rank formula of
-Carlini, Catalisano, and Geramita then supplies the complex minimum
-\eqref{eq_rank}, and a roots-of-unity construction attains it in closed form.
-Because the rank is a minimum, a shorter linear combination of order-$p$
-directional Taylor coefficients is impossible, and the elementary two-point
-identity for $\partial_{1}\partial_{2}$ is the smallest instance.
+Evaluating a high-order partial exactly is a question of how few directions
+suffice. That question is the Waring problem for the associated monomial: a
+directional formula of a given length exists if and only if the monomial
+decomposes into that many powers of linear forms. The rank formula of Carlini,
+Catalisano, and Geramita then supplies the complex minimum \eqref{eq_rank}, and
+a roots-of-unity construction attains it in closed form. Because the rank is a
+minimum, a shorter linear combination of order-$p$ directional Taylor
+coefficients is impossible, and the elementary two-point identity for
+$\partial_{1}\partial_{2}$ is the smallest instance.
 
-Combined with a batched Taylor jet through an entire activation and a
-closed-form vector-Jacobian product, the schedule evaluates the derivative
-exactly and remains differentiable in the parameters of the composition.
-Double-precision tests reproduce nested automatic differentiation for values and
-for parameter gradients through order six. Measured against nested
+Combined with a batched Taylor jet and a closed-form vector-Jacobian product,
+the schedule evaluates the derivative exactly and remains differentiable in
+$\theta$. Double-precision tests reproduce nested automatic differentiation for
+values and for parameter gradients through order six. Measured against nested
 differentiation on collocation residuals where nothing else varies, the schedule
 reduces the time of one evaluation by factors of about $1.4$, $2.3$, and $4.1$
 at derivative orders two, four, and six, and its peak memory by about $1.5$,
