@@ -93,16 +93,31 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Evaluating one prescribed high-order mixed partial derivative of a neural surrogate is a recurring cost in scientific computing, and the price of an evaluation is set by how many passes through the model it takes.
-  Repeated automatic differentiation is exact but nests, numerical differentiation trades exactness for a step size, and randomized estimators trade it for variance.
-  Taylor-mode automatic differentiation removes the nesting by propagating truncated Taylor coefficients along one direction at a time, which leaves open how many directions a prescribed derivative needs.
+  Evaluating one prescribed high-order mixed partial of a neural surrogate is a recurring cost in scientific computing.
+  The price of an evaluation is set by how many passes through the model it takes.
+  Repeated automatic differentiation is exact, but it nests.
+  Numerical differentiation trades exactness for a step size.
+  Randomized estimators trade it for variance.
+  Taylor-mode automatic differentiation removes the nesting.
+  It propagates truncated Taylor coefficients along one direction at a time.
+  How many directions a prescribed derivative needs is then left open.
   We settle that question for a single mixed partial.
-  For a fixed order the directional Taylor coefficients form a homogeneous polynomial in the direction, so extracting one mixed derivative extracts one of its coefficients, and a directional formula is a decomposition of a monomial into powers of linear forms.
-  The shortest formula therefore has as many terms as the Waring rank of that monomial, which is known in closed form over the complex numbers and is attained by a roots-of-unity construction that requires no linear solve.
-  The construction is local to one multi-index: it is a minimum for that derivative and makes no claim for a sum of several.
-  Realized as one batched Taylor jet with a closed-form adjoint, the schedule becomes a derivative backend that is algebraically exact, differentiable in the model parameters, and able to take complex directions.
+  For a fixed order, the directional Taylor coefficients form a homogeneous polynomial in the direction.
+  Extracting one mixed derivative extracts one of its coefficients.
+  A directional formula is therefore a decomposition of a monomial into powers of linear forms.
+  The shortest formula has as many terms as the Waring rank of that monomial.
+  The rank is known in closed form over the complex numbers.
+  It is attained by a roots-of-unity construction that requires no linear solve.
+  The construction is local to one multi-index.
+  It is a minimum for that derivative.
+  It makes no claim for a sum of several.
+  The schedule is realized as one batched Taylor jet with a closed-form adjoint.
+  The resulting backend is algebraically exact.
+  It is differentiable in the model parameters.
+  It can take complex directions.
   Double-precision tests reproduce nested automatic differentiation for values and for parameter gradients.
-  In training runs where the derivative backend is the only quantity that varies, the schedule reduces the time and the memory of one optimizer step as the derivative order grows.
+  The training runs vary only the derivative backend.
+  As the derivative order grows, the schedule then reduces the time and the memory of one optimizer step.
 \end{abstract}
 
 \begin{keywords}
@@ -126,44 +141,72 @@ physics-informed neural networks
 \section{Introduction}\label{sec_intro}
 
 High-order derivatives of a computed function are required wherever a model is constrained, or probed, by a differential relation.
-They appear in residual training of a neural representation of a partial differential equation~\cite{Raissi2019,Karniadakis2021,Han2018deepbsde}, in variational Monte Carlo for a neural wavefunction~\cite{Li2024forwardLaplacian}, and in any computation that evaluates a differential operator on a learned map.
-In each setting the derivative is taken repeatedly, at many points, on the same model, so its cost is a primary concern rather than an implementation detail.
+They appear in residual training of a neural representation of a partial differential equation~\cite{Raissi2019,Karniadakis2021,Han2018deepbsde}.
+They appear in variational Monte Carlo for a neural wavefunction~\cite{Li2024forwardLaplacian}.
+They appear in any computation that evaluates a differential operator on a learned map.
+In each setting the derivative is taken repeatedly, at many points, on the same model.
+Its cost is therefore a primary concern rather than an implementation detail.
 That cost grows with the order of the derivative and with the depth of the model.
 
-The exact methods are classical, and each pays for exactness differently.
+The exact methods are classical.
+Each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
-Finite-difference stencils are insensitive to the internal structure of the model, but they introduce a step size, and both truncation and cancellation become more severe as the order rises~\cite{Chiu2022CAN}.
+Finite-difference stencils are insensitive to the internal structure of the model.
+They introduce a step size, however.
+Truncation and cancellation then become more severe as the order rises~\cite{Chiu2022CAN}.
 Automatic differentiation differentiates the evaluation procedure itself~\cite{Griewank2008}.
-Reverse mode yields a gradient in one backward pass; a higher-order derivative is typically obtained by repeating that process, and each repetition differentiates the graph built by the previous one, so depth and storage grow with the order.
-Taylor mode avoids the nesting: one forward sweep along a single direction returns the directional derivatives up to a chosen order~\cite{Bettencourt2019,Griewank2008}.
-Its cost is therefore measured in directional sweeps, and the number of directions is the quantity to minimize.
+Reverse mode yields a gradient in one backward pass.
+A higher-order derivative is typically obtained by repeating that process.
+Each repetition differentiates the graph built by the previous one.
+Depth and storage therefore grow with the order.
+Taylor mode avoids the nesting.
+One forward sweep along a single direction returns the directional derivatives up to a chosen order~\cite{Bettencourt2019,Griewank2008}.
+Its cost is therefore measured in directional sweeps.
+The number of directions is the quantity to minimize.
 
 Two neighbouring lines do not answer that counting problem.
-Randomized estimators replace a derivative by an expectation and scale to high dimension at the price of variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}.
-Operator-specific recurrences, such as the forward Laplacian, keep exactness but are tied to the operator they were designed for~\cite{Li2024forwardLaplacian,Gao2023folx}.
-The question treated here is narrower and exact: one prescribed mixed partial derivative, computed deterministically, of a model that can be evaluated along arbitrary directions.
+Randomized estimators replace a derivative by an expectation~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}.
+They scale to high dimension at the price of variance.
+Operator-specific recurrences, such as the forward Laplacian, keep exactness~\cite{Li2024forwardLaplacian,Gao2023folx}.
+They are tied to the operator they were designed for.
+The question treated here is narrower, and exact.
+It asks for one prescribed mixed partial, computed deterministically.
+The model may be evaluated along arbitrary directions.
 
 Taylor mode computes the directional derivative it is given.
 It does not say how many directions a prescribed mixed partial needs.
-Elementary reconstructions exist, obtained by evaluating along combinations of coordinate axes, but a formula written by hand does not certify that a shorter one is impossible.
-The question is therefore the minimum: for one mixed partial, of one order, what is the smallest number of directional Taylor evaluations that recover it exactly, and which directions attain that bound?
+Elementary reconstructions exist.
+They are obtained by evaluating along combinations of coordinate axes.
+A formula written by hand does not certify that a shorter one is impossible.
+The question is therefore the minimum.
+For one mixed partial, of one order, what is the smallest number of directional Taylor evaluations that recover it exactly?
+Which directions attain that bound?
 
 The directional Taylor coefficient of a fixed order is a homogeneous polynomial in the direction.
-Extracting one mixed partial is extracting one monomial coefficient of that polynomial, so a directional formula is a decomposition of a monomial into powers of linear forms.
-The length of a shortest formula is the Waring rank of that monomial, which the algebraic-geometry literature has evaluated in closed form over the complex numbers.
+Extracting one mixed partial is extracting one monomial coefficient of that polynomial.
+A directional formula is therefore a decomposition of a monomial into powers of linear forms.
+The length of a shortest formula is the Waring rank of that monomial.
+The algebraic-geometry literature has evaluated that rank in closed form over the complex numbers.
 A roots-of-unity construction attains the rank without a linear solve.
-Because the rank is a minimum, the same statement also identifies those mixed partials for which no shorter directional formula exists.
+The rank is a minimum.
+The same statement therefore also identifies mixed partials that admit no shorter directional formula.
 The construction is local to one multi-index.
-A residual that is a sum of several mixed partials is evaluated by applying the schedule to each term; no claim is made that the resulting collection of directions is shortest for the sum.
+A residual that is a sum of several mixed partials is evaluated term by term.
+No claim is made that the resulting collection of directions is shortest for the sum.
 
 That identification, and the schedule that attains it, is the contribution of this paper.
-The Waring rank of a monomial, Taylor-mode propagation, and the use of physics-informed training as a testbed are not.
-The schedule is realized as a batched Taylor jet through an entire activation, with a closed-form adjoint so that the result remains differentiable in the model parameters.
-The experiments compare this backend with nested automatic differentiation on otherwise identical training runs, and serve only to check that the algebraic reduction appears as a reduction in time and memory.
+The Waring rank of a monomial is not a contribution.
+Neither is Taylor-mode propagation.
+Neither is the use of physics-informed training as a testbed.
+The schedule is realized as a batched Taylor jet through an entire activation.
+A closed-form adjoint keeps the result differentiable in the model parameters.
+The experiments compare this backend with nested automatic differentiation on otherwise identical training runs.
+They serve only to check that the algebraic reduction appears as a reduction in time and memory.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec_prelim} states the evaluation problem and recalls Taylor-mode directional differentiation.
-Section~\ref{sec_formulation} identifies the shortest directional formula with a monomial Waring decomposition, proves the main theorem, and records the algorithm.
+Section~\ref{sec_formulation} identifies the shortest directional formula with a monomial Waring decomposition.
+It proves the main theorem and records the algorithm.
 Section~\ref{sec_experiments} checks the implementation against nested automatic differentiation and reports the backend comparison.
 Section~\ref{sec_concl} concludes.
 The roots-of-unity filter, the explicit schedules used in the experiments, and the apolar form of the rank bound are collected in Appendix~\ref{sec_schedules}.
