@@ -83,7 +83,7 @@
 \begin{document}
 
 %% ========== Title ==========
-\title{Rank-Optimal Directional Taylor Jets for\\High-Order Mixed Derivatives of Neural Surrogates}
+\title{Rank-Optimal Directional Taylor Jets for\\High-Order Mixed Derivatives of Neural Networks}
 
 %% ========== Authors (to be filled) ==========
 \author{Author One\thanks{Institution One (\tt author1@example.com).}
@@ -93,30 +93,28 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  High-order mixed derivatives of a neural surrogate are required whenever a
-  differential operator is evaluated on a learned map, as in residual training
+  High-order mixed derivatives of a neural network are required whenever a
+  differential operator is applied to the network, as in residual training
   of physics-informed neural networks. Nested automatic differentiation computes
   these derivatives exactly, but each additional coordinate derivative deepens
-  the computational graph. Finite-difference stencils and randomized estimators
-  avoid that nesting only by introducing a step size or a sampling variance.
+  the computational graph. Finite differences and randomized estimators avoid
+  that nesting only by introducing a step size or a sampling variance.
   Taylor-mode automatic differentiation removes the nesting by propagating
-  truncated Taylor coefficients along one direction at a time; the remaining
-  question is how many such directions a prescribed mixed partial requires. In
-  this paper we present an exact directional Taylor-jet schedule for a single
-  mixed partial of fixed order. We show that the shortest schedule has as many
-  directions as the Waring rank of the associated monomial, a quantity known in
-  closed form over the complex numbers, and that a roots-of-unity construction
-  attains this length without a linear solve. The construction is local to one
-  multi-index: a sum of mixed partials is evaluated term by term, with no claim
-  of joint optimality.
-  Combined with a batched Taylor jet and a closed-form adjoint, the schedule is
-  algebraically exact, differentiable with respect to the network parameters,
-  and able to take complex directions. The effectiveness of the proposed
-  schedule is demonstrated in a controlled comparison with nested automatic
-  differentiation. The two backends agree in double precision for derivative
-  values and for parameter gradients, and, when the derivative backend is the
-  only quantity that varies, the schedule reduces the time and the memory of one
-  optimizer step as the derivative order grows.
+  truncated Taylor coefficients along one direction at a time, and leaves open
+  how many directions a prescribed mixed partial requires. We give an exact
+  directional Taylor-jet schedule for a single mixed partial of fixed order. The
+  shortest schedule has as many directions as the Waring rank of the associated
+  monomial, a quantity known in closed form over the complex numbers, and a
+  roots-of-unity construction attains this length without a linear solve. The
+  construction is local to one multi-index: a sum of mixed partials is evaluated
+  term by term, with no claim of joint optimality. Combined with a batched
+  Taylor jet and a closed-form adjoint, the schedule is algebraically exact,
+  differentiable with respect to the network parameters, and can take complex
+  directions. Compared with nested automatic differentiation, the two methods
+  agree in double precision for derivative values and for parameter gradients.
+  When the derivative method is the only quantity that varies, the schedule
+  reduces the time and the memory of one optimizer step as the derivative order
+  grows.
 \end{abstract}
 
 \begin{keywords}
@@ -144,17 +142,16 @@ constrained, or probed, by a differential relation.
 They appear in residual training of a neural representation of a partial
 differential equation~\cite{Raissi2019,Karniadakis2021,Han2018deepbsde}, in
 variational Monte Carlo for a neural wavefunction~\cite{Li2024forwardLaplacian},
-and in any computation that evaluates a differential operator on a learned map.
+and in any computation that evaluates a differential operator on a network.
 In each setting the derivative is taken repeatedly, at many points, on the same
-model, so its cost is a primary concern rather than an implementation detail.
-That cost grows with the order of the derivative and with the depth of the
-model.
+model, and the cost of those evaluations grows with the order of the derivative
+and with the depth of the model.
 
 The exact methods are classical, and each pays for exactness differently.
 Symbolic differentiation produces an expression that grows rapidly with order.
-Finite-difference stencils are insensitive to the internal structure of the
-model, but they introduce a step size, and both truncation and cancellation
-become more severe as the order rises~\cite{Chiu2022CAN}.
+Finite differences are insensitive to the internal structure of the model, but
+they introduce a step size, and both truncation and cancellation become more
+severe as the order rises~\cite{Chiu2022CAN}.
 Automatic differentiation differentiates the evaluation procedure
 itself~\cite{Griewank2008}.
 Reverse mode yields a gradient in one backward pass; a higher-order derivative
@@ -167,16 +164,14 @@ order~\cite{Bettencourt2019,Griewank2008}.
 Its cost is therefore measured in directional sweeps, and the number of
 directions is the quantity to minimize.
 
-Two neighbouring lines do not answer that counting problem.
 Randomized estimators replace a derivative by an expectation and scale to high
 dimension at the price of
 variance~\cite{Hu2024hte,Hu2023sdgd,He2023,Shi2024stde}.
 Operator-specific recurrences, such as the forward Laplacian, keep exactness but
 are tied to the operator they were designed
 for~\cite{Li2024forwardLaplacian,Gao2023folx}.
-The question treated here is narrower and exact: one prescribed mixed partial
-derivative, computed deterministically, of a model that can be evaluated along
-arbitrary directions.
+The question here is narrower: one prescribed mixed partial derivative, computed
+deterministically, of a model that can be evaluated along arbitrary directions.
 
 Taylor mode computes the directional derivative it is given.
 It does not say how many directions a prescribed mixed partial needs.
@@ -211,8 +206,8 @@ The schedule is realized as a batched Taylor jet through an entire activation,
 with a closed-form adjoint so that the result remains differentiable in the
 model parameters.
 The experiments compare this backend with nested automatic differentiation on
-otherwise identical training runs, and serve only to check that the algebraic
-reduction appears as a reduction in time and memory.
+otherwise identical training runs, and check that the algebraic reduction
+appears as a reduction in time and memory.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec_prelim} states the evaluation problem and recalls Taylor-mode
@@ -234,12 +229,12 @@ Appendix~\ref{sec_schedules}.
 
 \subsection{The evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \R$ be a neural surrogate with parameters $\theta$, smooth in its inputs.
+Let $u_{\theta} \colon \R^{d} \to \R$ be a neural network with parameters $\theta$, smooth in its inputs.
 Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and write $\dal := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}$ for the associated derivative.
 The task addressed in this paper is the evaluation of the single mixed partial derivative $\dal u_{\theta}$ at a given point, subject to three requirements that together rule out most of the alternatives surveyed in Section~\ref{sec_intro}.
 The value must be exact, so that no step size and no sampling budget enters the result.
 The multi-index is fixed and prescribed, rather than being contracted against a structured family such as a trace, so an operator-specific specialization does not apply.
-And the value must remain differentiable in $\theta$, since it is consumed by an optimizer that updates the surrogate.
+And the value must remain differentiable in $\theta$, since it is consumed by an optimizer that updates the network.
 The derivative is also evaluated at many points at once and re-evaluated at every step, so what matters is the cost of one evaluation of one derivative, amortized over a batch.
 
 The benchmarks of Section~\ref{sec_experiments} instantiate this task in its most demanding common form, the residual of a boundary-value problem.
@@ -255,7 +250,7 @@ Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary poin
     \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2}
     + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
 \end{equation}
-Expanding $\mathcal{P}$ into monomial terms turns one evaluation of the residual in \eqref{eq_pinn_loss} into several instances of the task above, on the same surrogate and the same batch of points; a polyharmonic operator $\mathcal{P} = \Delta^{m}$, for example, expands into $\binom{d+m-1}{m}$ of them.
+Expanding $\mathcal{P}$ into monomial terms turns one evaluation of the residual in \eqref{eq_pinn_loss} into several instances of the task above, on the same network and the same batch of points; a polyharmonic operator $\mathcal{P} = \Delta^{m}$, for example, expands into $\binom{d+m-1}{m}$ of them.
 The loss \eqref{eq_pinn_loss} is a consumer of the derivative and not the object of study: nothing in what follows is specific to it.
 
 \subsection{Taylor-mode evaluation of directional derivatives}\label{sec_taylor}
@@ -298,12 +293,12 @@ Every coefficient $y_{k}$ is an ordinary tensor, and the propagation stores $p+1
 %% ====================================================================
 \section{Rank-optimal directional schedules}\label{sec_formulation}
 
-The argument of this section is short, and it is worth naming its four steps before the details arrive.
+The argument of this section is short. Its four steps are as follows.
 First, the directional Taylor coefficients of order $p$, read as a function of the direction rather than of the point, are the coefficients of a homogeneous polynomial of degree $p$, and the target derivative is one of them.
 Second, a formula that reconstructs the derivative from finitely many directional evaluations is therefore a linear identity among such coefficients, which reduces the design problem to a finite system of moment conditions.
 Third, pairing each direction with the polynomial variable turns that system into a single polynomial identity: the monomial belonging to the target derivative, written as a linear combination of $p$th powers of linear forms.
 Fourth, the least number of terms in such a combination is by definition the Waring rank of that monomial, a quantity known in closed form, and one set of minimizing linear forms consists of roots of unity.
-The four steps together replace a search for a stencil by a rank computation, and because the outcome is a minimum, it certifies that no shorter formula exists.
+The four steps together replace a search for a reconstruction formula by a rank computation, and because the outcome is a minimum, it certifies that no shorter formula exists.
 
 We introduce some notation used throughout this section.
 Let $\N_{0} := \{0, 1, 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional complex space.
@@ -472,7 +467,7 @@ For $\dal = \partial_{1}\partial_{2}$ we have $n = 1$, $a_{0} = a_{1} = 1$, $m_{
     \partial_{1}\partial_{2}u(\bx) = \tfrac{1}{2}\Tp(\bx; e_{1}+e_{2}) - \tfrac{1}{2}\Tp(\bx; e_{1}-e_{2}),
 \end{equation}
 in which the pure second derivatives cancel between the two probes.
-Theorem~\ref{thm_main} adds to \eqref{eq_two_point} the information that two evaluations are not merely sufficient but necessary.
+Theorem~\ref{thm_main} adds to \eqref{eq_two_point} the information that two evaluations are necessary as well as sufficient.
 Complex directions appear as soon as some exponent exceeds one.
 \end{remark}
 
@@ -480,7 +475,7 @@ Complex directions appear as soon as some exponent exceeds one.
 The directions \eqref{eq_rou} are complex whenever $m_{j} \ge 3$ for some $j$, so the network is evaluated at complex arguments and its activations must admit a holomorphic extension there.
 The functions $\sinh$ and $\cosh$ are entire, and the recurrence \eqref{eq_jet_sinh} is an algebraic identity that holds verbatim on complex tensors.
 By contrast $\tanh$ is meromorphic, with poles at $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for $k \in \Z$, so its jet is defined only away from those points and the admissible directions depend on the activation input.
-Entire activations are therefore a requirement of the construction rather than an incidental convenience, and they are the reason the demonstration of Section~\ref{sec_experiments} uses a $\sinh$ network for the proposed method.
+Entire activations are therefore a requirement of the construction rather than a convenience, which is why Section~\ref{sec_experiments} uses a $\sinh$ network.
 \end{remark}
 
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
@@ -595,7 +590,7 @@ These tests establish that the implementation computes what Theorem~\ref{thm_mai
 \subsection{A controlled comparison of derivative backends}\label{sec_num_protocol}
 
 The remaining study isolates the derivative backend.
-Protocol \texttt{jsc\_v3} runs two lines that share the surrogate, the loss, the optimizer, the collocation points, the evaluation rule, the seeds, and the wall-clock budget, and differ in one respect: how each monomial derivative of the residual is evaluated.
+Protocol \texttt{jsc\_v3} runs two lines that share the network, the loss, the optimizer, the collocation points, the evaluation rule, the seeds, and the wall-clock budget, and differ in one respect: how each monomial derivative of the residual is evaluated.
 The first line uses Algorithm~\ref{alg_waring}, that is, the rank-optimal complex schedule evaluated by one batched Taylor jet, and is labelled \emph{jet} below.
 The second evaluates the same derivative of the same network by nested reverse-mode automatic differentiation, with the graph retained after every coordinate derivative, and is labelled \emph{nested}.
 Both lines are the same complex-parameter $\sinh$ network with four hidden layers of width $H = 128$, hence the same 100{,}098 trainable real degrees of freedom, the same first-layer scale, and the same \texttt{complex128} arithmetic.
@@ -643,7 +638,7 @@ For a two-dimensional transverse-magnetic mode, Maxwell's equations reduce to a 
     E_{\star} = \exp\bigl(\mathrm{i}a\pi(x+y)\bigr),
 \end{equation}
 with $\beta = 0.2$, exact Dirichlet data, $a \in \{2,4,6\}$, and $f = [-2(a\pi)^{2}+\kappa^{2}]E_{\star}$.
-The Maxwell family is included because its solution is complex-valued, which the schedule of Theorem~\ref{thm_main} accommodates without modification: the surrogate is already evaluated at complex directions, so a complex target costs nothing extra.
+The Maxwell family is included because its solution is complex-valued, which the schedule of Theorem~\ref{thm_main} handles without change: the network is already evaluated at complex directions, so a complex target costs nothing extra.
 Since both families are of order two, every monomial term of their residuals is a pure power, which the schedule evaluates with a single direction; they therefore isolate what the Taylor jet contributes on its own, with no rank reduction involved.
 
 \subsection{Cost of one derivative evaluation}\label{sec_num_cost}
