@@ -130,49 +130,57 @@ apolarity
 
 High-order derivatives arise in a wide range of computational models, such as
 polyharmonic and plate equations~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
-problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. Nested
-reverse-mode automatic differentiation evaluates them exactly, but the stored
-graph grows with every additional coordinate
-derivative~\cite{Griewank2008,Baydin2018}, as in the reverse-mode systems used
-for composed nonlinear maps~\cite{Paszke2019}, while finite differences
-recover a partial from nearby evaluations~\cite{Fornberg1988,Chiu2022CAN} and
-randomized estimators replace the nesting by sampling. Hutchinson's trace
-estimator~\cite{Hutchinson1989}, applied through Hessian-vector
-products~\cite{Pearlmutter1994}, yields traces of high-order operators in a
-residual~\cite{Hu2024hte}. Stein's identity and Gaussian
-smoothing~\cite{Stein1981,He2023} evaluate that residual without stacked
-reverse mode, and the bias and variance of the smoothing have been
-quantified~\cite{Hu2025bias}. A random subset of residual coordinates can be
-taken at each step~\cite{Hu2023sdgd}, and the stochastic Taylor derivative
-estimator contracts the order-$p$ derivative tensor from Taylor-mode
-tangents~\cite{Shi2024stde}.
+problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. An operator
+of order $p$ is a linear combination of those partials, and the same
+derivatives are requested at many points on every evaluation.
 
-Taylor-mode automatic differentiation propagates a truncated Taylor series
-along one direction through the computation in a single forward
-pass~\cite{Bettencourt2019,Griewank2008}, and returns the directional
-derivatives of that order. Any partial of the same order can then be recovered
-by a linear combination of those directional derivatives, evaluated along
-several directions. Griewank, Utke, and Walther recover the full derivative
-tensor from a family of univariate Taylor
-series~\cite{GriewankUtkeWalther2000}, while a structured forward recurrence
-evaluates one differential operator exactly~\cite{Li2024forwardLaplacian}.
+Nested reverse-mode automatic differentiation evaluates a partial
+exactly~\cite{Griewank2008,Baydin2018}, as in the reverse-mode systems used
+for composed nonlinear maps~\cite{Paszke2019}, but the stored graph grows with
+every additional coordinate derivative.
+
+Finite differences recover the same partial from nearby
+evaluations~\cite{Fornberg1988}, and coupled automatic-numerical schemes use
+that idea inside a residual~\cite{Chiu2022CAN}, while randomized estimators
+replace the nested graph by sampling. Hutchinson's trace
+estimator~\cite{Hutchinson1989}, applied through Hessian-vector
+products~\cite{Pearlmutter1994}, yields traces of high-order
+operators~\cite{Hu2024hte}. Stein's identity and Gaussian
+smoothing~\cite{Stein1981,He2023} estimate a residual from function values,
+and the bias and variance of that smoothing have been
+quantified~\cite{Hu2025bias}. A random subset of residual coordinates can be
+taken at each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative
+estimator already uses Taylor-mode tangents, and contracts the order-$p$
+derivative tensor~\cite{Shi2024stde}.
+
+Taylor-mode automatic differentiation takes a different route. It propagates a
+truncated Taylor series along one direction through the computation in a
+single forward pass~\cite{Bettencourt2019,Griewank2008}, and returns the
+directional derivatives of that order. Any partial of the same order is then a
+linear combination of those directional derivatives, evaluated along several
+directions. Griewank, Utke, and Walther recover the full derivative tensor
+from a family of univariate Taylor series~\cite{GriewankUtkeWalther2000}. A
+structured forward recurrence evaluates one differential operator
+exactly~\cite{Li2024forwardLaplacian}.
 
 The order-$p$ directional Taylor coefficient is a homogeneous polynomial in
 the direction, and $\partial^{\nu}u$ is one monomial coefficient of that
 polynomial, so the shortest combination for one partial is a Waring
 decomposition of the corresponding monomial~\cite{Landsberg2012}. Over $\C$
 that length is known in closed form~\cite{CCG2012}, and a roots-of-unity
-formula attains it; Appendix~\ref{sec_schedules} recalls the apolarity
+formula attains it. Appendix~\ref{sec_schedules} recalls the apolarity
 argument behind the lower bound~\cite{IK1999}. We evaluate the formula with a
-batched Taylor jet and a closed-form adjoint, and we time both backends on
-manufactured collocation residuals~%
-\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}
-of the operators above, including biharmonic plate
-residuals~\cite{Vahab2022Biharmonic}, trained with Adam and a cosine
-learning-rate schedule~\cite{Kingma2015,Loshchilov2017} on a complex-parameter
-network~\cite{Trabelsi2018ComplexNN}. Against nested automatic differentiation
-the values and parameter gradients match in double precision, and the time and
-memory of one evaluation fall as the order grows.
+batched Taylor jet and a closed-form adjoint.
+
+Against nested automatic differentiation the values and parameter gradients
+match in double precision, and the time and memory of one evaluation fall as
+the order grows. Section~\ref{sec_experiments} times both backends on
+manufactured collocation residuals of the operators
+above~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002},
+including biharmonic plate residuals~\cite{Vahab2022Biharmonic}, with Adam and
+a cosine learning-rate schedule~\cite{Kingma2015,Loshchilov2017} on a
+complex-parameter network~\cite{Trabelsi2018ComplexNN}, and with the model,
+the loss, and the optimizer held fixed.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor mode.
