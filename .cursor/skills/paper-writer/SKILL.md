@@ -59,19 +59,24 @@ the abstract starts to read like related work.
 
 ## Abstract template for this paper
 
-Five or six short sentences, one job each. Map them to the body.
+Four short sentences, one job each. This is the user-accepted plan.
+Do not expand it back into a six-sentence tour, and do not strip
+neural networks: without a composed map and a computational graph,
+high-order partials are not the expensive object of this paper.
 
 | # | Sentence job | Body section it reports |
 |---|---|---|
-| 1 | The evaluation: one high-order mixed partial of a smooth map. A short *where it arises* clause is optional, not a tourist list. | Introduction / problem |
-| 2 | The computational primitive we sit on: Taylor-mode returns the directional coefficients of that order. | Preliminaries |
-| 3 | The reduction: any such partial is a linear combination of those coefficients. | Preliminaries |
-| 4 | The main result: the shortest combination is the Waring decomposition of the corresponding monomial. | Method / analysis |
-| 5 | The construction: a roots-of-unity formula attains that length. | Method |
-| 6 | What was checked: the formula is exact, and it is substantially faster than nested automatic differentiation. | Experiments |
+| 1 | The setting and the cost: high-order derivatives of neural networks are expensive because nested AD grows the computational graph. | Introduction / problem |
+| 2 | The substrate and the theorem: directional Taylor-mode; the least number of directional evaluations equals the Waring rank of the monomial. | Preliminaries / analysis |
+| 3 | The construction: a roots-of-unity formula attains this lower bound. | Method |
+| 4 | What was checked: exact, and faster and more memory-efficient than nested AD. | Experiments |
 
-That is the whole abstract. Nested AD appears once, in sentence 6, as
-the timing baseline. Taylor mode appears once, in sentence 2, as the
+Neural networks appear as the maps that carry a computational graph.
+PINNs, residuals, and collocation still do not belong in the abstract:
+those are the verification workload.
+
+Nested AD appears in sentence 1 as the cost mechanism and in sentence 4
+as the timing baseline. Taylor mode appears once, in sentence 2, as the
 substrate, not as a competitor.
 
 Forbidden in this template:
@@ -81,18 +86,23 @@ Forbidden in this template:
 - A first sentence that is only an application list
   (polyharmonic / plate / Helmholtz / Maxwell) with no evaluation.
 - Restating STDE, Hutchinson, or finite differences.
+- Calling the graph growth polynomial (nested reverse mode deepens
+  the stored graph with order; the polynomial scaling is the tensor
+  size in dimension).
 
 ## Thinking framework (use this before writing)
 
-1. **What is the object?** One mixed partial, not a PINN, not an
-   operator family.
+1. **What is the object?** A high-order mixed partial of a neural
+   network (a composed map with a computational graph). Not a PINN
+   residual and not an operator family.
 2. **What is the result?** The shortest directional combination equals
    the Waring rank of the monomial, and a roots-of-unity schedule
    attains it.
 3. **What is the one default?** Nested AD. Everything else waits for
    the introduction.
-4. **Write the six jobs as six short sentences.** Then check: one
-   concept each; no `$`; no catalog.
+4. **Write the four jobs as four sentences.** Then check: one
+   concept each; no `$`; no catalog. Do not expand back to a
+   six-sentence rewrite.
 5. **Only after the user accepts the plan**, write it into the TeX.
 
 ## Introduction (do not write it while the abstract is open)

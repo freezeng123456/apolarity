@@ -93,15 +93,15 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Evaluating a high-order mixed partial by nested automatic differentiation is
-  expensive in time and memory. The stored graph grows with every additional
-  coordinate derivative. Taylor-mode automatic differentiation returns the
-  directional Taylor coefficients of a given order in one forward pass. We show
-  that the least number of directional evaluations needed to recover a target
-  partial equals the Waring rank of the corresponding monomial. A
-  roots-of-unity formula attains this bound. The formula is exact, and it is
-  substantially faster and uses less memory than nested automatic
-  differentiation.
+  Computing high-order derivatives of neural networks is often
+  computationally and memory intensive, primarily because nested automatic
+  differentiation grows the computational graph with every additional
+  coordinate derivative. We use directional Taylor-mode automatic
+  differentiation and show that the minimal number of directional evaluations
+  required to recover a target partial equals the Waring rank of the
+  corresponding monomial. We give a roots-of-unity formula that attains this
+  lower bound. The formula evaluates exact derivatives and is substantially
+  faster and more memory-efficient than nested automatic differentiation.
 \end{abstract}
 
 \begin{keywords}

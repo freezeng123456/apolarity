@@ -101,17 +101,15 @@ numbers in the abstract unless the user asks for them.
 
 One paragraph, 5–10 lines. One concept per sentence. Factual.
 Stand-alone. No citations. Uncommon terms defined once if they must
-appear. Follow the six-sentence plan in
+appear. Follow the four-sentence plan in
 `.cursor/skills/paper-writer/SKILL.md`.
 
 Order:
 
-1. What must be computed (one mixed partial). A short *where it arises*
-   clause is optional.
-2. The substrate: Taylor-mode returns directional coefficients.
-3. The reduction, the Waring result, and the roots-of-unity formula.
-4. What was checked: exact, and faster than nested automatic
-   differentiation (the one default).
+1. Neural networks and why nested AD is expensive (the graph).
+2. Directional Taylor-mode, and the Waring-rank lower bound.
+3. The roots-of-unity formula that attains the bound.
+4. Exact, and faster and more memory-efficient than nested AD.
 
 Do not use the abstract as a method catalog. Finite differences,
 randomized estimators, stochastic contractions, and STDE belong in the
