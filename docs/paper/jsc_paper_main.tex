@@ -126,30 +126,27 @@ apolarity
 
 In this work we focus on computing one mixed partial of a neural network
 $u$. For a multi-index $\nu = (\nu_{1}, \ldots, \nu_{d})$ of order
-$p = \abs{\nu}$, that derivative is
+$p = \abs{\nu}$, the mixed partial of interest is
 \begin{equation}\label{eq_intro_partial}
     \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx).
 \end{equation}
-High-order derivatives of this form appear in many equations, including
-polyharmonic and plate operators~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
-problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. An
-operator of order $p$ is a linear combination of mixed partials, so the
-cost of one residual is the cost of evaluating \eqref{eq_intro_partial} at
-many points.
 
-There are two standard ways to compute \eqref{eq_intro_partial}. The first
-is exact automatic differentiation: backpropagation is applied once per
-extra derivative~\cite{Griewank2008,Baydin2018,Paszke2019}. The mixed
-partial is then exact. The order-$p$ derivative tensor in $d$ dimensions
-has size $O(d^{p})$, and each extra reverse sweep roughly doubles the stored
-graph, which therefore has length $O(2^{p-1}L)$ when the forward evaluation
-has $L$ elementary operations~\cite{Shi2024stde}. Applying first-order
-automatic differentiation repeatedly also repeats a combinatorial amount of
-work~\cite{Bettencourt2019}. Time and memory therefore grow with both the
-order and the number of active coordinates.
+The standard way to evaluate \eqref{eq_intro_partial} is automatic
+differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. In that
+framework a derivative of order $p$ is obtained by applying
+backpropagation $p$ times: each extra derivative is the reverse-mode
+derivative of the previous derivative~\cite{Shi2024stde}. Shi, Hu, Lin,
+and Kawaguchi record that, for this construction, the size of the
+derivative tensor has scaling $O(d^{p})$ and the size of the computation
+graph has scaling $O(2^{p-1}L)$, where $d$ is the dimension of the input
+and $L$ is the number of operations in the forward computation
+graph~\cite{Shi2024stde}. With each extra reverse sweep the new evaluation
+trace includes the previous cotangents, so the length of sequential
+computation doubles~\cite{Shi2024stde}.
 
-The second way is to estimate the derivative. Finite differences replace
-each extra derivative by nearby evaluations of the same
+An alternative is to estimate \eqref{eq_intro_partial} rather than
+evaluate it by backpropagation. Finite differences replace each extra
+derivative by nearby evaluations of the same
 network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
 estimator~\cite{Hutchinson1989}, applied through Hessian-vector
 products~\cite{Pearlmutter1994}, estimates traces of high-order
@@ -157,13 +154,13 @@ operators~\cite{Hu2024hte}. Stein's identity and Gaussian
 smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
 and the bias and variance of that smoothing have been
 quantified~\cite{Hu2025bias}. A random subset of coordinates can be taken at
-each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator uses
-Taylor-mode automatic differentiation to estimate a contraction of the
-derivative tensor~\cite{Shi2024stde}. These methods avoid storing the full
-graph. They replace it by a step size or by sampling variance.
+each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator
+constructs random input tangents for univariate Taylor-mode automatic
+differentiation and thereby estimates an arbitrary contraction of the
+derivative tensor~\cite{Shi2024stde}.
 
-We compute \eqref{eq_intro_partial} exactly from directional Taylor
-coefficients. One pass along a direction $\bv$ returns
+We evaluate \eqref{eq_intro_partial} from directional Taylor coefficients.
+One pass along a direction $\bv$ returns
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
@@ -185,7 +182,7 @@ it. Appendix~\ref{sec_schedules} recalls the argument behind the lower
 bound~\cite{IK1999}. We evaluate the combination in one batch and
 differentiate it with respect to the network parameters.
 
-We compare this formula with repeated automatic differentiation on the same
+We compare this formula with backpropagation applied $p$ times on the same
 network, the same residual, and the same optimizer. The values and the
 parameter gradients match in double precision. Time and memory of one
 evaluation fall as the order grows. Section~\ref{sec_experiments} times both
@@ -201,7 +198,7 @@ states the evaluation problem and recalls Taylor-mode automatic
 differentiation. Section~\ref{sec_formulation} proves that the shortest
 directional formula is a monomial Waring decomposition and records the
 algorithm. Section~\ref{sec_experiments} compares the implementation with
-repeated automatic differentiation. Section~\ref{sec_concl} concludes. The
+backpropagation applied $p$ times. Section~\ref{sec_concl} concludes. The
 roots-of-unity formula, the schedules used in the experiments, and the
 argument for the rank bound are collected in Appendix~\ref{sec_schedules}.
 

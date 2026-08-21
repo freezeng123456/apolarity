@@ -115,15 +115,19 @@ Forbidden:
 
 Martinis four beats, after the abstract is frozen, in this order:
 
-(a) one mixed partial, with the defining equation, then where such
-    derivatives appear (polyharmonic, plate, Helmholtz, Maxwell as
-    examples, not as the opening),
-(b) two ways to compute it: exact repeated AD, with the $O(d^{p})$ and
-    $O(2^{p-1}L)$ scalings cited, then estimators (FD, Hutchinson, STDE),
-(c) this paper's construction, more specific than the abstract,
-(d) where the main results live.
+(a) one mixed partial of interest, with the defining equation; no PDE
+    application list,
+(b) the standard way is automatic differentiation: a derivative of
+    order $p$ is backpropagation applied $p$ times (STDE §3.2). Quote
+    STDE: size of the derivative tensor $O(d^{p})$, size of the
+    computation graph $O(2^{p-1}L)$. STDE itself is an estimator, not
+    an exact method,
+(c) next paragraph: estimation as an alternative (FD, Hutchinson, STDE),
+(d) this paper's directional Waring construction,
+(e) comparison and roadmap.
 
-Do not open the introduction with a stack of AD jargon. Bettencourt
-and STDE say *applying automatic differentiation repeatedly* and
-*backpropagation*. The scaling of repeated reverse AD is cited from
-STDE, not described as ``the graph grows.''
+Do not write ``two standard ways'' or ``that derivative is.'' Do not
+attribute STDE's scalings to STDE's own algorithm. Use STDE's nouns
+(size of the derivative tensor; size of the computation graph; length
+of sequential computation), not size versus length for the two $O$
+symbols.
