@@ -124,86 +124,81 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-Nested reverse-mode automatic differentiation evaluates a mixed partial of a
-neural network by applying reverse mode once per coordinate in the
-multi-index~\cite{Griewank2008,Baydin2018,Paszke2019}. The network is a
-composed nonlinear map, and the derivatives are assembled along its
-computational graph. Each additional coordinate derivative retains another
-layer of that graph. The time and memory of one evaluation therefore grow
-with the derivative order and with how many coordinates the multi-index
-touches. Polyharmonic and plate operators~\cite{Gazzola2010,Ciarlet1997},
-Helmholtz problems~\cite{Ihlenburg1998}, and Maxwell
-systems~\cite{Monk2003} are linear combinations of those partials, and the
-same values are requested at many points.
+High-order derivatives of a neural network are usually computed by applying
+automatic differentiation repeatedly~\cite{Griewank2008,Baydin2018,Paszke2019}.
+Each extra derivative is another backpropagation through a larger
+computational graph. Time and memory therefore grow with the order, and with
+how many coordinates are differentiated. Polyharmonic and plate
+operators~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
+problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003} are built
+from those mixed partials, and the same values are needed at many points.
 
 Finite differences replace each extra derivative by nearby evaluations of
-the same map~\cite{Fornberg1988}. Coupled automatic-numerical schemes keep
-reverse mode for some derivatives and finite differences for
-others~\cite{Chiu2022CAN}. Randomized estimators replace nesting by
-sampling. Hutchinson's trace estimator~\cite{Hutchinson1989}, applied
-through Hessian-vector products~\cite{Pearlmutter1994}, estimates traces of
-high-order operators~\cite{Hu2024hte}. Stein's identity and Gaussian
+the same network~\cite{Fornberg1988}. Some methods mix automatic
+differentiation with finite differences~\cite{Chiu2022CAN}. Sampling methods
+estimate the derivative instead of forming the full graph. Hutchinson's
+estimator~\cite{Hutchinson1989}, applied through Hessian-vector
+products~\cite{Pearlmutter1994}, estimates traces of high-order
+operators~\cite{Hu2024hte}. Stein's identity and Gaussian
 smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
 and the bias and variance of that smoothing have been
-quantified~\cite{Hu2025bias}. A random subset of residual coordinates can
-be taken at each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative
-estimator already uses Taylor-mode tangents and estimates a contraction of
-the derivative tensor of that order~\cite{Shi2024stde}. Taylor-mode
-automatic differentiation~\cite{Bettencourt2019,Griewank2008} is therefore
-already a primitive in that literature. Griewank, Utke, and Walther recover
-the full derivative tensor from a family of univariate Taylor
-series~\cite{GriewankUtkeWalther2000}. A structured forward recurrence
-evaluates one differential operator exactly~\cite{Li2024forwardLaplacian}.
+quantified~\cite{Hu2025bias}. A random subset of coordinates can be taken at
+each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator
+already uses Taylor-mode automatic differentiation to estimate a contraction
+of the derivative tensor~\cite{Shi2024stde}. Griewank, Utke, and Walther
+recover every derivative of a given order from a family of univariate Taylor
+series~\cite{GriewankUtkeWalther2000}. A structured recurrence evaluates one
+differential operator exactly~\cite{Li2024forwardLaplacian}.
 
-These constructions answer different linear questions. Nested reverse mode
-returns one multi-index exactly and pays another graph layer for each extra
-coordinate. Finite differences pay a step size. Randomized estimators,
-including the stochastic Taylor derivative estimator, pay a sampling
-variance. The full-tensor reconstruction is exact, and its length is set by
-every partial of that order rather than by one monomial. Once Taylor mode
-returns directional coefficients, the number of directions needed for a
-single mixed partial is still a free design variable.
+These methods do different things. Repeated automatic differentiation is
+exact, but each extra derivative enlarges the graph. Finite differences
+introduce a step size. Sampling methods, including the stochastic Taylor
+derivative estimator, introduce variance. Recovering every derivative of a
+given order is exact, but the cost is set by the whole tensor, not by one
+mixed partial. After Taylor-mode automatic
+differentiation~\cite{Bettencourt2019,Griewank2008} has produced directional
+derivatives, one still has to choose how many directions to use for a
+single mixed partial.
 
-We take that number as the object. One forward sweep along a direction
-through the computation returns the directional Taylor coefficient of that
-order,
+We determine the least such number. One pass along a direction returns the
+directional Taylor coefficient of that order,
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
-A finite linear combination of these coefficients recovers one partial of
+A linear combination of these coefficients recovers one mixed partial of
 the same order,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}
-Read as a function of the direction, the coefficient~\eqref{eq_intro_tp} is
-a homogeneous polynomial of degree $p$. The target partial is one monomial
-coefficient of that polynomial. The shortest identity of the
+As a function of the direction, the coefficient~\eqref{eq_intro_tp} is a
+homogeneous polynomial of degree $p$. The mixed partial is one monomial
+coefficient of that polynomial. The shortest formula of the
 form~\eqref{eq_intro_recon} is therefore a Waring decomposition of the
 corresponding monomial~\cite{Landsberg2012}. Over the complex numbers that
 length is known in closed form~\cite{CCG2012}, and roots of unity attain
-it. Appendix~\ref{sec_schedules} recalls the apolarity argument behind the
-lower bound~\cite{IK1999}. We evaluate the combination with a batched
-Taylor jet and a closed-form adjoint.
+it. Appendix~\ref{sec_schedules} recalls the argument behind the lower
+bound~\cite{IK1999}. We evaluate the combination in one batch and
+differentiate it with respect to the network parameters.
 
-We compare this schedule with nested reverse mode on the same network, the
-same residual, and the same optimizer. The values and the parameter
-gradients match in double precision. The time and memory of one evaluation
-fall as the order grows. Section~\ref{sec_experiments} times both backends
-on manufactured collocation residuals of the operators
+We compare this formula with repeated automatic differentiation on the same
+network, the same residual, and the same optimizer. The values and the
+parameter gradients match in double precision. Time and memory of one
+evaluation fall as the order grows. Section~\ref{sec_experiments} times
+both methods on manufactured collocation residuals of the operators
 above~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
 The optimizer is Adam with a cosine learning-rate
 schedule~\cite{Kingma2015,Loshchilov2017}, on a complex-parameter
 network~\cite{Trabelsi2018ComplexNN}. The model, the loss, and the optimizer
-are held fixed between the two backends.
+are held fixed between the two methods.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
-states the evaluation problem and recalls Taylor mode.
-Section~\ref{sec_formulation} proves that the shortest directional formula
-is a monomial Waring decomposition and records the algorithm.
-Section~\ref{sec_experiments} compares the implementation with nested
-automatic differentiation. Section~\ref{sec_concl} concludes. The
-roots-of-unity filter, the schedules used in the experiments, and the apolar
-form of the rank bound are collected in Appendix~\ref{sec_schedules}.
+states the evaluation problem and recalls Taylor-mode automatic
+differentiation. Section~\ref{sec_formulation} proves that the shortest
+directional formula is a monomial Waring decomposition and records the
+algorithm. Section~\ref{sec_experiments} compares the implementation with
+repeated automatic differentiation. Section~\ref{sec_concl} concludes. The
+roots-of-unity formula, the schedules used in the experiments, and the
+argument for the rank bound are collected in Appendix~\ref{sec_schedules}.
 
 %% ====================================================================
 %%  SECTION 2: PRELIMINARIES

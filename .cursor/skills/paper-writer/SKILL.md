@@ -122,3 +122,9 @@ Martinis four beats, after the abstract is frozen:
 (d) where the main results live.
 
 The introduction is allowed the competitor survey. The abstract is not.
+
+Do not open the introduction with "nested reverse-mode" or a stack of
+AD jargon. Bettencourt and STDE say *applying automatic differentiation
+repeatedly* and *backpropagation*. Use those words in the first
+paragraph. "Nested reverse mode" is an implementation detail of the
+baseline, not an opening term.
