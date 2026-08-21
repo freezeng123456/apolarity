@@ -128,10 +128,7 @@ High-order derivatives of a neural network are usually computed by applying
 automatic differentiation repeatedly~\cite{Griewank2008,Baydin2018,Paszke2019}.
 Each extra derivative is another backpropagation through a larger
 computational graph. Time and memory therefore grow with the order, and with
-how many coordinates are differentiated. Polyharmonic and plate
-operators~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
-problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003} are built
-from those mixed partials, and the same values are needed at many points.
+how many coordinates are differentiated.
 
 Finite differences replace each extra derivative by nearby evaluations of
 the same network~\cite{Fornberg1988}. Some methods mix automatic
@@ -183,9 +180,8 @@ differentiate it with respect to the network parameters.
 We compare this formula with repeated automatic differentiation on the same
 network, the same residual, and the same optimizer. The values and the
 parameter gradients match in double precision. Time and memory of one
-evaluation fall as the order grows. Section~\ref{sec_experiments} times
-both methods on manufactured collocation residuals of the operators
-above~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
+evaluation fall as the order grows. Section~\ref{sec_experiments} times both methods on manufactured
+collocation residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
 The optimizer is Adam with a cosine learning-rate
 schedule~\cite{Kingma2015,Loshchilov2017}, on a complex-parameter
 network~\cite{Trabelsi2018ComplexNN}. The model, the loss, and the optimizer
@@ -744,7 +740,7 @@ finite metrics, nonempty monotone histories, and the protocol metadata.
 \subsection{Benchmark problems}\label{sec_num_problems}
 
 The three families place different demands on the derivative. For the
-polyharmonic problem on $(-1,1)^{2}$ we solve
+polyharmonic problem~\cite{Gazzola2010,Ciarlet1997} on $(-1,1)^{2}$ we solve
 \begin{equation}\label{eq_num_poly}
     \Delta^{m}u = (-2\pi^{2})^{m}u_{\star} \quad\text{in }(-1,1)^{2}, \quad u_{\star}(\bx) = \sin(\pi x_{1})\sin(\pi x_{2}),
 \end{equation}
@@ -760,7 +756,7 @@ $\partial_{1}^{4}\partial_{2}^{2}$ and $\partial_{1}^{2}\partial_{2}^{4}$,
 which take five each.
 
 The other two families sit at order two and sweep a frequency instead. On
-$(-1,1)^{2}$ the radial chirp is
+$(-1,1)^{2}$ the radial chirp~\cite{Ihlenburg1998} is
 \begin{equation}\label{eq_num_chirp}
     -\Delta u + u = f, \quad u_{\star}(x,y) = \sin\Bigl(\frac{a\pi}{2}(x^{2}+y^{2})\Bigr),
 \end{equation}
@@ -769,7 +765,8 @@ source $f = (a\pi)^{2}r^{2}\sin\phi - 2a\pi\cos\phi + \sin\phi$, where $\phi :=
 a\pi(x^{2}+y^{2})/2$ and $r^{2} := x^{2}+y^{2}$. Its local radial wavenumber
 $\abs{\nabla\phi} = a\pi r$ varies over the domain, so the target is not a
 separable Fourier mode. For a two-dimensional transverse-magnetic mode,
-Maxwell's equations reduce to a scalar complex Helmholtz equation for the
+Maxwell's equations~\cite{Monk2003} reduce to a scalar complex Helmholtz
+equation for the
 out-of-plane field $E$,
 \begin{equation}\label{eq_num_maxwell}
     \Delta E + \kappa^{2}E = f, \quad \kappa^{2} = (a\pi)^{2}(1+\mathrm{i}\beta), \quad E_{\star} = \exp\bigl(\mathrm{i}a\pi(x+y)\bigr),

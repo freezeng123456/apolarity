@@ -71,12 +71,11 @@ that the paper then specializes.
 Pattern: the first paragraph **widens or specializes**. It does not
 translate the abstract.
 
-For a derivative-evaluation paper this means: open on the evaluation
-of high-order partials of a smooth map (nested AD, the stored graph),
-not on “high-order derivatives arise in polyharmonic, plate, Helmholtz,
-and Maxwell models.” That sentence belongs to the abstract. The
-operator families may appear later as examples of maps that request
-those partials, or in the experiment paragraph.
+For a derivative-evaluation paper this means: open on how high-order
+partials of a neural network are computed (repeated automatic
+differentiation, the growing graph). Do not list polyharmonic, plate,
+Helmholtz, or Maxwell models in the introduction. Those families are
+benchmarks. They appear when the experiments are described.
 
 ## Paragraph jobs in a JCP method introduction
 
