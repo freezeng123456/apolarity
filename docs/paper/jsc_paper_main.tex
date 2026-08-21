@@ -132,43 +132,40 @@ $p = \abs{\nu}$, the mixed partial of interest is
 \end{equation}
 
 The standard way to evaluate \eqref{eq_intro_partial} is automatic
-differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. In that
-framework a derivative of order $p$ is obtained by applying
-backpropagation $p$ times: each extra derivative is the reverse-mode
-derivative of the previous derivative~\cite{Shi2024stde}. Shi, Hu, Lin,
-and Kawaguchi record that, for this construction, the size of the
-derivative tensor has scaling $O(d^{p})$ and the size of the computation
-graph has scaling $O(2^{p-1}L)$, where $d$ is the dimension of the input
-and $L$ is the number of operations in the forward computation
-graph~\cite{Shi2024stde}. With each extra reverse sweep the new evaluation
-trace includes the previous cotangents, so the length of sequential
-computation doubles~\cite{Shi2024stde}.
+differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. Backpropagation
+computes first-order derivatives. A mixed partial of order $p$ is obtained
+by applying this operation $p$ times, once for each extra
+derivative~\cite{Shi2024stde,Griewank2008}. The size of the derivative
+tensor then has scaling $O(d^{p})$ and the size of the computation graph
+has scaling $O(2^{p-1}L)$, where $d$ is the dimension of the input and $L$
+is the number of operations in the forward computation
+graph~\cite{Shi2024stde}.
 
-An alternative is to estimate \eqref{eq_intro_partial} rather than
-evaluate it by backpropagation. Finite differences replace each extra
-derivative by nearby evaluations of the same
-network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
+Other methods have been developed for the same evaluation. Taylor-mode
+automatic differentiation computes directional derivatives of order $p$ in
+one pass~\cite{Bettencourt2019,Griewank2008}. Univariate Taylor series can
+be used to recover the full derivative tensor of that
+order~\cite{GriewankUtkeWalther2000}, and a structured recurrence evaluates
+one differential operator~\cite{Li2024forwardLaplacian}. The stochastic
+Taylor derivative estimator is a separate construction: it chooses the
+input tangents of Taylor-mode automatic differentiation so as to estimate
+an arbitrary contraction of the derivative tensor~\cite{Shi2024stde}.
+Finite differences replace each extra derivative by nearby evaluations of
+the same network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
 estimator~\cite{Hutchinson1989}, applied through Hessian-vector
 products~\cite{Pearlmutter1994}, estimates traces of high-order
 operators~\cite{Hu2024hte}. Stein's identity and Gaussian
 smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
 and the bias and variance of that smoothing have been
 quantified~\cite{Hu2025bias}. A random subset of coordinates can be taken at
-each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator
-constructs random input tangents for univariate Taylor-mode automatic
-differentiation and thereby estimates an arbitrary contraction of the
-derivative tensor~\cite{Shi2024stde}.
+each step~\cite{Hu2023sdgd}.
 
 We evaluate \eqref{eq_intro_partial} from directional Taylor coefficients.
 One pass along a direction $\bv$ returns
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
-Griewank, Utke, and Walther recover every derivative of order $p$ from a
-family of such series~\cite{GriewankUtkeWalther2000}. A structured
-recurrence evaluates one differential operator
-exactly~\cite{Li2024forwardLaplacian}. A linear combination of the
-coefficients recovers one mixed partial,
+A linear combination of these coefficients recovers one mixed partial,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}

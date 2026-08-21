@@ -117,11 +117,12 @@ Martinis four beats, after the abstract is frozen, in this order:
 
 (a) one mixed partial of interest, with the defining equation; no PDE
     application list,
-(b) the standard way is automatic differentiation: a derivative of
-    order $p$ is backpropagation applied $p$ times (STDE §3.2). Quote
-    STDE: size of the derivative tensor $O(d^{p})$, size of the
-    computation graph $O(2^{p-1}L)$. STDE itself is an estimator, not
-    an exact method,
+(b) the standard way is automatic differentiation: backpropagation
+    $p$ times, with STDE's scalings cited but not narrated as ``X
+    records that.'' No cotangents, no author roll-call,
+(c) then other methods: Taylor-mode and related exact procedures
+    (no invented scalings), STDE as its own estimator, then FD /
+    Hutchinson as alternatives,
 (c) next paragraph: estimation as an alternative (FD, Hutchinson, STDE),
 (d) this paper's directional Waring construction,
 (e) comparison and roadmap.
