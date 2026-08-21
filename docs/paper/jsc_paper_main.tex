@@ -130,9 +130,10 @@ apolarity
 
 High-order derivatives arise in a wide range of computational models, such as
 polyharmonic and plate equations~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
-problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. An operator
-of order $p$ is a linear combination of those partials, and the same
-derivatives are requested at many points on every evaluation.
+problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. A
+differential operator of a given order is a linear combination of those
+partials, and the same derivatives are requested at many points on every
+evaluation.
 
 Nested reverse-mode automatic differentiation evaluates a partial
 exactly~\cite{Griewank2008,Baydin2018}, as in the reverse-mode systems used
@@ -150,27 +151,34 @@ smoothing~\cite{Stein1981,He2023} estimate a residual from function values,
 and the bias and variance of that smoothing have been
 quantified~\cite{Hu2025bias}. A random subset of residual coordinates can be
 taken at each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative
-estimator already uses Taylor-mode tangents, and contracts the order-$p$
-derivative tensor~\cite{Shi2024stde}.
+estimator already uses Taylor-mode tangents, and contracts the derivative
+tensor of that order~\cite{Shi2024stde}.
 
 Taylor-mode automatic differentiation takes a different route. It propagates a
 truncated Taylor series along one direction through the computation in a
 single forward pass~\cite{Bettencourt2019,Griewank2008}, and returns the
-directional derivatives of that order. Any partial of the same order is then a
-linear combination of those directional derivatives, evaluated along several
-directions. Griewank, Utke, and Walther recover the full derivative tensor
-from a family of univariate Taylor series~\cite{GriewankUtkeWalther2000}. A
-structured forward recurrence evaluates one differential operator
+directional Taylor coefficient of that order,
+\begin{equation}\label{eq_intro_tp}
+    \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
+\end{equation}
+A linear combination of these coefficients recovers one partial of the same
+order,
+\begin{equation}\label{eq_intro_recon}
+    \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
+\end{equation}
+Griewank, Utke, and Walther recover the full derivative tensor from a family
+of univariate Taylor series~\cite{GriewankUtkeWalther2000}. A structured
+forward recurrence evaluates one differential operator
 exactly~\cite{Li2024forwardLaplacian}.
 
-The order-$p$ directional Taylor coefficient is a homogeneous polynomial in
-the direction, and $\partial^{\nu}u$ is one monomial coefficient of that
-polynomial, so the shortest combination for one partial is a Waring
-decomposition of the corresponding monomial~\cite{Landsberg2012}. Over $\C$
-that length is known in closed form~\cite{CCG2012}, and a roots-of-unity
-formula attains it. Appendix~\ref{sec_schedules} recalls the apolarity
-argument behind the lower bound~\cite{IK1999}. We evaluate the formula with a
-batched Taylor jet and a closed-form adjoint.
+The coefficient \eqref{eq_intro_tp} is a homogeneous polynomial in the
+direction, and the target partial is one monomial coefficient of that
+polynomial, so the shortest combination \eqref{eq_intro_recon} is a Waring
+decomposition of the corresponding monomial~\cite{Landsberg2012}. Over the
+complex numbers that length is known in closed form~\cite{CCG2012}, and a
+roots-of-unity formula attains it. Appendix~\ref{sec_schedules} recalls the
+apolarity argument behind the lower bound~\cite{IK1999}. We evaluate the
+formula with a batched Taylor jet and a closed-form adjoint.
 
 Against nested automatic differentiation the values and parameter gradients
 match in double precision, and the time and memory of one evaluation fall as
@@ -231,7 +239,8 @@ $\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
 
 Let $u \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be sufficiently smooth
 near a fixed point $\bx$. For a direction $\bv \in \R^{d}$, the directional
-Taylor coefficient of order $p$ at $\bx$ along $\bv$ is
+Taylor coefficient of order $p$ at $\bx$ along $\bv$, already written as
+\eqref{eq_intro_tp}, is
 \begin{equation}\label{eq_tp}
     \Tp(\bx; \bv) := \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0} = \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv].
 \end{equation}
