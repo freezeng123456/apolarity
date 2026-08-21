@@ -308,3 +308,93 @@ One connected methods paragraph, then the Waring sentence:
 - STDE (23) already uses Taylor-mode tangents, and estimates an arbitrary contraction of the derivative tensor.
 - Taylor mode itself is a univariate jet (1, 3); Griewank–Utke–Walther (2) interpolate the full tensor from several such jets; Forward Laplacian (14) is an exact recurrence for one operator.
 - This paper: shortest exact combination for one monomial, length CCG (83), apolarity in the appendix (84, 85).
+
+---
+
+## Expansion to about 40: used tools, founding papers, named operators
+
+The twelve above are the **method and theorem**. A JCP paper of this
+length needs about 40 cited works in the whole manuscript, not 40
+method papers and not 40 citations in the introduction. The extra
+entries are things the text already does or already names: the
+collocation residual we time, the optimizer and the host AD system,
+the operators in the opening sentence, and the original papers behind
+words the introduction already uses (Hutchinson, Stein, finite
+differences). Algebraic geometry stays at the three appendix books.
+SIREN, Fourier features, and MscaleDNN are not in the `jsc_v3`
+comparison and stay out.
+
+### Must add (16). The text already has a hook
+
+| # | Work | Hook in the manuscript | Where |
+|---|------|------------------------|-------|
+| 43 | Raissi, Perdikaris, Karniadakis 2019 JCP | Founding PINN / collocation residual; this is the experiment | Intro pointer to §4; §2 residual |
+| — | Lagaris, Likas, Fotiadis 1998 IEEE TNN | Neural collocation before the name PINN | Same sentence as Raissi |
+| 44 | Karniadakis et al. 2021 Nat. Rev. Phys. | One review after naming the workload, not a survey | Intro, with Raissi |
+| 75 | Gazzola, Grunau, Sweers 2010 LNM | We solve \(\Delta^m\) with Navier traces | Opening sentence |
+| 76 | Ciarlet 1997, *Mathematical Elasticity* II | Opening names plates; order four is the plate/biharmonic case | Opening sentence |
+| — | Ihlenburg 1998, *Finite Element Analysis of Acoustic Scattering* | Opening names Helmholtz; chirp is a Helmholtz-type residual | Opening sentence |
+| — | Monk 2003, *Finite Element Methods for Maxwell's Equations* | Opening names Maxwell; the third family is TM Maxwell | Opening sentence |
+| 28 | Hutchinson 1989 | The introduction says Hutchinson / HTE | Methods paragraph |
+| 29 | Stein 1981 `(in bib)` | The introduction says Stein / randomized smoothing | Methods paragraph |
+| — | Fornberg 1988 Math. Comp. | The introduction says finite differences | Methods paragraph, with CAN-PINN |
+| 8 | Baydin, Pearlmutter, Radul, Siskind 2018 JMLR | Nested AD of a neural network | Methods paragraph, with Griewank–Walther |
+| 17 | Pearlmutter 1994 Neural Comp. | Hessian-vector products behind HTE | Methods paragraph, with HTE |
+| — | Kingma and Ba 2015 ICLR, Adam | §4 trains with Adam | Intro one clause pointing at §4; cite in §4 |
+| — | Loshchilov and Hutter 2017 ICLR, SGDR | §4 uses cosine decay | §4; optional clause in the same intro sentence |
+| 20 | Paszke et al. 2019 NeurIPS, PyTorch | Nested reverse baseline is PyTorch | §4 protocol; optional in the nested-AD sentence |
+| — | Trabelsi et al. 2018 ICLR, Deep Complex Networks `(in bib)` | Training network is complex-parameter \(\sinh\) | §4; intro if the complex Maxwell residual is named |
+
+### Fill to forty (12). One clause each, easy to drop
+
+| # | Work | Hook | Softness |
+|---|------|------|----------|
+| 45 | Sirignano and Spiliopoulos 2018 JCP, DGM | Mesh-free collocation in the same year as the PINN name | Low: one cluster with Raissi |
+| 27 | Hu et al. 2024, SDGD `(in bib)` | Another randomized residual; already in the present intro | Low if the randomized list stays |
+| 73 | Vahab et al. 2022 `(in bib)` | PINN on a biharmonic / plate residual | Medium: application, not a method we use |
+| 34 | Cohen, Rosenfeld, Kolter 2019 ICML | Founding randomized-smoothing paper, as Hutchinson is to HTE | Medium |
+| 81 | Pfau et al. 2020, FermiNet | Workload that requested Forward Laplacian | Medium |
+| 13 | Li et al. 2024, DOF | Forward-mode operators, sibling of Forward Laplacian | Medium: second pointer |
+| 4 | Bischof, Corliss, Griewank 1993 | Univariate Taylor before Griewank–Utke–Walther 2000 | Medium: lineage |
+| 96 | Griewank 1991, higher-derivative vectors | Directional derivatives of order \(p\) | Medium: lineage |
+| — | Roache 2002, method of manufactured solutions | §4 uses manufactured \(u_\star\) | Low, but lives in §4 |
+| 5 | Neidinger 1992 ACM TOMS | High-order partials by Taylor arithmetic | Higher: we do not use his scheme |
+| 46 | E and Yu 2018, Deep Ritz | Founding neural PDE solver, energy form | Higher: not our residual |
+| 47 | Han, Jentzen, E 2018 PNAS `(in bib)` | Founding high-dimensional neural PDE solver | Higher: not our experiment |
+
+Do **not** add, even to reach 40: SIREN, Fourier features, MscaleDNN
+(not in `jsc_v3`); XPINN, adaptive activations, PINNacle, Jiang
+DeepONet; Comon 2008, Buczyńska–Buczyński–Teitler, Alexander–Hirschowitz;
+AdamW, Xavier, cosine-as-a-second-optimizer-paper.
+
+### How the extra cites sit in the introduction
+
+The introduction stays the three-beat piece. New citations hang on
+sentences that are already there; they do not open a PINN paragraph.
+
+1. High-order derivatives arise in polyharmonic problems
+   [Gazzola], plates [Ciarlet], Helmholtz problems [Ihlenburg], and
+   Maxwell systems [Monk].
+2. Nested reverse mode [Griewank–Walther, Baydin] evaluates them
+   exactly, as implemented for networks in PyTorch [Paszke]; finite
+   differences [Fornberg, CAN-PINN] replace nesting by a step;
+   Hutchinson [Hutchinson, HTE], Stein / randomized smoothing
+   [Stein, He, Hu 2025], and STDE estimate a residual by sampling.
+   Taylor mode [Bettencourt, Bischof] returns one directional jet;
+   Griewank–Utke–Walther interpolate the full tensor; Forward
+   Laplacian [Li] is an exact recurrence for one operator.
+3. The shortest combination for one partial is a monomial Waring
+   decomposition [Landsberg, CCG]; apolarity is in the appendix [IK].
+4. Section 4 times both backends on collocation residuals [Raissi,
+   Lagaris] of those operators, with Adam [Kingma] and a
+   complex-parameter network [Trabelsi].
+
+Adam, cosine decay, PyTorch, Trabelsi, and Roache may be cited first
+in §4 and still count toward the 40. The introduction only needs the
+Raissi pointer and, if desired, Adam in that same sentence.
+
+Suggested freeze if we have to pick tomorrow: the twelve, plus the
+sixteen “must add”, plus DGM, SDGD, Roache, and Vahab (32). Then add
+Cohen, FermiNet, Bischof, Pearlmutter (already in the sixteen), and
+stop near 36–40 by taking DOF or Griewank 1991 rather than Deep Ritz
+or Deep BSDE.
