@@ -128,57 +128,60 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-High-order derivatives arise in a wide range of computational models, such as
-polyharmonic and plate equations~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
-problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. A
-differential operator of a given order is a linear combination of those
-partials, and the same derivatives are requested at many points on every
-evaluation.
+High-order partial derivatives of a smooth map are evaluated whenever a
+differential operator is applied to that map, and the same partials are
+requested at many points. Nested reverse-mode automatic differentiation
+returns a multi-index exactly~\cite{Griewank2008,Baydin2018}, and is the
+default in reverse-mode systems for composed nonlinear
+maps~\cite{Paszke2019}. Each additional coordinate derivative retains
+another layer of the computational graph, so the time and memory of one
+evaluation grow with the order and with how many coordinates the multi-index
+touches. Polyharmonic and plate operators~\cite{Gazzola2010,Ciarlet1997},
+Helmholtz problems~\cite{Ihlenburg1998}, and Maxwell
+systems~\cite{Monk2003} are linear combinations of those partials.
 
-Nested reverse-mode automatic differentiation evaluates a partial
-exactly~\cite{Griewank2008,Baydin2018}, as in the reverse-mode systems used
-for composed nonlinear maps~\cite{Paszke2019}, but the stored graph grows with
-every additional coordinate derivative.
-
-Finite differences approximate the same partial from nearby
-evaluations~\cite{Fornberg1988}, and coupled automatic-numerical schemes use
-that idea inside a residual~\cite{Chiu2022CAN}, while randomized estimators
-replace the nested graph by sampling. Hutchinson's trace
-estimator~\cite{Hutchinson1989}, applied through Hessian-vector
-products~\cite{Pearlmutter1994}, estimates traces of high-order
-operators~\cite{Hu2024hte}. Stein's identity and Gaussian
-smoothing~\cite{Stein1981,He2023} estimate a residual from function values,
+When the nested graph is too expensive, two other families are used. Finite
+differences replace each extra derivative by nearby evaluations of the same
+map~\cite{Fornberg1988}; coupled automatic-numerical schemes keep reverse
+mode for some derivatives and finite differences for others inside a
+residual~\cite{Chiu2022CAN}. Randomized estimators replace nesting by
+sampling. Hutchinson's trace estimator~\cite{Hutchinson1989}, applied
+through Hessian-vector products~\cite{Pearlmutter1994}, estimates traces of
+high-order operators~\cite{Hu2024hte}. Stein's identity and Gaussian
+smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
 and the bias and variance of that smoothing have been
-quantified~\cite{Hu2025bias}. A random subset of residual coordinates can be
-taken at each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative
-estimator already uses Taylor-mode tangents, and estimates a contraction of
-the derivative tensor of that order~\cite{Shi2024stde}.
+quantified~\cite{Hu2025bias}. A random subset of residual coordinates can
+be taken at each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative
+estimator already uses Taylor-mode tangents and estimates a contraction of
+the derivative tensor of that order~\cite{Shi2024stde}. These methods avoid
+the nested graph at the price of a step size or a sampling variance.
 
-Taylor-mode automatic differentiation takes a different route. It propagates a
-truncated Taylor series along one direction through the computation in a
-single forward pass~\cite{Bettencourt2019,Griewank2008}, and returns the
-directional Taylor coefficient of that order,
+Taylor-mode automatic differentiation~\cite{Bettencourt2019,Griewank2008}
+keeps exactness and changes the primitive. One forward sweep along a
+direction through the computation returns the directional Taylor coefficient
+of that order,
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
-A linear combination of these coefficients recovers one partial of the same
-order,
+A finite linear combination of these coefficients recovers one partial of
+the same order,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}
 Griewank, Utke, and Walther recover the full derivative tensor from a family
 of univariate Taylor series~\cite{GriewankUtkeWalther2000}. A structured
 forward recurrence evaluates one differential operator
-exactly~\cite{Li2024forwardLaplacian}.
+exactly~\cite{Li2024forwardLaplacian}. For one multi-index the free design
+variable is then the number of directions.
 
 That coefficient is a homogeneous polynomial in the direction, and the
-target partial is one monomial coefficient of that polynomial, so the
-shortest combination is a Waring decomposition of the corresponding
-monomial~\cite{Landsberg2012}. Over the complex numbers that length is
-known in closed form~\cite{CCG2012}, and roots of unity attain it.
-Appendix~\ref{sec_schedules} recalls the apolarity argument behind the lower
-bound~\cite{IK1999}. We evaluate the combination with a batched Taylor jet
-and a closed-form adjoint.
+target partial is one monomial coefficient of that polynomial. The
+shortest combination is therefore a Waring decomposition of the
+corresponding monomial~\cite{Landsberg2012}. Over the complex numbers that
+length is known in closed form~\cite{CCG2012}, and roots of unity attain
+it. Appendix~\ref{sec_schedules} recalls the apolarity argument behind the
+lower bound~\cite{IK1999}. We evaluate the combination with a batched
+Taylor jet and a closed-form adjoint.
 
 Against nested automatic differentiation the values and parameter gradients
 match in double precision, and the time and memory of one evaluation fall as

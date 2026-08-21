@@ -11,6 +11,11 @@ paths:
 Read this skill before drafting or editing manuscript TeX. It has two jobs:
 source formatting, and scientific voice. Do not treat either as optional.
 
+For abstract-versus-introduction architecture, section order, and how
+JCP method papers open, also read `.cursor/skills/jcp-paper-structure/SKILL.md`.
+An introduction that restates the abstract with citations is wrong even
+if the voice and the TeX wrap are clean.
+
 The TeX rules below are the manuscript formatter. The voice rules are
 mandatory for abstracts, introductions, conclusions, and contribution claims.
 
@@ -103,6 +108,10 @@ Order:
 4. What the numerical comparison shows.
 
 Do not use the abstract to list limitations, non-claims, or future work.
+
+The introduction is not a second abstract. Its first sentence, its
+paragraph jobs, and its literature block are specified in
+`.cursor/skills/jcp-paper-structure/SKILL.md`.
 
 ## TeX source formatting
 
