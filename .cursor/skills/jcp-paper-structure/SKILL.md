@@ -92,8 +92,8 @@ Ranocha, Babbar, adjoint):
 2. **Literature as methods, not a name list.** Each cited work gets
    what it *does* (ENO chooses one stencil; WENO weights all of them;
    Hutchinson estimates a trace; STDE estimates a contraction with
-   Taylor-mode tangents). The abstract is allowed one compressed
-   clause for this block; the introduction is not.
+   Taylor-mode tangents). This survey is an introduction job. The
+   abstract names at most the one default it times against.
 3. **The strain those methods leave.** Stated as a fact about the
    methods, not as “the remaining question is” and not as a list of
    things this paper will not do.
