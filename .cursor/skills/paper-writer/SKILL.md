@@ -113,22 +113,21 @@ Forbidden:
 
 ## Introduction (do not write it while the abstract is open)
 
-Martinis four beats, after the abstract is frozen, in this order:
+Follow Cai–Fang–Zhou (JCP 2026, deep random difference): open with
+``In this work we focus on'' and the mixed partial; no PDE application
+list. Then two prose paragraphs (no bullets). Each paragraph is
+method → However bottleneck → later work in the same class.
 
-(a) one mixed partial of interest, with the defining equation; no PDE
-    application list,
-(b) one paragraph for exact evaluation: standard backpropagation
-    applied $p$ times, with sizes written as ``has size \(O(\cdot)\)''
-    (not ``has scaling''), then Taylor-mode and related exact
-    procedures in the same paragraph,
-(c) a separate paragraph for estimators, closed by hyperparameter
-    sensitivity and large sampling variance,
-(d) the construction: display the decomposition first, then the
+(a) exact evaluation: backpropagation $p$ times, However tensor/graph
+    sizes (``has size \(O(\cdot)\)'', not ``has scaling''), then
+    Taylor-mode, univariate Taylor series, and Forward Laplacian,
+(b) estimation: finite differences, Hutchinson, smoothing, SDGD, STDE,
+    However hyperparameter sensitivity and large variance,
+(c) the construction: display the decomposition first, then the
     directional form of each term; evaluate termwise and add; do not
     claim speed here,
-(e) three contributions (equivalence with monomial Waring rank;
-    exact method, rank-attaining algorithm, and experiments; memory
-    and number of directions), then the roadmap.
+(d) ``Specifically, our main contributions are as follows'' as a
+    numbered list of three items, then the roadmap.
 
 Do not write ``two standard ways'' or ``that derivative is.'' Do not
 attribute STDE's scalings to STDE's own algorithm. Use STDE's nouns
