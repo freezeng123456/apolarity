@@ -124,46 +124,54 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-High-order derivatives of a neural network are usually computed by applying
-automatic differentiation repeatedly~\cite{Griewank2008,Baydin2018,Paszke2019}.
-Each extra derivative is another backpropagation through a larger
-computational graph. Time and memory therefore grow with the order, and with
-how many coordinates are differentiated.
+In this work we focus on computing one mixed partial of a neural network
+$u$. For a multi-index $\nu = (\nu_{1}, \ldots, \nu_{d})$ of order
+$p = \abs{\nu}$, that derivative is
+\begin{equation}\label{eq_intro_partial}
+    \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx).
+\end{equation}
+High-order derivatives of this form appear in many equations, including
+polyharmonic and plate operators~\cite{Gazzola2010,Ciarlet1997}, Helmholtz
+problems~\cite{Ihlenburg1998}, and Maxwell systems~\cite{Monk2003}. An
+operator of order $p$ is a linear combination of mixed partials, so the
+cost of one residual is the cost of evaluating \eqref{eq_intro_partial} at
+many points.
 
-Finite differences replace each extra derivative by nearby evaluations of
-the same network~\cite{Fornberg1988}. Some methods mix automatic
-differentiation with finite differences~\cite{Chiu2022CAN}. Sampling methods
-estimate the derivative instead of forming the full graph. Hutchinson's
+There are two standard ways to compute \eqref{eq_intro_partial}. The first
+is exact automatic differentiation: backpropagation is applied once per
+extra derivative~\cite{Griewank2008,Baydin2018,Paszke2019}. The mixed
+partial is then exact. The order-$p$ derivative tensor in $d$ dimensions
+has size $O(d^{p})$, and each extra reverse sweep roughly doubles the stored
+graph, which therefore has length $O(2^{p-1}L)$ when the forward evaluation
+has $L$ elementary operations~\cite{Shi2024stde}. Applying first-order
+automatic differentiation repeatedly also repeats a combinatorial amount of
+work~\cite{Bettencourt2019}. Time and memory therefore grow with both the
+order and the number of active coordinates.
+
+The second way is to estimate the derivative. Finite differences replace
+each extra derivative by nearby evaluations of the same
+network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
 estimator~\cite{Hutchinson1989}, applied through Hessian-vector
 products~\cite{Pearlmutter1994}, estimates traces of high-order
 operators~\cite{Hu2024hte}. Stein's identity and Gaussian
 smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
 and the bias and variance of that smoothing have been
 quantified~\cite{Hu2025bias}. A random subset of coordinates can be taken at
-each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator
-already uses Taylor-mode automatic differentiation to estimate a contraction
-of the derivative tensor~\cite{Shi2024stde}. Griewank, Utke, and Walther
-recover every derivative of a given order from a family of univariate Taylor
-series~\cite{GriewankUtkeWalther2000}. A structured recurrence evaluates one
-differential operator exactly~\cite{Li2024forwardLaplacian}.
+each step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator uses
+Taylor-mode automatic differentiation to estimate a contraction of the
+derivative tensor~\cite{Shi2024stde}. These methods avoid storing the full
+graph. They replace it by a step size or by sampling variance.
 
-These methods do different things. Repeated automatic differentiation is
-exact, but each extra derivative enlarges the graph. Finite differences
-introduce a step size. Sampling methods, including the stochastic Taylor
-derivative estimator, introduce variance. Recovering every derivative of a
-given order is exact, but the cost is set by the whole tensor, not by one
-mixed partial. After Taylor-mode automatic
-differentiation~\cite{Bettencourt2019,Griewank2008} has produced directional
-derivatives, one still has to choose how many directions to use for a
-single mixed partial.
-
-We determine the least such number. One pass along a direction returns the
-directional Taylor coefficient of that order,
+We compute \eqref{eq_intro_partial} exactly from directional Taylor
+coefficients. One pass along a direction $\bv$ returns
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
-A linear combination of these coefficients recovers one mixed partial of
-the same order,
+Griewank, Utke, and Walther recover every derivative of order $p$ from a
+family of such series~\cite{GriewankUtkeWalther2000}. A structured
+recurrence evaluates one differential operator
+exactly~\cite{Li2024forwardLaplacian}. A linear combination of the
+coefficients recovers one mixed partial,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}
@@ -180,8 +188,9 @@ differentiate it with respect to the network parameters.
 We compare this formula with repeated automatic differentiation on the same
 network, the same residual, and the same optimizer. The values and the
 parameter gradients match in double precision. Time and memory of one
-evaluation fall as the order grows. Section~\ref{sec_experiments} times both methods on manufactured
-collocation residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
+evaluation fall as the order grows. Section~\ref{sec_experiments} times both
+methods on manufactured collocation
+residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
 The optimizer is Adam with a cosine learning-rate
 schedule~\cite{Kingma2015,Loshchilov2017}, on a complex-parameter
 network~\cite{Trabelsi2018ComplexNN}. The model, the loss, and the optimizer
@@ -205,8 +214,8 @@ argument for the rank bound are collected in Appendix~\ref{sec_schedules}.
 
 Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be smooth. Let
 $\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order
-$p = \abs{\nu}$, and write $\dal := \partial_{1}^{\nu_{1}} \cdots
-\partial_{d}^{\nu_{d}}$. We evaluate $\dal u_{\theta}$ at a point, exactly, and
+$p = \abs{\nu}$, and write $\dal$ as in \eqref{eq_intro_partial}. We evaluate
+$\dal u_{\theta}$ at a point, exactly, and
 we differentiate the value with respect to $\theta$. The same derivative is
 required at many points on every step, so the cost that matters is one
 evaluation, amortized over a batch.

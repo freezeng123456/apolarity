@@ -113,18 +113,17 @@ Forbidden:
 
 ## Introduction (do not write it while the abstract is open)
 
-Martinis four beats, after the abstract is frozen:
+Martinis four beats, after the abstract is frozen, in this order:
 
-(a) field-level question and why the evaluation matters,
-(b) prior methods by what they *do* (nested AD, FD, randomized
-    contractions including STDE, Taylor mode as a primitive),
-(c) what this paper constructs, more specific than the abstract,
+(a) one mixed partial, with the defining equation, then where such
+    derivatives appear (polyharmonic, plate, Helmholtz, Maxwell as
+    examples, not as the opening),
+(b) two ways to compute it: exact repeated AD, with the $O(d^{p})$ and
+    $O(2^{p-1}L)$ scalings cited, then estimators (FD, Hutchinson, STDE),
+(c) this paper's construction, more specific than the abstract,
 (d) where the main results live.
 
-The introduction is allowed the competitor survey. The abstract is not.
-
-Do not open the introduction with "nested reverse-mode" or a stack of
-AD jargon. Bettencourt and STDE say *applying automatic differentiation
-repeatedly* and *backpropagation*. Use those words in the first
-paragraph. "Nested reverse mode" is an implementation detail of the
-baseline, not an opening term.
+Do not open the introduction with a stack of AD jargon. Bettencourt
+and STDE say *applying automatic differentiation repeatedly* and
+*backpropagation*. The scaling of repeated reverse AD is cited from
+STDE, not described as ``the graph grows.''
