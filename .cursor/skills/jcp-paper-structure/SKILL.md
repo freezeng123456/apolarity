@@ -10,9 +10,12 @@ paths:
 
 Read this skill before drafting or rewriting an abstract or introduction
 for a Journal of Computational Physics manuscript. It complements
-`.cursor/skills/english-paper-writing/SKILL.md` (voice and TeX). This
+`.cursor/skills/english-paper-writing/SKILL.md` (voice and TeX) and
+`.cursor/skills/paper-writer/SKILL.md` (abstract sentence plan). This
 file is about **what each front-matter block is for**. The voice skill
 does not authorize an introduction that is the abstract with citations.
+The paper-writer skill does not authorize an abstract that surveys
+other methods.
 
 The rules below were read off the abstracts and introductions of 30 JCP
 papers (classics, traditional discretizations, and SciML method papers).
@@ -28,7 +31,7 @@ displays, or names to the abstract, it is wrong.
 | | Abstract | Introduction |
 |---|---|---|
 | Reader | Someone who will not open the paper | Someone who will read the method |
-| Job | Report what was computed, constructed, and obtained | Motivate the evaluation, survey how it is done, then state the construction with enough mechanism to start §2 |
+| Job | Report the object, the result, the construction, and the one check | Motivate the evaluation, survey how it is done, then state the construction with enough mechanism to start §2 |
 | Citations | None | Named methods, with what each one does |
 | Opening sentence | The object and where it is used | One level more general **or** more specific than the abstract. Never the same sentence |
 | Equations | None (no `$` in this manuscript's abstract) | Allowed. Display an identity only when the introduction is stating that construction, not when repeating the abstract |

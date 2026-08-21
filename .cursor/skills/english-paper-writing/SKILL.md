@@ -11,10 +11,12 @@ paths:
 Read this skill before drafting or editing manuscript TeX. It has two jobs:
 source formatting, and scientific voice. Do not treat either as optional.
 
-For abstract-versus-introduction architecture, section order, and how
-JCP method papers open, also read `.cursor/skills/jcp-paper-structure/SKILL.md`.
-An introduction that restates the abstract with citations is wrong even
-if the voice and the TeX wrap are clean.
+For the abstract sentence plan, also read
+`.cursor/skills/paper-writer/SKILL.md`. For abstract-versus-introduction
+architecture, section order, and how JCP method papers open, also read
+`.cursor/skills/jcp-paper-structure/SKILL.md`. An introduction that
+restates the abstract with citations is wrong even if the voice and the
+TeX wrap are clean.
 
 The TeX rules below are the manuscript formatter. The voice rules are
 mandatory for abstracts, introductions, conclusions, and contribution claims.
@@ -97,17 +99,23 @@ numbers in the abstract unless the user asks for them.
 
 ### Abstract shape
 
-One paragraph. Factual. Stand-alone. No citations. Uncommon terms defined
-once if they must appear.
+One paragraph, 5–10 lines. One concept per sentence. Factual.
+Stand-alone. No citations. Uncommon terms defined once if they must
+appear. Follow the six-sentence plan in
+`.cursor/skills/paper-writer/SKILL.md`.
 
 Order:
 
-1. What must be computed, and where it arises.
-2. Why existing methods cost too much or lose exactness (named, brief).
-3. What this paper constructs, and the principal result.
-4. What the numerical comparison shows.
+1. What must be computed (one mixed partial). A short *where it arises*
+   clause is optional.
+2. The substrate: Taylor-mode returns directional coefficients.
+3. The reduction, the Waring result, and the roots-of-unity formula.
+4. What was checked: exact, and faster than nested automatic
+   differentiation (the one default).
 
-Do not use the abstract to list limitations, non-claims, or future work.
+Do not use the abstract as a method catalog. Finite differences,
+randomized estimators, stochastic contractions, and STDE belong in the
+introduction. Do not list limitations, non-claims, or future work.
 
 The introduction is not a second abstract. Its first sentence, its
 paragraph jobs, and its literature block are specified in
