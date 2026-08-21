@@ -235,3 +235,7 @@ The drift is $b_z(x, \mu, u) = a\bigl(m_{\mu}(t) - z\bigr) + u$.
 4. Make the smallest reviewable edit.
 5. If labels, numbering, or equation environments changed, compile or inspect
    the log; otherwise skip a full build unless asked.
+6. After any edit to `docs/paper/jsc_paper_main.tex`, run the four-pass
+   build (`pdflatex`, `bibtex`, `pdflatex`, `pdflatex`), copy the PDF to
+   artifacts, and send the user a review link (GitHub blob/raw on the
+   current branch, plus the artifact copy). Do this before the summary.
