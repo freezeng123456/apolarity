@@ -135,69 +135,66 @@ The standard way to evaluate \eqref{eq_intro_partial} is automatic
 differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. Backpropagation
 computes first-order derivatives. A mixed partial of order $p$ is obtained
 by applying this operation $p$ times, once for each extra
-derivative~\cite{Shi2024stde,Griewank2008}. The size of the derivative
-tensor then has scaling $O(d^{p})$ and the size of the computation graph
-has scaling $O(2^{p-1}L)$, where $d$ is the dimension of the input and $L$
-is the number of operations in the forward computation
-graph~\cite{Shi2024stde}.
+derivative~\cite{Shi2024stde,Griewank2008}. The derivative tensor then has
+size $O(d^{p})$ and the computation graph has size $O(2^{p-1}L)$, where
+$d$ is the dimension of the input and $L$ is the number of operations in
+the forward computation graph~\cite{Shi2024stde}. Taylor-mode automatic
+differentiation computes directional derivatives of order $p$ in one
+pass~\cite{Bettencourt2019,Griewank2008}. Univariate Taylor series recover
+the full derivative tensor of that order~\cite{GriewankUtkeWalther2000},
+and a structured recurrence evaluates one differential
+operator~\cite{Li2024forwardLaplacian}.
 
-Other methods have been developed for the same evaluation. Taylor-mode
-automatic differentiation computes directional derivatives of order $p$ in
-one pass~\cite{Bettencourt2019,Griewank2008}. Univariate Taylor series can
-be used to recover the full derivative tensor of that
-order~\cite{GriewankUtkeWalther2000}, and a structured recurrence evaluates
-one differential operator~\cite{Li2024forwardLaplacian}. The stochastic
-Taylor derivative estimator is a separate construction: it chooses the
-input tangents of Taylor-mode automatic differentiation so as to estimate
-an arbitrary contraction of the derivative tensor~\cite{Shi2024stde}.
-Finite differences replace each extra derivative by nearby evaluations of
-the same network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
+An alternative is to estimate \eqref{eq_intro_partial}. Finite differences
+replace each extra derivative by nearby evaluations of the same
+network~\cite{Fornberg1988,Chiu2022CAN}. Hutchinson's
 estimator~\cite{Hutchinson1989}, applied through Hessian-vector
 products~\cite{Pearlmutter1994}, estimates traces of high-order
 operators~\cite{Hu2024hte}. Stein's identity and Gaussian
-smoothing~\cite{Stein1981,He2023} estimate derivatives from function values,
-and the bias and variance of that smoothing have been
-quantified~\cite{Hu2025bias}. A random subset of coordinates can be taken at
-each step~\cite{Hu2023sdgd}.
+smoothing~\cite{Stein1981,He2023} estimate derivatives from function values.
+A random subset of coordinates can be taken at each
+step~\cite{Hu2023sdgd}. The stochastic Taylor derivative estimator chooses
+the input tangents of Taylor-mode automatic differentiation so as to
+estimate an arbitrary contraction of the derivative
+tensor~\cite{Shi2024stde}. These estimators are sensitive to their
+hyperparameters, and the variance of the estimate is
+large~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
 
-We evaluate \eqref{eq_intro_partial} from directional Taylor coefficients.
-One pass along a direction $\bv$ returns
-\begin{equation}\label{eq_intro_tp}
-    \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
-\end{equation}
-A linear combination of these coefficients recovers one mixed partial,
+We give a decomposition of \eqref{eq_intro_partial} whose number of terms
+attains the minimum,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}
-As a function of the direction, the coefficient~\eqref{eq_intro_tp} is a
-homogeneous polynomial of degree $p$. The mixed partial is one monomial
-coefficient of that polynomial. The shortest formula of the
-form~\eqref{eq_intro_recon} is therefore a Waring decomposition of the
-corresponding monomial~\cite{Landsberg2012}. Over the complex numbers that
-length is known in closed form~\cite{CCG2012}, and roots of unity attain
-it. Appendix~\ref{sec_schedules} recalls the argument behind the lower
-bound~\cite{IK1999}. We evaluate the combination in one batch and
-differentiate it with respect to the network parameters.
+We use this decomposition to evaluate the mixed partial exactly. Each term
+has the form of a directional Taylor coefficient
+\begin{equation}\label{eq_intro_tp}
+    \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
+\end{equation}
+We evaluate each term separately and add the results.
 
-We compare this formula with backpropagation applied $p$ times on the same
-network, the same residual, and the same optimizer. The values and the
-parameter gradients match in double precision. Time and memory of one
-evaluation fall as the order grows. Section~\ref{sec_experiments} times both
-methods on manufactured collocation
-residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
-The optimizer is Adam with a cosine learning-rate
-schedule~\cite{Kingma2015,Loshchilov2017}, on a complex-parameter
-network~\cite{Trabelsi2018ComplexNN}. The model, the loss, and the optimizer
-are held fixed between the two methods.
+First, we prove that a decomposition of the form \eqref{eq_intro_recon} is
+equivalent to a Waring decomposition of the corresponding monomial. The
+least number of terms is therefore the Waring rank of that
+monomial~\cite{Landsberg2012,CCG2012}. Appendix~\ref{sec_schedules} recalls
+the argument for the lower bound~\cite{IK1999}. Second, this equivalence
+gives an exact method for \eqref{eq_intro_partial}. We give an algorithm
+that attains this number of terms by a roots-of-unity formula, and
+experiments show that the resulting evaluation uses less memory and less
+time than backpropagation applied $p$ times. Third, we analyse the memory
+used by the evaluation and the number of directions. We compute how much
+memory is used, how much is saved relative to that baseline, and how the
+number of directions enters the cost.
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor-mode automatic
-differentiation. Section~\ref{sec_formulation} proves that the shortest
-directional formula is a monomial Waring decomposition and records the
-algorithm. Section~\ref{sec_experiments} compares the implementation with
-backpropagation applied $p$ times. Section~\ref{sec_concl} concludes. The
-roots-of-unity formula, the schedules used in the experiments, and the
-argument for the rank bound are collected in Appendix~\ref{sec_schedules}.
+differentiation. Section~\ref{sec_formulation} proves the equivalence with
+monomial Waring rank and records the algorithm.
+Section~\ref{sec_experiments} compares the implementation with
+backpropagation applied $p$ times on manufactured collocation
+residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
+Section~\ref{sec_concl} concludes. The roots-of-unity formula, the
+schedules used in the experiments, and the argument for the rank bound are
+collected in Appendix~\ref{sec_schedules}.
 
 %% ====================================================================
 %%  SECTION 2: PRELIMINARIES

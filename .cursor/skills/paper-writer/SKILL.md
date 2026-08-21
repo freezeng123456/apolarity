@@ -117,15 +117,18 @@ Martinis four beats, after the abstract is frozen, in this order:
 
 (a) one mixed partial of interest, with the defining equation; no PDE
     application list,
-(b) the standard way is automatic differentiation: backpropagation
-    $p$ times, with STDE's scalings cited but not narrated as ``X
-    records that.'' No cotangents, no author roll-call,
-(c) then other methods: Taylor-mode and related exact procedures
-    (no invented scalings), STDE as its own estimator, then FD /
-    Hutchinson as alternatives,
-(c) next paragraph: estimation as an alternative (FD, Hutchinson, STDE),
-(d) this paper's directional Waring construction,
-(e) comparison and roadmap.
+(b) one paragraph for exact evaluation: standard backpropagation
+    applied $p$ times, with sizes written as ``has size \(O(\cdot)\)''
+    (not ``has scaling''), then Taylor-mode and related exact
+    procedures in the same paragraph,
+(c) a separate paragraph for estimators, closed by hyperparameter
+    sensitivity and large sampling variance,
+(d) the construction: display the decomposition first, then the
+    directional form of each term; evaluate termwise and add; do not
+    claim speed here,
+(e) three contributions (equivalence with monomial Waring rank;
+    exact method, rank-attaining algorithm, and experiments; memory
+    and number of directions), then the roadmap.
 
 Do not write ``two standard ways'' or ``that derivative is.'' Do not
 attribute STDE's scalings to STDE's own algorithm. Use STDE's nouns
