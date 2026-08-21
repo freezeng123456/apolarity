@@ -93,19 +93,15 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  High-order partial derivatives, and the differential operators they form in
-  polyharmonic, plate, Helmholtz, and Maxwell problems, are expensive to
-  evaluate by nested automatic differentiation: the stored graph grows with
-  every additional coordinate derivative. Finite differences and randomized
-  estimators, including stochastic contractions of the derivative tensor, avoid
-  that nesting at the price of a step size or a sampling variance. Taylor-mode
-  automatic differentiation returns the directional Taylor coefficients of a
-  given order in one forward pass, so any partial of that order is a linear
-  combination of those coefficients along several directions. We show that the
-  shortest such combination is the Waring decomposition of the corresponding
-  monomial, and we give a roots-of-unity formula that attains this length. The
-  formula evaluates each derivative exactly and is substantially faster than
-  nested automatic differentiation.
+  Evaluating a high-order mixed partial by nested automatic differentiation is
+  expensive in time and memory. The stored graph grows with every additional
+  coordinate derivative. Taylor-mode automatic differentiation returns the
+  directional Taylor coefficients of a given order in one forward pass. We show
+  that the least number of directional evaluations needed to recover a target
+  partial equals the Waring rank of the corresponding monomial. A
+  roots-of-unity formula attains this bound. The formula is exact, and it is
+  substantially faster and uses less memory than nested automatic
+  differentiation.
 \end{abstract}
 
 \begin{keywords}
