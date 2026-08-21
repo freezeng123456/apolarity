@@ -59,36 +59,43 @@ the abstract starts to read like related work.
 
 ## Abstract template for this paper
 
-Four short sentences, one job each. This is the user-accepted plan.
-Do not expand it back into a six-sentence tour, and do not strip
-neural networks: without a composed map and a computational graph,
-high-order partials are not the expensive object of this paper.
+The abstract is frozen to the user-locked wording below. Do not
+rewrite it, tighten it, or expand it. Grammar-only fixes already
+applied: plural *neural networks*, *Experiments show*.
 
-| # | Sentence job | Body section it reports |
-|---|---|---|
-| 1 | The setting and the cost: high-order derivatives of neural networks are expensive because nested AD grows the computational graph. | Introduction / problem |
-| 2 | The substrate and the theorem: directional Taylor-mode; the least number of directional evaluations equals the Waring rank of the monomial. | Preliminaries / analysis |
-| 3 | The construction: a roots-of-unity formula attains this lower bound. | Method |
-| 4 | What was checked: exact, and faster and more memory-efficient than nested AD. | Experiments |
+```
+Computing high-order derivatives with neural networks is often
+computationally and memory intensive, primarily due to the huge
+computational graphs caused by automatic differentiation. In this
+work, we decompose the derivative into directional Taylor-mode
+automatic differentiation. We establish a fundamental connection
+between derivative extraction and polynomial algebra, proving that
+the minimal number of directional evaluations required to recover a
+target partial derivative equals the Waring rank of its corresponding
+monomial. We present a roots-of-unity formula that strictly attains
+this theoretical lower bound. Experiments show that our method
+significantly outperforms traditional automatic differentiation in
+speed and memory efficiency.
+```
 
-Neural networks appear as the maps that carry a computational graph.
-PINNs, residuals, and collocation still do not belong in the abstract:
-those are the verification workload.
+Five sentences, one job each:
 
-Nested AD appears in sentence 1 as the cost mechanism and in sentence 4
-as the timing baseline. Taylor mode appears once, in sentence 2, as the
-substrate, not as a competitor.
+| # | Sentence job |
+|---|---|
+| 1 | Neural networks, cost, and the AD graph. |
+| 2 | Decompose the derivative into directional Taylor-mode. |
+| 3 | Derivative extraction equals monomial Waring rank. |
+| 4 | Roots-of-unity attains the lower bound. |
+| 5 | Experiments: faster and more memory-efficient than traditional AD. |
 
-Forbidden in this template:
+PINNs, residuals, and collocation still do not belong in the abstract.
 
-- A sentence that names two or more alternative methods.
-- Opening on PINNs, residuals, or collocation.
+Forbidden:
+
+- A competing-method catalog (finite differences, STDE, Hutchinson).
 - A first sentence that is only an application list
-  (polyharmonic / plate / Helmholtz / Maxwell) with no evaluation.
-- Restating STDE, Hutchinson, or finite differences.
-- Calling the graph growth polynomial (nested reverse mode deepens
-  the stored graph with order; the polynomial scaling is the tensor
-  size in dimension).
+  (polyharmonic / plate / Helmholtz / Maxwell).
+- Another structural rewrite of this paragraph.
 
 ## Thinking framework (use this before writing)
 
@@ -100,9 +107,8 @@ Forbidden in this template:
    attains it.
 3. **What is the one default?** Nested AD. Everything else waits for
    the introduction.
-4. **Write the four jobs as four sentences.** Then check: one
-   concept each; no `$`; no catalog. Do not expand back to a
-   six-sentence rewrite.
+4. **Do not rewrite the frozen abstract.** If the user has locked
+   the paragraph, only grammar they explicitly request.
 5. **Only after the user accepts the plan**, write it into the TeX.
 
 ## Introduction (do not write it while the abstract is open)

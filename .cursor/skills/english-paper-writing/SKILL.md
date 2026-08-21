@@ -101,15 +101,8 @@ numbers in the abstract unless the user asks for them.
 
 One paragraph, 5–10 lines. One concept per sentence. Factual.
 Stand-alone. No citations. Uncommon terms defined once if they must
-appear. Follow the four-sentence plan in
-`.cursor/skills/paper-writer/SKILL.md`.
-
-Order:
-
-1. Neural networks and why nested AD is expensive (the graph).
-2. Directional Taylor-mode, and the Waring-rank lower bound.
-3. The roots-of-unity formula that attains the bound.
-4. Exact, and faster and more memory-efficient than nested AD.
+appear. The abstract is frozen; see the locked paragraph in
+`.cursor/skills/paper-writer/SKILL.md`. Do not rewrite it.
 
 Do not use the abstract as a method catalog. Finite differences,
 randomized estimators, stochastic contractions, and STDE belong in the
