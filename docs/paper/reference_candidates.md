@@ -1,10 +1,10 @@
 # Reference candidates for the JCP manuscript
 
-Target: a short on-theme bibliography, not a 40-paper survey.
-This file lists **100** candidates taken from the bibliographies of the
-seed papers below (not from a generic web search). The strict list at
-the end is the recommendation; unused entries stay out of
-`jsc_paper_main.bib`.
+Target: about 40 cited works in the published paper, of which twelve
+are the method and theorem. This file lists **100** candidates taken
+from the bibliographies of the seed papers below, plus a few founding
+or “we used this” works named in the expansion section. Unused entries
+stay out of `jsc_paper_main.bib`.
 
 Seed papers (their reference lists were read):
 
@@ -395,6 +395,5 @@ Raissi pointer and, if desired, Adam in that same sentence.
 
 Suggested freeze if we have to pick tomorrow: the twelve, plus the
 sixteen “must add”, plus DGM, SDGD, Roache, and Vahab (32). Then add
-Cohen, FermiNet, Bischof, Pearlmutter (already in the sixteen), and
-stop near 36–40 by taking DOF or Griewank 1991 rather than Deep Ritz
-or Deep BSDE.
+Cohen, FermiNet, Bischof 1993, and Griewank 1991 or DOF to land near
+36–40. Prefer those to Deep Ritz or Deep BSDE.
