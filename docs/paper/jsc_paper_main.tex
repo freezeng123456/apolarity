@@ -1,11 +1,11 @@
 %% jsc_paper_main.tex
-%% Rank-optimal directional Taylor jets for high-order derivatives
+%% Waring decomposition of derivatives and its applications
 %%
 %% Target journal: Journal of Computational Physics
 %% Document class: siamltex (SIAM)
 %% Build sequence: pdflatex, bibtex, pdflatex, pdflatex.
 
-\documentclass[final]{siamltex}
+\documentclass[final,oneeqnum]{siamltex}
 
 %% ========== Packages ==========
 \usepackage{amsmath,amssymb}
@@ -82,7 +82,7 @@
 \begin{document}
 
 %% ========== Title ==========
-\title{Rank-Optimal Directional Taylor Jets for\\High-Order Derivatives}
+\title{Waring Decomposition of Derivatives\\and Its Applications}
 
 %% ========== Authors (to be filled) ==========
 \author{Author One\thanks{Institution One (\tt author1@example.com).}
@@ -166,8 +166,11 @@ automatic differentiation, these estimators are sensitive to their
 hyperparameters, and the variance of the estimate is of great
 concern~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
 
-We give a decomposition of \eqref{eq_intro_partial} whose number of terms
-attains the minimum,
+In this paper, we use the Waring decomposition of
+monomials~\cite{CCG2012,Landsberg2012} to obtain a Waring
+decomposition of derivatives, and from this we give an efficient exact
+method for computing derivatives. We give a decomposition of
+\eqref{eq_intro_partial} whose number of terms attains the minimum,
 \begin{equation}\label{eq_intro_recon}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
 \end{equation}
@@ -176,24 +179,20 @@ has the form of a directional Taylor coefficient
 \begin{equation}\label{eq_intro_tp}
     \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
 \end{equation}
-We evaluate each term separately and add the results.
 
 Specifically, our main contributions are as follows.
 \begin{enumerate}
     \item We prove that a decomposition of the form \eqref{eq_intro_recon}
-    is equivalent to a Waring decomposition of the corresponding monomial.
-    The least number of terms is therefore the Waring rank of that
-    monomial~\cite{Landsberg2012,CCG2012}. Appendix~\ref{sec_schedules}
-    recalls the argument for the lower bound~\cite{IK1999}.
-    \item This equivalence gives an exact method for
-    \eqref{eq_intro_partial}. We give an algorithm that attains this
-    number of terms by a roots-of-unity formula, and experiments show that
-    the resulting evaluation uses less memory and less time than
+    is a Waring decomposition of the corresponding derivative: it is
+    equivalent to a Waring decomposition of the monomial, and the least
+    number of terms is the Waring rank of that
+    monomial~\cite{Landsberg2012,CCG2012}.
+    \item We give an algorithm that attains this number of terms by a
+    roots-of-unity formula, and thereby an efficient exact method for
+    \eqref{eq_intro_partial}.
+    \item We apply the method to manufactured collocation residuals.
+    The resulting evaluation uses less memory and less time than
     backpropagation applied $p$ times.
-    \item We analyse the memory used by the evaluation and the number of
-    directions. We compute how much memory is used, how much is saved
-    relative to that baseline, and how the number of directions enters
-    the cost.
 \end{enumerate}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
