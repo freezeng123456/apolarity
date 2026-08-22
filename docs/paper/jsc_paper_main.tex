@@ -68,7 +68,6 @@
 \newcommand{\C}{\mathbb{C}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
-\newcommand{\K}{\mathbb{K}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\bx}{\bm{x}}
 \newcommand{\bz}{\bm{z}}
@@ -210,9 +209,10 @@ collected in Appendix~\ref{sec_schedules}.
 
 \subsection{The evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be smooth. Let
-$\nu = (\nu_{1}, \ldots, \nu_{d}) \in \Z_{\ge 0}^{d}$ be a multi-index of order
-$p = \abs{\nu}$, and write $\dal$ as in \eqref{eq_intro_partial}. We evaluate
+Let $u_{\theta} \colon \R^{d} \to \C$ be smooth; real-valued functions are
+included as a special case. Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in
+\Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and write $\dal$ as
+in \eqref{eq_intro_partial}. We evaluate
 $\dal u_{\theta}$ at a point, exactly, and
 we differentiate the value with respect to $\theta$. The same derivative is
 required at many points on every step, so the cost that matters is one
@@ -241,8 +241,8 @@ $\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
 
 \subsection{Taylor-mode evaluation of directional derivatives}\label{sec_taylor}
 
-Let $u \colon \R^{d} \to \K$ with $\K \in \{\R, \C\}$ be sufficiently smooth
-near a fixed point $\bx$. For a direction $\bv \in \R^{d}$, the directional
+Let $u \colon \R^{d} \to \C$ be sufficiently smooth near a fixed point $\bx$.
+For a direction $\bv \in \R^{d}$, the directional
 Taylor coefficient of order $p$ at $\bx$ along $\bv$, already written as
 \eqref{eq_intro_tp}, is
 \begin{equation}\label{eq_tp}
@@ -250,8 +250,8 @@ Taylor coefficient of order $p$ at $\bx$ along $\bv$, already written as
 \end{equation}
 Taylor-mode automatic differentiation evaluates \eqref{eq_tp} in one forward
 pass~\cite{Bettencourt2019,Griewank2008}. Each intermediate activation $y \in
-\K^{B}$ over a batch of $B$ points, with $\K \in \{\R, \C\}$, is replaced by the
-length-$(p+1)$ tuple $(y_{0}, \ldots, y_{p})$ of its truncated Taylor
+\C^{B}$ over a batch of $B$ points is replaced by the length-$(p+1)$ tuple
+$(y_{0}, \ldots, y_{p})$ of its truncated Taylor
 coefficients
 \begin{equation}\label{eq_jet_coeff}
     y_{k} = \frac{1}{k!}\,\frac{d^{k}y}{d\tau^{k}}\Big|_{\tau=0}.
@@ -317,10 +317,10 @@ $a := (a_{0}, \ldots, a_{n})$, and we record for later use that
 The \emph{active subspace} is $V := \spanop\{e_{i_{0}}, \ldots, e_{i_{n}}\}
 \subset \R^{d}$, and $V_{\C} := V \otimes_{\R} \C$ is its complexification.
 Since $\dal$ is insensitive to coordinates outside the active set, all
-directional probes below may be taken in $V$ or in $V_{\C}$. For $\K \in \{\R,
-\C\}$, the space of homogeneous polynomials of degree $p$ in $\bz = (z_{0},
-\ldots, z_{n})$ is denoted $\K[\bz]_{p}$, and $[\bz^{a}]F$ denotes the
-coefficient of $\bz^{a} = z_{0}^{a_{0}} \cdots z_{n}^{a_{n}}$ in $F$. For $m \ge
+directional probes below may be taken in $V_{\C}$. The space of homogeneous
+polynomials of degree $p$ in $\bz = (z_{0}, \ldots, z_{n})$ is denoted
+$\C[\bz]_{p}$, and $[\bz^{a}]F$ denotes the coefficient of
+$\bz^{a} = z_{0}^{a_{0}} \cdots z_{n}^{a_{n}}$ in $F$. For $m \ge
 1$, let $U_{m} := \{\zeta \in \C : \zeta^{m} = 1\}$, and let $\mathbf{1}_{A}$ be
 the indicator of a condition $A$.
 
@@ -370,14 +370,14 @@ polynomial of degree $p$.
 The evaluations available to us are values of $Q_{u}$ at individual directions,
 so we ask for the shortest linear combination of such values that realizes the
 functional \eqref{eq_extract}. A \emph{directional schedule} of length $R$ for
-$\dal$ over $\K$ is a finite collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \K
-\times V_{\K}$ such that
+$\dal$ is a finite collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \C
+\times V_{\C}$ such that
 \begin{equation}\label{eq_schedule}
     \dal u(\bx) = \sum_{r=1}^{R} c_{r}\,\Tp(\bx; \bv_{r})
 \end{equation}
-for every $u$ that is $C^{p}$ on a neighborhood of $\bx$, and, when $\K = \C$,
-holomorphic there. Because \eqref{eq_schedule} is required for all such $u$, the
-order-$p$ derivatives $(\partial^{\beta}u(\bx))_{\abs{\beta}=p}$ may be
+for every $u$ that is $C^{p}$ on a neighborhood of $\bx$. Because
+\eqref{eq_schedule} is required for all such $u$, the order-$p$ derivatives
+$(\partial^{\beta}u(\bx))_{\abs{\beta}=p}$ may be
 prescribed independently: for any coefficients $q_{\beta}$, the polynomial
 $\sum_{\beta} q_{\beta} \prod_{j}(y_{i_{j}} - x_{i_{j}})^{\beta_{j}}$ has
 $\partial^{\beta}u(\bx) = \beta!\,q_{\beta}$. Substituting \eqref{eq_qu_expand}
@@ -420,28 +420,27 @@ shortest schedule is the shortest decomposition of a monomial into pure powers
 of linear forms. That notion has a classical name.
 
 \begin{definition}[Waring rank]\label{def_waring}
-    Let $\K \in \{\R, \C\}$ and let $F \in \K[\bz]_{p}$ be homogeneous of degree
-    $p$. The \emph{Waring rank} $R_{\K}(F)$ is the least $R$ for which there exist
-    $c_{r} \in \K$ and linear forms $L_{r} \in \K[\bz]_{1}$ with $F = \sum_{r=1}^{R}
+    Let $F \in \C[\bz]_{p}$ be homogeneous of degree $p$. The \emph{Waring
+    rank} $R_{\C}(F)$ is the least $R$ for which there exist $c_{r} \in \C$ and
+    linear forms $L_{r} \in \C[\bz]_{1}$ with $F = \sum_{r=1}^{R}
     c_{r} L_{r}(\bz)^{p}$.
 \end{definition}
 
-Since $\R \subset \C$, every real decomposition is a complex one, so $R_{\C}(F)
-\le R_{\R}(F)$, and enlarging the field can only shorten a schedule. The
-following theorem is the main result of the paper. Its three parts identify the
-design problem with a Waring decomposition, evaluate the resulting minimum, and
-exhibit a schedule of that length in closed form.
+The following theorem is the main result of the paper. Its three parts identify
+the design problem with a Waring decomposition, evaluate the resulting minimum,
+and exhibit a schedule of that length in closed form.
 
 \begin{theorem}[Rank-optimal directional schedule]\label{thm_main}
     Let $\nu$ be a multi-index of order $p \ge 1$ with active exponents $1 \le
-    a_{0} \le \cdots \le a_{n}$ and $m_{j} := a_{j}+1$ as in \eqref{eq_active},
-    and let $\K \in \{\R, \C\}$.
+    a_{0} \le \cdots \le a_{n}$ and $m_{j} := a_{j}+1$ as in \eqref{eq_active}.
     \begin{enumerate}[label=\textup{(\roman*)}]
-        \item A collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \K \times V_{\K}$ is a directional schedule for $\dal$ if and only if
+        \item A collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \C \times
+        V_{\C}$ is a directional schedule for $\dal$ if and only if
         \begin{equation}\label{eq_bridge}
-            p!\,\bz^{a} = \sum_{r=1}^{R} c_{r} (\bv_{r} \cdot \bz)^{p} \quad\text{in } \K[\bz]_{p}.
+            p!\,\bz^{a} = \sum_{r=1}^{R} c_{r} (\bv_{r} \cdot \bz)^{p} \quad\text{in } \C[\bz]_{p}.
         \end{equation}
-        \item The minimum length of a directional schedule for $\dal$ over $\K$ equals $R_{\K}(\bz^{a})$, and over $\C$ this minimum is
+        \item The minimum length of a directional schedule for $\dal$
+        equals $R_{\C}(\bz^{a})$, and this minimum is
         \begin{equation}\label{eq_rank}
             R_{\C}(\bz^{a}) = \prod_{j=1}^{n} m_{j} = \frac{\prod_{j=0}^{n} m_{j}}{m_{0}}.
         \end{equation}
@@ -472,9 +471,9 @@ exhibit a schedule of that length in closed form.
 
     Absorbing the nonzero constant $p!$ into the coefficients $c_{r}$ shows that
     a decomposition of $p!\,\bz^{a}$ into $R$ pure $p$th powers exists if and
-    only if one of $\bz^{a}$ does, so $R_{\K}(p!\,\bz^{a}) = R_{\K}(\bz^{a})$.
-    Combining this with part~(i) identifies the minimum schedule length over
-    $\K$ with $R_{\K}(\bz^{a})$. The value \eqref{eq_rank} of the complex rank
+    only if one of $\bz^{a}$ does, so $R_{\C}(p!\,\bz^{a}) = R_{\C}(\bz^{a})$.
+    Combining this with part~(i) identifies the minimum schedule length with
+    $R_{\C}(\bz^{a})$. The value \eqref{eq_rank} of the complex rank
     of a monomial is the theorem of Carlini, Catalisano, and
     Geramita~\cite{CCG2012}; Appendix~\ref{sec_apolar} recalls the apolarity
     argument behind its lower bound.
