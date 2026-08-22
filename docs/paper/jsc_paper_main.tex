@@ -123,43 +123,48 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-In this work we focus on computing one mixed partial of a neural network
-$u$. For a multi-index $\nu = (\nu_{1}, \ldots, \nu_{d})$ of order
-$p = \abs{\nu}$, the mixed partial of interest is
+In this work, we focus on computing monomial differential operators for
+analytic neural networks. Suppose $u \colon \C^{d} \to \C$ is analytic.
+Given a multi-index $\nu = (\nu_{1}, \ldots, \nu_{d})$ of order
+$p = \abs{\nu}$, the corresponding monomial differential operator is
 \begin{equation}\label{eq_intro_partial}
     \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx).
 \end{equation}
 
-The standard way to evaluate \eqref{eq_intro_partial} is automatic
-differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. Backpropagation
-computes first-order derivatives, and a mixed partial of order $p$ is
-obtained by applying this operation $p$ times, once for each extra
-derivative~\cite{Shi2024stde,Griewank2008}. However, this evaluation is
-computationally and memory intensive: the derivative tensor has size
-$O(d^{p})$ and the computation graph has size $O(2^{p-1}L)$, where $d$ is
-the dimension of the input and $L$ is the number of operations in the
-forward computation graph~\cite{Shi2024stde}. This bottleneck has
-motivated other exact evaluations. Taylor-mode automatic differentiation
-computes directional derivatives of order $p$ in one
+The standard evaluation of \eqref{eq_intro_partial} is automatic
+differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. However, when
+the order $p$ or the dimension $d$ is high, this evaluation is expensive
+in both memory and computation: the derivative tensor has size $O(d^{p})$
+and the computation graph has size $O(2^{p-1}L)$, where $L$ is the number
+of operations in the forward computation graph~\cite{Shi2024stde}. This
+bottleneck has motivated other exact evaluations. Taylor-mode automatic
+differentiation computes directional derivatives of order $p$ in one
 pass~\cite{Bettencourt2019,Griewank2008}. Univariate Taylor series recover
 the full derivative tensor of that order~\cite{GriewankUtkeWalther2000}.
 In addition, a structured recurrence evaluates one differential
-operator~\cite{Li2024forwardLaplacian}.
+operator~\cite{Li2024forwardLaplacian}. These exact alternatives either
+reconstruct the full derivative tensor or evaluate only a directional
+coefficient or one structured operator, rather than a shortest
+combination for one monomial operator.
 
-A second line of work estimates \eqref{eq_intro_partial} rather than
-evaluating it exactly. Finite differences replace each extra derivative by
-nearby evaluations of the same network~\cite{Fornberg1988,Chiu2022CAN}.
-Hutchinson's estimator~\cite{Hutchinson1989}, applied through
-Hessian-vector products~\cite{Pearlmutter1994}, estimates traces of
-high-order operators~\cite{Hu2024hte}; Stein's identity and Gaussian
-smoothing~\cite{Stein1981,He2023} estimate derivatives from function
-values; a random subset of coordinates can be taken at each
-step~\cite{Hu2023sdgd}; and the stochastic Taylor derivative estimator
-chooses the input tangents of Taylor-mode automatic differentiation so as
-to estimate an arbitrary contraction of the derivative
-tensor~\cite{Shi2024stde}. However, these estimators are sensitive to their
-hyperparameters, and the variance of the estimate is
-large~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
+Several efforts have been made to avoid this computational cost. One line
+of work uses randomization to amortize the evaluation over the
+optimization process. Stochastic dimension gradient descent computes
+partial derivatives only for a minibatch of sampled
+coordinates~\cite{Hu2023sdgd}. Hutchinson's estimator~\cite{Hutchinson1989},
+applied through Hessian-vector products~\cite{Pearlmutter1994}, estimates
+traces of high-order operators~\cite{Hu2024hte}. Others bypass automatic
+differentiation completely. Finite differences replace each extra
+derivative by nearby evaluations of the same
+network~\cite{Fornberg1988,Chiu2022CAN}. Randomized smoothing expresses
+derivatives as an expectation over a Gaussian random variable via Stein's
+identity~\cite{Stein1981,He2023}. The stochastic Taylor derivative
+estimator chooses the input tangents of Taylor-mode automatic
+differentiation so as to estimate an arbitrary contraction of the
+derivative tensor~\cite{Shi2024stde}. However, compared with exact
+automatic differentiation, these estimators are sensitive to their
+hyperparameters, and the variance of the estimate is of great
+concern~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
 
 We give a decomposition of \eqref{eq_intro_partial} whose number of terms
 attains the minimum,
