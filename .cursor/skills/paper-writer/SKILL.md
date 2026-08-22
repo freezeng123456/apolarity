@@ -59,9 +59,10 @@ the abstract starts to read like related work.
 
 ## Abstract template for this paper
 
-The abstract is frozen to the user-locked wording below. Do not
-rewrite it, tighten it, or expand it. Grammar-only fixes already
-applied: plural *neural networks*, *Experiments show*.
+The previous short abstract was replaced by the v4 manuscript
+(`apolarity_pr10_ready_v4`). Treat the current
+`docs/paper/jsc_paper_main.tex` abstract as the live text. Do not
+restore the older five-sentence abstract unless the user asks.
 
 ```
 Computing high-order derivatives with neural networks is often
