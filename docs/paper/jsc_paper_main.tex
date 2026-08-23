@@ -197,11 +197,11 @@ backpropagation applied $p$ times.
 \end{itemize}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
-states the evaluation problem and recalls Taylor-mode automatic
-differentiation. Section~\ref{sec_formulation} proves the equivalence with
-monomial Waring rank and records the algorithm.
-Section~\ref{sec_experiments} compares the implementation with
-backpropagation applied $p$ times on manufactured collocation
+records the notation and the directional Taylor coefficient.
+Section~\ref{sec_formulation} proves the equivalence with monomial Waring
+rank and records the algorithm. Section~\ref{sec_experiments} states the
+collocation setting and compares the implementation with backpropagation
+applied $p$ times on manufactured
 residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
 Section~\ref{sec_concl} concludes. The roots-of-unity formula, the
 schedules used in the experiments, and the argument for the rank bound are
@@ -212,79 +212,64 @@ collected in Appendix~\ref{sec_schedules}.
 %% ====================================================================
 \section{Preliminaries}\label{sec_prelim}
 
-\subsection{The evaluation problem}\label{sec_problem}
+\subsection{Notation and the evaluation problem}\label{sec_problem}
 
-Let $u_{\theta} \colon \R^{d} \to \C$ be smooth; real-valued functions are
-included as a special case. Let $\nu = (\nu_{1}, \ldots, \nu_{d}) \in
-\Z_{\ge 0}^{d}$ be a multi-index of order $p = \abs{\nu}$, and write $\dal$ as
-in \eqref{eq_intro_partial}. We evaluate
-$\dal u_{\theta}$ at a point, exactly, and
-we differentiate the value with respect to $\theta$. The same derivative is
-required at many points on every step, so the cost that matters is one
-evaluation, amortized over a batch.
+We introduce some notation used throughout the paper. Let
+$\N_{0} := \{0, 1, 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional
+complex space. A multi-index is a tuple
+$\nu = (\nu_{1}, \ldots, \nu_{d}) \in \N_{0}^{d}$. For every such $\nu$ and
+every $\bz = (z_{1}, \ldots, z_{d}) \in \C^{d}$ we write
+\begin{equation}\label{eq_multiindex}
+    \abs{\nu} := \sum_{i=1}^{d} \nu_{i}, \quad
+    \nu! := \prod_{i=1}^{d} \nu_{i}!, \quad
+    \bz^{\nu} := \prod_{i=1}^{d} z_{i}^{\nu_{i}}, \quad
+    \partial^{\nu} := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}.
+\end{equation}
+The integer $p := \abs{\nu}$ is the order of $\nu$. We write $\alpha = \beta$
+for multi-indices $\alpha, \beta$ if and only if $\alpha_{i} = \beta_{i}$ for
+all $i = 1, \ldots, d$, and we write $\delta_{\alpha\beta} := 1$ if
+$\alpha = \beta$ and $\delta_{\alpha\beta} := 0$ otherwise.
+
+Let $u \colon \C^{d} \to \C$ be analytic on a neighborhood of a fixed point
+$\bx \in \R^{d}$. Real-valued maps on $\R^{d}$ are included as a special case.
+In practice this analyticity is guaranteed by holomorphic activations, for
+example $\sinh(z) := (e^{z}-e^{-z})/2$, which is entire. When the map depends
+on a finite parameter vector $\theta$ we write $u_{\theta}$. Throughout
+Sections~\ref{sec_prelim} and~\ref{sec_formulation} we evaluate the monomial
+operator $\dal u(\bx)$ of \eqref{eq_intro_partial} at this fixed point, for a
+fixed multi-index $\nu$ of order $p \ge 1$.
 
 A differential operator of order $p$ is a linear combination of monomials
-$\partial^{\alpha}$. Section~\ref{sec_experiments} times the method on
-repeated evaluations of such an operator. Let $\Omega \subset \R^{d}$ be a
-bounded domain with boundary $\Gamma := \partial\Omega$, and consider
-\begin{equation}\label{eq_pde}
-    \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
-\end{equation}
-with $\mathcal{P}$ of order $p$ and $\mathcal{B}$ the boundary conditions.
-Given interior points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary
-points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, a collocation
-fit~\cite{Raissi2019,Karniadakis2021} of \eqref{eq_pde} minimizes
-\begin{equation}\label{eq_pinn_loss}
-    \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
-\end{equation}
-Expanding $\mathcal{P}$ into monomials turns one residual evaluation in
-\eqref{eq_pinn_loss} into several derivatives $\partial^{\alpha}u_{\theta}$ of
-the same function on the same batch. The operator $\Delta^{m}$ expands into
-$\binom{d+m-1}{m}$ distinct monomials: the pure terms $\partial_{x_{i}}^{2m}$
-and, for $m \ge 2$, mixed terms such as
-$\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
+$\partial^{\alpha}$. Such an operator is evaluated by applying the
+construction of Section~\ref{sec_formulation} to each monomial separately.
 
-\subsection{Taylor-mode evaluation of directional derivatives}\label{sec_taylor}
+\subsection{Directional Taylor coefficients}\label{sec_taylor}
 
-Let $u \colon \R^{d} \to \C$ be sufficiently smooth near a fixed point $\bx$.
-For a direction $\bv \in \R^{d}$, the directional
-Taylor coefficient of order $p$ at $\bx$ along $\bv$, already written as
-\eqref{eq_intro_tp}, is
+Let $D^{p}u(\bx)$ denote the symmetric $p$-linear derivative of $u$ at
+$\bx$. For a direction $\bv \in \C^{d}$, the directional Taylor coefficient
+of order $p$ at $\bx$ along $\bv$ is
 \begin{equation}\label{eq_tp}
-    \Tp(\bx; \bv) := \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0} = \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv].
+    \Tp(\bx; \bv) := \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv],
 \end{equation}
+where the right-hand side is the complex-multilinear extension of
+$D^{p}u(\bx)$. When $\bv \in \R^{d}$, this coincides with
+\eqref{eq_intro_tp}. When $u$ is analytic near $\bx$ in $\C^{d}$, it also
+coincides with the order-$p$ coefficient of $\tau \mapsto u(\bx + \tau \bv)$.
+An arbitrary $C^{p}$ function on $\R^{d}$ need not be defined at complex
+arguments; the analyticity assumption above is what makes
+\eqref{eq_tp} available for $\bv \in \C^{d}$.
+
 Taylor-mode automatic differentiation evaluates \eqref{eq_tp} in one forward
-pass~\cite{Bettencourt2019,Griewank2008}. Each intermediate activation $y \in
-\C^{B}$ over a batch of $B$ points is replaced by the length-$(p+1)$ tuple
-$(y_{0}, \ldots, y_{p})$ of its truncated Taylor
+pass~\cite{Bettencourt2019,Griewank2008}. Each intermediate activation $y$
+along the path $\tau \mapsto u(\bx + \tau \bv)$ is replaced by the
+length-$(p+1)$ tuple $(y_{0}, \ldots, y_{p})$ of its truncated Taylor
 coefficients
 \begin{equation}\label{eq_jet_coeff}
     y_{k} = \frac{1}{k!}\,\frac{d^{k}y}{d\tau^{k}}\Big|_{\tau=0}.
 \end{equation}
-For a multilayer perceptron
-$u = \phi_{L} \circ A_{L} \circ \cdots \circ \phi_{1} \circ A_{1}$
-with affine maps $A_{\ell}$ and entrywise activations $\phi_{\ell}$, an affine
-layer $y = Wx + b$ propagates each order independently,
-\begin{equation}\label{eq_jet_affine}
-    y_{0} = W x_{0} + b, \quad y_{k} = W x_{k} \quad (k \ge 1),
-\end{equation}
-and each nonlinearity is propagated together with one auxiliary jet that closes
-its derivative recurrence. For $\tanh$ the auxiliary jet is $z = 1 - y^{2}$,
-initialized by $y_{0} = \tanh(x_{0})$ and $z_{0} = 1 - y_{0}^{2}$, and
-\begin{equation}\label{eq_jet_tanh}
-    y_{k} = \frac{1}{k}\sum_{j=0}^{k-1}(k-j)\,z_{j}\,x_{k-j}, \quad z_{k} = -\sum_{j=0}^{k} y_{j}\,y_{k-j}, \quad k \ge 1.
-\end{equation}
-For $\sinh$ the auxiliary jet is $z = \cosh(x)$, initialized by $y_{0} =
-\sinh(x_{0})$ and $z_{0} = \cosh(x_{0})$, and
-\begin{equation}\label{eq_jet_sinh}
-    y_{k} = \frac{1}{k}\sum_{j=0}^{k-1}(k-j)\,z_{j}\,x_{k-j}, \quad z_{k} = \frac{1}{k}\sum_{j=0}^{k-1}(k-j)\,y_{j}\,x_{k-j}, \quad k \ge 1.
-\end{equation}
-The recurrence \eqref{eq_jet_sinh} has the same coupled form as the one for
-$\sin$ and $\cos$, except that the $\cosh$ update carries no sign flip. The
-implementation also contains the recurrences for $\sin$ and for the logistic
-sigmoid, which the verification tests of Section~\ref{sec_experiments} use.
-Every coefficient $y_{k}$ is an ordinary tensor, and the propagation stores
-$p+1$ coefficient tensors per activation without nesting input-gradient graphs.
+Every coefficient $y_{k}$ is an ordinary tensor. The propagation stores
+$p+1$ coefficient tensors per activation and does not nest input-gradient
+graphs.
 
 %% ====================================================================
 %%  SECTION 3: RANK-OPTIMAL DIRECTIONAL SCHEDULES
@@ -308,8 +293,7 @@ reconstruction formula by a rank computation, and because the outcome is a
 minimum, it certifies that no shorter linear combination of those coefficients
 exists.
 
-We introduce some notation used throughout this section. Let $\N_{0} := \{0, 1,
-2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional complex space. The
+We introduce some notation used throughout this section. The
 \emph{active coordinates} of $\nu$ are the indices $k$ with $\nu_{k} > 0$; we
 relabel them as $i_{0}, \ldots, i_{n}$ and set $a_{j} := \nu_{i_{j}}$, ordered
 so that $1 \le a_{0} \le \cdots \le a_{n}$, with ties broken by the original
@@ -319,7 +303,8 @@ $a := (a_{0}, \ldots, a_{n})$, and we record for later use that
 \begin{equation}\label{eq_active}
     p = \sum_{j=0}^{n} a_{j}, \quad \nu! = \prod_{k=1}^{d}\nu_{k}! = \prod_{j=0}^{n} a_{j}!, \quad m_{j} := a_{j} + 1.
 \end{equation}
-The \emph{active subspace} is $V := \spanop\{e_{i_{0}}, \ldots, e_{i_{n}}\}
+Let $e_{1}, \ldots, e_{d}$ denote the standard basis of $\R^{d}$. The
+\emph{active subspace} is $V := \spanop\{e_{i_{0}}, \ldots, e_{i_{n}}\}
 \subset \R^{d}$, and $V_{\C} := V \otimes_{\R} \C$ is its complexification.
 Since $\dal$ is insensitive to coordinates outside the active set, all
 directional probes below may be taken in $V_{\C}$. The space of homogeneous
@@ -329,17 +314,10 @@ $\bz^{a} = z_{0}^{a_{0}} \cdots z_{n}^{a_{n}}$ in $F$. For $m \ge
 1$, let $U_{m} := \{\zeta \in \C : \zeta^{m} = 1\}$, and let $\mathbf{1}_{A}$ be
 the indicator of a condition $A$.
 
-The minimizing schedule of this section is in general complex, so we fix the
-meaning of a complex direction once. For $\bv \in V_{\C}$ we define
-$\Tp(\bx; \bv)$ by the complex multilinear extension of $D^{p}u(\bx)$ on the
-right-hand side of \eqref{eq_tp}.
-When $u$ admits a holomorphic extension to a neighborhood of $\bx$ in $\C^{d}$,
-this definition agrees with the order-$p$ coefficient of $\tau \mapsto u(\bx +
-\tau \bv)$, and the recurrences \eqref{eq_jet_affine}--\eqref{eq_jet_sinh}
-evaluate it on complex tensors. When the directions are complex, the extension
-is guaranteed by entire activations such as $\sinh(z) = (e^{z}-e^{-z})/2$; see
-Remark~\ref{rmk_entire}. The distinction matters because an arbitrary $C^{p}$
-function on $\R^{d}$ need not be defined at complex arguments.
+The coefficient $\Tp(\bx; \bv)$ for $\bv \in V_{\C}$ is already defined by
+\eqref{eq_tp}. When the directions are complex, analyticity of $u$ is
+guaranteed by entire activations such as $\sinh$; see
+Remark~\ref{rmk_entire}.
 
 \subsection{Basic expansion}\label{sec_expansion}
 
@@ -396,9 +374,9 @@ holds for every admissible $u$ if and only if
 \begin{equation}\label{eq_moment}
     \sum_{r=1}^{R} c_{r} \bv_{r}^{\beta} = \nu!\,\delta_{a\beta}, \quad \abs{\beta} = p,
 \end{equation}
-where $\delta_{a\beta} := 1$ if $\beta = a$ and $\delta_{a\beta} := 0$
-otherwise. The design problem is thus to solve the moment conditions
-\eqref{eq_moment} with as few directions as possible.
+with $\delta_{a\beta}$ as in Section~\ref{sec_problem}. The design problem is
+thus to solve the moment conditions \eqref{eq_moment} with as few directions as
+possible.
 
 Two features of \eqref{eq_moment} decide how short a schedule can be. The
 conditions number $\binom{p+n}{n}$, so their count is governed by how many
@@ -547,14 +525,12 @@ Three consequences deserve separate mention.
     The directions \eqref{eq_rou} are complex whenever some factor $U_{m_{j}}$
     with $j \ge 1$ has $m_{j} \ge 3$, so the function is then evaluated at
     complex arguments and its activations must admit a holomorphic extension
-    there. The functions $\sinh$ and $\cosh$ are entire, and the recurrence
-    \eqref{eq_jet_sinh} is an algebraic identity that holds verbatim on complex
-    tensors. By contrast $\tanh$ is meromorphic, with poles at
-    $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for $k \in \Z$, so its jet is defined only
-    away from those points and the admissible directions depend on the activation
-    input. The collocation measurements of Section~\ref{sec_experiments} use
-    $\sinh$ at every order, including the order-two residuals whose directions
-    remain real.
+    there. The functions $\sinh$ and $\cosh$ are entire. By contrast $\tanh$
+    is meromorphic, with poles at $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for
+    $k \in \Z$, so its jet is defined only away from those points and the
+    admissible directions depend on the activation input. The collocation
+    measurements of Section~\ref{sec_experiments} use $\sinh$ at every order,
+    including the order-two residuals whose directions remain real.
 \end{remark}
 
 \begin{remark}[Scope of the rank reduction]\label{rmk_scope}
@@ -635,16 +611,16 @@ the target PDE is real-valued.
   \ENDFOR
   \STATE \label{alg_line_last} Stack the directions of $\mathcal{S}$ into $V_{\mathcal{S}} \in \C^{\abs{\mathcal{S}} \times d}$.
   \STATE Form the batched input jet $\mathbf{J}_{0} \gets (\bx \text{ replicated}, V_{\mathcal{S}}, 0, \ldots, 0)$.
-  \STATE Propagate $\mathbf{J}_{0}$ through $u$ by \eqref{eq_jet_affine}--\eqref{eq_jet_sinh} to obtain $\mathbf{J}_{L}$.
+  \STATE Propagate $\mathbf{J}_{0}$ through $u$ by Taylor-mode automatic differentiation to obtain $\mathbf{J}_{L}$.
   \STATE Set $t \gets [\mathbf{J}_{L}]_{p}$, one order-$p$ coefficient per direction.
   \STATE \textbf{return} $\sum_{r=1}^{\abs{\mathcal{S}}} c_{r}t_{r}$.
   \end{algorithmic}
 \end{algorithm}
 
 Algorithm~\ref{alg_waring} must be differentiable in $\theta$, since its output
-enters the residual term of \eqref{eq_pinn_loss}. Differentiating the activation
-recurrences \eqref{eq_jet_tanh}--\eqref{eq_jet_sinh} by reverse-mode automatic
-differentiation would rebuild inside the backward pass the nesting that the jet
+enters a residual assembled from monomial derivatives. Differentiating the
+activation jets by reverse-mode automatic differentiation through an unrolled
+recurrence would rebuild inside the backward pass the nesting that the jet
 was introduced to avoid. We therefore register each activation jet as a single
 primitive with the closed-form adjoint
 \begin{equation}\label{eq_vjp}
@@ -680,6 +656,28 @@ reports double-precision agreement through order six.
 %%  SECTION 4: NUMERICAL EXPERIMENTS
 %% ====================================================================
 \section{Numerical experiments}\label{sec_experiments}
+
+The experiments evaluate monomials that appear in collocation residuals.
+Let $\Omega \subset \R^{d}$ be a bounded domain with boundary
+$\Gamma := \partial\Omega$. We consider the boundary-value problem
+\begin{equation}\label{eq_pde}
+    \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
+\end{equation}
+where $\mathcal{P}$ is a differential operator of order $p$ and $\mathcal{B}$
+specifies the boundary conditions. The solution $u$ is approximated by a
+neural network $u_{\theta}$. Given interior points
+$(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$, boundary points
+$(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, and positive weights
+$\lambda_{r}, \lambda_{b}$, the parameters are obtained by minimizing
+\begin{equation}\label{eq_pinn_loss}
+    \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
+\end{equation}
+Expanding $\mathcal{P}$ into monomials turns one residual evaluation in
+\eqref{eq_pinn_loss} into several derivatives $\partial^{\alpha}u_{\theta}$ of
+the same function on the same batch. The operator $\Delta^{m}$ expands into
+$\binom{d+m-1}{m}$ distinct monomials: the pure terms $\partial_{x_{i}}^{2m}$
+and, for $m \ge 2$, mixed terms such as
+$\partial_{x_{i}}^{2k}\partial_{x_{j}}^{2m-2k}$.
 
 This section checks two properties of the schedule: agreement with nested
 automatic differentiation in double precision, and the time and memory of one
