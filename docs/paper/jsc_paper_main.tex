@@ -166,8 +166,8 @@ automatic differentiation, these estimators are sensitive to their
 hyperparameters, and the variance of the estimate is of great
 concern~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
 
-In this paper, we use the Waring decomposition of
-monomials~\cite{CCG2012,Landsberg2012} to obtain a Waring
+In this paper, inspired by the Waring decomposition of
+monomials~\cite{CCG2012,Landsberg2012}, we obtain a Waring
 decomposition of derivatives, and from this we give an efficient exact
 method for computing derivatives. We give a decomposition of
 \eqref{eq_intro_partial} whose number of terms attains the minimum,
@@ -181,19 +181,20 @@ has the form of a directional Taylor coefficient
 \end{equation}
 
 Specifically, our main contributions are as follows.
-\begin{enumerate}
-    \item We prove that a decomposition of the form \eqref{eq_intro_recon}
-    is a Waring decomposition of the corresponding derivative: it is
-    equivalent to a Waring decomposition of the monomial, and the least
-    number of terms is the Waring rank of that
-    monomial~\cite{Landsberg2012,CCG2012}.
-    \item We give an algorithm that attains this number of terms by a
-    roots-of-unity formula, and thereby an efficient exact method for
-    \eqref{eq_intro_partial}.
-    \item We apply the method to manufactured collocation residuals.
-    The resulting evaluation uses less memory and less time than
-    backpropagation applied $p$ times.
-\end{enumerate}
+\begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
+    itemsep=0.35em, topsep=0.45em, parsep=0pt]
+\item We prove that a decomposition of the form \eqref{eq_intro_recon}
+is a Waring decomposition of the corresponding derivative: it is
+equivalent to a Waring decomposition of the monomial, and the least
+number of terms is the Waring rank of that
+monomial~\cite{Landsberg2012,CCG2012}.
+\item We give an algorithm that attains this number of terms by a
+roots-of-unity formula, and thereby an efficient exact method for
+\eqref{eq_intro_partial}.
+\item We apply the method to manufactured collocation residuals.
+The resulting evaluation uses less memory and less time than
+backpropagation applied $p$ times.
+\end{itemize}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 states the evaluation problem and recalls Taylor-mode automatic
