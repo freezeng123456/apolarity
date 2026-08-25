@@ -195,9 +195,10 @@ The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
 introduces the method of PINNs, the multi-index notation, and the directional
 Taylor coefficient.
 Section~\ref{sec_formulation} proves the equivalence with monomial Waring
-rank and records the algorithm. Section~\ref{sec_experiments} compares the
-implementation with backpropagation applied $p$ times on manufactured
-residuals.
+rank and derives the rank-optimal formula. Section~\ref{sec_implementation}
+describes its realization with batched Taylor jets. Section~\ref{sec_experiments}
+compares the implementation with backpropagation applied $p$ times on
+manufactured residuals.
 Section~\ref{sec_concl} concludes. The roots-of-unity formula, the
 schedules used in the experiments, and the argument for the rank bound are
 collected in Appendix~\ref{sec_schedules}.
@@ -242,11 +243,10 @@ differentiation passes through the network.
 
 \subsection{Multi-index notation and the target derivative}\label{sec_problem}
 
-Let $\N_{0}:=\{0,1,2,\ldots\}$. The notation $\C^{d}$ denotes the
-$d$-dimensional complex space. A multi-index is an element
-$\nu=(\nu_{1},\ldots,\nu_{d})$ of $\N_{0}^{d}$. For a vector
-$\bz=(z_{1},\ldots,z_{d})$ in $\C^{d}$, define
-$\partial_i:=\partial/\partial x_i$ and write
+We first fix the notation used below.\par
+Let $\N_{0}:=\{0,1,2,\ldots\}$, and let $\C^d$ denote the
+$d$-dimensional complex space. For a multi-index $\nu\in\N_0^d$ and a vector
+$\bz\in\C^d$, define $\partial_i:=\partial/\partial x_i$ and write
 \begin{equation}\label{eq_multiindex}
     \abs{\nu}
     :=
@@ -278,12 +278,12 @@ setting, $u=u_{\theta}$. The target derivative is
 A PINN residual involving several derivative terms is assembled after each
 derivative has been evaluated separately.
 
-Because the directional evaluations may involve complex directions, we assume
-that $u$ admits a holomorphic extension to a complex neighborhood of $\bx$, and
-we denote the extension by the same symbol. Feed-forward networks composed of
-affine maps and entire activations, such as
-$\sinh(z):=(e^{z}-e^{-z})/2$, satisfy this assumption. Local holomorphicity is
-sufficient; the function $u$ need not be entire.
+We regard $u$ as a scalar-valued function from $\C^{d}$ to $\C$ and assume
+that it is holomorphic in a complex neighborhood of $\bx$. Feed-forward
+networks composed of affine maps and entire activations, such as
+$\sinh(z):=(e^{z}-e^{-z})/2$, satisfy this assumption. The formulation covers
+both networks whose restriction to $\R^d$ is real-valued and networks used for
+complex-valued solutions.
 
 \subsection{Directional Taylor coefficients}\label{sec_taylor}
 
@@ -301,9 +301,7 @@ of order $p$ at $\bx$ along $\bv$ is
 \end{equation}
 where $D^{p}u(\bx)$ is extended complex-multilinearly. The second equality
 identifies $\Tp(\bx;\bv)$ with the coefficient of order $p$ in the Taylor
-expansion of $\tau\mapsto u(\bx+\tau\bv)$. An arbitrary
-$C^{p}$ function on $\R^{d}$ need not be defined at complex arguments; the
-holomorphic extension makes \eqref{eq_tp} well-defined for $\bv\in\C^{d}$.
+expansion of the holomorphic path $\tau\mapsto u(\bx+\tau\bv)$.
 
 Taylor-mode automatic differentiation evaluates the Taylor coefficients up to
 order $p$ in one forward jet propagation~\cite{Bettencourt2019,Griewank2008}.
@@ -322,291 +320,223 @@ directional coefficient without constructing nested input-differentiation
 graphs.
 
 %% ====================================================================
-%%  SECTION 3: RANK-OPTIMAL DIRECTIONAL SCHEDULES
+%%  SECTION 3: EXACT DIRECTIONAL REPRESENTATIONS AND WARING RANK
 %% ====================================================================
-\section{Rank-optimal directional schedules}\label{sec_formulation}
+\section{Exact directional representations and Waring rank}\label{sec_formulation}
 
-The argument of this section is short. Its four steps are as follows. First, the
-directional Taylor coefficients of order $p$, read as a function of the
-direction rather than of the point, are the coefficients of a homogeneous
-polynomial of degree $p$, and the target derivative is one of them. Second, a
-formula that reconstructs the derivative from finitely many directional
-evaluations is therefore a linear identity among such coefficients, which
-reduces the design problem to a finite system of moment conditions. Third,
-pairing each direction with the polynomial variable turns that system into a
-single polynomial identity: the monomial belonging to the target derivative,
-written as a linear combination of $p$th powers of linear forms. Fourth, the
-least number of terms in such a combination is by definition the Waring rank of
-that monomial, a quantity known in closed form, and one set of minimizing linear
-forms consists of roots of unity. The four steps together replace a search for a
-reconstruction formula by a rank computation, and because the outcome is a
-minimum, it certifies that no shorter linear combination of those coefficients
-exists.
-
-We introduce some notation used throughout this section. The
-\emph{active coordinates} of $\nu$ are the indices $k$ with $\nu_{k} > 0$; we
-relabel them as $i_{0}, \ldots, i_{n}$ and set $a_{j} := \nu_{i_{j}}$, ordered
-so that $1 \le a_{0} \le \cdots \le a_{n}$, with ties broken by the original
-coordinate index. The ordering singles out a coordinate $i_{0}$ of least
-exponent, which is the coordinate the rank formula treats separately. We write
-$a := (a_{0}, \ldots, a_{n})$, and we record for later use that
+Fix $\bx$ and $\nu$ as in Section~\ref{sec_problem}, and let $p=\abs{\nu}$.
+After permuting and relabeling the active coordinates, write their exponents as
 \begin{equation}\label{eq_active}
-    p = \sum_{j=0}^{n} a_{j}, \quad \nu! = \prod_{k=1}^{d}\nu_{k}! = \prod_{j=0}^{n} a_{j}!, \quad m_{j} := a_{j} + 1.
+    1\leq a_0\leq\cdots\leq a_n,
+    \qquad
+    p=\sum_{j=0}^{n}a_j,
+    \qquad
+    \nu!=\prod_{j=0}^{n}a_j!.
 \end{equation}
-Let $e_{1}, \ldots, e_{d}$ denote the standard basis of $\R^{d}$. The
-\emph{active subspace} is $V := \spanop\{e_{i_{0}}, \ldots, e_{i_{n}}\}
-\subset \R^{d}$, and $V_{\C} := V \otimes_{\R} \C$ is its complexification.
-Since $\dal$ is insensitive to coordinates outside the active set, all
-directional probes below may be taken in $V_{\C}$. The space of homogeneous
-polynomials of degree $p$ in $\bz = (z_{0}, \ldots, z_{n})$ is denoted
-$\C[\bz]_{p}$, and $[\bz^{a}]F$ denotes the coefficient of
-$\bz^{a} = z_{0}^{a_{0}} \cdots z_{n}^{a_{n}}$ in $F$. For $m \ge
-1$, let $U_{m} := \{\zeta \in \C : \zeta^{m} = 1\}$, and let $\mathbf{1}_{A}$ be
-the indicator of a condition $A$.
+We denote the corresponding standard basis vectors by
+$e_0,\ldots,e_n$. Coordinates outside this set do not contribute to
+$\partial^\nu u(\bx)$, so the directions below are supported only on the
+active coordinates. Multi-indices in this section are understood to range over
+these $n+1$ coordinates, and we write
+$\bz^a=z_0^{a_0}\cdots z_n^{a_n}$.
 
-The coefficient $\Tp(\bx; \bv)$ for $\bv \in V_{\C}$ is already defined by
-\eqref{eq_tp}. When the directions are complex, analyticity of $u$ is
-guaranteed by entire activations such as $\sinh$; see
-Remark~\ref{rmk_entire}.
+\subsection{Directional representations and Waring decompositions}
+\label{sec_expansion}
 
-\subsection{Basic expansion}\label{sec_expansion}
-
-Let $\bz \in \C^{n+1}$ parametrize the active subspace through $\bv(\bz) :=
-\sum_{j=0}^{n} z_{j}e_{i_{j}}$, and define the \emph{generating polynomial} of
-$u$ at $\bx$ by
-\begin{equation}\label{eq_qu}
-    Q_{u}(\bz) := \Tp\bigl(\bx; \bv(\bz)\bigr).
+For a direction $\bv=\sum_{j=0}^{n}v_je_j$, the multinomial theorem and
+\eqref{eq_tp} give
+\begin{equation}\label{eq_directional_expansion}
+    \Tp(\bx;\bv)
+    =
+    \sum_{\abs{\beta}=p}
+    \frac{\bv^\beta}{\beta!}\,
+    \partial^\beta u(\bx).
 \end{equation}
-The symmetric $p$-linearity of $D^{p}u(\bx)$ and the multinomial theorem give
-\begin{equation*}
-\begin{aligned}
-    D^{p}u(\bx)\bigl[\bv(\bz), \ldots, \bv(\bz)\bigr] &= \sum_{\abs{\beta}=p} \binom{p}{\beta} \bz^{\beta}\,\partial^{\beta}u(\bx) \\
-    &= \sum_{\abs{\beta}=p} \frac{p!}{\beta!}\,\bz^{\beta}\,\partial^{\beta}u(\bx),
-\end{aligned}
-\end{equation*}
-where $\beta$ ranges over multi-indices on the active variables and
-$\partial^{\beta} := \partial_{i_{0}}^{\beta_{0}} \cdots
-\partial_{i_{n}}^{\beta_{n}}$. Dividing by $p!$ and comparing with \eqref{eq_tp}
-and \eqref{eq_qu} yields
-\begin{equation}\label{eq_qu_expand}
-    Q_{u}(\bz) = \sum_{\abs{\beta}=p} \frac{\partial^{\beta}u(\bx)}{\beta!}\,\bz^{\beta},
-\end{equation}
-so $Q_{u}$ is homogeneous of degree $p$ and its coefficients are the order-$p$
-derivatives of $u$ at $\bx$. Reading off the coefficient of $\bz^{a}$ in
-\eqref{eq_qu_expand} and using $a! = \nu!$ from \eqref{eq_active} gives
-\begin{equation}\label{eq_extract}
-    \dal u(\bx) = \nu!\,[\bz^{a}]\,Q_{u}(\bz).
-\end{equation}
-A single order-$p$ derivative is therefore one coefficient of a homogeneous
-polynomial of degree $p$.
-
-The evaluations available to us are values of $Q_{u}$ at individual directions,
-so we ask for the shortest linear combination of such values that realizes the
-functional \eqref{eq_extract}. A \emph{directional schedule} of length $R$ for
-$\dal$ is a finite collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \C
-\times V_{\C}$ such that
+An \emph{$R$-term exact directional representation} of $\dal$ is an identity
 \begin{equation}\label{eq_schedule}
-    \dal u(\bx) = \sum_{r=1}^{R} c_{r}\,\Tp(\bx; \bv_{r})
+    \dal u(\bx)
+    =
+    \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
 \end{equation}
-for every $u$ that is $C^{p}$ on a neighborhood of $\bx$. Because
-\eqref{eq_schedule} is required for all such $u$, the order-$p$ derivatives
-$(\partial^{\beta}u(\bx))_{\abs{\beta}=p}$ may be
-prescribed independently: for any coefficients $q_{\beta}$, the polynomial
-$\sum_{\beta} q_{\beta} \prod_{j}(y_{i_{j}} - x_{i_{j}})^{\beta_{j}}$ has
-$\partial^{\beta}u(\bx) = \beta!\,q_{\beta}$. Substituting \eqref{eq_qu_expand}
-into the right-hand side of \eqref{eq_schedule} gives
-\begin{equation}\label{eq_schedule_sum}
-    \sum_{r=1}^{R} c_{r}\,\Tp(\bx; \bv_{r}) = \sum_{\abs{\beta}=p} \frac{\partial^{\beta}u(\bx)}{\beta!} \Bigl(\sum_{r=1}^{R} c_{r} \bv_{r}^{\beta}\Bigr),
-\end{equation}
-and comparing \eqref{eq_schedule_sum} with the target $\dal u(\bx) =
-\partial^{a}u(\bx)$ coefficient by coefficient shows that \eqref{eq_schedule}
-holds for every admissible $u$ if and only if
-\begin{equation}\label{eq_moment}
-    \sum_{r=1}^{R} c_{r} \bv_{r}^{\beta} = \nu!\,\delta_{a\beta}, \quad \abs{\beta} = p,
-\end{equation}
-where $\delta_{a\beta}$ equals one if $\beta=a$ and zero otherwise. The design
-problem is thus to solve the moment conditions \eqref{eq_moment} with as few
-directions as possible.
+that holds for every $u:\C^d\to\C$ that is holomorphic in a neighborhood of
+$\bx$, where $c_r\in\C$ and the directions $\bv_r$ are supported on the active
+coordinates.
 
-Two features of \eqref{eq_moment} decide how short a schedule can be. The
-conditions number $\binom{p+n}{n}$, so their count is governed by how many
-coordinates the derivative touches and not by the order alone: a derivative of
-order six on three coordinates imposes far fewer conditions than one of order
-six on six coordinates. They are also nonlinear in the unknowns, since each
-direction enters through the monomials $\bv_{r}^{\beta}$, which is why the
-minimum is not read off by counting equations and unknowns.
-Section~\ref{sec_main} resolves both by recognizing \eqref{eq_moment} as a
-polynomial identity whose shortest solution is classical.
+\begin{proposition}[Directional--Waring correspondence]\label{prop_bridge}
+    The coefficients and directions in \eqref{eq_schedule} form an exact
+    directional representation if and only if
+    \begin{equation}\label{eq_bridge}
+        p!\,\bz^a
+        =
+        \sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p
+        \qquad\text{in }\C[z_0,\ldots,z_n].
+    \end{equation}
+\end{proposition}
 
-\subsection{Minimal schedules and monomial Waring rank}\label{sec_main}
+\begin{proof}
+    By \eqref{eq_directional_expansion}, identity \eqref{eq_schedule} holds for
+    every holomorphic $u$ if and only if
+    \begin{equation}\label{eq_moment}
+        \sum_{r=1}^{R}c_r\bv_r^\beta
+        =
+        \nu!\,\delta_{a\beta},
+        \qquad \abs{\beta}=p,
+    \end{equation}
+    where $\delta_{a\beta}=1$ for $\beta=a$ and is zero otherwise. The
+    derivatives of order $p$ can be prescribed independently within this
+    function class, as is seen by taking $u$ to be a polynomial. On the other
+    hand, the multinomial theorem gives
+    \begin{equation*}
+        \sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p
+        =
+        \sum_{\abs{\beta}=p}
+        \binom{p}{\beta}
+        \left(\sum_{r=1}^{R}c_r\bv_r^\beta\right)\bz^\beta.
+    \end{equation*}
+    Substitution of \eqref{eq_moment} leaves only the term $\beta=a$, whose
+    coefficient is
+    $\binom{p}{a}\nu!=p!$. Conversely, comparing coefficients in
+    \eqref{eq_bridge} recovers \eqref{eq_moment}.
+\end{proof}
 
-Pair a direction $\bv \in V_{\C}$, written $\bv = \sum_{j=0}^{n} v_{j}e_{i_{j}}$
-in active coordinates, with the polynomial variable $\bz$ through $\bv \cdot \bz
-:= \sum_{j=0}^{n} v_{j}z_{j}$. Expanding the $p$th power of this pairing by the
-multinomial theorem gives
-\begin{equation}\label{eq_power_expand}
-    \sum_{r=1}^{R} c_{r} (\bv_{r} \cdot \bz)^{p} = \sum_{\abs{\beta}=p} \binom{p}{\beta} \Bigl(\sum_{r=1}^{R} c_{r} \bv_{r}^{\beta}\Bigr) \bz^{\beta},
-\end{equation}
-whose coefficients are the very quantities constrained by \eqref{eq_moment}. The
-moment conditions are therefore a polynomial identity in disguise, and the
-shortest schedule is the shortest decomposition of a monomial into pure powers
-of linear forms. That notion has a classical name.
+The right-hand side of \eqref{eq_bridge} is a Waring decomposition of the
+monomial $\bz^a$. We recall the corresponding rank.
 
 \begin{definition}[Waring rank]\label{def_waring}
-    Let $F \in \C[\bz]_{p}$ be homogeneous of degree $p$. The \emph{Waring
-    rank} $R_{\C}(F)$ is the least $R$ for which there exist $c_{r} \in \C$ and
-    linear forms $L_{r} \in \C[\bz]_{1}$ with $F = \sum_{r=1}^{R}
-    c_{r} L_{r}(\bz)^{p}$.
+    Let $F\in\C[z_0,\ldots,z_n]$ be homogeneous of degree $p$. The
+    \emph{complex Waring rank} $R_{\C}(F)$ is the least integer $R$ for which
+    there exist coefficients $c_r\in\C$ and linear forms $L_r$ satisfying
+    \begin{equation*}
+        F=\sum_{r=1}^{R}c_rL_r^p.
+    \end{equation*}
 \end{definition}
 
-The following theorem is the main result of the paper. Its three parts identify
-the design problem with a Waring decomposition, evaluate the resulting minimum,
-and exhibit a schedule of that length in closed form.
+Proposition~\ref{prop_bridge} identifies the minimum number of directions in
+\eqref{eq_schedule} with $R_{\C}(\bz^a)$. The rank of a monomial is known in
+closed form, and the same result gives an explicit minimizing decomposition.
+For $m\geq1$, let
+$U_m:=\{\zeta\in\C:\zeta^m=1\}$.
 
-\begin{theorem}[Rank-optimal directional schedule]\label{thm_main}
-    Let $\nu$ be a multi-index of order $p \ge 1$ with active exponents $1 \le
-    a_{0} \le \cdots \le a_{n}$ and $m_{j} := a_{j}+1$ as in \eqref{eq_active}.
-    \begin{enumerate}[label=\textup{(\roman*)}]
-        \item A collection $(c_{r}, \bv_{r})_{r=1}^{R} \subset \C \times
-        V_{\C}$ is a directional schedule for $\dal$ if and only if
-        \begin{equation}\label{eq_bridge}
-            p!\,\bz^{a} = \sum_{r=1}^{R} c_{r} (\bv_{r} \cdot \bz)^{p} \quad\text{in } \C[\bz]_{p}.
-        \end{equation}
-        \item The minimum length of a directional schedule for $\dal$
-        equals $R_{\C}(\bz^{a})$, and this minimum is
-        \begin{equation}\label{eq_rank}
-            R_{\C}(\bz^{a}) = \prod_{j=1}^{n} m_{j} = \frac{\prod_{j=0}^{n} m_{j}}{m_{0}}.
-        \end{equation}
-        \item For $\zeta = (\zeta_{1}, \ldots, \zeta_{n}) \in U_{m_{1}} \times \cdots \times U_{m_{n}}$, put
-        \begin{equation}\label{eq_rou}
-            \bv_{\zeta} := e_{i_{0}} + \sum_{j=1}^{n} \zeta_{j} e_{i_{j}}, \quad c_{\zeta} := \frac{\nu!}{\prod_{j=1}^{n} m_{j}} \prod_{j=1}^{n} \zeta_{j}.
-        \end{equation}
-        Then $(c_{\zeta}, \bv_{\zeta})_{\zeta}$ is a directional schedule for
-        $\dal$ of length $\prod_{j=1}^{n} m_{j}$, and by part~(ii) no complex
-        schedule is shorter.
-    \end{enumerate}
+\begin{theorem}[Rank-optimal directional representation]\label{thm_main}
+    Let $1\leq a_0\leq\cdots\leq a_n$ be the active exponents of $\nu$ as in
+    \eqref{eq_active}. The minimum number of terms in an exact directional
+    representation of $\dal$ is
+    \begin{equation}\label{eq_rank}
+        R_{\C}(\bz^a)
+        =
+        \prod_{j=1}^{n}(a_j+1).
+    \end{equation}
+    For
+    $\zeta=(\zeta_1,\ldots,\zeta_n)\in
+    U_{a_1+1}\times\cdots\times U_{a_n+1}$, define
+    \begin{equation}\label{eq_rou}
+        \bv_\zeta
+        :=
+        e_0+\sum_{j=1}^{n}\zeta_je_j,
+        \qquad
+        c_\zeta
+        :=
+        \frac{\nu!}{\prod_{j=1}^{n}(a_j+1)}
+        \prod_{j=1}^{n}\zeta_j.
+    \end{equation}
+    Then
+    \begin{equation}\label{eq_optimal_representation}
+        \dal u(\bx)
+        =
+        \sum_{\zeta\in U_{a_1+1}\times\cdots\times U_{a_n+1}}
+        c_\zeta\Tp(\bx;\bv_\zeta).
+    \end{equation}
+    Hence \eqref{eq_optimal_representation} uses the minimum possible number of
+    complex directions among all exact representations of the form
+    \eqref{eq_schedule}.
 \end{theorem}
 
 \begin{proof}
-    \subsubsection*{(i) The moment conditions are a polynomial identity}
+    Proposition~\ref{prop_bridge} shows that the minimum number of directions
+    equals $R_{\C}(\bz^a)$. The monomial rank theorem of Carlini,
+    Catalisano, and Geramita~\cite{CCG2012} gives \eqref{eq_rank};
+    Appendix~\ref{sec_apolar} recalls the apolarity argument behind the lower
+    bound.
 
-    By \eqref{eq_moment}, the collection is a directional schedule if and only
-    if $\sum_{r} c_{r}\bv_{r}^{\beta} = \nu!\,\delta_{a\beta}$ for every $\beta$
-    with $\abs{\beta} = p$. By \eqref{eq_power_expand}, the identity
-    \eqref{eq_bridge} holds if and only if $\binom{p}{\beta}\sum_{r}
-    c_{r}\bv_{r}^{\beta} = p!\,\delta_{a\beta}$ for every such $\beta$. Dividing
-    the second family of conditions by $\binom{p}{\beta}$ turns it into
-    $\sum_{r} c_{r}\bv_{r}^{\beta} = \beta!\,\delta_{a\beta}$, and
-    $\beta!\,\delta_{a\beta} = \nu!\,\delta_{a\beta}$ by \eqref{eq_active}. The
-    two families coincide, which proves part~(i).
-
-    \subsubsection*{(ii) The minimum length is a Waring rank}
-
-    Absorbing the nonzero constant $p!$ into the coefficients $c_{r}$ shows that
-    a decomposition of $p!\,\bz^{a}$ into $R$ pure $p$th powers exists if and
-    only if one of $\bz^{a}$ does, so $R_{\C}(p!\,\bz^{a}) = R_{\C}(\bz^{a})$.
-    Combining this with part~(i) identifies the minimum schedule length with
-    $R_{\C}(\bz^{a})$. The value \eqref{eq_rank} of the complex rank
-    of a monomial is the theorem of Carlini, Catalisano, and
-    Geramita~\cite{CCG2012}; Appendix~\ref{sec_apolar} recalls the apolarity
-    argument behind its lower bound.
-
-    \subsubsection*{(iii) The roots-of-unity schedule attains the minimum}
-
-    We use the conventions that an empty product equals $1$ and that a Cartesian
-    product over an empty index set has one element, the empty tuple; these
-    cover the case $n = 0$, in which \eqref{eq_rou} produces the single
-    direction $e_{i_{0}}$ with coefficient $\nu!$. By part~(i) it suffices to
-    prove the identity $\sum_{\zeta} c_{\zeta}(\bv_{\zeta} \cdot \bz)^{p} =
-    p!\,\bz^{a}$. Fix $\beta$ with $\abs{\beta} = p$ and let $C_{\beta}$ denote
-    the coefficient of $\bz^{\beta}$ on the left-hand side. Inserting
-    \eqref{eq_rou} and applying the multinomial theorem gives
-    \begin{equation}\label{eq_cbeta}
+    It remains to verify \eqref{eq_optimal_representation}. By
+    \eqref{eq_moment}, it is enough to show that for every $\beta$ with
+    $\abs{\beta}=p$,
+    \begin{equation}\label{eq_root_moments}
     \begin{aligned}
-        C_{\beta} &= \frac{\nu!}{\prod_{j=1}^{n} m_{j}} \binom{p}{\beta} \sum_{\zeta_{1} \in U_{m_{1}}} \cdots \sum_{\zeta_{n} \in U_{m_{n}}} \prod_{j=1}^{n} \zeta_{j}^{\beta_{j}+1} \\
-        &= \frac{\nu!}{\prod_{j=1}^{n} m_{j}} \binom{p}{\beta} \prod_{j=1}^{n} \Bigl(\sum_{\zeta_{j} \in U_{m_{j}}} \zeta_{j}^{\beta_{j}+1}\Bigr),
+        \sum_{\zeta}c_\zeta\bv_\zeta^\beta
+        &=
+        \frac{\nu!}{\prod_{j=1}^{n}(a_j+1)}
+        \prod_{j=1}^{n}
+        \left(
+            \sum_{\zeta_j\in U_{a_j+1}}
+            \zeta_j^{\beta_j+1}
+        \right).
     \end{aligned}
     \end{equation}
-    where the second equality separates the independent sums. By
-    Lemma~\ref{lem_filter}, the $j$th factor of the product in \eqref{eq_cbeta}
-    vanishes unless $m_{j} \mid \beta_{j}+1$, and $m_{j} = a_{j}+1$ turns this
-    divisibility into the congruence $\beta_{j} \equiv a_{j} \pmod{m_{j}}$.
-    Suppose $C_{\beta} \ne 0$, and write $\beta_{j} = a_{j} + t_{j}m_{j}$ with
-    $t_{j} \in \N_{0}$ for $j = 1, \ldots, n$. The degree constraint
-    $\abs{\beta} = p = \sum_{j=0}^{n} a_{j}$ then forces $\beta_{0} = a_{0} -
-    \sum_{j=1}^{n} t_{j}m_{j}$. If some $t_{j}$ were positive, then $m_{j} =
-    a_{j}+1 \ge a_{0}+1$ by the ordering of the exponents, whence $\beta_{0} \le
-    a_{0} - m_{j} < 0$, contradicting $\beta_{0} \ge 0$. Every $t_{j}$ therefore
-    vanishes, so $\beta_{j} = a_{j}$ for $j \ge 1$, and the degree constraint
-    gives $\beta_{0} = a_{0}$ as well. Hence $C_{\beta} = 0$ for every $\beta
-    \ne a$. For $\beta = a$ each inner sum in \eqref{eq_cbeta} equals $m_{j}$,
-    the product cancels the prefactor, and
+    Here, $\zeta$ ranges over
+    $U_{a_1+1}\times\cdots\times U_{a_n+1}$.
+    Lemma~\ref{lem_filter} shows that the $j$th factor vanishes unless
+    $a_j+1$ divides $\beta_j+1$. If no factor vanishes, then
     \begin{equation*}
-        C_{a} = \nu!\binom{p}{a} = \Bigl(\prod_{j=0}^{n} a_{j}!\Bigr) \frac{p!}{\prod_{j=0}^{n} a_{j}!} = p!\,.
+        \beta_j=a_j+t_j(a_j+1),
+        \qquad t_j\in\N_0,
+        \qquad j=1,\ldots,n.
     \end{equation*}
-    The left-hand side of the identity therefore equals $p!\,\bz^{a}$, and the
-    schedule has $\abs{U_{m_{1}} \times \cdots \times U_{m_{n}}} =
-    \prod_{j=1}^{n} m_{j}$ directions.
+    Since $\abs{\beta}=\sum_{j=0}^{n}a_j$, the remaining exponent is
+    \begin{equation*}
+        \beta_0
+        =
+        a_0-\sum_{j=1}^{n}t_j(a_j+1).
+    \end{equation*}
+    The ordering $a_0\leq a_j$ implies that $\beta_0<0$ if any $t_j$ is
+    positive. Hence every $t_j$ is zero and $\beta=a$. For $\beta=a$, each
+    factor in \eqref{eq_root_moments} equals $a_j+1$, and the right-hand side
+    equals $\nu!$. Thus \eqref{eq_root_moments} is precisely
+    \eqref{eq_moment}, which proves the representation. When $n=0$, the empty
+    product convention gives the single direction $e_0$ with coefficient
+    $\nu!$.
 \end{proof}
 
-Theorem~\ref{thm_main} converts a question about derivative evaluation into a
-rank computation whose answer is the product \eqref{eq_rank}. The
-minimizing directions and coefficients in \eqref{eq_rou} are roots of unity
-scaled by $\nu!/R_{\C}(\bz^{a})$, so their magnitudes are known in advance.
-Three consequences deserve separate mention.
+\subsection{Examples and consequences}\label{sec_consequences}
 
-\begin{remark}[The smallest instance]\label{rmk_special}
-    For $\dal = \partial_{1}\partial_{2}$ we have $n = 1$, $a_{0} = a_{1} = 1$,
-    $m_{1} = 2$, and $U_{2} = \{+1, -1\}$, so the roots of unity are real and
-    \eqref{eq_rou} returns the two pairs $(\tfrac{1}{2}, e_{1}+e_{2})$ and
-    $(-\tfrac{1}{2}, e_{1}-e_{2})$, that is, the elementary identity
-    \begin{equation}\label{eq_two_point}
-        \partial_{1}\partial_{2}u(\bx) = \tfrac{1}{2}\Tp(\bx; e_{1}+e_{2}) - \tfrac{1}{2}\Tp(\bx; e_{1}-e_{2}),
-    \end{equation}
-    in which the pure second derivatives cancel between the two probes.
-    Theorem~\ref{thm_main} adds to \eqref{eq_two_point} the information that two
-    evaluations are necessary as well as sufficient. Complex directions appear
-    once two or more coordinates are active and some exponent is at least two.
-    A pure power $\partial_{1}^{p}u$ uses one real direction, and a square-free
-    monomial uses only the real pair $U_{2} = \{\pm 1\}$.
-\end{remark}
+For the mixed second derivative, $a=(1,1)$ and \eqref{eq_rank} gives rank two.
+Formula \eqref{eq_optimal_representation} becomes
+\begin{equation}\label{eq_two_point}
+    \partial_1\partial_2u(\bx)
+    =
+    \frac{1}{2}\Tp(\bx;e_1+e_2)
+    -
+    \frac{1}{2}\Tp(\bx;e_1-e_2).
+\end{equation}
+Thus the familiar polarization identity is optimal: the cancellation of the
+two pure second derivatives cannot be achieved with one directional
+coefficient.
 
-\begin{remark}[Entire activations are essential]\label{rmk_entire}
-    The directions \eqref{eq_rou} are complex whenever some factor $U_{m_{j}}$
-    with $j \ge 1$ has $m_{j} \ge 3$, so the function is then evaluated at
-    complex arguments and its activations must admit a holomorphic extension
-    there. The functions $\sinh$ and $\cosh$ are entire. By contrast $\tanh$
-    is meromorphic, with poles at $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for
-    $k \in \Z$, so its jet is defined only away from those points and the
-    admissible directions depend on the activation input. The numerical
-    experiments of Section~\ref{sec_experiments} use $\sinh$ at every order,
-    including the order-two residuals whose directions remain real.
-\end{remark}
+A genuinely complex example is provided by repeated exponents. For $a=(2,2)$,
+let $\omega=\exp(2\pi\mathrm{i}/3)$. Then
+\begin{equation}\label{eq_example_22}
+    \partial_1^2\partial_2^2u(\bx)
+    =
+    \frac{4}{3}
+    \sum_{k=0}^{2}
+    \omega^k\Tp(\bx;e_1+\omega^ke_2),
+\end{equation}
+and three directions are minimal over $\C$.
 
-\begin{remark}[Scope of the rank reduction]\label{rmk_scope}
-    Theorem~\ref{thm_main} concerns one monomial derivative at a time. For the
-    square-free multi-index $a = (1, \ldots, 1)$ of order $p$ the rank
-    \eqref{eq_rank} equals $2^{p-1}$, so the schedule is exponentially long; since
-    the theorem gives a minimum, this is a statement about the problem and not about
-    the construction, and no schedule of the form \eqref{eq_schedule} can be
-    shorter. A differential operator that is a linear combination of monomial
-    derivatives is evaluated by applying the schedule to each monomial. The
-    stochastic Taylor derivative estimator~\cite{Shi2024stde} treats the strictly
-    broader problem of an arbitrary contraction of the order-$p$ derivative
-    tensor, with unbiased estimates whose variance is controlled by a sampling
-    budget; the two approaches are complementary, and the schedule of
-    Theorem~\ref{thm_main} is the deterministic minimum for one fixed
-    multi-index.
-\end{remark}
+The rank formula also identifies the limits of the reduction. A pure power
+$\partial_i^pu$ has rank one, whereas the square-free derivative with
+$a=(1,\ldots,1)$ has rank $2^{p-1}$. Repeated indices can keep the rank much
+smaller than the derivative order alone would suggest. Table~\ref{tab_patterns}
+lists representative values, and Appendix~\ref{sec_lowschedules} records the
+formulas used in the experiments.
 
-Table~\ref{tab_patterns} evaluates \eqref{eq_rank} for selected active-exponent
-patterns up to $p = 6$. Because every entry is a minimum, the table reads as a
-statement about which derivatives are cheap to extract from directional
-evaluations and which are not: a pure power needs one direction at any order, a
-derivative that repeats every index stays modest as the order grows, and a
-square-free derivative is intrinsically exponential. The explicit schedules for
-the patterns that occur in Section~\ref{sec_experiments} are listed in
-Appendix~\ref{sec_lowschedules}.
+The minimum in Theorem~\ref{thm_main} concerns one fixed monomial derivative
+and exact linear representations by order-$p$ directional Taylor coefficients.
+A differential operator containing several monomials is evaluated term by term.
+The stochastic Taylor derivative estimator~\cite{Shi2024stde} treats arbitrary
+contractions of the order-$p$ derivative tensor by unbiased estimation with a
+sampling budget; its objective is different from the deterministic minimum in
+\eqref{eq_rank}.
 
 \begin{table}[htbp]
 \centering
@@ -632,7 +562,12 @@ $(1^{6})$    & $u_{123456}$ & $32$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Algorithm, gradients, and cost}\label{sec_algorithm}
+%% ====================================================================
+%%  SECTION 4: COMPUTATIONAL REALIZATION
+%% ====================================================================
+\section{Computational realization}\label{sec_implementation}
+
+\subsection{Batched Taylor-jet evaluation}\label{sec_algorithm}
 
 Algorithm~\ref{alg_waring} assembles the pieces. The schedule \eqref{eq_rou} is
 built once, its directions are stacked into a single batch, and one jet pass
@@ -646,17 +581,24 @@ pairing of the roots of unity makes the returned value real in exact arithmetic;
 the implementation keeps the complex tensor and takes its real part only when
 the target PDE is real-valued.
 
+The roots-of-unity directions are generally complex, so the network is
+evaluated on complex Taylor jets. Entire activations such as $\sinh$ and
+$\cosh$ are holomorphic on all of $\C$. By contrast, $\tanh$ is meromorphic,
+with poles at $\mathrm{i}\pi/2+\mathrm{i}k\pi$ for $k\in\Z$, and is admissible
+only when the relevant complex paths avoid those poles. The experiments use
+$\sinh$ at every derivative order.
+
 \begin{algorithm}[htbp]
   \caption{Single-monomial $\dal u(\bx)$ from a rank-optimal schedule and one batched Taylor jet.}
   \label{alg_waring}
   \begin{algorithmic}[1]
   \REQUIRE scalar network $u$ built from supported analytic primitives; point $\bx \in \R^{d}$; multi-index $\nu$ of order $p$
   \ENSURE the value $\dal u(\bx)$
-  \STATE Relabel the active coordinates of $\nu$ as $i_{0}, \ldots, i_{n}$ with exponents $1 \le a_{0} \le \cdots \le a_{n}$.
-  \STATE \label{alg_line_first} Set $m_{j} := a_{j}+1$ for $j = 1, \ldots, n$ and $\mathcal{I} := U_{m_{1}} \times \cdots \times U_{m_{n}}$.
+  \STATE Relabel the active basis vectors as $e_0,\ldots,e_n$ with exponents $1\leq a_0\leq\cdots\leq a_n$.
+  \STATE \label{alg_line_first} Set $\mathcal{I} := U_{a_1+1}\times\cdots\times U_{a_n+1}$.
   \STATE Initialize $\mathcal{S} \gets \emptyset$.
   \FOR{$\zeta = (\zeta_{1}, \ldots, \zeta_{n}) \in \mathcal{I}$}
-      \STATE Set $\bv_{\zeta} \gets e_{i_{0}} + \sum_{j=1}^{n}\zeta_{j}e_{i_{j}}$ and $c_{\zeta} \gets \nu!\bigl(\prod_{j=1}^{n}m_{j}\bigr)^{-1}\prod_{j=1}^{n}\zeta_{j}$.
+      \STATE Set $\bv_{\zeta} \gets e_0+\sum_{j=1}^{n}\zeta_je_j$ and $c_{\zeta} \gets \nu!\bigl(\prod_{j=1}^{n}(a_j+1)\bigr)^{-1}\prod_{j=1}^{n}\zeta_j$.
       \STATE Update $\mathcal{S} \gets \mathcal{S} \cup \{(c_{\zeta}, \bv_{\zeta})\}$.
   \ENDFOR
   \STATE \label{alg_line_last} Stack the directions of $\mathcal{S}$ into $V_{\mathcal{S}} \in \C^{\abs{\mathcal{S}} \times d}$.
@@ -664,8 +606,10 @@ the target PDE is real-valued.
   \STATE Propagate $\mathbf{J}_{0}$ through $u$ by Taylor-mode automatic differentiation to obtain $\mathbf{J}_{L}$.
   \STATE Set $t \gets [\mathbf{J}_{L}]_{p}$, one order-$p$ coefficient per direction.
   \STATE \textbf{return} $\sum_{r=1}^{\abs{\mathcal{S}}} c_{r}t_{r}$.
-  \end{algorithmic}
+\end{algorithmic}
 \end{algorithm}
+
+\subsection{Parameter gradients}\label{sec_gradients}
 
 Algorithm~\ref{alg_waring} must be differentiable in $\theta$, since its output
 enters a residual assembled from monomial derivatives. Differentiating the
@@ -683,6 +627,8 @@ real-valued loss for complex parameters, so that the conjugation is the
 Hermitian adjoint of multiplication by $q_{j}$. The backward pass thus costs one
 more triangular convolution per activation and never differentiates through the
 recurrence itself.
+
+\subsection{Computational cost}\label{sec_cost}
 
 The cost of Algorithm~\ref{alg_waring} separates into a per-direction and a
 per-schedule factor. For one direction, the jet stores $p+1$ coefficient tensors
@@ -703,7 +649,7 @@ and from the final summation over directions. Section~\ref{sec_num_verify}
 reports double-precision agreement through order six.
 
 %% ====================================================================
-%%  SECTION 4: NUMERICAL EXPERIMENTS
+%%  SECTION 5: NUMERICAL EXPERIMENTS
 %% ====================================================================
 \section{Numerical experiments}\label{sec_experiments}
 
@@ -903,7 +849,7 @@ schedule grows with the derivative order, in wall time and in memory, with the
 model, the loss, and the optimizer held fixed.
 
 %% ====================================================================
-%%  SECTION 5: CONCLUSION
+%%  SECTION 6: CONCLUSION
 %% ====================================================================
 \section{Conclusion}\label{sec_concl}
 
@@ -955,7 +901,12 @@ are those the implementation evaluates.
 \begin{lemma}\label{lem_filter}
     For every integer $m \ge 1$ and every integer $k$,
     \begin{equation}\label{eq_filter}
-        \sum_{\zeta \in U_{m}} \zeta^{k} = m\,\mathbf{1}_{m \mid k}.
+        \sum_{\zeta \in U_m}\zeta^k
+        =
+        \begin{cases}
+            m, & m\mid k,\\
+            0, & m\nmid k.
+        \end{cases}
     \end{equation}
 \end{lemma}
 
@@ -986,7 +937,7 @@ direction, and $\Tp$ is evaluated once,
 \end{equation}
 
 For the fourth-order mixed term $\dal = \partial_{1}^{2}\partial_{2}^{2}$ we
-have $n = 1$, $a = (2,2)$, and $m_{1} = 3$; with $\omega :=
+have $n = 1$ and $a = (2,2)$; with $\omega :=
 \exp(2\pi\mathrm{i}/3)$ and $U_{3} = \{1, \omega, \omega^{2}\}$, formula
 \eqref{eq_rou} gives the three directions
 \begin{equation}\label{eq_sched_22}
@@ -994,7 +945,7 @@ have $n = 1$, $a = (2,2)$, and $m_{1} = 3$; with $\omega :=
 \end{equation}
 
 For the sixth-order mixed term $\dal = \partial_{1}^{2}\partial_{2}^{4}$ we
-have $n = 1$, $a = (2,4)$, and $m_{1} = 5$; with $U_{5}$ the fifth roots of
+have $n = 1$ and $a = (2,4)$; with $U_{5}$ the fifth roots of
 unity, \eqref{eq_rou} takes the coordinate of smaller exponent as base and
 gives the five directions
 \begin{equation}\label{eq_sched_24}
@@ -1031,7 +982,7 @@ For the monomial $F = \bz^{a}$ the apolar ideal is the complete intersection
 \end{equation}
 and the Hilbert function of the quotient $\C[\partial]/(\bz^{a})^{\perp}$ bounds
 the degree of an apolar subscheme from below by the product
-$\prod_{j=1}^{n}m_{j}$ of \eqref{eq_rank}; see~\cite{IK1999,Landsberg2012} for
+$\prod_{j=1}^{n}(a_j+1)$ of \eqref{eq_rank}; see~\cite{IK1999,Landsberg2012} for
 the general theory and~\cite{CCG2012} for the monomial case. The construction
 \eqref{eq_rou} exhibits a reduced apolar subscheme of exactly that degree, so
 the bound is attained.
