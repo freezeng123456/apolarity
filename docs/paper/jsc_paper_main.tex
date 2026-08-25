@@ -158,49 +158,37 @@ of perturbed function values~\cite{Stein1981,He2023}. STDE takes a different
 route by combining randomization with high-order automatic differentiation: it
 constructs randomized input tangents so that general linear differential
 operators can be estimated through univariate Taylor-mode
-propagation~\cite{Shi2024stde}. STDE++ further develops this framework by
-providing polynomial-time Taylor-jet constructions for mixed partial
-derivatives, improving on earlier general schemes whose cost grows
-exponentially with the derivative order~\cite{Shi2026stdepp}. Although these
-methods reduce computational costs, their performance depends on the choice of
-method-specific parameters. Finite differences require a step size that
-balances truncation and round-off errors, randomized smoothing depends on both
-the smoothing bandwidth and the Monte Carlo sample size, and the randomized
-estimators require a sampling distribution and budget. For the stochastic
-methods, these choices directly affect estimator variance: insufficient or
-poorly matched sampling can yield high-variance residual estimates, while a
-small smoothing bandwidth can sharply amplify variance for high-order
-derivatives and may destabilize PINN
+propagation~\cite{Shi2024stde}. STDE++ also discusses the exact recovery of
+mixed partial derivatives from linear
+combinations of directional Taylor coefficients. It further develops STDE by
+providing polynomial-time Taylor-jet constructions, improving on earlier
+general schemes whose cost grows exponentially with the derivative
+order~\cite{Shi2026stdepp}. Although these methods reduce computational costs,
+their performance depends on the choice of method-specific parameters. Finite
+differences require a step size that balances truncation and round-off errors,
+randomized smoothing depends on both the smoothing bandwidth and the Monte
+Carlo sample size, and the randomized estimators require a sampling distribution
+and budget. For the stochastic methods, these choices directly affect estimator
+variance: insufficient or poorly matched sampling can yield high-variance
+residual estimates, while a small smoothing bandwidth can sharply amplify
+variance for high-order derivatives and may destabilize PINN
 training~\cite{He2023,Hu2025bias,Shi2026stdepp}.
 
-In this paper, inspired by the Waring decomposition of
-monomials~\cite{CCG2012,Landsberg2012}, we obtain a Waring
-decomposition of derivatives, and from this we give an efficient exact
-method for computing derivatives. We give a decomposition of
-\eqref{eq_intro_partial} whose number of terms attains the minimum,
-\begin{equation}\label{eq_intro_recon}
-    \dal u(\bx) = \sum_{r=1}^{R} c_{r}\, \Tp(\bx; \bv_{r}).
-\end{equation}
-We use this decomposition to evaluate the mixed partial exactly. Each term
-has the form of a directional Taylor coefficient
-\begin{equation}\label{eq_intro_tp}
-    \Tp(\bx; \bv) = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau \bv)\Big|_{\tau=0}.
-\end{equation}
-
-Specifically, our main contributions are as follows.
+In this paper, we propose an exact method for recovering a partial derivative
+as a linear combination of directional Taylor coefficients with the minimum
+possible number of directions. Our main contributions are:
 \begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
     itemsep=0.35em, topsep=0.45em, parsep=0pt]
-\item We prove that a decomposition of the form \eqref{eq_intro_recon}
-is a Waring decomposition of the corresponding derivative: it is
-equivalent to a Waring decomposition of the monomial, and the least
-number of terms is the Waring rank of that
-monomial~\cite{Landsberg2012,CCG2012}.
-\item We give an algorithm that attains this number of terms by a
-roots-of-unity formula, and thereby an efficient exact method for
-\eqref{eq_intro_partial}.
-\item We apply the method to manufactured PINN residuals.
-The resulting evaluation uses less memory and less time than
-backpropagation applied $p$ times.
+\item We establish an equivalence between Waring decompositions of a monomial
+and decompositions of the corresponding partial derivative into directional
+Taylor coefficients. The equivalence shows that the minimum number of
+directions equals the Waring rank of the monomial.
+\item We derive an explicit roots-of-unity formula attaining the minimum number
+of directions. A batched Taylor-mode implementation evaluates all directional
+Taylor coefficients independently and in parallel.
+\item We compare the proposed method with nested automatic differentiation on
+manufactured PINN benchmarks. The experiments show reductions in runtime and
+peak memory, with larger reductions at higher derivative orders.
 \end{itemize}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
