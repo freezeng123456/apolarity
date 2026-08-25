@@ -143,24 +143,35 @@ The number of tensor components grows rapidly with both the input dimension and
 the derivative order, resulting in substantial computational and GPU-memory
 costs~\cite{Shi2024stde}.
 
-Several efforts have been made to avoid this computational cost. One line
-of work uses randomization to amortize the evaluation over the
-optimization process. Stochastic dimension gradient descent computes
-partial derivatives only for a minibatch of sampled
-coordinates~\cite{Hu2023sdgd}. Hutchinson's estimator~\cite{Hutchinson1989},
-applied through Hessian-vector products~\cite{Pearlmutter1994}, estimates
-traces of high-order operators~\cite{Hu2024hte}. Others bypass automatic
-differentiation completely. Finite differences replace each extra
-derivative by nearby evaluations of the same
-network~\cite{Fornberg1988,Chiu2022CAN}. Randomized smoothing expresses
-derivatives as an expectation over a Gaussian random variable via Stein's
-identity~\cite{Stein1981,He2023}. The stochastic Taylor derivative
-estimator chooses the input tangents of Taylor-mode automatic
-differentiation so as to estimate an arbitrary contraction of the
-derivative tensor~\cite{Shi2024stde}. However, compared with exact
-automatic differentiation, these estimators are sensitive to their
-hyperparameters, and the variance of the estimate is of great
-concern~\cite{Fornberg1988,He2023,Hutchinson1989,Hu2025bias,Shi2024stde}.
+Randomization offers another route to reducing derivative costs. Stochastic
+dimension gradient descent uses coordinate sampling to evaluate only a subset
+of derivative terms during each optimization step~\cite{Hu2023sdgd}.
+Hutchinson-type estimators use random projections to approximate trace-type
+differential operators~\cite{Hutchinson1989,Pearlmutter1994,Hu2024hte}.
+However, both approaches still rely on automatic differentiation to compute the
+sampled derivatives or projected vector products. A separate line of work
+avoids automatic differentiation entirely when computing derivatives. Finite
+differences approximate derivatives from nearby network
+evaluations~\cite{Fornberg1988,Chiu2022CAN}, whereas randomized smoothing uses
+Stein's identity to express derivatives of a smoothed network as expectations
+of perturbed function values~\cite{Stein1981,He2023}. STDE takes a different
+route by combining randomization with high-order automatic differentiation: it
+constructs randomized input tangents so that general linear differential
+operators can be estimated through univariate Taylor-mode
+propagation~\cite{Shi2024stde}. STDE++ further develops this framework by
+providing polynomial-time Taylor-jet constructions for mixed partial
+derivatives, improving on earlier general schemes whose cost grows
+exponentially with the derivative order~\cite{Shi2026stdepp}. Although these
+methods reduce computational costs, their performance depends on the choice of
+method-specific parameters. Finite differences require a step size that
+balances truncation and round-off errors, randomized smoothing depends on both
+the smoothing bandwidth and the Monte Carlo sample size, and the randomized
+estimators require a sampling distribution and budget. For the stochastic
+methods, these choices directly affect estimator variance: insufficient or
+poorly matched sampling can yield high-variance residual estimates, while a
+small smoothing bandwidth can sharply amplify variance for high-order
+derivatives and may destabilize PINN
+training~\cite{He2023,Hu2025bias,Shi2026stdepp}.
 
 In this paper, inspired by the Waring decomposition of
 monomials~\cite{CCG2012,Landsberg2012}, we obtain a Waring
