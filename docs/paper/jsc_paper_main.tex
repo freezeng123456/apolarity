@@ -92,17 +92,15 @@
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Computing high-order derivatives with neural networks is often
+  Computing high-order derivatives in neural network residuals is often
   computationally and memory intensive, primarily due to the huge computational
   graphs caused by automatic differentiation. In this work, we decompose the
-  derivative into directional Taylor-mode automatic differentiation. We
-  establish a fundamental connection between derivative extraction and
-  polynomial algebra, proving that the minimal number of directional
-  evaluations required to recover a target partial derivative equals the
-  Waring rank of its corresponding monomial. We present a roots-of-unity
-  formula that strictly attains this theoretical lower bound. Experiments show
-  that our method significantly outperforms traditional automatic
-  differentiation in speed and memory efficiency.
+  derivative into a weighted sum of directional Taylor coefficients. We prove
+  that the minimal number of directional evaluations required to recover a
+  target partial derivative equals the Waring rank of its corresponding
+  monomial, and we attain this minimum with a roots-of-unity formula. Experiments
+  show that our method significantly outperforms nested automatic
+  differentiation in both speed and memory efficiency.
 \end{abstract}
 
 \begin{keywords}
@@ -123,29 +121,27 @@ apolarity
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-In this work, we focus on computing monomial differential operators for
-analytic neural networks. Suppose $u \colon \C^{d} \to \C$ is analytic.
-Given a multi-index $\nu = (\nu_{1}, \ldots, \nu_{d})$ of order
-$p = \abs{\nu}$, the corresponding monomial differential operator is
-\begin{equation}\label{eq_intro_partial}
-    \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx).
-\end{equation}
+Physics-informed neural networks approximate solutions of differential
+equations by minimizing loss functions constructed from the corresponding PDE
+residuals. This requires derivatives of the network with respect to its inputs.
+For high-order equations, the repeated evaluation of these derivatives can
+dominate both the runtime and memory cost of residual evaluation.
 
-The standard evaluation of \eqref{eq_intro_partial} is automatic
-differentiation~\cite{Griewank2008,Baydin2018,Paszke2019}. However, when
-the order $p$ or the dimension $d$ is high, this evaluation is expensive
-in both memory and computation: the derivative tensor has size $O(d^{p})$
-and the computation graph has size $O(2^{p-1}L)$, where $L$ is the number
-of operations in the forward computation graph~\cite{Shi2024stde}. This
-bottleneck has motivated other exact evaluations. Taylor-mode automatic
-differentiation computes directional derivatives of order $p$ in one
-pass~\cite{Bettencourt2019,Griewank2008}. Univariate Taylor series recover
-the full derivative tensor of that order~\cite{GriewankUtkeWalther2000}.
-In addition, a structured recurrence evaluates one differential
-operator~\cite{Li2024forwardLaplacian}. These exact alternatives either
-reconstruct the full derivative tensor or evaluate only a directional
-coefficient or one structured operator, rather than a shortest
-combination for one monomial operator.
+Automatic differentiation is the standard tool for evaluating these
+derivatives~\cite{Griewank2008,Baydin2018,Paszke2019}. Several exact approaches
+reduce its cost by exploiting the structure of the differential operator. For
+example, forward Laplacian methods propagate the Laplacian through the network
+without constructing the full Hessian~\cite{Li2024forwardLaplacian}. Such
+methods can be efficient, but their differentiation rules are designed for
+specific structured operators and do not readily extend to general high-order
+partial derivatives. Taylor-mode automatic differentiation provides a more
+general alternative by propagating a truncated univariate Taylor series through
+the network~\cite{Bettencourt2019,Griewank2008}. Existing general constructions
+recover multivariate high-order derivatives from multiple Taylor expansions,
+often by reconstructing the full derivative tensor~\cite{GriewankUtkeWalther2000}.
+The number of tensor components grows rapidly with both the input dimension and
+the derivative order, resulting in substantial computational and GPU-memory
+costs~\cite{Shi2024stde}.
 
 Several efforts have been made to avoid this computational cost. One line
 of work uses randomization to amortize the evaluation over the
@@ -191,18 +187,18 @@ monomial~\cite{Landsberg2012,CCG2012}.
 \item We give an algorithm that attains this number of terms by a
 roots-of-unity formula, and thereby an efficient exact method for
 \eqref{eq_intro_partial}.
-\item We apply the method to manufactured collocation residuals.
+\item We apply the method to manufactured PINN residuals.
 The resulting evaluation uses less memory and less time than
 backpropagation applied $p$ times.
 \end{itemize}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
-records the notation and the directional Taylor coefficient.
+introduces the method of PINNs, the multi-index notation, and the directional
+Taylor coefficient.
 Section~\ref{sec_formulation} proves the equivalence with monomial Waring
-rank and records the algorithm. Section~\ref{sec_experiments} states the
-collocation setting and compares the implementation with backpropagation
-applied $p$ times on manufactured
-residuals~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021,Roache2002}.
+rank and records the algorithm. Section~\ref{sec_experiments} compares the
+implementation with backpropagation applied $p$ times on manufactured
+residuals.
 Section~\ref{sec_concl} concludes. The roots-of-unity formula, the
 schedules used in the experiments, and the argument for the rank bound are
 collected in Appendix~\ref{sec_schedules}.
@@ -211,6 +207,30 @@ collected in Appendix~\ref{sec_schedules}.
 %%  SECTION 2: PRELIMINARIES
 %% ====================================================================
 \section{Preliminaries}\label{sec_prelim}
+
+\subsection{Method of PINNs}\label{sec_pinn}
+
+Let $\Omega \subset \R^{d}$ be a computational domain with boundary
+$\Gamma := \partial\Omega$. We consider the boundary-value problem
+\begin{equation}\label{eq_pde}
+    \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
+\end{equation}
+where $\mathcal{P}$ is a differential operator and $\mathcal{B}$ specifies the
+boundary conditions. In the PINN framework, the solution $u$ is approximated
+by a neural network
+$u_{\theta}$~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021}.
+Given residual points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary
+points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, together with positive weights
+$\lambda_r$ and $\lambda_b$, the network parameters are obtained by minimizing
+\begin{equation}\label{eq_pinn_loss}
+    \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
+\end{equation}
+Evaluating the residual term in \eqref{eq_pinn_loss} requires repeated
+computation of derivatives of $u_{\theta}$. For high-order equations and
+high-dimensional problems, these derivative evaluations can dominate the
+training cost because automatic differentiation must retain large intermediate
+computational graphs and perform multiple differentiation passes through the
+network.
 
 \subsection{Notation and the evaluation problem}\label{sec_problem}
 
@@ -230,18 +250,25 @@ for multi-indices $\alpha, \beta$ if and only if $\alpha_{i} = \beta_{i}$ for
 all $i = 1, \ldots, d$, and we write $\delta_{\alpha\beta} := 1$ if
 $\alpha = \beta$ and $\delta_{\alpha\beta} := 0$ otherwise.
 
-Let $u \colon \C^{d} \to \C$ be analytic on a neighborhood of a fixed point
-$\bx \in \R^{d}$. Real-valued maps on $\R^{d}$ are included as a special case.
-In practice this analyticity is guaranteed by holomorphic activations, for
-example $\sinh(z) := (e^{z}-e^{-z})/2$, which is entire. When the map depends
-on a finite parameter vector $\theta$ we write $u_{\theta}$. Throughout
-Sections~\ref{sec_prelim} and~\ref{sec_formulation} we evaluate the monomial
-operator $\dal u(\bx)$ of \eqref{eq_intro_partial} at this fixed point, for a
-fixed multi-index $\nu$ of order $p \ge 1$.
+The construction below acts on each monomial derivative that appears in the
+PINN residual. A differential operator that is a linear combination of
+monomials $\partial^{\alpha}$ is evaluated by applying the construction of
+Section~\ref{sec_formulation} to each monomial separately and then assembling
+the result according to the operator.
 
-A differential operator of order $p$ is a linear combination of monomials
-$\partial^{\alpha}$. Such an operator is evaluated by applying the
-construction of Section~\ref{sec_formulation} to each monomial separately.
+For the local derivative analysis, fix a point $\bx \in \Omega$ and a
+multi-index $\nu$ of order $p \ge 1$. We suppress the parameter subscript and
+write $u$ for $u_{\theta}$. To evaluate complex directions, we assume that
+$u_{\theta}$ admits a holomorphic extension to a complex neighborhood of
+$\bx$, and we denote this extension by the same symbol. Networks built from
+entire activations, such as $\sinh(z) := (e^{z}-e^{-z})/2$, satisfy this
+assumption. Local holomorphicity is sufficient; the network need not be entire.
+Throughout Sections~\ref{sec_prelim} and~\ref{sec_formulation}, the target is
+the monomial derivative
+\begin{equation}\label{eq_intro_partial}
+    \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx)
+\end{equation}
+for this fixed $\nu$ and $\bx$.
 
 \subsection{Directional Taylor coefficients}\label{sec_taylor}
 
@@ -249,15 +276,14 @@ Let $D^{p}u(\bx)$ denote the symmetric $p$-linear derivative of $u$ at
 $\bx$. For a direction $\bv \in \C^{d}$, the directional Taylor coefficient
 of order $p$ at $\bx$ along $\bv$ is
 \begin{equation}\label{eq_tp}
-    \Tp(\bx; \bv) := \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv],
+    \Tp(\bx; \bv) := \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv] = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau\bv)\Big|_{\tau=0},
 \end{equation}
-where the right-hand side is the complex-multilinear extension of
-$D^{p}u(\bx)$. When $\bv \in \R^{d}$, this coincides with
-\eqref{eq_intro_tp}. When $u$ is analytic near $\bx$ in $\C^{d}$, it also
-coincides with the order-$p$ coefficient of $\tau \mapsto u(\bx + \tau \bv)$.
-An arbitrary $C^{p}$ function on $\R^{d}$ need not be defined at complex
-arguments; the analyticity assumption above is what makes
-\eqref{eq_tp} available for $\bv \in \C^{d}$.
+where $D^{p}u(\bx)$ is extended complex-multilinearly. The second equality
+follows from the local holomorphicity of $u$ and identifies \eqref{eq_tp} with
+the order-$p$ coefficient of $\tau \mapsto u(\bx + \tau\bv)$. An arbitrary
+$C^{p}$ function on $\R^{d}$ need not be defined at complex arguments; the
+holomorphic extension is what makes \eqref{eq_tp} available for
+$\bv \in \C^{d}$.
 
 Taylor-mode automatic differentiation evaluates \eqref{eq_tp} in one forward
 pass~\cite{Bettencourt2019,Griewank2008}. Each intermediate activation $y$
@@ -528,8 +554,8 @@ Three consequences deserve separate mention.
     there. The functions $\sinh$ and $\cosh$ are entire. By contrast $\tanh$
     is meromorphic, with poles at $\mathrm{i}\pi/2 + \mathrm{i}k\pi$ for
     $k \in \Z$, so its jet is defined only away from those points and the
-    admissible directions depend on the activation input. The collocation
-    measurements of Section~\ref{sec_experiments} use $\sinh$ at every order,
+    admissible directions depend on the activation input. The numerical
+    experiments of Section~\ref{sec_experiments} use $\sinh$ at every order,
     including the order-two residuals whose directions remain real.
 \end{remark}
 
@@ -657,21 +683,10 @@ reports double-precision agreement through order six.
 %% ====================================================================
 \section{Numerical experiments}\label{sec_experiments}
 
-The experiments evaluate monomials that appear in collocation residuals.
-Let $\Omega \subset \R^{d}$ be a bounded domain with boundary
-$\Gamma := \partial\Omega$. We consider the boundary-value problem
-\begin{equation}\label{eq_pde}
-    \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
-\end{equation}
-where $\mathcal{P}$ is a differential operator of order $p$ and $\mathcal{B}$
-specifies the boundary conditions. The solution $u$ is approximated by a
-neural network $u_{\theta}$. Given interior points
-$(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$, boundary points
-$(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, and positive weights
-$\lambda_{r}, \lambda_{b}$, the parameters are obtained by minimizing
-\begin{equation}\label{eq_pinn_loss}
-    \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
-\end{equation}
+The experiments evaluate monomials that appear in the PINN residual
+\eqref{eq_pinn_loss} for the boundary-value problem \eqref{eq_pde}. The
+benchmark source terms and boundary data are manufactured from prescribed exact
+solutions~\cite{Roache2002}.
 Expanding $\mathcal{P}$ into monomials turns one residual evaluation in
 \eqref{eq_pinn_loss} into several derivatives $\partial^{\alpha}u_{\theta}$ of
 the same function on the same batch. The operator $\Delta^{m}$ expands into
@@ -683,7 +698,7 @@ This section checks two properties of the schedule: agreement with nested
 automatic differentiation in double precision, and the time and memory of one
 residual evaluation, including the reverse-mode pass. The first comparison uses
 no PDE. The second repeats the same evaluation inside an otherwise identical
-collocation loop and records the time and memory of one step. Every quantity
+PINN training loop and records the time and memory of one step. Every quantity
 below is a property of the derivative method on a fixed function, residual,
 and optimizer.
 
@@ -713,7 +728,7 @@ predicts.
 \subsection{A controlled comparison of derivative backends}\label{sec_num_protocol}
 
 The remaining study isolates the derivative backend. Protocol \texttt{jsc\_v3}
-runs two lines that share the network, the loss, the optimizer, the collocation
+runs two lines that share the network, the loss, the optimizer, the residual
 points, the evaluation rule, the seeds, and the wall-clock budget, and differ in
 one respect: how each monomial derivative of the residual is evaluated. The
 first line uses Algorithm~\ref{alg_waring}, that is, the rank-optimal complex
@@ -725,7 +740,7 @@ complex-parameter $\sinh$ network with four hidden layers of width $H = 128$,
 hence the same 100{,}098 trainable real degrees of freedom, the same first-layer
 scale, and the same \texttt{complex128} arithmetic. Both use Adam with initial
 learning rate $10^{-3}$ and cosine decay, 4096 fixed interior points, 512 fixed
-boundary points, paired per-seed collocation, the same per-setting boundary
+boundary points, paired point sets for each seed, the same per-setting boundary
 weights, and a common held-out set of 8192 points. Each line is run for three
 seeds with a budget of 1000 seconds per run.
 
