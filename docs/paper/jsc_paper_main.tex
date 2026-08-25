@@ -212,88 +212,113 @@ collected in Appendix~\ref{sec_schedules}.
 Let $\Omega \subset \R^{d}$ be a computational domain with boundary
 $\Gamma := \partial\Omega$. We consider the boundary-value problem
 \begin{equation}\label{eq_pde}
-    \mathcal{P} u = f \quad\text{in } \Omega, \quad \mathcal{B} u = g \quad\text{on } \Gamma,
+    \mathcal{P} u_{\star} = f \quad\text{in } \Omega,
+    \qquad
+    \mathcal{B} u_{\star} = g \quad\text{on } \Gamma,
 \end{equation}
-where $\mathcal{P}$ is a differential operator and $\mathcal{B}$ specifies the
-boundary conditions. In the PINN framework, the solution $u$ is approximated
-by a neural network
+where $\mathcal{P}$ is a differential operator and $\mathcal{B}$ denotes a
+boundary operator or a collection of boundary operators. In the PINN
+framework, the solution $u_{\star}$ is approximated by a neural network
 $u_{\theta}$~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021}.
 Given residual points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary
 points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, together with positive weights
 $\lambda_r$ and $\lambda_b$, the network parameters are obtained by minimizing
 \begin{equation}\label{eq_pinn_loss}
-    \mathcal{L}(\theta) := \frac{\lambda_r}{n_r} \sum_{i=1}^{n_r} \abs{\mathcal{P} u_{\theta}(\bx_{r,i}) - f(\bx_{r,i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i=1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b,i}) - g(\bx_{b,i})}^{2}.
+    \mathcal{L}(\theta)
+    :=
+    \frac{\lambda_r}{n_r}
+    \sum_{i=1}^{n_r}
+    \abs{\mathcal{P}u_{\theta}(\bx_{r,i})-f(\bx_{r,i})}^{2}
+    +
+    \frac{\lambda_b}{n_b}
+    \sum_{i=1}^{n_b}
+    \norm{\mathcal{B}u_{\theta}(\bx_{b,i})-g(\bx_{b,i})}^{2}.
 \end{equation}
-Evaluating the residual term in \eqref{eq_pinn_loss} requires repeated
-computation of derivatives of $u_{\theta}$. For high-order equations and
-high-dimensional problems, these derivative evaluations can dominate the
-training cost because automatic differentiation must retain large intermediate
-computational graphs and perform multiple differentiation passes through the
-network.
+Evaluating the residual term in \eqref{eq_pinn_loss} requires derivatives of
+$u_{\theta}$. For high-order equations and high-dimensional problems, nested
+first-order automatic differentiation can dominate the training cost because
+it retains large intermediate computational graphs and performs repeated
+differentiation passes through the network.
 
-\subsection{Notation and the evaluation problem}\label{sec_problem}
+\subsection{Multi-index notation and the target derivative}\label{sec_problem}
 
-We introduce some notation used throughout the paper. Let
-$\N_{0} := \{0, 1, 2, \ldots\}$, and let $\C^{d}$ be the $d$-dimensional
-complex space. A multi-index is a tuple
-$\nu = (\nu_{1}, \ldots, \nu_{d}) \in \N_{0}^{d}$. For every such $\nu$ and
-every $\bz = (z_{1}, \ldots, z_{d}) \in \C^{d}$ we write
+Let $\N_{0}:=\{0,1,2,\ldots\}$. The notation $\C^{d}$ denotes the
+$d$-dimensional complex space. A multi-index is an element
+$\nu=(\nu_{1},\ldots,\nu_{d})$ of $\N_{0}^{d}$. For a vector
+$\bz=(z_{1},\ldots,z_{d})$ in $\C^{d}$, define
+$\partial_i:=\partial/\partial x_i$ and write
 \begin{equation}\label{eq_multiindex}
-    \abs{\nu} := \sum_{i=1}^{d} \nu_{i}, \quad
-    \nu! := \prod_{i=1}^{d} \nu_{i}!, \quad
-    \bz^{\nu} := \prod_{i=1}^{d} z_{i}^{\nu_{i}}, \quad
-    \partial^{\nu} := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}}.
+    \abs{\nu}
+    :=
+    \sum_{i=1}^{d}\nu_i,
+    \qquad
+    \nu!
+    :=
+    \prod_{i=1}^{d}\nu_i!,
+    \qquad
+    \bz^{\nu}
+    :=
+    \prod_{i=1}^{d}z_i^{\nu_i},
+    \qquad
+    \partial^{\nu}
+    :=
+    \partial_1^{\nu_1}\cdots\partial_d^{\nu_d}.
 \end{equation}
-The integer $p := \abs{\nu}$ is the order of $\nu$. We write $\alpha = \beta$
-for multi-indices $\alpha, \beta$ if and only if $\alpha_{i} = \beta_{i}$ for
-all $i = 1, \ldots, d$, and we write $\delta_{\alpha\beta} := 1$ if
-$\alpha = \beta$ and $\delta_{\alpha\beta} := 0$ otherwise.
+The integer $p:=\abs{\nu}$ is the order of the derivative.
 
-The construction below acts on each monomial derivative that appears in the
-PINN residual. A differential operator that is a linear combination of
-monomials $\partial^{\alpha}$ is evaluated by applying the construction of
-Section~\ref{sec_formulation} to each monomial separately and then assembling
-the result according to the operator.
-
-For the local derivative analysis, fix a point $\bx \in \Omega$ and a
-multi-index $\nu$ of order $p \ge 1$. We suppress the parameter subscript and
-write $u$ for $u_{\theta}$. To evaluate complex directions, we assume that
-$u_{\theta}$ admits a holomorphic extension to a complex neighborhood of
-$\bx$, and we denote this extension by the same symbol. Networks built from
-entire activations, such as $\sinh(z) := (e^{z}-e^{-z})/2$, satisfy this
-assumption. Local holomorphicity is sufficient; the network need not be entire.
-Throughout Sections~\ref{sec_prelim} and~\ref{sec_formulation}, the target is
-the monomial derivative
-\begin{equation}\label{eq_intro_partial}
-    \dal u(\bx) := \partial_{1}^{\nu_{1}} \cdots \partial_{d}^{\nu_{d}} u(\bx)
+The proposed method evaluates one partial derivative at a time. Fix a point
+$\bx\in\Omega$ and a multi-index $\nu$ of order $p\geq 1$. For the derivative
+analysis, let $u$ denote the scalar function being differentiated; in the PINN
+setting, $u=u_{\theta}$. The target derivative is
+\begin{equation}\label{eq_target_partial}
+    \dal u(\bx)
+    :=
+    \partial^{\nu}u(\bx).
 \end{equation}
-for this fixed $\nu$ and $\bx$.
+A PINN residual involving several derivative terms is assembled after each
+derivative has been evaluated separately.
+
+Because the directional evaluations may involve complex directions, we assume
+that $u$ admits a holomorphic extension to a complex neighborhood of $\bx$, and
+we denote the extension by the same symbol. Feed-forward networks composed of
+affine maps and entire activations, such as
+$\sinh(z):=(e^{z}-e^{-z})/2$, satisfy this assumption. Local holomorphicity is
+sufficient; the function $u$ need not be entire.
 
 \subsection{Directional Taylor coefficients}\label{sec_taylor}
 
 Let $D^{p}u(\bx)$ denote the symmetric $p$-linear derivative of $u$ at
-$\bx$. For a direction $\bv \in \C^{d}$, the directional Taylor coefficient
+$\bx$. For a direction $\bv\in\C^{d}$, the directional Taylor coefficient
 of order $p$ at $\bx$ along $\bv$ is
 \begin{equation}\label{eq_tp}
-    \Tp(\bx; \bv) := \frac{1}{p!}\,D^{p}u(\bx)[\bv, \ldots, \bv] = \frac{1}{p!}\,\frac{d^{p}}{d\tau^{p}}\,u(\bx + \tau\bv)\Big|_{\tau=0},
+    \Tp(\bx;\bv)
+    :=
+    \frac{1}{p!}D^{p}u(\bx)[\bv,\ldots,\bv]
+    =
+    \frac{1}{p!}
+    \frac{d^{p}}{d\tau^{p}}
+    u(\bx+\tau\bv)\Big|_{\tau=0},
 \end{equation}
 where $D^{p}u(\bx)$ is extended complex-multilinearly. The second equality
-follows from the local holomorphicity of $u$ and identifies \eqref{eq_tp} with
-the order-$p$ coefficient of $\tau \mapsto u(\bx + \tau\bv)$. An arbitrary
+identifies $\Tp(\bx;\bv)$ with the coefficient of order $p$ in the Taylor
+expansion of $\tau\mapsto u(\bx+\tau\bv)$. An arbitrary
 $C^{p}$ function on $\R^{d}$ need not be defined at complex arguments; the
-holomorphic extension is what makes \eqref{eq_tp} available for
-$\bv \in \C^{d}$.
+holomorphic extension makes \eqref{eq_tp} well-defined for $\bv\in\C^{d}$.
 
-Taylor-mode automatic differentiation evaluates \eqref{eq_tp} in one forward
-pass~\cite{Bettencourt2019,Griewank2008}. Each intermediate activation $y$
-along the path $\tau \mapsto u(\bx + \tau \bv)$ is replaced by the
-length-$(p+1)$ tuple $(y_{0}, \ldots, y_{p})$ of its truncated Taylor
-coefficients
+Taylor-mode automatic differentiation evaluates the Taylor coefficients up to
+order $p$ in one forward jet propagation~\cite{Bettencourt2019,Griewank2008}.
+Along the path $\tau\mapsto u(\bx+\tau\bv)$, each intermediate quantity $y$ is
+represented by the truncated coefficient tuple
+$(y_{0},\ldots,y_{p})$, where
 \begin{equation}\label{eq_jet_coeff}
-    y_{k} = \frac{1}{k!}\,\frac{d^{k}y}{d\tau^{k}}\Big|_{\tau=0}.
+    y_k
+    :=
+    \frac{1}{k!}
+    \frac{d^{k}y}{d\tau^{k}}\Big|_{\tau=0}.
 \end{equation}
-Every coefficient $y_{k}$ is an ordinary tensor. The propagation stores
-$p+1$ coefficient tensors per activation and does not nest input-gradient
+The coefficient of order $p$ at the network output is
+$\Tp(\bx;\bv)$. Taylor-mode propagation therefore computes the required
+directional coefficient without constructing nested input-differentiation
 graphs.
 
 %% ====================================================================
@@ -399,9 +424,9 @@ holds for every admissible $u$ if and only if
 \begin{equation}\label{eq_moment}
     \sum_{r=1}^{R} c_{r} \bv_{r}^{\beta} = \nu!\,\delta_{a\beta}, \quad \abs{\beta} = p,
 \end{equation}
-with $\delta_{a\beta}$ as in Section~\ref{sec_problem}. The design problem is
-thus to solve the moment conditions \eqref{eq_moment} with as few directions as
-possible.
+where $\delta_{a\beta}$ equals one if $\beta=a$ and zero otherwise. The design
+problem is thus to solve the moment conditions \eqref{eq_moment} with as few
+directions as possible.
 
 Two features of \eqref{eq_moment} decide how short a schedule can be. The
 conditions number $\binom{p+n}{n}$, so their count is governed by how many
