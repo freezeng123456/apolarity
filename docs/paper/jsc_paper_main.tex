@@ -325,7 +325,8 @@ graphs.
 \section{Exact directional representations and Waring rank}\label{sec_formulation}
 
 Fix $\bx$ and $\nu$ as in Section~\ref{sec_problem}, and let $p=\abs{\nu}$.
-After permuting and relabeling the active coordinates, write their exponents as
+After permuting and relabeling the active coordinates, write the positive
+entries of $\nu$ as $a=(a_0,\ldots,a_n)$, ordered so that
 \begin{equation}\label{eq_active}
     1\leq a_0\leq\cdots\leq a_n,
     \qquad
@@ -333,12 +334,15 @@ After permuting and relabeling the active coordinates, write their exponents as
     \qquad
     \nu!=\prod_{j=0}^{n}a_j!.
 \end{equation}
-We denote the corresponding standard basis vectors by
+Denote the corresponding relabeled standard basis vectors by
 $e_0,\ldots,e_n$. Coordinates outside this set do not contribute to
-$\partial^\nu u(\bx)$, so the directions below are supported only on the
-active coordinates. Multi-indices in this section are understood to range over
-these $n+1$ coordinates, and we write
-$\bz^a=z_0^{a_0}\cdots z_n^{a_n}$.
+$\partial^\nu u(\bx)$, and all directions below are therefore supported on the
+active coordinates. Multi-indices in this section range over these $n+1$
+coordinates, and $\bz^a$ denotes the monomial
+$z_0^{a_0}\cdots z_n^{a_n}$. We first identify exact directional
+representations with Waring decompositions. The monomial rank formula then
+gives the minimum number of directions, and a roots-of-unity construction
+realizes the minimum.
 
 \subsection{Directional representations and Waring decompositions}
 \label{sec_expansion}
@@ -352,15 +356,16 @@ For a direction $\bv=\sum_{j=0}^{n}v_je_j$, the multinomial theorem and
     \frac{\bv^\beta}{\beta!}\,
     \partial^\beta u(\bx).
 \end{equation}
-An \emph{$R$-term exact directional representation} of $\dal$ is an identity
+Thus each directional Taylor coefficient is a linear combination of the
+order-$p$ partial derivatives. An \emph{$R$-term exact directional
+representation} of $\partial^\nu u(\bx)$ is an identity
 \begin{equation}\label{eq_schedule}
-    \dal u(\bx)
+    \partial^\nu u(\bx)
     =
     \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
 \end{equation}
-that holds for every $u:\C^d\to\C$ that is holomorphic in a neighborhood of
-$\bx$, where $c_r\in\C$ and the directions $\bv_r$ are supported on the active
-coordinates.
+that holds for every $u$ holomorphic on a complex neighborhood of $\bx$, where
+$c_r\in\C$ and each $\bv_r$ is supported on the active coordinates.
 
 \begin{proposition}[Directional--Waring correspondence]\label{prop_bridge}
     The coefficients and directions in \eqref{eq_schedule} form an exact
@@ -374,8 +379,12 @@ coordinates.
 \end{proposition}
 
 \begin{proof}
-    By \eqref{eq_directional_expansion}, identity \eqref{eq_schedule} holds for
-    every holomorphic $u$ if and only if
+    Substituting \eqref{eq_directional_expansion} into \eqref{eq_schedule}, the
+    coefficient multiplying $\partial^\beta u(\bx)$ on the right-hand side is
+    $\beta!^{-1}\sum_{r=1}^{R}c_r\bv_r^\beta$. Testing the identity on
+    degree-$p$ polynomials in the shifted coordinates shows that these
+    coefficients must agree separately. Hence \eqref{eq_schedule} holds for
+    every such $u$ if and only if
     \begin{equation}\label{eq_moment}
         \sum_{r=1}^{R}c_r\bv_r^\beta
         =
@@ -383,9 +392,7 @@ coordinates.
         \qquad \abs{\beta}=p,
     \end{equation}
     where $\delta_{a\beta}=1$ for $\beta=a$ and is zero otherwise. The
-    derivatives of order $p$ can be prescribed independently within this
-    function class, as is seen by taking $u$ to be a polynomial. On the other
-    hand, the multinomial theorem gives
+    multinomial theorem also gives
     \begin{equation*}
         \sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p
         =
@@ -393,14 +400,20 @@ coordinates.
         \binom{p}{\beta}
         \left(\sum_{r=1}^{R}c_r\bv_r^\beta\right)\bz^\beta.
     \end{equation*}
-    Substitution of \eqref{eq_moment} leaves only the term $\beta=a$, whose
-    coefficient is
-    $\binom{p}{a}\nu!=p!$. Conversely, comparing coefficients in
-    \eqref{eq_bridge} recovers \eqref{eq_moment}.
+    The moment conditions \eqref{eq_moment} leave only the term $\beta=a$,
+    whose coefficient is $\binom{p}{a}\nu!=p!$. Conversely, comparison of the
+    coefficients of $\bz^\beta$ in \eqref{eq_bridge} recovers
+    \eqref{eq_moment}.
 \end{proof}
 
-The right-hand side of \eqref{eq_bridge} is a Waring decomposition of the
-monomial $\bz^a$. We recall the corresponding rank.
+The restriction to active directions does not change the minimum. An exact
+representation using directions in the ambient space gives a Waring identity
+for the target monomial in all $d$ variables. Setting the inactive polynomial
+variables to zero projects the identity onto the active coordinates without
+increasing the number of summands.
+
+Equation~\eqref{eq_bridge} is a Waring decomposition of the scalar multiple
+$p!\bz^a$. We recall the corresponding rank.
 
 \begin{definition}[Waring rank]\label{def_waring}
     Let $F\in\C[z_0,\ldots,z_n]$ be homogeneous of degree $p$. The
@@ -411,16 +424,17 @@ monomial $\bz^a$. We recall the corresponding rank.
     \end{equation*}
 \end{definition}
 
+Multiplication by a nonzero scalar does not change Waring rank. Therefore,
 Proposition~\ref{prop_bridge} identifies the minimum number of directions in
-\eqref{eq_schedule} with $R_{\C}(\bz^a)$. The rank of a monomial is known in
-closed form, and the same result gives an explicit minimizing decomposition.
-For $m\geq1$, let
+\eqref{eq_schedule} with $R_{\C}(\bz^a)$. The monomial rank theorem supplies
+the minimum, while the construction below specifies directions and weights
+that attain it. For $m\geq1$, let
 $U_m:=\{\zeta\in\C:\zeta^m=1\}$.
 
 \begin{theorem}[Rank-optimal directional representation]\label{thm_main}
     Let $1\leq a_0\leq\cdots\leq a_n$ be the active exponents of $\nu$ as in
     \eqref{eq_active}. The minimum number of terms in an exact directional
-    representation of $\dal$ is
+    representation of $\partial^\nu u(\bx)$ is
     \begin{equation}\label{eq_rank}
         R_{\C}(\bz^a)
         =
@@ -441,26 +455,26 @@ $U_m:=\{\zeta\in\C:\zeta^m=1\}$.
     \end{equation}
     Then
     \begin{equation}\label{eq_optimal_representation}
-        \dal u(\bx)
+        \partial^\nu u(\bx)
         =
         \sum_{\zeta\in U_{a_1+1}\times\cdots\times U_{a_n+1}}
         c_\zeta\Tp(\bx;\bv_\zeta).
     \end{equation}
-    Hence \eqref{eq_optimal_representation} uses the minimum possible number of
-    complex directions among all exact representations of the form
-    \eqref{eq_schedule}.
+    The representation \eqref{eq_optimal_representation} attains the minimum
+    in \eqref{eq_rank}, even when directions in the ambient space $\C^d$ are
+    allowed.
 \end{theorem}
 
 \begin{proof}
-    Proposition~\ref{prop_bridge} shows that the minimum number of directions
-    equals $R_{\C}(\bz^a)$. The monomial rank theorem of Carlini,
-    Catalisano, and Geramita~\cite{CCG2012} gives \eqref{eq_rank};
-    Appendix~\ref{sec_apolar} recalls the apolarity argument behind the lower
-    bound.
+    Proposition~\ref{prop_bridge}, invariance of Waring rank under nonzero
+    scaling, and the preceding projection argument identify the minimum over
+    ambient directions with $R_{\C}(\bz^a)$. The monomial rank theorem of
+    Carlini, Catalisano, and Geramita~\cite{CCG2012} gives \eqref{eq_rank}.
+    Appendix~\ref{sec_apolar} records the apolar interpretation.
 
-    It remains to verify \eqref{eq_optimal_representation}. By
-    \eqref{eq_moment}, it is enough to show that for every $\beta$ with
-    $\abs{\beta}=p$,
+    It remains to verify that the roots-of-unity construction attains the
+    minimum. For $\abs{\beta}=p$, summing over
+    $\zeta\in U_{a_1+1}\times\cdots\times U_{a_n+1}$ gives
     \begin{equation}\label{eq_root_moments}
     \begin{aligned}
         \sum_{\zeta}c_\zeta\bv_\zeta^\beta
@@ -473,34 +487,38 @@ $U_m:=\{\zeta\in\C:\zeta^m=1\}$.
         \right).
     \end{aligned}
     \end{equation}
-    Here, $\zeta$ ranges over
-    $U_{a_1+1}\times\cdots\times U_{a_n+1}$.
-    Lemma~\ref{lem_filter} shows that the $j$th factor vanishes unless
-    $a_j+1$ divides $\beta_j+1$. If no factor vanishes, then
+    The roots-of-unity filter in Lemma~\ref{lem_filter} shows that the $j$th
+    factor is zero unless
     \begin{equation*}
-        \beta_j=a_j+t_j(a_j+1),
-        \qquad t_j\in\N_0,
+        \beta_j\equiv a_j\pmod{a_j+1},
         \qquad j=1,\ldots,n.
     \end{equation*}
-    Since $\abs{\beta}=\sum_{j=0}^{n}a_j$, the remaining exponent is
+    Nonnegativity then implies that each $\beta_j$ is either $a_j$ or at least
+    $2a_j+1$. If the second alternative holds for an index $j\geq1$, all
+    filtered exponents satisfy $\beta_k\geq a_k$ for $k=1,\ldots,n$. The
+    excess at the index $j$ is at least $a_j+1$. Therefore,
     \begin{equation*}
         \beta_0
         =
-        a_0-\sum_{j=1}^{n}t_j(a_j+1).
+        p-\sum_{k=1}^{n}\beta_k
+        \leq
+        a_0-(a_j+1)
+        <0,
     \end{equation*}
-    The ordering $a_0\leq a_j$ implies that $\beta_0<0$ if any $t_j$ is
-    positive. Hence every $t_j$ is zero and $\beta=a$. For $\beta=a$, each
-    factor in \eqref{eq_root_moments} equals $a_j+1$, and the right-hand side
-    equals $\nu!$. Thus \eqref{eq_root_moments} is precisely
-    \eqref{eq_moment}, which proves the representation. When $n=0$, the empty
-    product convention gives the single direction $e_0$ with coefficient
-    $\nu!$.
+    where the last inequality follows from $a_0\leq a_j$. This contradicts
+    $\beta_0\geq0$. Consequently, the product in
+    \eqref{eq_root_moments} can be nonzero only for $\beta=a$. For $\beta=a$,
+    every factor equals $a_j+1$, and \eqref{eq_root_moments} equals $\nu!$.
+    The moment conditions \eqref{eq_moment} therefore hold, which proves
+    \eqref{eq_optimal_representation}. When $n=0$, the formula reduces to
+    $\partial_0^p u(\bx)=p!\Tp(\bx;e_0)$.
 \end{proof}
 
 \subsection{Examples and consequences}\label{sec_consequences}
 
-For the mixed second derivative, $a=(1,1)$ and \eqref{eq_rank} gives rank two.
-Formula \eqref{eq_optimal_representation} becomes
+In the examples below, we return to the original coordinate labels. For the
+mixed second derivative, $a=(1,1)$ and \eqref{eq_rank} gives rank two. Formula
+\eqref{eq_optimal_representation} becomes
 \begin{equation}\label{eq_two_point}
     \partial_1\partial_2u(\bx)
     =
@@ -508,12 +526,11 @@ Formula \eqref{eq_optimal_representation} becomes
     -
     \frac{1}{2}\Tp(\bx;e_1-e_2).
 \end{equation}
-Thus the familiar polarization identity is optimal: the cancellation of the
-two pure second derivatives cannot be achieved with one directional
-coefficient.
+Since $R_{\C}(z_0z_1)=2$, no exact representation of the mixed second
+derivative by a single directional Taylor coefficient exists.
 
-A genuinely complex example is provided by repeated exponents. For $a=(2,2)$,
-let $\omega=\exp(2\pi\mathrm{i}/3)$. Then
+For a genuinely complex example, consider $a=(2,2)$ and let
+$\omega=\exp(2\pi\mathrm{i}/3)$. Then
 \begin{equation}\label{eq_example_22}
     \partial_1^2\partial_2^2u(\bx)
     =
@@ -524,25 +541,25 @@ let $\omega=\exp(2\pi\mathrm{i}/3)$. Then
 and three directions are minimal over $\C$.
 
 The rank formula also identifies the limits of the reduction. A pure power
-$\partial_i^pu$ has rank one, whereas the square-free derivative with
-$a=(1,\ldots,1)$ has rank $2^{p-1}$. Repeated indices can keep the rank much
-smaller than the derivative order alone would suggest. Table~\ref{tab_patterns}
-lists representative values, and Appendix~\ref{sec_lowschedules} records the
-formulas used in the experiments.
+$\partial_i^pu$ has rank one, whereas a square-free derivative with
+$a=(1,\ldots,1)$ has rank $2^{p-1}$. Between these cases, repeated indices can
+reduce the rank below the square-free value. Table~\ref{tab_patterns} lists
+representative values, and Appendix~\ref{sec_lowschedules} records the formulas
+used in the experiments.
 
 The minimum in Theorem~\ref{thm_main} concerns one fixed monomial derivative
 and exact linear representations by order-$p$ directional Taylor coefficients.
 A differential operator containing several monomials is evaluated term by term.
-The stochastic Taylor derivative estimator~\cite{Shi2024stde} treats arbitrary
-contractions of the order-$p$ derivative tensor by unbiased estimation with a
-sampling budget; its objective is different from the deterministic minimum in
-\eqref{eq_rank}.
+By contrast, the stochastic Taylor derivative estimator~\cite{Shi2024stde}
+uses a sampling budget to estimate arbitrary contractions of the order-$p$
+derivative tensor. The stochastic estimation problem is distinct from the
+deterministic minimum in \eqref{eq_rank}.
 
 \begin{table}[htbp]
 \centering
 \footnotesize
 \caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for selected active-exponent patterns up to $p = 6$.
-Repeating an index keeps the count low; the square-free pattern $(1^{p})$ is exponential in the order.}
+Repeated indices reduce the count relative to the square-free pattern at the same order.}
 \label{tab_patterns}
 \begin{tabular}{@{}llr@{}}
 \toprule
@@ -892,9 +909,9 @@ tensors contracted against a fixed structured family.
 
 This appendix collects the roots-of-unity filter used in the proof of
 Theorem~\ref{thm_main}, the explicit schedules for the derivative patterns that
-occur in Section~\ref{sec_experiments}, and the apolarity argument behind the
+occur in Section~\ref{sec_experiments}, and the apolar interpretation of the
 rank formula \eqref{eq_rank}. The formulas of Appendix~\ref{sec_lowschedules}
-are those the implementation evaluates.
+are those evaluated by the implementation.
 
 \subsection{Roots-of-unity filter}\label{sec_filter}
 
@@ -966,26 +983,28 @@ surviving constant is $\tfrac{48}{5} \cdot \tfrac{6!}{2!\,4!} \cdot 5 = 720 =
 6!$. The three-variable pattern $(2,2,2)$ of Table~\ref{tab_patterns} is the
 same construction with two cube-root factors and nine directions.
 
-\subsection{Apolar form of the rank bound}\label{sec_apolar}
+\subsection{Apolarity interpretation of the rank formula}\label{sec_apolar}
 
-The lower bound in \eqref{eq_rank} comes from apolarity, which we recall for
-completeness. For a homogeneous $F \in \C[\bz]_{p}$, let $F^{\perp}$ denote its
-apolar ideal, that is, the ideal of differential operators annihilating $F$, and
-call a finite subscheme $X \subset \mathbb{P}^{n}$ apolar to $F$ when $I_{X}
-\subset F^{\perp}$. The Waring rank then admits the characterization
+The rank formula \eqref{eq_rank} has a standard apolar interpretation. For a
+homogeneous $F \in \C[\bz]_{p}$, let $F^{\perp}$ denote the ideal of
+differential operators that annihilate $F$. A finite subscheme
+$X \subset \mathbb{P}^{n}$ is apolar to $F$ when $I_{X}\subset F^{\perp}$.
+The apolarity lemma characterizes Waring rank as
 \begin{equation}\label{eq_apolar}
     R_{\C}(F) = \min\bigl\{\deg X : X \subset \mathbb{P}^{n} \text{ finite, reduced, and apolar to } F\bigr\}.
 \end{equation}
-For the monomial $F = \bz^{a}$ the apolar ideal is the complete intersection
+For the monomial $F=\bz^a$, the apolar ideal is the complete intersection
 \begin{equation}\label{eq_apolar_ideal}
     (\bz^{a})^{\perp} = \bigl(\partial_{0}^{a_{0}+1}, \ldots, \partial_{n}^{a_{n}+1}\bigr),
 \end{equation}
-and the Hilbert function of the quotient $\C[\partial]/(\bz^{a})^{\perp}$ bounds
-the degree of an apolar subscheme from below by the product
-$\prod_{j=1}^{n}(a_j+1)$ of \eqref{eq_rank}; see~\cite{IK1999,Landsberg2012} for
-the general theory and~\cite{CCG2012} for the monomial case. The construction
-\eqref{eq_rou} exhibits a reduced apolar subscheme of exactly that degree, so
-the bound is attained.
+which is an Artinian complete intersection. The step from
+\eqref{eq_apolar_ideal} to the lower bound in \eqref{eq_rank} uses the
+Hilbert-function argument in~\cite{CCG2012}; the general apolarity framework is
+developed in~\cite{IK1999,Landsberg2012}. The linear forms
+$\bv_\zeta\cdot\bz$ defined by \eqref{eq_rou} determine
+$\prod_{j=1}^{n}(a_j+1)$ distinct projective points. Proposition~\ref{prop_bridge}
+and the apolarity lemma identify these points with a reduced apolar scheme of
+the degree prescribed by \eqref{eq_rank}.
 
 %% ====================================================================
 %%  REFERENCES
