@@ -244,10 +244,11 @@ through the network.
 
 \subsection{Multi-index notation and the target derivative}\label{sec_problem}
 
-We first fix the notation used below.\par
 Let $\N_{0}:=\{0,1,2,\ldots\}$, and let $\C^d$ denote the
-$d$-dimensional complex space. For a multi-index $\nu\in\N_0^d$ and a vector
-$\bz\in\C^d$, define $\partial_i:=\partial/\partial x_i$ and write
+$d$-dimensional complex space. For $i=1,\ldots,d$, define
+$\partial_i:=\partial/\partial x_i$. Let $\nu\in\N_0^d$ be a multi-index,
+and let $\bz\in\C^d$. With $\nu=(\nu_1,\ldots,\nu_d)$ and
+$\bz=(z_1,\ldots,z_d)$, write
 \begin{equation}\label{eq_multiindex}
     \abs{\nu}
     :=
@@ -265,95 +266,77 @@ $\bz\in\C^d$, define $\partial_i:=\partial/\partial x_i$ and write
     :=
     \partial_1^{\nu_1}\cdots\partial_d^{\nu_d}.
 \end{equation}
-The integer $p:=\abs{\nu}$ is the order of the derivative.
+The order of $\partial^\nu$ is $p:=\abs{\nu}$.
 
-The proposed method evaluates one partial derivative at a time. Fix a point
-$\bx\in\Omega$ and a multi-index $\nu$ of order $p\geq 1$. For the derivative
-analysis, let $u$ denote the scalar function being differentiated; in the PINN
+We consider one target partial derivative at a time. Fix a point
+$\bx\in\Omega$ and a multi-index $\nu$ of order $p\geq1$. For the analysis
+below, let $u$ denote the scalar function being differentiated; in the PINN
 setting, $u=u_{\theta}$. The target derivative is
 \begin{equation}\label{eq_target_partial}
     \dal u(\bx)
     :=
     \partial^{\nu}u(\bx).
 \end{equation}
-A PINN residual involving several derivative terms is assembled after each
-derivative has been evaluated separately.
 
-We regard $u$ as a scalar-valued function from $\C^{d}$ to $\C$ and assume
-that it is holomorphic in a complex neighborhood of $\bx$. Feed-forward
-networks composed of affine maps and entire activations, such as
-$\sinh(z):=(e^{z}-e^{-z})/2$, satisfy this assumption. The formulation covers
-both networks whose restriction to $\R^d$ is real-valued and networks used for
-complex-valued solutions.
+We assume that $u$ admits a holomorphic extension to a complex neighborhood
+of $\bx$ and use the same notation for the extension. Feed-forward networks
+composed of affine maps and entire activations, such as
+$\sinh(z):=(e^{z}-e^{-z})/2$, admit such an extension. The assumption covers
+networks whose restriction to $\R^d$ is real-valued as well as networks used
+for complex-valued solutions.
 
 \subsection{Directional Taylor coefficients}\label{sec_taylor}
 
-Let $D^{p}u(\bx)$ denote the symmetric $p$-linear derivative of $u$ at
-$\bx$. For a direction $\bv\in\C^{d}$, the directional Taylor coefficient
-of order $p$ at $\bx$ along $\bv$ is
+For $\bv\in\C^d$, define the order-$p$ Taylor coefficient of $u$ at $\bx$
+along $\bv$ by
 \begin{equation}\label{eq_tp}
     \Tp(\bx;\bv)
     :=
-    \frac{1}{p!}D^{p}u(\bx)[\bv,\ldots,\bv]
-    =
     \frac{1}{p!}
-    \frac{d^{p}}{d\tau^{p}}
+    \frac{d^p}{d\tau^p}
     u(\bx+\tau\bv)\Big|_{\tau=0},
 \end{equation}
-where $D^{p}u(\bx)$ is extended complex-multilinearly. The second equality
-identifies $\Tp(\bx;\bv)$ with the coefficient of order $p$ in the Taylor
-expansion of the holomorphic path $\tau\mapsto u(\bx+\tau\bv)$.
-
-Taylor-mode automatic differentiation evaluates the Taylor coefficients up to
-order $p$ in one forward jet propagation~\cite{Bettencourt2019,Griewank2008}.
-Along the path $\tau\mapsto u(\bx+\tau\bv)$, each intermediate quantity $y$ is
-represented by the truncated coefficient tuple
-$(y_{0},\ldots,y_{p})$, where
-\begin{equation}\label{eq_jet_coeff}
-    y_k
-    :=
-    \frac{1}{k!}
-    \frac{d^{k}y}{d\tau^{k}}\Big|_{\tau=0}.
+Thus, $\Tp(\bx;\bv)$ is the coefficient of $\tau^p$ in the univariate
+Taylor expansion of $u(\bx+\tau\bv)$. The chain rule for the affine map
+$\tau\mapsto\bx+\tau\bv$ gives
+\begin{equation}\label{eq_tp_frechet}
+    \Tp(\bx;\bv)
+    =
+    \frac{1}{p!}D^p u(\bx)[\bv,\ldots,\bv],
 \end{equation}
-The coefficient of order $p$ at the network output is
-$\Tp(\bx;\bv)$. Taylor-mode propagation therefore computes the required
-directional coefficient without constructing nested input-differentiation
-graphs.
+where $D^p u(\bx)$ denotes the symmetric complex $p$-linear derivative of
+$u$ at $\bx$.
 
 %% ====================================================================
 %%  SECTION 3: EXACT DIRECTIONAL REPRESENTATIONS AND WARING RANK
 %% ====================================================================
 \section{Exact directional representations and Waring rank}\label{sec_formulation}
 
-Fix $\bx$ and $\nu$ as in Section~\ref{sec_problem}, and let $p=\abs{\nu}$.
-After permuting and relabeling the active coordinates, write the positive
-entries of $\nu$ as $a=(a_0,\ldots,a_n)$, ordered so that
-\begin{equation}\label{eq_active}
+Fix $\bx$ and $\nu$ as in Section~\ref{sec_problem}, and set $p=\abs{\nu}$.
+After permuting the coordinates, write
+\[
+    \nu=(a_0,\ldots,a_n,0,\ldots,0),
+\]
+where
+\begin{equation}\label{eq_reduced_multiindex}
     1\leq a_0\leq\cdots\leq a_n,
     \qquad
     p=\sum_{j=0}^{n}a_j,
     \qquad
     \nu!=\prod_{j=0}^{n}a_j!.
 \end{equation}
-Denote the corresponding relabeled standard basis vectors by
-$e_0,\ldots,e_n$. Coordinates outside this set do not contribute to
-$\partial^\nu u(\bx)$, and all directions below are therefore supported on the
-active coordinates. Multi-indices in this section range over these $n+1$
-coordinates, and $\bz^a$ denotes the monomial
-$z_0^{a_0}\cdots z_n^{a_n}$. We first identify exact directional
-representations with Waring decompositions. The monomial rank formula then
-gives the minimum number of directions, and a roots-of-unity construction
-realizes the minimum.
+Let $e_0,\ldots,e_n$ denote the standard basis vectors corresponding to the
+nonzero entries of $\nu$, and write $\bz^a:=z_0^{a_0}\cdots z_n^{a_n}$.
 
 \subsection{Directional representations and Waring decompositions}
 \label{sec_expansion}
 
 For a direction $\bv=\sum_{j=0}^{n}v_je_j$, the multinomial theorem and
-\eqref{eq_tp} give
+\eqref{eq_tp_frechet} give
 \begin{equation}\label{eq_directional_expansion}
     \Tp(\bx;\bv)
     =
-    \sum_{\abs{\beta}=p}
+    \sum_{\substack{\beta\in\N_0^{n+1}\\\abs{\beta}=p}}
     \frac{\bv^\beta}{\beta!}\,
     \partial^\beta u(\bx).
 \end{equation}
@@ -366,7 +349,7 @@ representation} of $\partial^\nu u(\bx)$ is an identity
     \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
 \end{equation}
 that holds for every $u$ holomorphic on a complex neighborhood of $\bx$, where
-$c_r\in\C$ and each $\bv_r$ is supported on the active coordinates.
+$c_r\in\C$ and $\bv_r\in\spanop\{e_0,\ldots,e_n\}$.
 
 \begin{proposition}[Directional--Waring correspondence]\label{prop_bridge}
     The coefficients and directions in \eqref{eq_schedule} form an exact
@@ -407,10 +390,10 @@ $c_r\in\C$ and each $\bv_r$ is supported on the active coordinates.
     \eqref{eq_moment}.
 \end{proof}
 
-The restriction to active directions does not change the minimum. An exact
-representation using directions in the ambient space gives a Waring identity
-for the target monomial in all $d$ variables. Setting the inactive polynomial
-variables to zero projects the identity onto the active coordinates without
+Restricting the directions to $\spanop\{e_0,\ldots,e_n\}$ does not change the
+minimum. An exact representation using directions in the ambient space gives a
+Waring identity for the target monomial in all $d$ variables. Setting all other
+polynomial variables to zero gives an identity in $z_0,\ldots,z_n$ without
 increasing the number of summands.
 
 Equation~\eqref{eq_bridge} is a Waring decomposition of the scalar multiple
@@ -433,9 +416,9 @@ that attain it. For $m\geq1$, let
 $U_m:=\{\zeta\in\C:\zeta^m=1\}$.
 
 \begin{theorem}[Rank-optimal directional representation]\label{thm_main}
-    Let $1\leq a_0\leq\cdots\leq a_n$ be the active exponents of $\nu$ as in
-    \eqref{eq_active}. The minimum number of terms in an exact directional
-    representation of $\partial^\nu u(\bx)$ is
+    Let $1\leq a_0\leq\cdots\leq a_n$ be the nonzero entries of $\nu$ in
+    \eqref{eq_reduced_multiindex}. The minimum number of terms in an exact
+    directional representation of $\partial^\nu u(\bx)$ is
     \begin{equation}\label{eq_rank}
         R_{\C}(\bz^a)
         =
@@ -559,7 +542,7 @@ deterministic minimum in \eqref{eq_rank}.
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for selected active-exponent patterns up to $p = 6$.
+\caption{The minimum number of directional evaluations $R_{\C}(\bz^{a})$ of \eqref{eq_rank}, for selected patterns of nonzero exponents up to $p = 6$.
 Repeated indices reduce the count relative to the square-free pattern at the same order.}
 \label{tab_patterns}
 \begin{tabular}{@{}llr@{}}
@@ -612,7 +595,7 @@ $\sinh$ at every derivative order.
   \begin{algorithmic}[1]
   \REQUIRE scalar network $u$ built from supported analytic primitives; point $\bx \in \R^{d}$; multi-index $\nu$ of order $p$
   \ENSURE the value $\dal u(\bx)$
-  \STATE Relabel the active basis vectors as $e_0,\ldots,e_n$ with exponents $1\leq a_0\leq\cdots\leq a_n$.
+  \STATE Relabel the coordinate vectors for the nonzero entries of $\nu$ as $e_0,\ldots,e_n$, with $1\leq a_0\leq\cdots\leq a_n$.
   \STATE \label{alg_line_first} Set $\mathcal{I} := U_{a_1+1}\times\cdots\times U_{a_n+1}$.
   \STATE Initialize $\mathcal{S} \gets \emptyset$.
   \FOR{$\zeta = (\zeta_{1}, \ldots, \zeta_{n}) \in \mathcal{I}$}
@@ -694,7 +677,7 @@ and optimizer.
 
 All checks use double precision and are executable tests in the repository. The
 roots-of-unity coefficient filter of Lemma~\ref{lem_filter} is evaluated against
-every degree-four monomial in five variables for the active-exponent pattern
+every degree-four monomial in five variables for the pattern of nonzero exponents
 $(2,1,1)$, with a maximum admissible absolute coefficient error of $10^{-12}$.
 The length of the schedule that the implementation builds is checked against the
 closed-form rank \eqref{eq_rank} for every pattern of Table~\ref{tab_patterns}.
