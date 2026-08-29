@@ -107,7 +107,7 @@
 high-order derivatives,
 Taylor-mode automatic differentiation,
 Waring decomposition,
-apolarity
+directional Taylor coefficients
 \end{keywords}
 
 \begin{AMS}
@@ -217,13 +217,14 @@ $\Gamma := \partial\Omega$. We consider the boundary-value problem
     \qquad
     \mathcal{B} u_{\star} = g \quad\text{on } \Gamma,
 \end{equation}
-where $\mathcal{P}$ is a differential operator and $\mathcal{B}$ denotes a
+where $\mathcal{P}$ is a differential operator and $\mathcal{B}$ is a
 boundary operator or a collection of boundary operators. In the PINN
-framework, the solution $u_{\star}$ is approximated by a neural network
+framework, $u_{\star}$ is approximated by a neural network
 $u_{\theta}$~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021}.
-Given residual points $(\bx_{r,i})_{i=1}^{n_r} \subset \Omega$ and boundary
-points $(\bx_{b,i})_{i=1}^{n_b} \subset \Gamma$, together with positive weights
-$\lambda_r$ and $\lambda_b$, the network parameters are obtained by minimizing
+Let $(\bx_{r,i})_{i=1}^{n_r}\subset\Omega$ and
+$(\bx_{b,i})_{i=1}^{n_b}\subset\Gamma$ denote the residual and boundary
+points. For weights $\lambda_r,\lambda_b>0$, the network parameters are
+obtained by minimizing
 \begin{equation}\label{eq_pinn_loss}
     \mathcal{L}(\theta)
     :=
@@ -235,11 +236,11 @@ $\lambda_r$ and $\lambda_b$, the network parameters are obtained by minimizing
     \sum_{i=1}^{n_b}
     \norm{\mathcal{B}u_{\theta}(\bx_{b,i})-g(\bx_{b,i})}^{2}.
 \end{equation}
-Evaluating the residual term in \eqref{eq_pinn_loss} requires derivatives of
-$u_{\theta}$. For high-order equations and high-dimensional problems, nested
-first-order automatic differentiation can dominate the training cost because
-it retains large intermediate computational graphs and performs repeated
-differentiation passes through the network.
+Evaluating the PDE residual in \eqref{eq_pinn_loss} requires derivatives of
+$u_{\theta}$. For high-order equations, nested automatic differentiation can
+dominate the time and memory required for residual evaluation because it
+retains large intermediate computational graphs and repeatedly differentiates
+through the network.
 
 \subsection{Multi-index notation and the target derivative}\label{sec_problem}
 
