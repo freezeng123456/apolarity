@@ -1,0 +1,30 @@
+{
+  "case": "kdv1d",
+  "method": "nested_jvp",
+  "steps": 2907,
+  "wall_seconds": 1200.2483417573385,
+  "steps_per_second": 2.421998763808937,
+  "optimizer_seconds": 1192.7423086864874,
+  "lr": 1e-05,
+  "initial_hash": "190b04c13c927bcb5731359344bdbdb479dd699921ad72b211931e6187f07c01",
+  "final_hash": "4a26d4efcafdbfb91d471b4399ad0a70ccf76b252131450cfe6bfadb80b4e419",
+  "constraint_sampling": "resampled",
+  "errors": {
+    "spacetime": {
+      "relative_l2": 0.5475872159004211,
+      "linf": 0.4174421727657318
+    },
+    "terminal": {
+      "relative_l2": 0.5907094478607178,
+      "linf": 0.41754963994026184
+    },
+    "extra": {
+      "relative_l2": 0.5486268401145935,
+      "linf": 0.41748207807540894
+    },
+    "relative_estimate_change": 0.001898554575389122
+  },
+  "final_fixed_loss": 0.22724208235740662,
+  "timing_scope": "Sampling, differentiation, backward, Adam, finite checks, logs, hashes, periodic full/model-only checkpoint IO included; warmup, initial checkpoint, terminal checkpoint and all diagnostic evaluation excluded.",
+  "terminal": "wall_time_budget"
+}

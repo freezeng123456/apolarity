@@ -1,0 +1,43 @@
+protocol_kind: primary
+seed: 20260904
+device: auto
+dtype: float32
+batch_size: 100
+warmups: 5
+repeats: 10
+network:
+  depth: 4
+  width: 128
+  activation: tanh
+  depth_semantics: "STDE ModelConfig.depth: total Linear layers including scalar output; depth=4 => 3 hidden tanh layers"
+fixed_derivatives:
+  input_dim: 16
+  point_std: 0.35
+  timing_fixture: mlp
+  targets: ["112233", "111222333", "11223344", "123456"]
+pde:
+  T: 1.0
+  max_radius: 1.0
+  timing_fixture: mlp
+  sampler: "supplied STDE unit_ball_sample_domain_fn convention: normalized Gaussian direction, radius Uniform[0,R], time Uniform[0,T]"
+gkdv1d:
+  case: 4
+  equation: 2
+  lambda1: 0.001
+  dispersion: 0.0025
+polyharmonic:
+  dimension: 2
+  orders: [4, 6]
+  point_std: 0.25
+  timing_fixture: mlp
+validation:
+  batch_size: 2
+  analytic_batch_size: 4
+  depth: 3
+  width: 8
+notes:
+  methods: [nested_ad, rank_optimal]
+  no_direction_chunking: true
+  complex_policy: "float32 real baseline; rank-optimal uses complex64 only when roots other than +/-1 are required; square-free u_123456 stays float32"
+  timing: "steady-state wall clock; CUDA synchronized before/after each timed call"
+  memory: "CUDA uses torch.cuda.max_memory_allocated; CPU uses absolute process ru_maxrss high-water mark"

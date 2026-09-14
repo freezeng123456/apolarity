@@ -1,0 +1,42 @@
+protocol_kind: cpu_smoke_nonpublication
+seed: 20260904
+device: cpu
+dtype: float32
+batch_size: 2
+warmups: 1
+repeats: 2
+network:
+  depth: 3
+  width: 8
+  activation: tanh
+  depth_semantics: "smoke-only size reduction; total Linear layers including output"
+fixed_derivatives:
+  input_dim: 16
+  point_std: 0.20
+  timing_fixture: analytic_sinh
+  targets: ["112233", "111222333", "11223344", "123456"]
+pde:
+  T: 1.0
+  max_radius: 1.0
+  timing_fixture: analytic_sinh
+  sampler: "same STDE unit-ball/time convention as primary; only batch/network/repetition reduced"
+gkdv1d:
+  case: 4
+  equation: 2
+  lambda1: 0.001
+  dispersion: 0.0025
+polyharmonic:
+  dimension: 2
+  orders: [4, 6]
+  point_std: 0.20
+  timing_fixture: analytic_sin
+validation:
+  batch_size: 1
+  analytic_batch_size: 2
+  depth: 2
+  width: 4
+notes:
+  methods: [nested_ad, rank_optimal]
+  no_direction_chunking: true
+  publication_use: false
+  changes_from_primary: [batch_size, warmups, repeats, network.depth, network.width, validation size, fixed_derivatives.timing_fixture, pde.timing_fixture, polyharmonic.timing_fixture]

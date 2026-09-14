@@ -1,0 +1,27 @@
+---
+description: Require nohup for every long-running experiment
+alwaysApply: true
+---
+
+# Long-Running Experiments
+
+- Every long-running experiment MUST be started with `nohup`.
+- Do not rely on an IDE terminal, foreground shell, or tool-managed background
+  job to keep an experiment alive.
+- Redirect stdin and both output streams, run it in the background, and retain
+  the PID:
+
+```bash
+nohup bash scripts/run_experiment.sh > experiments/logs/run.log 2>&1 < /dev/null &
+echo $!
+```
+
+- Use `setsid` in addition to `nohup` when available for full session
+  detachment.
+- Immediately verify that the PID is alive, the expected log is being written,
+  and the GPU process is visible.
+- Before starting another copy, check for an existing process to avoid duplicate
+  experiments.
+- If the experiment must commit results automatically, put validation and
+  `git commit` in the invoked script so they run only after successful
+  completion. Never auto-push unless explicitly requested.

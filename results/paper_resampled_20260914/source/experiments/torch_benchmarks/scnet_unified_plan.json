@@ -1,0 +1,50 @@
+{
+  "run_id": "apolarity-scnet-lr1e4-dense-20260912-r2",
+  "cases": [
+    "kdv1d",
+    "kdv2d",
+    "ch2d"
+  ],
+  "methods": [
+    "nested_jvp",
+    "shared_jet_linear"
+  ],
+  "seeds": [
+    20260919,
+    20260920,
+    20260921,
+    20260922,
+    20260923
+  ],
+  "learning_rate": 0.0001,
+  "hidden_layers": 4,
+  "width": 128,
+  "batch": 400,
+  "seconds_per_cell": 1200,
+  "trajectory_seconds": 2,
+  "checkpoint_seconds": 10,
+  "eval_points": 10000,
+  "eval_seed_base": 20261400,
+  "max_concurrent_gpus": 3,
+  "partition": "xhhgnormal",
+  "expected_device": "RTX 3080",
+  "python": "/work/home/zenghang/apolarity_envs/torch251-cu118-20260912/bin/python",
+  "pair_task_minutes": 50,
+  "preflight_minutes": 14,
+  "child_timeout_seconds": 1450,
+  "expected_full_cells": 30,
+  "full_training_gpu_hours": 10,
+  "full_allocation_gpu_hours_ceiling": 12.75,
+  "first_seed_cells": 6,
+  "first_seed_training_gpu_hours": 2,
+  "submission_scope": "Record actual authorized indices in submission.json; prepared five-seed matrix is not submission evidence",
+  "retry_policy": "No automatic retries, budget extensions, or training after failed preflight",
+  "runtime": {
+    "torch": "2.5.1+cu118",
+    "numpy": "1.26.4",
+    "python_major_minor": [
+      3,
+      10
+    ]
+  }
+}

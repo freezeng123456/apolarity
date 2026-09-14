@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "environment": {
+    "source_commit": "b94fd9ce20f1f6c79bd6195ab6d79097f74c8044",
+    "source_kind": "sha256_verified_export",
+    "python": "/work/home/zenghang/apolarity_envs/torch251-cu118-20260912/bin/python",
+    "torch": "2.5.1+cu118",
+    "numpy": "1.26.4",
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "hostname": "e12r03",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "0",
+      "SLURM_JOB_ID": "23931451",
+      "SLURM_ARRAY_TASK_ID": null,
+      "SLURM_CPUS_PER_TASK": "4"
+    }
+  },
+  "gates": [
+    {
+      "case": "kdv1d",
+      "loss_abs": 0.0,
+      "gradient_max_abs": 2.9802322387695312e-08
+    },
+    {
+      "case": "kdv2d",
+      "loss_abs": 0.0,
+      "gradient_max_abs": 4.76837158203125e-07
+    },
+    {
+      "case": "ch2d",
+      "loss_abs": 0.0,
+      "gradient_max_abs": 1.4901161193847656e-08
+    }
+  ],
+  "finished_at": 1789322496.027027
+}

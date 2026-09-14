@@ -1,0 +1,5 @@
+# T4 four-hidden-layer 20-minute paired replication
+
+User authorized 20 minutes per cell and CH learning rate1e-3, keeping the architecture unchanged. User corrected the platform request to the same T4 used previously; no Beijing job is submitted. Use run_fixed_wall_matrix.py --hidden-layers 4 --lr 1e-5 --ch-lr 1e-3 --seconds 1200 --out <fresh-root>.
+
+Both KdV cases retain constant Adam lr1e-5; both CH methods use constant lr1e-3. Three PDEs times two methods, six1200-second cells, sequential on T4-B, total120 minutes timed training plus bounded smoke/warmup/offline diagnostics. Start each cell from original paired initialization seed20260918, with four128-wide tanh hidden layers and linear output, batch400. Preserve source-defined losses, constraints, exact solutions and evaluation points from FIXED_WALL_3PDE_20260911.md. No checkpoint resume, additional seeds, or automatic retries. Final audit checks actual1200-second budget and per-case learning rate. No claims about optimum learning rate are implied.

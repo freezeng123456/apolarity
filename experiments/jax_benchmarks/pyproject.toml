@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jax-apolarity-bench"
+version = "0.1.0"
+description = "Standalone JAX validation/benchmark package for rank-optimal Apolarity Taylor jets"
+requires-python = ">=3.10"
+dependencies = ["jax>=0.4.30", "numpy>=1.26", "pyyaml>=6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

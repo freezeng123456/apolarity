@@ -1,0 +1,4307 @@
+{
+  "cell_seal_sha256": "4aaf63fa441fe48e096d495bafa4401a33114e8ceafe4ce31df67bc371ea3e97",
+  "config": {
+    "autocast": false,
+    "batch": 400,
+    "case": "ch2d",
+    "checkpoint_seconds": 10.0,
+    "compile": false,
+    "constraint_sampling": "resampled",
+    "constraint_side": 0,
+    "cuda_runtime": "11.8",
+    "depth": 5,
+    "device": "cuda",
+    "device_kind": "NVIDIA GeForce RTX 3080",
+    "dtype": "float32",
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "OMP_NUM_THREADS": "1",
+      "SLURM_ARRAY_TASK_ID": "23",
+      "SLURM_JOB_GPUS": "2",
+      "SLURM_JOB_ID": "23931494"
+    },
+    "eval_points": 10000,
+    "eval_seed_base": 20261400,
+    "execution": "eager",
+    "expected_device": "RTX 3080",
+    "lr": 0.0001,
+    "max_steps": 0,
+    "method": "shared_jet_linear",
+    "numpy": "1.26.4",
+    "out": "/work/share/acu722p2q8/zenghang-apolarity-resample-20260914-b94fd9c/cells/wall_ch2d_seed20260920_shared_jet_linear",
+    "python": "3.10.18",
+    "seconds": 1200.0,
+    "seed": 20260920,
+    "source_commit": "b94fd9ce20f1f6c79bd6195ab6d79097f74c8044",
+    "source_kind": "sha256_verified_export",
+    "source_sha256": {
+      ".pytest_cache/README.md": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad",
+      "BEIJING_SWEEP_PROTOCOL_20260912.md": "f332af5ff4d16dda8b00d44e08bcd816d99ad323c914ca2ca1441c07f0e029bb",
+      "CONSTRAINT_RESAMPLING_20260914.md": "f9608a15079867e3c806569512ddc545e4532b95b409c226022c52fda22ef5c6",
+      "README.md": "4fa745d56720198fa266adac42c8fae3fbe57a5d960bd8c09a9acb8c3941c23c",
+      "RSSE_PLOTTING_RESEARCH_20260912.md": "55d7b4340edcf4de284deec9d1a5b52b1683f7ab53a249ad8f347023da806af1",
+      "audit_first_group.py": "b90ed8ffe747b194b81ae7098dda90fb27d6d18903f2b709a4efd099b0e874aa",
+      "audit_kdv2d.py": "49f2dce37d3472eec2bee01fcf12ea058a20a30a510263baccba6372739fe791",
+      "benchmark.py": "440cff82806b635cdb57536867c895dd2f67451463be3bf9995cf55d60fc8ffc",
+      "bscc_sweep.py": "844a117b2c998454f0dca4ce881c392362243a3ba7e5a5e6feb6b48684c09dea",
+      "first_group.py": "cfab8dc88cef92a7b3572dcb7c0ebea7ea7112292402b4c618e5c63428fa11f8",
+      "first_group_verify.py": "1c5abb301328376b250535bb9c45f046418c4fa32a165bee7b7189d6fa2f6f93",
+      "launch_first_group_t4.py": "4993bb4ffe69e11e2439028b3ce2491abd92904c3e4c97804b86f5b426a1ae53",
+      "plot_training_trajectories.py": "7d1a86c01526ac646ddd8f5a8b87591ad8bdd8823bcbe54bf491bb0438e07b91",
+      "run_decay.py": "6e4864ae573500c0ea593d696e313396ec11f0eb16b4b21d7b88f1c61d9338a2",
+      "run_equal_time.py": "708e45478e270986dc86697a43a4918ab73366ad4c2dc9b5e0478ba453e5d246",
+      "run_first_group_matrix.py": "175fd1bfbd43dbbcf2b459122631418f87ff520440a65307a599d4623baa747e",
+      "run_fixed_wall_matrix.py": "12d412aede140b64631c98cfb0063e9dd81759feac5052559db6976052e4aa5c",
+      "run_kdv2d.py": "28000725649616f5dea16b296c41836640430ee6210d2e621fe09d4e55dc2731",
+      "run_migration.py": "72fbbeef5c9839b09f657816b72aa3234bfae50b9ed28811128f82965b98ad73",
+      "scnet_resample.py": "0716adfac03db528e2a08eb1da4c96fa442edd6558c061784606d1802fee7e29",
+      "scnet_unified.py": "96806d5461d424ccd4e2078165aa5ee86e441fa854a23e732d0f4a728d1a0ecd",
+      "tests/conftest.py": "2b2e72527393dce0100e3f52f5071ea2cfdad3568587bbc2e7d0f85b3eaf3075",
+      "tests/test_bscc_sweep.py": "5e458406e6c3f10d23db3e2db649d837e58179b44a56c9b880e4c84f2ddfe04e",
+      "tests/test_ch2d.py": "ad6f68d8e14b256c7053246929bbdea08b03341b2db286b6e1f20c3cc76bcf21",
+      "tests/test_constraint_resampling.py": "f38c1427c89ed36439a7cd7c352f89dbcc4bb39f60339ef63a77e2b5e7b83231",
+      "tests/test_core.py": "5dd2c7cc57f6116d1ec219ae0fdd32a357664b34b636fa08af25be8aaea319da",
+      "tests/test_dense_trajectories.py": "2756704c00586503d95f891bde40fafd3e0f41a3af9aa54c858a5fa9788edf0e",
+      "tests/test_equal_time.py": "7c2acccd4eeef3cca826f8c7804096a73ad81b1a72a7de68a853ae50bbae8ee3",
+      "tests/test_first_group.py": "fb250726ddf8d0b6ad823bb8042cb46adf17fc2b33bd4a24520f1efe8b9674d8",
+      "tests/test_kdv2d_problem.py": "fdb20ad0fe4da6a02e92667b75029d2b239b4b3da4b2e03b8cbd2b35fe9f4add",
+      "tests/test_monomials.py": "8a0a5b8b82fe0ef224d1c23f0205f66eab0225087e745fc9fc958d249944eb1f",
+      "tests/test_scnet_unified.py": "4428775fc54d177cd497e7bdc2d325f256acddc34a9d830d387a8a95b1db60bc",
+      "torch_pinn/__init__.py": "1f220e4919abb7eaf7e299b472beafddb8b4d228a5d99597a027ea000aec0e1b",
+      "torch_pinn/constraint_sampling.py": "c9a78b84667cffe0fc97accccecb827c535aaa23437bf2aca12734b5dfb47a88",
+      "torch_pinn/jets.py": "a965ccc49856f582360cee7beaea04fc4d0d0105ee0c23293ee76ea5400e5431",
+      "torch_pinn/model.py": "14b8d662dda8e4fe32bcbab68e4c54e82068f01868ca3b014b936562942bc2b0",
+      "torch_pinn/monomials.py": "b380988d3df193a58fcafe852416d866d6d74103be68e35386e3f35bac3c3919",
+      "torch_pinn/operators.py": "a2069db2d92a33c31766814a9e920f06958c99497a186e64631e934b1304b3f8",
+      "torch_pinn/problem.py": "36fa7514915feebbbcd405773e87318b698aa29ebadef3a0c4fbdb3e94bfffec",
+      "torch_pinn/problem_ch2d.py": "ed5e9b19781d340f28cbaa9256f2165afd1b7b0fe79c16ac14d5688328ab8297",
+      "torch_pinn/problem_kdv2d.py": "70d629baec662b3657384c7e666dd6cb341710931a99fe3623626afbb841e407",
+      "torch_pinn/records.py": "084b977440ee2c1feb0c8767bc5ba90cd0caaeffc7ff599ad11d2ba6a4bd4ff8",
+      "torch_pinn/reference.py": "96803395d94a2663ed85fea45e9908686cf8ce6856eff2591fe91a8066c9bca2",
+      "train.py": "93e97c59d29f8c0062c35ee7af9f9d8c23c37664f99434d95cf0e13ba93b7666",
+      "train_equal_time.py": "89539580b943e14fff88e6db2b856dadb41e9def60a07d6ab79d9f8d26dccaca",
+      "train_fixed_wall.py": "695df4ec6d8b7be46ff896b1ed2a76c77983570f6a91aa8b315fb756dac3b8fe",
+      "train_kdv2d.py": "06e050b4bda6b6cd2c5b300114c326b67a5b334d83372ed9fc1ec82dc0d8818f",
+      "verify.py": "54c2d95665676f6bd92fb2036c681c8451ecd5af05ccc0bb8d642b6f862265f7",
+      "verify_kdv2d.py": "d2cc3d7b1ea14796810a0bf91abdebe7b3bb37eafc76af4cdb4d7fda370da9f7"
+    },
+    "tf32": false,
+    "threads": 1,
+    "torch": "2.5.1+cu118",
+    "trajectory_seconds": 2.0,
+    "width": 128
+  },
+  "evaluation": "RTX 3080 forward replay on every actual 2-second checkpoint and original 10000 fixed points",
+  "raw_observations": 601,
+  "rows": [
+    {
+      "file": "checkpoint_0000000.pt",
+      "spacetime": 1.1034191846847534,
+      "step": 0,
+      "terminal": 1.2149666547775269,
+      "time": 0.0
+    },
+    {
+      "file": "trajectory_0000002.pt",
+      "spacetime": 1.0250439643859863,
+      "step": 2,
+      "terminal": 1.0332547426223755,
+      "time": 2.0414673686027527
+    },
+    {
+      "file": "trajectory_0000004.pt",
+      "spacetime": 1.0036062002182007,
+      "step": 4,
+      "terminal": 0.995855450630188,
+      "time": 4.084318585693836
+    },
+    {
+      "file": "trajectory_0000006.pt",
+      "spacetime": 1.006719946861267,
+      "step": 6,
+      "terminal": 1.023973822593689,
+      "time": 6.073988113552332
+    },
+    {
+      "file": "trajectory_0000008.pt",
+      "spacetime": 1.0078716278076172,
+      "step": 8,
+      "terminal": 1.0431580543518066,
+      "time": 8.140548005700111
+    },
+    {
+      "file": "checkpoint_0000010.pt",
+      "spacetime": 0.9975570440292358,
+      "step": 10,
+      "terminal": 1.0263012647628784,
+      "time": 10.16787450388074
+    },
+    {
+      "file": "trajectory_0000012.pt",
+      "spacetime": 0.9831074476242065,
+      "step": 12,
+      "terminal": 0.9936066269874573,
+      "time": 12.190140329301357
+    },
+    {
+      "file": "trajectory_0000014.pt",
+      "spacetime": 0.969022274017334,
+      "step": 14,
+      "terminal": 0.9546032547950745,
+      "time": 14.143068391829729
+    },
+    {
+      "file": "trajectory_0000016.pt",
+      "spacetime": 0.9609081149101257,
+      "step": 16,
+      "terminal": 0.9293932914733887,
+      "time": 16.08194588497281
+    },
+    {
+      "file": "trajectory_0000018.pt",
+      "spacetime": 0.9564065337181091,
+      "step": 18,
+      "terminal": 0.916294515132904,
+      "time": 18.055583454668522
+    },
+    {
+      "file": "checkpoint_0000021.pt",
+      "spacetime": 0.946594774723053,
+      "step": 21,
+      "terminal": 0.9022853970527649,
+      "time": 20.93986179307103
+    },
+    {
+      "file": "trajectory_0000023.pt",
+      "spacetime": 0.9365386366844177,
+      "step": 23,
+      "terminal": 0.8950273990631104,
+      "time": 22.947068102657795
+    },
+    {
+      "file": "trajectory_0000025.pt",
+      "spacetime": 0.9289433360099792,
+      "step": 25,
+      "terminal": 0.9033078551292419,
+      "time": 24.919185034930706
+    },
+    {
+      "file": "trajectory_0000027.pt",
+      "spacetime": 0.9269688129425049,
+      "step": 27,
+      "terminal": 0.9277848601341248,
+      "time": 26.956061337143183
+    },
+    {
+      "file": "trajectory_0000029.pt",
+      "spacetime": 0.9253093600273132,
+      "step": 29,
+      "terminal": 0.9463538527488708,
+      "time": 28.953496646136045
+    },
+    {
+      "file": "checkpoint_0000031.pt",
+      "spacetime": 0.9172941446304321,
+      "step": 31,
+      "terminal": 0.9370956420898438,
+      "time": 30.92450175061822
+    },
+    {
+      "file": "trajectory_0000033.pt",
+      "spacetime": 0.9033575654029846,
+      "step": 33,
+      "terminal": 0.9006162285804749,
+      "time": 32.90546493604779
+    },
+    {
+      "file": "trajectory_0000035.pt",
+      "spacetime": 0.8908321261405945,
+      "step": 35,
+      "terminal": 0.8638147115707397,
+      "time": 35.02500359341502
+    },
+    {
+      "file": "trajectory_0000036.pt",
+      "spacetime": 0.8860729932785034,
+      "step": 36,
+      "terminal": 0.8486139178276062,
+      "time": 36.06272002309561
+    },
+    {
+      "file": "trajectory_0000038.pt",
+      "spacetime": 0.8783767223358154,
+      "step": 38,
+      "terminal": 0.830192506313324,
+      "time": 38.025967586785555
+    },
+    {
+      "file": "checkpoint_0000041.pt",
+      "spacetime": 0.8630528450012207,
+      "step": 41,
+      "terminal": 0.8119350075721741,
+      "time": 40.89679692685604
+    },
+    {
+      "file": "trajectory_0000043.pt",
+      "spacetime": 0.8539776802062988,
+      "step": 43,
+      "terminal": 0.8088312745094299,
+      "time": 42.88501142337918
+    },
+    {
+      "file": "trajectory_0000045.pt",
+      "spacetime": 0.8454856276512146,
+      "step": 45,
+      "terminal": 0.8024173378944397,
+      "time": 44.816879618912935
+    },
+    {
+      "file": "trajectory_0000047.pt",
+      "spacetime": 0.8362776637077332,
+      "step": 47,
+      "terminal": 0.7919058203697205,
+      "time": 46.81143705174327
+    },
+    {
+      "file": "trajectory_0000049.pt",
+      "spacetime": 0.8262001276016235,
+      "step": 49,
+      "terminal": 0.7767948508262634,
+      "time": 48.8923559859395
+    },
+    {
+      "file": "checkpoint_0000051.pt",
+      "spacetime": 0.8125628232955933,
+      "step": 51,
+      "terminal": 0.7486652731895447,
+      "time": 50.85317478328943
+    },
+    {
+      "file": "trajectory_0000053.pt",
+      "spacetime": 0.800964891910553,
+      "step": 53,
+      "terminal": 0.7274718284606934,
+      "time": 52.82719726487994
+    },
+    {
+      "file": "trajectory_0000055.pt",
+      "spacetime": 0.7914235591888428,
+      "step": 55,
+      "terminal": 0.718459963798523,
+      "time": 54.98241917043924
+    },
+    {
+      "file": "trajectory_0000056.pt",
+      "spacetime": 0.787093997001648,
+      "step": 56,
+      "terminal": 0.7161502242088318,
+      "time": 56.08107767254114
+    },
+    {
+      "file": "trajectory_0000058.pt",
+      "spacetime": 0.7760297060012817,
+      "step": 58,
+      "terminal": 0.7110930681228638,
+      "time": 58.05622297152877
+    },
+    {
+      "file": "checkpoint_0000060.pt",
+      "spacetime": 0.763051450252533,
+      "step": 60,
+      "terminal": 0.708172082901001,
+      "time": 60.05337589234114
+    },
+    {
+      "file": "trajectory_0000062.pt",
+      "spacetime": 0.7566003799438477,
+      "step": 62,
+      "terminal": 0.7237527966499329,
+      "time": 62.04046193882823
+    },
+    {
+      "file": "trajectory_0000064.pt",
+      "spacetime": 0.7442739009857178,
+      "step": 64,
+      "terminal": 0.7144361138343811,
+      "time": 64.17897151783109
+    },
+    {
+      "file": "trajectory_0000066.pt",
+      "spacetime": 0.7342112064361572,
+      "step": 66,
+      "terminal": 0.7149568200111389,
+      "time": 66.30665973573923
+    },
+    {
+      "file": "trajectory_0000068.pt",
+      "spacetime": 0.7288772463798523,
+      "step": 68,
+      "terminal": 0.7317464351654053,
+      "time": 68.48669407144189
+    },
+    {
+      "file": "checkpoint_0000070.pt",
+      "spacetime": 0.717366635799408,
+      "step": 70,
+      "terminal": 0.7258312702178955,
+      "time": 70.62820282578468
+    },
+    {
+      "file": "trajectory_0000072.pt",
+      "spacetime": 0.7002840638160706,
+      "step": 72,
+      "terminal": 0.7043536901473999,
+      "time": 72.71017647534609
+    },
+    {
+      "file": "trajectory_0000074.pt",
+      "spacetime": 0.6910310983657837,
+      "step": 74,
+      "terminal": 0.7044245004653931,
+      "time": 74.60132475942373
+    },
+    {
+      "file": "trajectory_0000076.pt",
+      "spacetime": 0.6800693869590759,
+      "step": 76,
+      "terminal": 0.7104346752166748,
+      "time": 76.73657531663775
+    },
+    {
+      "file": "trajectory_0000078.pt",
+      "spacetime": 0.6759952902793884,
+      "step": 78,
+      "terminal": 0.73978191614151,
+      "time": 78.77008973062038
+    },
+    {
+      "file": "checkpoint_0000080.pt",
+      "spacetime": 0.6648055911064148,
+      "step": 80,
+      "terminal": 0.7378023862838745,
+      "time": 80.69571144506335
+    },
+    {
+      "file": "trajectory_0000082.pt",
+      "spacetime": 0.6577494144439697,
+      "step": 82,
+      "terminal": 0.7504079341888428,
+      "time": 82.67281244322658
+    },
+    {
+      "file": "trajectory_0000084.pt",
+      "spacetime": 0.6505610346794128,
+      "step": 84,
+      "terminal": 0.7580831050872803,
+      "time": 84.65070768818259
+    },
+    {
+      "file": "trajectory_0000086.pt",
+      "spacetime": 0.6503638625144958,
+      "step": 86,
+      "terminal": 0.798994779586792,
+      "time": 86.7652517594397
+    },
+    {
+      "file": "trajectory_0000088.pt",
+      "spacetime": 0.6474789381027222,
+      "step": 88,
+      "terminal": 0.8244451880455017,
+      "time": 88.74151570349932
+    },
+    {
+      "file": "checkpoint_0000090.pt",
+      "spacetime": 0.6421599984169006,
+      "step": 90,
+      "terminal": 0.8414483070373535,
+      "time": 90.82101212069392
+    },
+    {
+      "file": "trajectory_0000092.pt",
+      "spacetime": 0.6546059250831604,
+      "step": 92,
+      "terminal": 0.9146798849105835,
+      "time": 92.94151567295194
+    },
+    {
+      "file": "trajectory_0000094.pt",
+      "spacetime": 0.6354901790618896,
+      "step": 94,
+      "terminal": 0.8809985518455505,
+      "time": 94.94565640389919
+    },
+    {
+      "file": "trajectory_0000096.pt",
+      "spacetime": 0.6145341396331787,
+      "step": 96,
+      "terminal": 0.815061092376709,
+      "time": 96.95352752879262
+    },
+    {
+      "file": "trajectory_0000098.pt",
+      "spacetime": 0.6112205982208252,
+      "step": 98,
+      "terminal": 0.8296879529953003,
+      "time": 98.88569666072726
+    },
+    {
+      "file": "checkpoint_0000100.pt",
+      "spacetime": 0.6190460920333862,
+      "step": 100,
+      "terminal": 0.9062082171440125,
+      "time": 100.8580927029252
+    },
+    {
+      "file": "trajectory_0000102.pt",
+      "spacetime": 0.6209392547607422,
+      "step": 102,
+      "terminal": 0.9391216039657593,
+      "time": 102.79419785737991
+    },
+    {
+      "file": "trajectory_0000104.pt",
+      "spacetime": 0.62461256980896,
+      "step": 104,
+      "terminal": 0.9776511788368225,
+      "time": 104.74957268685102
+    },
+    {
+      "file": "trajectory_0000106.pt",
+      "spacetime": 0.6195715665817261,
+      "step": 106,
+      "terminal": 0.9835724830627441,
+      "time": 106.72195799276233
+    },
+    {
+      "file": "trajectory_0000108.pt",
+      "spacetime": 0.6220887899398804,
+      "step": 108,
+      "terminal": 1.0149650573730469,
+      "time": 108.82110088318586
+    },
+    {
+      "file": "checkpoint_0000110.pt",
+      "spacetime": 0.623619794845581,
+      "step": 110,
+      "terminal": 1.036519169807434,
+      "time": 110.8286514095962
+    },
+    {
+      "file": "trajectory_0000112.pt",
+      "spacetime": 0.6170969009399414,
+      "step": 112,
+      "terminal": 1.0304195880889893,
+      "time": 112.89862543717027
+    },
+    {
+      "file": "trajectory_0000114.pt",
+      "spacetime": 0.6202321648597717,
+      "step": 114,
+      "terminal": 1.0634483098983765,
+      "time": 114.97463808208704
+    },
+    {
+      "file": "trajectory_0000115.pt",
+      "spacetime": 0.623538076877594,
+      "step": 115,
+      "terminal": 1.0850839614868164,
+      "time": 116.00156674161553
+    },
+    {
+      "file": "trajectory_0000117.pt",
+      "spacetime": 0.6348793506622314,
+      "step": 117,
+      "terminal": 1.1419981718063354,
+      "time": 118.04606932774186
+    },
+    {
+      "file": "checkpoint_0000119.pt",
+      "spacetime": 0.647215723991394,
+      "step": 119,
+      "terminal": 1.1897672414779663,
+      "time": 120.18253854289651
+    },
+    {
+      "file": "trajectory_0000121.pt",
+      "spacetime": 0.6366308927536011,
+      "step": 121,
+      "terminal": 1.172515869140625,
+      "time": 122.17056204378605
+    },
+    {
+      "file": "trajectory_0000123.pt",
+      "spacetime": 0.6180362701416016,
+      "step": 123,
+      "terminal": 1.1017844676971436,
+      "time": 124.16832235082984
+    },
+    {
+      "file": "trajectory_0000125.pt",
+      "spacetime": 0.6202619671821594,
+      "step": 125,
+      "terminal": 1.131847620010376,
+      "time": 126.16217793151736
+    },
+    {
+      "file": "trajectory_0000127.pt",
+      "spacetime": 0.6336807012557983,
+      "step": 127,
+      "terminal": 1.2043014764785767,
+      "time": 128.08714713528752
+    },
+    {
+      "file": "checkpoint_0000129.pt",
+      "spacetime": 0.6374123096466064,
+      "step": 129,
+      "terminal": 1.223803997039795,
+      "time": 130.05966356769204
+    },
+    {
+      "file": "trajectory_0000131.pt",
+      "spacetime": 0.6361224055290222,
+      "step": 131,
+      "terminal": 1.2220104932785034,
+      "time": 132.05516549944878
+    },
+    {
+      "file": "trajectory_0000134.pt",
+      "spacetime": 0.6460180282592773,
+      "step": 134,
+      "terminal": 1.2786848545074463,
+      "time": 134.98393508046865
+    },
+    {
+      "file": "trajectory_0000135.pt",
+      "spacetime": 0.6537004709243774,
+      "step": 135,
+      "terminal": 1.3072704076766968,
+      "time": 136.05202297121286
+    },
+    {
+      "file": "trajectory_0000137.pt",
+      "spacetime": 0.6636991500854492,
+      "step": 137,
+      "terminal": 1.3451157808303833,
+      "time": 138.04218032956123
+    },
+    {
+      "file": "checkpoint_0000139.pt",
+      "spacetime": 0.6661648154258728,
+      "step": 139,
+      "terminal": 1.362373948097229,
+      "time": 140.1779297105968
+    },
+    {
+      "file": "trajectory_0000141.pt",
+      "spacetime": 0.6676263213157654,
+      "step": 141,
+      "terminal": 1.3700578212738037,
+      "time": 142.22001971304417
+    },
+    {
+      "file": "trajectory_0000143.pt",
+      "spacetime": 0.6676068305969238,
+      "step": 143,
+      "terminal": 1.3740215301513672,
+      "time": 144.1496692635119
+    },
+    {
+      "file": "trajectory_0000145.pt",
+      "spacetime": 0.6717021465301514,
+      "step": 145,
+      "terminal": 1.404559850692749,
+      "time": 146.1979441307485
+    },
+    {
+      "file": "trajectory_0000147.pt",
+      "spacetime": 0.6832428574562073,
+      "step": 147,
+      "terminal": 1.444772720336914,
+      "time": 148.25924510881305
+    },
+    {
+      "file": "checkpoint_0000149.pt",
+      "spacetime": 0.6734423637390137,
+      "step": 149,
+      "terminal": 1.4262793064117432,
+      "time": 150.26577867940068
+    },
+    {
+      "file": "trajectory_0000151.pt",
+      "spacetime": 0.6653233766555786,
+      "step": 151,
+      "terminal": 1.4067639112472534,
+      "time": 152.3389486335218
+    },
+    {
+      "file": "trajectory_0000153.pt",
+      "spacetime": 0.6718388199806213,
+      "step": 153,
+      "terminal": 1.4355287551879883,
+      "time": 154.43350671976805
+    },
+    {
+      "file": "trajectory_0000155.pt",
+      "spacetime": 0.6710357069969177,
+      "step": 155,
+      "terminal": 1.4370453357696533,
+      "time": 156.4250636473298
+    },
+    {
+      "file": "trajectory_0000157.pt",
+      "spacetime": 0.6834741830825806,
+      "step": 157,
+      "terminal": 1.4830116033554077,
+      "time": 158.4774690642953
+    },
+    {
+      "file": "checkpoint_0000159.pt",
+      "spacetime": 0.6806474924087524,
+      "step": 159,
+      "terminal": 1.4782387018203735,
+      "time": 160.45285506546497
+    },
+    {
+      "file": "trajectory_0000161.pt",
+      "spacetime": 0.6848413944244385,
+      "step": 161,
+      "terminal": 1.498062014579773,
+      "time": 162.54517632722855
+    },
+    {
+      "file": "trajectory_0000163.pt",
+      "spacetime": 0.6958231329917908,
+      "step": 163,
+      "terminal": 1.5365991592407227,
+      "time": 164.53269867226481
+    },
+    {
+      "file": "trajectory_0000165.pt",
+      "spacetime": 0.6936946511268616,
+      "step": 165,
+      "terminal": 1.5352648496627808,
+      "time": 166.58206760138273
+    },
+    {
+      "file": "trajectory_0000167.pt",
+      "spacetime": 0.6624349355697632,
+      "step": 167,
+      "terminal": 1.4415034055709839,
+      "time": 168.6078206077218
+    },
+    {
+      "file": "checkpoint_0000169.pt",
+      "spacetime": 0.6601871848106384,
+      "step": 169,
+      "terminal": 1.4424508810043335,
+      "time": 170.6836405992508
+    },
+    {
+      "file": "trajectory_0000171.pt",
+      "spacetime": 0.701211154460907,
+      "step": 171,
+      "terminal": 1.5735466480255127,
+      "time": 172.8388485684991
+    },
+    {
+      "file": "trajectory_0000173.pt",
+      "spacetime": 0.6869881749153137,
+      "step": 173,
+      "terminal": 1.5359041690826416,
+      "time": 174.84026550129056
+    },
+    {
+      "file": "trajectory_0000175.pt",
+      "spacetime": 0.6740638613700867,
+      "step": 175,
+      "terminal": 1.4924274682998657,
+      "time": 176.9245885051787
+    },
+    {
+      "file": "trajectory_0000177.pt",
+      "spacetime": 0.6760196089744568,
+      "step": 177,
+      "terminal": 1.489621877670288,
+      "time": 178.96781419217587
+    },
+    {
+      "file": "checkpoint_0000178.pt",
+      "spacetime": 0.6807050108909607,
+      "step": 178,
+      "terminal": 1.509377360343933,
+      "time": 180.04492505267262
+    },
+    {
+      "file": "trajectory_0000180.pt",
+      "spacetime": 0.6961044669151306,
+      "step": 180,
+      "terminal": 1.5565032958984375,
+      "time": 182.05243729799986
+    },
+    {
+      "file": "trajectory_0000182.pt",
+      "spacetime": 0.7251081466674805,
+      "step": 182,
+      "terminal": 1.6246181726455688,
+      "time": 184.12963301688433
+    },
+    {
+      "file": "trajectory_0000184.pt",
+      "spacetime": 0.6786407232284546,
+      "step": 184,
+      "terminal": 1.4841604232788086,
+      "time": 186.15154437348247
+    },
+    {
+      "file": "trajectory_0000186.pt",
+      "spacetime": 0.6712825894355774,
+      "step": 186,
+      "terminal": 1.4938318729400635,
+      "time": 188.10580989345908
+    },
+    {
+      "file": "checkpoint_0000188.pt",
+      "spacetime": 0.7152549624443054,
+      "step": 188,
+      "terminal": 1.6112866401672363,
+      "time": 190.26788448914886
+    },
+    {
+      "file": "trajectory_0000190.pt",
+      "spacetime": 0.6647214293479919,
+      "step": 190,
+      "terminal": 1.4842529296875,
+      "time": 192.3605038896203
+    },
+    {
+      "file": "trajectory_0000192.pt",
+      "spacetime": 0.6509703397750854,
+      "step": 192,
+      "terminal": 1.3806108236312866,
+      "time": 194.39220321550965
+    },
+    {
+      "file": "trajectory_0000194.pt",
+      "spacetime": 0.6710550785064697,
+      "step": 194,
+      "terminal": 1.5007715225219727,
+      "time": 196.40386022254825
+    },
+    {
+      "file": "trajectory_0000196.pt",
+      "spacetime": 0.7124379873275757,
+      "step": 196,
+      "terminal": 1.601676344871521,
+      "time": 198.47816810384393
+    },
+    {
+      "file": "checkpoint_0000198.pt",
+      "spacetime": 0.6737997531890869,
+      "step": 198,
+      "terminal": 1.5064582824707031,
+      "time": 200.44580260664225
+    },
+    {
+      "file": "trajectory_0000200.pt",
+      "spacetime": 0.6710790991783142,
+      "step": 200,
+      "terminal": 1.4385384321212769,
+      "time": 202.60478391870856
+    },
+    {
+      "file": "trajectory_0000202.pt",
+      "spacetime": 0.6620935797691345,
+      "step": 202,
+      "terminal": 1.468286395072937,
+      "time": 204.69776391983032
+    },
+    {
+      "file": "trajectory_0000204.pt",
+      "spacetime": 0.6938679814338684,
+      "step": 204,
+      "terminal": 1.5717706680297852,
+      "time": 206.7981910072267
+    },
+    {
+      "file": "trajectory_0000206.pt",
+      "spacetime": 0.6614295244216919,
+      "step": 206,
+      "terminal": 1.4834411144256592,
+      "time": 208.83661471307278
+    },
+    {
+      "file": "checkpoint_0000208.pt",
+      "spacetime": 0.645969808101654,
+      "step": 208,
+      "terminal": 1.4112199544906616,
+      "time": 210.829665184021
+    },
+    {
+      "file": "trajectory_0000210.pt",
+      "spacetime": 0.6716396808624268,
+      "step": 210,
+      "terminal": 1.517296314239502,
+      "time": 212.79094276577234
+    },
+    {
+      "file": "trajectory_0000212.pt",
+      "spacetime": 0.6874889135360718,
+      "step": 212,
+      "terminal": 1.5521682500839233,
+      "time": 214.89288465678692
+    },
+    {
+      "file": "trajectory_0000214.pt",
+      "spacetime": 0.6435838341712952,
+      "step": 214,
+      "terminal": 1.4063587188720703,
+      "time": 216.92411428317428
+    },
+    {
+      "file": "trajectory_0000215.pt",
+      "spacetime": 0.6452863216400146,
+      "step": 215,
+      "terminal": 1.388683795928955,
+      "time": 218.02360593900084
+    },
+    {
+      "file": "checkpoint_0000217.pt",
+      "spacetime": 0.654914915561676,
+      "step": 217,
+      "terminal": 1.4486253261566162,
+      "time": 220.14321510866284
+    },
+    {
+      "file": "trajectory_0000219.pt",
+      "spacetime": 0.6956625580787659,
+      "step": 219,
+      "terminal": 1.5535870790481567,
+      "time": 222.25827099010348
+    },
+    {
+      "file": "trajectory_0000221.pt",
+      "spacetime": 0.6722384691238403,
+      "step": 221,
+      "terminal": 1.4980237483978271,
+      "time": 224.32831176370382
+    },
+    {
+      "file": "trajectory_0000223.pt",
+      "spacetime": 0.6642593145370483,
+      "step": 223,
+      "terminal": 1.437598705291748,
+      "time": 226.37490822002292
+    },
+    {
+      "file": "trajectory_0000225.pt",
+      "spacetime": 0.6530038118362427,
+      "step": 225,
+      "terminal": 1.4282562732696533,
+      "time": 228.3704799078405
+    },
+    {
+      "file": "checkpoint_0000227.pt",
+      "spacetime": 0.6650475263595581,
+      "step": 227,
+      "terminal": 1.4860304594039917,
+      "time": 230.54298714920878
+    },
+    {
+      "file": "trajectory_0000229.pt",
+      "spacetime": 0.6323124766349792,
+      "step": 229,
+      "terminal": 1.3850570917129517,
+      "time": 232.68115984648466
+    },
+    {
+      "file": "trajectory_0000231.pt",
+      "spacetime": 0.6367039084434509,
+      "step": 231,
+      "terminal": 1.308813452720642,
+      "time": 234.82096863910556
+    },
+    {
+      "file": "trajectory_0000233.pt",
+      "spacetime": 0.6211019158363342,
+      "step": 233,
+      "terminal": 1.3636759519577026,
+      "time": 236.8500533849001
+    },
+    {
+      "file": "trajectory_0000235.pt",
+      "spacetime": 0.6617598533630371,
+      "step": 235,
+      "terminal": 1.4751975536346436,
+      "time": 238.98560854420066
+    },
+    {
+      "file": "checkpoint_0000236.pt",
+      "spacetime": 0.6557287573814392,
+      "step": 236,
+      "terminal": 1.4602431058883667,
+      "time": 240.10079466551542
+    },
+    {
+      "file": "trajectory_0000238.pt",
+      "spacetime": 0.6272192597389221,
+      "step": 238,
+      "terminal": 1.3378822803497314,
+      "time": 242.0797583796084
+    },
+    {
+      "file": "trajectory_0000240.pt",
+      "spacetime": 0.6360121965408325,
+      "step": 240,
+      "terminal": 1.3607796430587769,
+      "time": 244.118786547333
+    },
+    {
+      "file": "trajectory_0000242.pt",
+      "spacetime": 0.6543925404548645,
+      "step": 242,
+      "terminal": 1.4435150623321533,
+      "time": 246.260573387146
+    },
+    {
+      "file": "trajectory_0000244.pt",
+      "spacetime": 0.647444486618042,
+      "step": 244,
+      "terminal": 1.4239064455032349,
+      "time": 248.3109177723527
+    },
+    {
+      "file": "checkpoint_0000246.pt",
+      "spacetime": 0.6254348754882812,
+      "step": 246,
+      "terminal": 1.329952597618103,
+      "time": 250.48569041490555
+    },
+    {
+      "file": "trajectory_0000248.pt",
+      "spacetime": 0.6154146194458008,
+      "step": 248,
+      "terminal": 1.32416832447052,
+      "time": 252.65778322517872
+    },
+    {
+      "file": "trajectory_0000250.pt",
+      "spacetime": 0.6326679587364197,
+      "step": 250,
+      "terminal": 1.3961900472640991,
+      "time": 254.72041280940175
+    },
+    {
+      "file": "trajectory_0000252.pt",
+      "spacetime": 0.6112273335456848,
+      "step": 252,
+      "terminal": 1.3387466669082642,
+      "time": 256.76910715177655
+    },
+    {
+      "file": "trajectory_0000254.pt",
+      "spacetime": 0.5906381011009216,
+      "step": 254,
+      "terminal": 1.246414065361023,
+      "time": 258.9232689589262
+    },
+    {
+      "file": "checkpoint_0000255.pt",
+      "spacetime": 0.5903418064117432,
+      "step": 255,
+      "terminal": 1.2332617044448853,
+      "time": 260.0039397999644
+    },
+    {
+      "file": "trajectory_0000257.pt",
+      "spacetime": 0.5957750082015991,
+      "step": 257,
+      "terminal": 1.2856168746948242,
+      "time": 262.0480817258358
+    },
+    {
+      "file": "trajectory_0000259.pt",
+      "spacetime": 0.6137304902076721,
+      "step": 259,
+      "terminal": 1.3386025428771973,
+      "time": 264.0747582912445
+    },
+    {
+      "file": "trajectory_0000261.pt",
+      "spacetime": 0.6129695177078247,
+      "step": 261,
+      "terminal": 1.3113539218902588,
+      "time": 266.1100587323308
+    },
+    {
+      "file": "trajectory_0000263.pt",
+      "spacetime": 0.6217411756515503,
+      "step": 263,
+      "terminal": 1.3315938711166382,
+      "time": 268.28492172434926
+    },
+    {
+      "file": "checkpoint_0000265.pt",
+      "spacetime": 0.6151930093765259,
+      "step": 265,
+      "terminal": 1.331483006477356,
+      "time": 270.23589212819934
+    },
+    {
+      "file": "trajectory_0000267.pt",
+      "spacetime": 0.6108860373497009,
+      "step": 267,
+      "terminal": 1.3219982385635376,
+      "time": 272.29273876175284
+    },
+    {
+      "file": "trajectory_0000269.pt",
+      "spacetime": 0.6037317514419556,
+      "step": 269,
+      "terminal": 1.2472114562988281,
+      "time": 274.2778790332377
+    },
+    {
+      "file": "trajectory_0000271.pt",
+      "spacetime": 0.5917360186576843,
+      "step": 271,
+      "terminal": 1.252037763595581,
+      "time": 276.23472452163696
+    },
+    {
+      "file": "trajectory_0000273.pt",
+      "spacetime": 0.6111020445823669,
+      "step": 273,
+      "terminal": 1.3296644687652588,
+      "time": 278.2111423648894
+    },
+    {
+      "file": "checkpoint_0000275.pt",
+      "spacetime": 0.5945607423782349,
+      "step": 275,
+      "terminal": 1.2551974058151245,
+      "time": 280.1730749346316
+    },
+    {
+      "file": "trajectory_0000277.pt",
+      "spacetime": 0.6089094281196594,
+      "step": 277,
+      "terminal": 1.249953269958496,
+      "time": 282.2872748076916
+    },
+    {
+      "file": "trajectory_0000279.pt",
+      "spacetime": 0.5986320972442627,
+      "step": 279,
+      "terminal": 1.2891086339950562,
+      "time": 284.27564453333616
+    },
+    {
+      "file": "trajectory_0000281.pt",
+      "spacetime": 0.6052436232566833,
+      "step": 281,
+      "terminal": 1.3034793138504028,
+      "time": 286.3246021568775
+    },
+    {
+      "file": "trajectory_0000283.pt",
+      "spacetime": 0.591151237487793,
+      "step": 283,
+      "terminal": 1.2241889238357544,
+      "time": 288.4517498575151
+    },
+    {
+      "file": "checkpoint_0000285.pt",
+      "spacetime": 0.5939427614212036,
+      "step": 285,
+      "terminal": 1.2436573505401611,
+      "time": 290.442171189934
+    },
+    {
+      "file": "trajectory_0000287.pt",
+      "spacetime": 0.6096914410591125,
+      "step": 287,
+      "terminal": 1.3145456314086914,
+      "time": 292.55167297646403
+    },
+    {
+      "file": "trajectory_0000289.pt",
+      "spacetime": 0.5898225903511047,
+      "step": 289,
+      "terminal": 1.2573872804641724,
+      "time": 294.64455047249794
+    },
+    {
+      "file": "trajectory_0000291.pt",
+      "spacetime": 0.5925631523132324,
+      "step": 291,
+      "terminal": 1.1971429586410522,
+      "time": 296.8016919642687
+    },
+    {
+      "file": "trajectory_0000293.pt",
+      "spacetime": 0.5788981318473816,
+      "step": 293,
+      "terminal": 1.1950041055679321,
+      "time": 298.798292350024
+    },
+    {
+      "file": "checkpoint_0000295.pt",
+      "spacetime": 0.586306095123291,
+      "step": 295,
+      "terminal": 1.2495101690292358,
+      "time": 300.8530137836933
+    },
+    {
+      "file": "trajectory_0000297.pt",
+      "spacetime": 0.5713449716567993,
+      "step": 297,
+      "terminal": 1.1996006965637207,
+      "time": 302.8990188613534
+    },
+    {
+      "file": "trajectory_0000299.pt",
+      "spacetime": 0.5803369283676147,
+      "step": 299,
+      "terminal": 1.1853632926940918,
+      "time": 304.9551666453481
+    },
+    {
+      "file": "trajectory_0000301.pt",
+      "spacetime": 0.577238142490387,
+      "step": 301,
+      "terminal": 1.2042595148086548,
+      "time": 306.92968682944775
+    },
+    {
+      "file": "trajectory_0000302.pt",
+      "spacetime": 0.5807138085365295,
+      "step": 302,
+      "terminal": 1.2171391248703003,
+      "time": 308.00419970601797
+    },
+    {
+      "file": "checkpoint_0000304.pt",
+      "spacetime": 0.586927056312561,
+      "step": 304,
+      "terminal": 1.2324671745300293,
+      "time": 310.1218956746161
+    },
+    {
+      "file": "trajectory_0000306.pt",
+      "spacetime": 0.5862641930580139,
+      "step": 306,
+      "terminal": 1.2230740785598755,
+      "time": 312.1986672952771
+    },
+    {
+      "file": "trajectory_0000308.pt",
+      "spacetime": 0.5806984901428223,
+      "step": 308,
+      "terminal": 1.1969493627548218,
+      "time": 314.13516023755074
+    },
+    {
+      "file": "trajectory_0000310.pt",
+      "spacetime": 0.5723872780799866,
+      "step": 310,
+      "terminal": 1.1987714767456055,
+      "time": 316.09010043367743
+    },
+    {
+      "file": "trajectory_0000312.pt",
+      "spacetime": 0.5726218223571777,
+      "step": 312,
+      "terminal": 1.204143762588501,
+      "time": 318.12154834344983
+    },
+    {
+      "file": "checkpoint_0000314.pt",
+      "spacetime": 0.5712870955467224,
+      "step": 314,
+      "terminal": 1.1712596416473389,
+      "time": 320.24504021182656
+    },
+    {
+      "file": "trajectory_0000316.pt",
+      "spacetime": 0.5784525871276855,
+      "step": 316,
+      "terminal": 1.1864206790924072,
+      "time": 322.43884260207415
+    },
+    {
+      "file": "trajectory_0000318.pt",
+      "spacetime": 0.5748170614242554,
+      "step": 318,
+      "terminal": 1.1966445446014404,
+      "time": 324.45415312051773
+    },
+    {
+      "file": "trajectory_0000320.pt",
+      "spacetime": 0.5665809512138367,
+      "step": 320,
+      "terminal": 1.175866961479187,
+      "time": 326.4506301507354
+    },
+    {
+      "file": "trajectory_0000322.pt",
+      "spacetime": 0.5691273808479309,
+      "step": 322,
+      "terminal": 1.1380207538604736,
+      "time": 328.4719460979104
+    },
+    {
+      "file": "checkpoint_0000324.pt",
+      "spacetime": 0.5630754232406616,
+      "step": 324,
+      "terminal": 1.1637165546417236,
+      "time": 330.5419721864164
+    },
+    {
+      "file": "trajectory_0000326.pt",
+      "spacetime": 0.5758413672447205,
+      "step": 326,
+      "terminal": 1.2031364440917969,
+      "time": 332.65582605451345
+    },
+    {
+      "file": "trajectory_0000328.pt",
+      "spacetime": 0.5623993277549744,
+      "step": 328,
+      "terminal": 1.1533812284469604,
+      "time": 334.76335517689586
+    },
+    {
+      "file": "trajectory_0000330.pt",
+      "spacetime": 0.5639801621437073,
+      "step": 330,
+      "terminal": 1.1289647817611694,
+      "time": 336.6997471638024
+    },
+    {
+      "file": "trajectory_0000332.pt",
+      "spacetime": 0.5434072613716125,
+      "step": 332,
+      "terminal": 1.1122157573699951,
+      "time": 338.8458866253495
+    },
+    {
+      "file": "checkpoint_0000334.pt",
+      "spacetime": 0.544221043586731,
+      "step": 334,
+      "terminal": 1.1223509311676025,
+      "time": 340.895915735513
+    },
+    {
+      "file": "trajectory_0000336.pt",
+      "spacetime": 0.5360550880432129,
+      "step": 336,
+      "terminal": 1.0751858949661255,
+      "time": 342.8357563316822
+    },
+    {
+      "file": "trajectory_0000338.pt",
+      "spacetime": 0.5384283065795898,
+      "step": 338,
+      "terminal": 1.0651100873947144,
+      "time": 344.80963311716914
+    },
+    {
+      "file": "trajectory_0000340.pt",
+      "spacetime": 0.5362548232078552,
+      "step": 340,
+      "terminal": 1.1042917966842651,
+      "time": 346.92143711075187
+    },
+    {
+      "file": "trajectory_0000341.pt",
+      "spacetime": 0.5425706505775452,
+      "step": 341,
+      "terminal": 1.1225171089172363,
+      "time": 348.02538092806935
+    },
+    {
+      "file": "checkpoint_0000343.pt",
+      "spacetime": 0.5276520848274231,
+      "step": 343,
+      "terminal": 1.0656249523162842,
+      "time": 350.22434951737523
+    },
+    {
+      "file": "trajectory_0000345.pt",
+      "spacetime": 0.5462344884872437,
+      "step": 345,
+      "terminal": 1.052824854850769,
+      "time": 352.1957065798342
+    },
+    {
+      "file": "trajectory_0000347.pt",
+      "spacetime": 0.5298842191696167,
+      "step": 347,
+      "terminal": 1.0646791458129883,
+      "time": 354.3577603548765
+    },
+    {
+      "file": "trajectory_0000349.pt",
+      "spacetime": 0.5320181846618652,
+      "step": 349,
+      "terminal": 1.0793075561523438,
+      "time": 356.4359672628343
+    },
+    {
+      "file": "trajectory_0000351.pt",
+      "spacetime": 0.5347187519073486,
+      "step": 351,
+      "terminal": 1.070154070854187,
+      "time": 358.44734935089946
+    },
+    {
+      "file": "checkpoint_0000353.pt",
+      "spacetime": 0.5233368873596191,
+      "step": 353,
+      "terminal": 1.050092339515686,
+      "time": 360.3560890927911
+    },
+    {
+      "file": "trajectory_0000355.pt",
+      "spacetime": 0.5321627259254456,
+      "step": 355,
+      "terminal": 1.059383749961853,
+      "time": 362.3700180500746
+    },
+    {
+      "file": "trajectory_0000357.pt",
+      "spacetime": 0.5246620178222656,
+      "step": 357,
+      "terminal": 1.0405921936035156,
+      "time": 364.283044885844
+    },
+    {
+      "file": "trajectory_0000359.pt",
+      "spacetime": 0.5272659063339233,
+      "step": 359,
+      "terminal": 1.0320329666137695,
+      "time": 366.3692905828357
+    },
+    {
+      "file": "trajectory_0000361.pt",
+      "spacetime": 0.5166298151016235,
+      "step": 361,
+      "terminal": 1.0147650241851807,
+      "time": 368.44091664254665
+    },
+    {
+      "file": "checkpoint_0000363.pt",
+      "spacetime": 0.5014407634735107,
+      "step": 363,
+      "terminal": 0.9953702092170715,
+      "time": 370.61212446913123
+    },
+    {
+      "file": "trajectory_0000365.pt",
+      "spacetime": 0.5042659044265747,
+      "step": 365,
+      "terminal": 0.9811511635780334,
+      "time": 372.8057284615934
+    },
+    {
+      "file": "trajectory_0000367.pt",
+      "spacetime": 0.5170556306838989,
+      "step": 367,
+      "terminal": 0.9782769680023193,
+      "time": 374.8019741550088
+    },
+    {
+      "file": "trajectory_0000369.pt",
+      "spacetime": 0.5069896578788757,
+      "step": 369,
+      "terminal": 0.9967823624610901,
+      "time": 376.8323967270553
+    },
+    {
+      "file": "trajectory_0000371.pt",
+      "spacetime": 0.5197473168373108,
+      "step": 371,
+      "terminal": 1.039273977279663,
+      "time": 378.8447643108666
+    },
+    {
+      "file": "checkpoint_0000373.pt",
+      "spacetime": 0.5234442949295044,
+      "step": 373,
+      "terminal": 1.0103428363800049,
+      "time": 380.98625480756164
+    },
+    {
+      "file": "trajectory_0000374.pt",
+      "spacetime": 0.5192267298698425,
+      "step": 374,
+      "terminal": 0.9949625134468079,
+      "time": 382.05881679803133
+    },
+    {
+      "file": "trajectory_0000376.pt",
+      "spacetime": 0.5095690488815308,
+      "step": 376,
+      "terminal": 0.9951183795928955,
+      "time": 384.1155499704182
+    },
+    {
+      "file": "trajectory_0000378.pt",
+      "spacetime": 0.5060055255889893,
+      "step": 378,
+      "terminal": 0.9811214804649353,
+      "time": 386.19986686110497
+    },
+    {
+      "file": "trajectory_0000380.pt",
+      "spacetime": 0.5043636560440063,
+      "step": 380,
+      "terminal": 0.9556304216384888,
+      "time": 388.3199142627418
+    },
+    {
+      "file": "checkpoint_0000382.pt",
+      "spacetime": 0.4927070736885071,
+      "step": 382,
+      "terminal": 0.9495409727096558,
+      "time": 390.46610540151596
+    },
+    {
+      "file": "trajectory_0000384.pt",
+      "spacetime": 0.49276459217071533,
+      "step": 384,
+      "terminal": 0.9752402305603027,
+      "time": 392.4969907067716
+    },
+    {
+      "file": "trajectory_0000386.pt",
+      "spacetime": 0.48578163981437683,
+      "step": 386,
+      "terminal": 0.9378635287284851,
+      "time": 394.6659588292241
+    },
+    {
+      "file": "trajectory_0000388.pt",
+      "spacetime": 0.49118295311927795,
+      "step": 388,
+      "terminal": 0.9047977924346924,
+      "time": 396.6840972304344
+    },
+    {
+      "file": "trajectory_0000390.pt",
+      "spacetime": 0.489180326461792,
+      "step": 390,
+      "terminal": 0.946281373500824,
+      "time": 398.81674399226904
+    },
+    {
+      "file": "checkpoint_0000392.pt",
+      "spacetime": 0.4985324442386627,
+      "step": 392,
+      "terminal": 0.9760128259658813,
+      "time": 400.84356102347374
+    },
+    {
+      "file": "trajectory_0000394.pt",
+      "spacetime": 0.4951328635215759,
+      "step": 394,
+      "terminal": 0.9436214566230774,
+      "time": 402.8062638193369
+    },
+    {
+      "file": "trajectory_0000396.pt",
+      "spacetime": 0.48699918389320374,
+      "step": 396,
+      "terminal": 0.9101241230964661,
+      "time": 404.80860455334187
+    },
+    {
+      "file": "trajectory_0000398.pt",
+      "spacetime": 0.47726091742515564,
+      "step": 398,
+      "terminal": 0.9002823233604431,
+      "time": 406.7359453700483
+    },
+    {
+      "file": "trajectory_0000400.pt",
+      "spacetime": 0.4731648564338684,
+      "step": 400,
+      "terminal": 0.8980987668037415,
+      "time": 408.6440092995763
+    },
+    {
+      "file": "checkpoint_0000402.pt",
+      "spacetime": 0.49384254217147827,
+      "step": 402,
+      "terminal": 0.9406031966209412,
+      "time": 410.70031203329563
+    },
+    {
+      "file": "trajectory_0000404.pt",
+      "spacetime": 0.48103219270706177,
+      "step": 404,
+      "terminal": 0.9228737950325012,
+      "time": 412.84583735093474
+    },
+    {
+      "file": "trajectory_0000406.pt",
+      "spacetime": 0.47290337085723877,
+      "step": 406,
+      "terminal": 0.8928756713867188,
+      "time": 414.891845703125
+    },
+    {
+      "file": "trajectory_0000408.pt",
+      "spacetime": 0.4800724387168884,
+      "step": 408,
+      "terminal": 0.8890082240104675,
+      "time": 416.8854194544256
+    },
+    {
+      "file": "trajectory_0000410.pt",
+      "spacetime": 0.4820425510406494,
+      "step": 410,
+      "terminal": 0.8988129496574402,
+      "time": 419.0405576117337
+    },
+    {
+      "file": "checkpoint_0000411.pt",
+      "spacetime": 0.4808717370033264,
+      "step": 411,
+      "terminal": 0.906664252281189,
+      "time": 420.09787064790726
+    },
+    {
+      "file": "trajectory_0000413.pt",
+      "spacetime": 0.4773569107055664,
+      "step": 413,
+      "terminal": 0.9147272109985352,
+      "time": 422.20767951384187
+    },
+    {
+      "file": "trajectory_0000415.pt",
+      "spacetime": 0.46678078174591064,
+      "step": 415,
+      "terminal": 0.8677915334701538,
+      "time": 424.36252673715353
+    },
+    {
+      "file": "trajectory_0000417.pt",
+      "spacetime": 0.47296586632728577,
+      "step": 417,
+      "terminal": 0.847625195980072,
+      "time": 426.2660232037306
+    },
+    {
+      "file": "trajectory_0000419.pt",
+      "spacetime": 0.47335389256477356,
+      "step": 419,
+      "terminal": 0.891067385673523,
+      "time": 428.26590605452657
+    },
+    {
+      "file": "checkpoint_0000421.pt",
+      "spacetime": 0.481729656457901,
+      "step": 421,
+      "terminal": 0.9107884168624878,
+      "time": 430.35340631753206
+    },
+    {
+      "file": "trajectory_0000423.pt",
+      "spacetime": 0.49048423767089844,
+      "step": 423,
+      "terminal": 0.9055963754653931,
+      "time": 432.34969183057547
+    },
+    {
+      "file": "trajectory_0000425.pt",
+      "spacetime": 0.4730943739414215,
+      "step": 425,
+      "terminal": 0.8599582314491272,
+      "time": 434.4016789495945
+    },
+    {
+      "file": "trajectory_0000427.pt",
+      "spacetime": 0.45527124404907227,
+      "step": 427,
+      "terminal": 0.8461054563522339,
+      "time": 436.36873549968004
+    },
+    {
+      "file": "trajectory_0000429.pt",
+      "spacetime": 0.4564764201641083,
+      "step": 429,
+      "terminal": 0.8600068688392639,
+      "time": 438.4308510608971
+    },
+    {
+      "file": "checkpoint_0000431.pt",
+      "spacetime": 0.46489953994750977,
+      "step": 431,
+      "terminal": 0.8553289175033569,
+      "time": 440.4828797914088
+    },
+    {
+      "file": "trajectory_0000433.pt",
+      "spacetime": 0.4606240689754486,
+      "step": 433,
+      "terminal": 0.8404072523117065,
+      "time": 442.5271632671356
+    },
+    {
+      "file": "trajectory_0000435.pt",
+      "spacetime": 0.46338796615600586,
+      "step": 435,
+      "terminal": 0.8432816863059998,
+      "time": 444.46386006474495
+    },
+    {
+      "file": "trajectory_0000437.pt",
+      "spacetime": 0.4481785297393799,
+      "step": 437,
+      "terminal": 0.7970036864280701,
+      "time": 446.60474960133433
+    },
+    {
+      "file": "trajectory_0000439.pt",
+      "spacetime": 0.4657507538795471,
+      "step": 439,
+      "terminal": 0.8472424149513245,
+      "time": 448.6663013026118
+    },
+    {
+      "file": "checkpoint_0000441.pt",
+      "spacetime": 0.4720819592475891,
+      "step": 441,
+      "terminal": 0.8876655697822571,
+      "time": 450.5995287746191
+    },
+    {
+      "file": "trajectory_0000443.pt",
+      "spacetime": 0.4549875557422638,
+      "step": 443,
+      "terminal": 0.8255598545074463,
+      "time": 452.5720233358443
+    },
+    {
+      "file": "trajectory_0000445.pt",
+      "spacetime": 0.44457030296325684,
+      "step": 445,
+      "terminal": 0.7801262736320496,
+      "time": 454.63705775141716
+    },
+    {
+      "file": "trajectory_0000447.pt",
+      "spacetime": 0.4316311478614807,
+      "step": 447,
+      "terminal": 0.7685597538948059,
+      "time": 456.6009939946234
+    },
+    {
+      "file": "trajectory_0000449.pt",
+      "spacetime": 0.4336296617984772,
+      "step": 449,
+      "terminal": 0.7760008573532104,
+      "time": 458.74158722534776
+    },
+    {
+      "file": "checkpoint_0000451.pt",
+      "spacetime": 0.4444478452205658,
+      "step": 451,
+      "terminal": 0.7931134700775146,
+      "time": 460.9257627762854
+    },
+    {
+      "file": "trajectory_0000452.pt",
+      "spacetime": 0.44171997904777527,
+      "step": 452,
+      "terminal": 0.7932575941085815,
+      "time": 462.019100561738
+    },
+    {
+      "file": "trajectory_0000454.pt",
+      "spacetime": 0.4463784992694855,
+      "step": 454,
+      "terminal": 0.8093127012252808,
+      "time": 464.0314367637038
+    },
+    {
+      "file": "trajectory_0000456.pt",
+      "spacetime": 0.4482658803462982,
+      "step": 456,
+      "terminal": 0.7905009984970093,
+      "time": 466.06401605159044
+    },
+    {
+      "file": "trajectory_0000458.pt",
+      "spacetime": 0.4530491530895233,
+      "step": 458,
+      "terminal": 0.7966503500938416,
+      "time": 468.04554779455066
+    },
+    {
+      "file": "checkpoint_0000460.pt",
+      "spacetime": 0.44782570004463196,
+      "step": 460,
+      "terminal": 0.8106726408004761,
+      "time": 470.0995625592768
+    },
+    {
+      "file": "trajectory_0000462.pt",
+      "spacetime": 0.4503379166126251,
+      "step": 462,
+      "terminal": 0.8021127581596375,
+      "time": 472.07669904083014
+    },
+    {
+      "file": "trajectory_0000464.pt",
+      "spacetime": 0.4347176253795624,
+      "step": 464,
+      "terminal": 0.762969434261322,
+      "time": 474.03110371530056
+    },
+    {
+      "file": "trajectory_0000467.pt",
+      "spacetime": 0.4333140552043915,
+      "step": 467,
+      "terminal": 0.7512912154197693,
+      "time": 476.875827871263
+    },
+    {
+      "file": "trajectory_0000469.pt",
+      "spacetime": 0.43412789702415466,
+      "step": 469,
+      "terminal": 0.7646544575691223,
+      "time": 478.8840437345207
+    },
+    {
+      "file": "checkpoint_0000471.pt",
+      "spacetime": 0.43667569756507874,
+      "step": 471,
+      "terminal": 0.789074718952179,
+      "time": 480.93366548419
+    },
+    {
+      "file": "trajectory_0000473.pt",
+      "spacetime": 0.43648412823677063,
+      "step": 473,
+      "terminal": 0.7528774738311768,
+      "time": 482.88426895067096
+    },
+    {
+      "file": "trajectory_0000475.pt",
+      "spacetime": 0.4217988848686218,
+      "step": 475,
+      "terminal": 0.7253478169441223,
+      "time": 484.91038862243295
+    },
+    {
+      "file": "trajectory_0000477.pt",
+      "spacetime": 0.4195684790611267,
+      "step": 477,
+      "terminal": 0.7332942485809326,
+      "time": 486.8068388029933
+    },
+    {
+      "file": "trajectory_0000479.pt",
+      "spacetime": 0.4241689443588257,
+      "step": 479,
+      "terminal": 0.7348724603652954,
+      "time": 488.883677251637
+    },
+    {
+      "file": "checkpoint_0000481.pt",
+      "spacetime": 0.42024165391921997,
+      "step": 481,
+      "terminal": 0.7289077639579773,
+      "time": 490.92064821347594
+    },
+    {
+      "file": "trajectory_0000483.pt",
+      "spacetime": 0.4230822026729584,
+      "step": 483,
+      "terminal": 0.7516040802001953,
+      "time": 492.8780903592706
+    },
+    {
+      "file": "trajectory_0000485.pt",
+      "spacetime": 0.4124213755130768,
+      "step": 485,
+      "terminal": 0.6942894458770752,
+      "time": 494.96221475303173
+    },
+    {
+      "file": "trajectory_0000487.pt",
+      "spacetime": 0.419320285320282,
+      "step": 487,
+      "terminal": 0.6965162754058838,
+      "time": 496.95456613972783
+    },
+    {
+      "file": "trajectory_0000489.pt",
+      "spacetime": 0.4232720732688904,
+      "step": 489,
+      "terminal": 0.7410460710525513,
+      "time": 498.932064242661
+    },
+    {
+      "file": "checkpoint_0000491.pt",
+      "spacetime": 0.4318040609359741,
+      "step": 491,
+      "terminal": 0.7593259215354919,
+      "time": 500.89189495146275
+    },
+    {
+      "file": "trajectory_0000493.pt",
+      "spacetime": 0.4502161741256714,
+      "step": 493,
+      "terminal": 0.7729194760322571,
+      "time": 502.82457112520933
+    },
+    {
+      "file": "trajectory_0000495.pt",
+      "spacetime": 0.4080509543418884,
+      "step": 495,
+      "terminal": 0.6834908127784729,
+      "time": 504.7894236147404
+    },
+    {
+      "file": "trajectory_0000497.pt",
+      "spacetime": 0.3956451117992401,
+      "step": 497,
+      "terminal": 0.6829118728637695,
+      "time": 506.92127116397023
+    },
+    {
+      "file": "trajectory_0000498.pt",
+      "spacetime": 0.3892132639884949,
+      "step": 498,
+      "terminal": 0.6464277505874634,
+      "time": 508.02370964735746
+    },
+    {
+      "file": "checkpoint_0000500.pt",
+      "spacetime": 0.39273786544799805,
+      "step": 500,
+      "terminal": 0.6577285528182983,
+      "time": 510.0048027969897
+    },
+    {
+      "file": "trajectory_0000502.pt",
+      "spacetime": 0.40685075521469116,
+      "step": 502,
+      "terminal": 0.7009721994400024,
+      "time": 512.0613153874874
+    },
+    {
+      "file": "trajectory_0000504.pt",
+      "spacetime": 0.4018635153770447,
+      "step": 504,
+      "terminal": 0.6713265180587769,
+      "time": 514.1079080998898
+    },
+    {
+      "file": "trajectory_0000506.pt",
+      "spacetime": 0.4135529398918152,
+      "step": 506,
+      "terminal": 0.7007899880409241,
+      "time": 516.0763207226992
+    },
+    {
+      "file": "trajectory_0000508.pt",
+      "spacetime": 0.3985610604286194,
+      "step": 508,
+      "terminal": 0.6677430868148804,
+      "time": 518.0645337700844
+    },
+    {
+      "file": "checkpoint_0000510.pt",
+      "spacetime": 0.38777121901512146,
+      "step": 510,
+      "terminal": 0.6364679336547852,
+      "time": 520.074331369251
+    },
+    {
+      "file": "trajectory_0000512.pt",
+      "spacetime": 0.390438973903656,
+      "step": 512,
+      "terminal": 0.639731764793396,
+      "time": 522.1463353671134
+    },
+    {
+      "file": "trajectory_0000514.pt",
+      "spacetime": 0.40394625067710876,
+      "step": 514,
+      "terminal": 0.66408371925354,
+      "time": 524.0980989746749
+    },
+    {
+      "file": "trajectory_0000516.pt",
+      "spacetime": 0.4041669964790344,
+      "step": 516,
+      "terminal": 0.6784692406654358,
+      "time": 526.1027326546609
+    },
+    {
+      "file": "trajectory_0000518.pt",
+      "spacetime": 0.397105872631073,
+      "step": 518,
+      "terminal": 0.6672031283378601,
+      "time": 528.2821795679629
+    },
+    {
+      "file": "checkpoint_0000520.pt",
+      "spacetime": 0.4007059931755066,
+      "step": 520,
+      "terminal": 0.647382378578186,
+      "time": 530.4265477731824
+    },
+    {
+      "file": "trajectory_0000522.pt",
+      "spacetime": 0.39143699407577515,
+      "step": 522,
+      "terminal": 0.6226946711540222,
+      "time": 532.621847204864
+    },
+    {
+      "file": "trajectory_0000524.pt",
+      "spacetime": 0.39403319358825684,
+      "step": 524,
+      "terminal": 0.6501235365867615,
+      "time": 534.7170622125268
+    },
+    {
+      "file": "trajectory_0000526.pt",
+      "spacetime": 0.4076131284236908,
+      "step": 526,
+      "terminal": 0.6801363229751587,
+      "time": 536.7381655275822
+    },
+    {
+      "file": "trajectory_0000528.pt",
+      "spacetime": 0.3989453613758087,
+      "step": 528,
+      "terminal": 0.654582679271698,
+      "time": 538.823504589498
+    },
+    {
+      "file": "checkpoint_0000530.pt",
+      "spacetime": 0.381343811750412,
+      "step": 530,
+      "terminal": 0.6072014570236206,
+      "time": 540.8625288233161
+    },
+    {
+      "file": "trajectory_0000532.pt",
+      "spacetime": 0.3723220229148865,
+      "step": 532,
+      "terminal": 0.6109355092048645,
+      "time": 542.8575731776655
+    },
+    {
+      "file": "trajectory_0000534.pt",
+      "spacetime": 0.37112975120544434,
+      "step": 534,
+      "terminal": 0.6002340912818909,
+      "time": 544.8564306274056
+    },
+    {
+      "file": "trajectory_0000536.pt",
+      "spacetime": 0.37324413657188416,
+      "step": 536,
+      "terminal": 0.618453860282898,
+      "time": 546.8159366883337
+    },
+    {
+      "file": "trajectory_0000538.pt",
+      "spacetime": 0.3759656548500061,
+      "step": 538,
+      "terminal": 0.6018376350402832,
+      "time": 548.9608677886426
+    },
+    {
+      "file": "checkpoint_0000539.pt",
+      "spacetime": 0.3809789717197418,
+      "step": 539,
+      "terminal": 0.6089280247688293,
+      "time": 550.0131816789508
+    },
+    {
+      "file": "trajectory_0000541.pt",
+      "spacetime": 0.376848965883255,
+      "step": 541,
+      "terminal": 0.6035565137863159,
+      "time": 552.1642895042896
+    },
+    {
+      "file": "trajectory_0000543.pt",
+      "spacetime": 0.3725528120994568,
+      "step": 543,
+      "terminal": 0.5989364385604858,
+      "time": 554.2311993725598
+    },
+    {
+      "file": "trajectory_0000545.pt",
+      "spacetime": 0.377607136964798,
+      "step": 545,
+      "terminal": 0.6122711896896362,
+      "time": 556.2628961764276
+    },
+    {
+      "file": "trajectory_0000547.pt",
+      "spacetime": 0.37019914388656616,
+      "step": 547,
+      "terminal": 0.5931713581085205,
+      "time": 558.3984941318631
+    },
+    {
+      "file": "checkpoint_0000549.pt",
+      "spacetime": 0.36265119910240173,
+      "step": 549,
+      "terminal": 0.5741982460021973,
+      "time": 560.3782913684845
+    },
+    {
+      "file": "trajectory_0000551.pt",
+      "spacetime": 0.3654409348964691,
+      "step": 551,
+      "terminal": 0.5773545503616333,
+      "time": 562.2765412405133
+    },
+    {
+      "file": "trajectory_0000553.pt",
+      "spacetime": 0.36319318413734436,
+      "step": 553,
+      "terminal": 0.5743644833564758,
+      "time": 564.325217988342
+    },
+    {
+      "file": "trajectory_0000555.pt",
+      "spacetime": 0.3688756227493286,
+      "step": 555,
+      "terminal": 0.5729087591171265,
+      "time": 566.4611637145281
+    },
+    {
+      "file": "trajectory_0000557.pt",
+      "spacetime": 0.3698473870754242,
+      "step": 557,
+      "terminal": 0.5746526718139648,
+      "time": 568.4784183315933
+    },
+    {
+      "file": "checkpoint_0000559.pt",
+      "spacetime": 0.3684868812561035,
+      "step": 559,
+      "terminal": 0.5829177498817444,
+      "time": 570.5297631025314
+    },
+    {
+      "file": "trajectory_0000561.pt",
+      "spacetime": 0.3647855222225189,
+      "step": 561,
+      "terminal": 0.5608041882514954,
+      "time": 572.630115121603
+    },
+    {
+      "file": "trajectory_0000563.pt",
+      "spacetime": 0.35848358273506165,
+      "step": 563,
+      "terminal": 0.5633372068405151,
+      "time": 574.6394680961967
+    },
+    {
+      "file": "trajectory_0000565.pt",
+      "spacetime": 0.36202141642570496,
+      "step": 565,
+      "terminal": 0.5730277895927429,
+      "time": 576.696495141834
+    },
+    {
+      "file": "trajectory_0000567.pt",
+      "spacetime": 0.3715503513813019,
+      "step": 567,
+      "terminal": 0.5853437185287476,
+      "time": 578.8348456956446
+    },
+    {
+      "file": "checkpoint_0000569.pt",
+      "spacetime": 0.36097007989883423,
+      "step": 569,
+      "terminal": 0.564970076084137,
+      "time": 580.7966373115778
+    },
+    {
+      "file": "trajectory_0000571.pt",
+      "spacetime": 0.3634381592273712,
+      "step": 571,
+      "terminal": 0.5687655210494995,
+      "time": 582.7670376040041
+    },
+    {
+      "file": "trajectory_0000573.pt",
+      "spacetime": 0.35892072319984436,
+      "step": 573,
+      "terminal": 0.5791565775871277,
+      "time": 584.8041834719479
+    },
+    {
+      "file": "trajectory_0000575.pt",
+      "spacetime": 0.36166566610336304,
+      "step": 575,
+      "terminal": 0.5863729119300842,
+      "time": 586.8440590873361
+    },
+    {
+      "file": "trajectory_0000577.pt",
+      "spacetime": 0.3833507001399994,
+      "step": 577,
+      "terminal": 0.627017617225647,
+      "time": 588.8806457556784
+    },
+    {
+      "file": "checkpoint_0000579.pt",
+      "spacetime": 0.36920982599258423,
+      "step": 579,
+      "terminal": 0.5976223945617676,
+      "time": 590.9090873748064
+    },
+    {
+      "file": "trajectory_0000581.pt",
+      "spacetime": 0.3704445958137512,
+      "step": 581,
+      "terminal": 0.6143622994422913,
+      "time": 592.8932204283774
+    },
+    {
+      "file": "trajectory_0000583.pt",
+      "spacetime": 0.3526558578014374,
+      "step": 583,
+      "terminal": 0.5626131296157837,
+      "time": 594.8580956086516
+    },
+    {
+      "file": "trajectory_0000585.pt",
+      "spacetime": 0.3336755037307739,
+      "step": 585,
+      "terminal": 0.5139528512954712,
+      "time": 596.9266908317804
+    },
+    {
+      "file": "trajectory_0000586.pt",
+      "spacetime": 0.33274754881858826,
+      "step": 586,
+      "terminal": 0.511990487575531,
+      "time": 598.0370060019195
+    },
+    {
+      "file": "checkpoint_0000588.pt",
+      "spacetime": 0.3407745957374573,
+      "step": 588,
+      "terminal": 0.5392125844955444,
+      "time": 600.1229362748563
+    },
+    {
+      "file": "trajectory_0000590.pt",
+      "spacetime": 0.34694796800613403,
+      "step": 590,
+      "terminal": 0.5511764883995056,
+      "time": 602.2881411202252
+    },
+    {
+      "file": "trajectory_0000592.pt",
+      "spacetime": 0.3455687463283539,
+      "step": 592,
+      "terminal": 0.5442249774932861,
+      "time": 604.3489184193313
+    },
+    {
+      "file": "trajectory_0000594.pt",
+      "spacetime": 0.34912434220314026,
+      "step": 594,
+      "terminal": 0.5494704842567444,
+      "time": 606.4606114327908
+    },
+    {
+      "file": "trajectory_0000596.pt",
+      "spacetime": 0.34656035900115967,
+      "step": 596,
+      "terminal": 0.5498179793357849,
+      "time": 608.6626536026597
+    },
+    {
+      "file": "checkpoint_0000598.pt",
+      "spacetime": 0.346431702375412,
+      "step": 598,
+      "terminal": 0.5518893599510193,
+      "time": 610.7967577911913
+    },
+    {
+      "file": "trajectory_0000600.pt",
+      "spacetime": 0.3598291277885437,
+      "step": 600,
+      "terminal": 0.5837665796279907,
+      "time": 612.8765263706446
+    },
+    {
+      "file": "trajectory_0000602.pt",
+      "spacetime": 0.3372918665409088,
+      "step": 602,
+      "terminal": 0.5260984897613525,
+      "time": 614.8995410576463
+    },
+    {
+      "file": "trajectory_0000604.pt",
+      "spacetime": 0.335879385471344,
+      "step": 604,
+      "terminal": 0.5210868120193481,
+      "time": 616.8280228637159
+    },
+    {
+      "file": "trajectory_0000606.pt",
+      "spacetime": 0.3518463373184204,
+      "step": 606,
+      "terminal": 0.555806040763855,
+      "time": 618.770167324692
+    },
+    {
+      "file": "checkpoint_0000608.pt",
+      "spacetime": 0.33415091037750244,
+      "step": 608,
+      "terminal": 0.5084704160690308,
+      "time": 620.6708112694323
+    },
+    {
+      "file": "trajectory_0000610.pt",
+      "spacetime": 0.3376701772212982,
+      "step": 610,
+      "terminal": 0.523646891117096,
+      "time": 622.7210977599025
+    },
+    {
+      "file": "trajectory_0000612.pt",
+      "spacetime": 0.33848369121551514,
+      "step": 612,
+      "terminal": 0.5407002568244934,
+      "time": 624.7946489192545
+    },
+    {
+      "file": "trajectory_0000614.pt",
+      "spacetime": 0.3411053419113159,
+      "step": 614,
+      "terminal": 0.5388325452804565,
+      "time": 626.7832961715758
+    },
+    {
+      "file": "trajectory_0000616.pt",
+      "spacetime": 0.35823532938957214,
+      "step": 616,
+      "terminal": 0.5758102536201477,
+      "time": 628.8308756947517
+    },
+    {
+      "file": "checkpoint_0000618.pt",
+      "spacetime": 0.31635335087776184,
+      "step": 618,
+      "terminal": 0.4810163378715515,
+      "time": 630.8673508390784
+    },
+    {
+      "file": "trajectory_0000620.pt",
+      "spacetime": 0.3177579641342163,
+      "step": 620,
+      "terminal": 0.49512574076652527,
+      "time": 632.8314376436174
+    },
+    {
+      "file": "trajectory_0000622.pt",
+      "spacetime": 0.3536163568496704,
+      "step": 622,
+      "terminal": 0.5787955522537231,
+      "time": 634.8002901785076
+    },
+    {
+      "file": "trajectory_0000624.pt",
+      "spacetime": 0.3408336341381073,
+      "step": 624,
+      "terminal": 0.5283495783805847,
+      "time": 636.9446185156703
+    },
+    {
+      "file": "trajectory_0000625.pt",
+      "spacetime": 0.3349435329437256,
+      "step": 625,
+      "terminal": 0.5222359895706177,
+      "time": 638.01908544451
+    },
+    {
+      "file": "checkpoint_0000627.pt",
+      "spacetime": 0.33223408460617065,
+      "step": 627,
+      "terminal": 0.5218966603279114,
+      "time": 640.1053031533957
+    },
+    {
+      "file": "trajectory_0000629.pt",
+      "spacetime": 0.31018707156181335,
+      "step": 629,
+      "terminal": 0.4807193875312805,
+      "time": 642.2644547261298
+    },
+    {
+      "file": "trajectory_0000631.pt",
+      "spacetime": 0.3537065088748932,
+      "step": 631,
+      "terminal": 0.5714167952537537,
+      "time": 644.2705823518336
+    },
+    {
+      "file": "trajectory_0000633.pt",
+      "spacetime": 0.32710403203964233,
+      "step": 633,
+      "terminal": 0.5132626295089722,
+      "time": 646.2419490963221
+    },
+    {
+      "file": "trajectory_0000635.pt",
+      "spacetime": 0.33327677845954895,
+      "step": 635,
+      "terminal": 0.520552933216095,
+      "time": 648.3861657045782
+    },
+    {
+      "file": "checkpoint_0000637.pt",
+      "spacetime": 0.3262901306152344,
+      "step": 637,
+      "terminal": 0.5048835873603821,
+      "time": 650.4191264659166
+    },
+    {
+      "file": "trajectory_0000639.pt",
+      "spacetime": 0.3168078362941742,
+      "step": 639,
+      "terminal": 0.50846266746521,
+      "time": 652.5284499265254
+    },
+    {
+      "file": "trajectory_0000641.pt",
+      "spacetime": 0.32276880741119385,
+      "step": 641,
+      "terminal": 0.5121937990188599,
+      "time": 654.64405670017
+    },
+    {
+      "file": "trajectory_0000643.pt",
+      "spacetime": 0.3059331178665161,
+      "step": 643,
+      "terminal": 0.4633643627166748,
+      "time": 656.7739789001644
+    },
+    {
+      "file": "trajectory_0000645.pt",
+      "spacetime": 0.30515769124031067,
+      "step": 645,
+      "terminal": 0.4656163156032562,
+      "time": 658.7299833521247
+    },
+    {
+      "file": "checkpoint_0000647.pt",
+      "spacetime": 0.31921663880348206,
+      "step": 647,
+      "terminal": 0.5169585347175598,
+      "time": 660.632714562118
+    },
+    {
+      "file": "trajectory_0000649.pt",
+      "spacetime": 0.30486974120140076,
+      "step": 649,
+      "terminal": 0.4812781810760498,
+      "time": 662.6765158958733
+    },
+    {
+      "file": "trajectory_0000651.pt",
+      "spacetime": 0.30261313915252686,
+      "step": 651,
+      "terminal": 0.47970345616340637,
+      "time": 664.7091952748597
+    },
+    {
+      "file": "trajectory_0000653.pt",
+      "spacetime": 0.3506942689418793,
+      "step": 653,
+      "terminal": 0.5862473249435425,
+      "time": 666.8850193619728
+    },
+    {
+      "file": "trajectory_0000655.pt",
+      "spacetime": 0.3029771149158478,
+      "step": 655,
+      "terminal": 0.486012727022171,
+      "time": 668.8323012106121
+    },
+    {
+      "file": "checkpoint_0000657.pt",
+      "spacetime": 0.3223479688167572,
+      "step": 657,
+      "terminal": 0.5250564813613892,
+      "time": 670.8732821680605
+    },
+    {
+      "file": "trajectory_0000659.pt",
+      "spacetime": 0.3202351927757263,
+      "step": 659,
+      "terminal": 0.510890543460846,
+      "time": 672.9271035082638
+    },
+    {
+      "file": "trajectory_0000661.pt",
+      "spacetime": 0.3171457052230835,
+      "step": 661,
+      "terminal": 0.498668372631073,
+      "time": 674.9463121779263
+    },
+    {
+      "file": "trajectory_0000662.pt",
+      "spacetime": 0.3247623145580292,
+      "step": 662,
+      "terminal": 0.534732460975647,
+      "time": 676.042305521667
+    },
+    {
+      "file": "trajectory_0000664.pt",
+      "spacetime": 0.3078571856021881,
+      "step": 664,
+      "terminal": 0.49992576241493225,
+      "time": 678.1205556765199
+    },
+    {
+      "file": "checkpoint_0000666.pt",
+      "spacetime": 0.30183446407318115,
+      "step": 666,
+      "terminal": 0.48285844922065735,
+      "time": 680.275640450418
+    },
+    {
+      "file": "trajectory_0000668.pt",
+      "spacetime": 0.30450981855392456,
+      "step": 668,
+      "terminal": 0.4837927222251892,
+      "time": 682.3259765282273
+    },
+    {
+      "file": "trajectory_0000670.pt",
+      "spacetime": 0.30837035179138184,
+      "step": 670,
+      "terminal": 0.4799199104309082,
+      "time": 684.4434871152043
+    },
+    {
+      "file": "trajectory_0000672.pt",
+      "spacetime": 0.3158707022666931,
+      "step": 672,
+      "terminal": 0.5148523449897766,
+      "time": 686.4230429045856
+    },
+    {
+      "file": "trajectory_0000674.pt",
+      "spacetime": 0.30099454522132874,
+      "step": 674,
+      "terminal": 0.4886747896671295,
+      "time": 688.477664642036
+    },
+    {
+      "file": "checkpoint_0000676.pt",
+      "spacetime": 0.291681706905365,
+      "step": 676,
+      "terminal": 0.45735621452331543,
+      "time": 690.6052126251161
+    },
+    {
+      "file": "trajectory_0000678.pt",
+      "spacetime": 0.31411615014076233,
+      "step": 678,
+      "terminal": 0.5230668783187866,
+      "time": 692.6587164252996
+    },
+    {
+      "file": "trajectory_0000680.pt",
+      "spacetime": 0.2969124913215637,
+      "step": 680,
+      "terminal": 0.4739084541797638,
+      "time": 694.7029798552394
+    },
+    {
+      "file": "trajectory_0000682.pt",
+      "spacetime": 0.3081246614456177,
+      "step": 682,
+      "terminal": 0.5278674960136414,
+      "time": 696.8453477136791
+    },
+    {
+      "file": "trajectory_0000684.pt",
+      "spacetime": 0.29220491647720337,
+      "step": 684,
+      "terminal": 0.4892744719982147,
+      "time": 698.9762727767229
+    },
+    {
+      "file": "checkpoint_0000685.pt",
+      "spacetime": 0.28283968567848206,
+      "step": 685,
+      "terminal": 0.4579283595085144,
+      "time": 700.0641362629831
+    },
+    {
+      "file": "trajectory_0000687.pt",
+      "spacetime": 0.32062286138534546,
+      "step": 687,
+      "terminal": 0.5297496318817139,
+      "time": 702.0708050951362
+    },
+    {
+      "file": "trajectory_0000689.pt",
+      "spacetime": 0.30532538890838623,
+      "step": 689,
+      "terminal": 0.5036070942878723,
+      "time": 704.1291493326426
+    },
+    {
+      "file": "trajectory_0000691.pt",
+      "spacetime": 0.3016410171985626,
+      "step": 691,
+      "terminal": 0.5049745440483093,
+      "time": 706.064631126821
+    },
+    {
+      "file": "trajectory_0000693.pt",
+      "spacetime": 0.3072507977485657,
+      "step": 693,
+      "terminal": 0.5099999308586121,
+      "time": 708.1732702404261
+    },
+    {
+      "file": "checkpoint_0000695.pt",
+      "spacetime": 0.29767394065856934,
+      "step": 695,
+      "terminal": 0.46737128496170044,
+      "time": 710.3080288209021
+    },
+    {
+      "file": "trajectory_0000697.pt",
+      "spacetime": 0.338789165019989,
+      "step": 697,
+      "terminal": 0.5810188055038452,
+      "time": 712.2201185561717
+    },
+    {
+      "file": "trajectory_0000699.pt",
+      "spacetime": 0.28440096974372864,
+      "step": 699,
+      "terminal": 0.4776294529438019,
+      "time": 714.353978857398
+    },
+    {
+      "file": "trajectory_0000701.pt",
+      "spacetime": 0.290409654378891,
+      "step": 701,
+      "terminal": 0.4815756380558014,
+      "time": 716.5084977447987
+    },
+    {
+      "file": "trajectory_0000703.pt",
+      "spacetime": 0.3149150311946869,
+      "step": 703,
+      "terminal": 0.5262747406959534,
+      "time": 718.5807363800704
+    },
+    {
+      "file": "checkpoint_0000705.pt",
+      "spacetime": 0.3043779134750366,
+      "step": 705,
+      "terminal": 0.47479188442230225,
+      "time": 720.5179500877857
+    },
+    {
+      "file": "trajectory_0000707.pt",
+      "spacetime": 0.3483779728412628,
+      "step": 707,
+      "terminal": 0.6034020781517029,
+      "time": 722.6480859592557
+    },
+    {
+      "file": "trajectory_0000709.pt",
+      "spacetime": 0.28066587448120117,
+      "step": 709,
+      "terminal": 0.4530847668647766,
+      "time": 724.6080081313848
+    },
+    {
+      "file": "trajectory_0000711.pt",
+      "spacetime": 0.2869637906551361,
+      "step": 711,
+      "terminal": 0.4835483133792877,
+      "time": 726.5474487654865
+    },
+    {
+      "file": "trajectory_0000713.pt",
+      "spacetime": 0.30239471793174744,
+      "step": 713,
+      "terminal": 0.5242504477500916,
+      "time": 728.5743455290794
+    },
+    {
+      "file": "checkpoint_0000715.pt",
+      "spacetime": 0.2827276289463043,
+      "step": 715,
+      "terminal": 0.47385498881340027,
+      "time": 730.649097379297
+    },
+    {
+      "file": "trajectory_0000717.pt",
+      "spacetime": 0.3193488121032715,
+      "step": 717,
+      "terminal": 0.5595293045043945,
+      "time": 732.7136081568897
+    },
+    {
+      "file": "trajectory_0000719.pt",
+      "spacetime": 0.301558256149292,
+      "step": 719,
+      "terminal": 0.5110102891921997,
+      "time": 734.715844258666
+    },
+    {
+      "file": "trajectory_0000721.pt",
+      "spacetime": 0.27896878123283386,
+      "step": 721,
+      "terminal": 0.4815269112586975,
+      "time": 736.7508799359202
+    },
+    {
+      "file": "trajectory_0000723.pt",
+      "spacetime": 0.2859467566013336,
+      "step": 723,
+      "terminal": 0.5258504748344421,
+      "time": 738.8207846693695
+    },
+    {
+      "file": "checkpoint_0000725.pt",
+      "spacetime": 0.26872631907463074,
+      "step": 725,
+      "terminal": 0.4818093180656433,
+      "time": 740.9837557859719
+    },
+    {
+      "file": "trajectory_0000726.pt",
+      "spacetime": 0.27026692032814026,
+      "step": 726,
+      "terminal": 0.4695303738117218,
+      "time": 742.0264075919986
+    },
+    {
+      "file": "trajectory_0000729.pt",
+      "spacetime": 0.31424468755722046,
+      "step": 729,
+      "terminal": 0.5537619590759277,
+      "time": 744.9513349719346
+    },
+    {
+      "file": "trajectory_0000731.pt",
+      "spacetime": 0.2896306812763214,
+      "step": 731,
+      "terminal": 0.5117853283882141,
+      "time": 746.9135923087597
+    },
+    {
+      "file": "trajectory_0000732.pt",
+      "spacetime": 0.2871793508529663,
+      "step": 732,
+      "terminal": 0.5088649392127991,
+      "time": 748.007614582777
+    },
+    {
+      "file": "checkpoint_0000734.pt",
+      "spacetime": 0.2743455767631531,
+      "step": 734,
+      "terminal": 0.4872482120990753,
+      "time": 750.0441295839846
+    },
+    {
+      "file": "trajectory_0000736.pt",
+      "spacetime": 0.2883608043193817,
+      "step": 736,
+      "terminal": 0.517525315284729,
+      "time": 752.2082915045321
+    },
+    {
+      "file": "trajectory_0000738.pt",
+      "spacetime": 0.28940173983573914,
+      "step": 738,
+      "terminal": 0.5086272358894348,
+      "time": 754.3988558612764
+    },
+    {
+      "file": "trajectory_0000740.pt",
+      "spacetime": 0.2787427008152008,
+      "step": 740,
+      "terminal": 0.45971235632896423,
+      "time": 756.4697663895786
+    },
+    {
+      "file": "trajectory_0000742.pt",
+      "spacetime": 0.3412749469280243,
+      "step": 742,
+      "terminal": 0.6204013228416443,
+      "time": 758.4228790439665
+    },
+    {
+      "file": "checkpoint_0000744.pt",
+      "spacetime": 0.2687077522277832,
+      "step": 744,
+      "terminal": 0.48045614361763,
+      "time": 760.4177385754883
+    },
+    {
+      "file": "trajectory_0000746.pt",
+      "spacetime": 0.29215207695961,
+      "step": 746,
+      "terminal": 0.5164263248443604,
+      "time": 762.408334877342
+    },
+    {
+      "file": "trajectory_0000748.pt",
+      "spacetime": 0.3051964044570923,
+      "step": 748,
+      "terminal": 0.5353195071220398,
+      "time": 764.4153352975845
+    },
+    {
+      "file": "trajectory_0000750.pt",
+      "spacetime": 0.28347358107566833,
+      "step": 750,
+      "terminal": 0.44908440113067627,
+      "time": 766.4442395754158
+    },
+    {
+      "file": "trajectory_0000752.pt",
+      "spacetime": 0.29968589544296265,
+      "step": 752,
+      "terminal": 0.5162484049797058,
+      "time": 768.519101344049
+    },
+    {
+      "file": "checkpoint_0000754.pt",
+      "spacetime": 0.26866859197616577,
+      "step": 754,
+      "terminal": 0.470741331577301,
+      "time": 770.5855937562883
+    },
+    {
+      "file": "trajectory_0000756.pt",
+      "spacetime": 0.26910045742988586,
+      "step": 756,
+      "terminal": 0.47730615735054016,
+      "time": 772.7003443352878
+    },
+    {
+      "file": "trajectory_0000758.pt",
+      "spacetime": 0.3026561141014099,
+      "step": 758,
+      "terminal": 0.5450068116188049,
+      "time": 774.8670752756298
+    },
+    {
+      "file": "trajectory_0000760.pt",
+      "spacetime": 0.27681684494018555,
+      "step": 760,
+      "terminal": 0.44377171993255615,
+      "time": 777.0029650554061
+    },
+    {
+      "file": "trajectory_0000761.pt",
+      "spacetime": 0.2787235975265503,
+      "step": 761,
+      "terminal": 0.4751807451248169,
+      "time": 778.0469185449183
+    },
+    {
+      "file": "checkpoint_0000763.pt",
+      "spacetime": 0.3000490665435791,
+      "step": 763,
+      "terminal": 0.5399317741394043,
+      "time": 780.1522574722767
+    },
+    {
+      "file": "trajectory_0000765.pt",
+      "spacetime": 0.2617625594139099,
+      "step": 765,
+      "terminal": 0.45380207896232605,
+      "time": 782.163843665272
+    },
+    {
+      "file": "trajectory_0000767.pt",
+      "spacetime": 0.28343430161476135,
+      "step": 767,
+      "terminal": 0.5211410522460938,
+      "time": 784.1732097528875
+    },
+    {
+      "file": "trajectory_0000769.pt",
+      "spacetime": 0.25834837555885315,
+      "step": 769,
+      "terminal": 0.45746350288391113,
+      "time": 786.183038212359
+    },
+    {
+      "file": "trajectory_0000771.pt",
+      "spacetime": 0.2757473289966583,
+      "step": 771,
+      "terminal": 0.4925049841403961,
+      "time": 788.3181852065027
+    },
+    {
+      "file": "checkpoint_0000773.pt",
+      "spacetime": 0.2926921844482422,
+      "step": 773,
+      "terminal": 0.543789803981781,
+      "time": 790.3083084151149
+    },
+    {
+      "file": "trajectory_0000775.pt",
+      "spacetime": 0.25527316331863403,
+      "step": 775,
+      "terminal": 0.4477665424346924,
+      "time": 792.4393084049225
+    },
+    {
+      "file": "trajectory_0000777.pt",
+      "spacetime": 0.27620241045951843,
+      "step": 777,
+      "terminal": 0.5097267031669617,
+      "time": 794.4689856991172
+    },
+    {
+      "file": "trajectory_0000779.pt",
+      "spacetime": 0.2718631625175476,
+      "step": 779,
+      "terminal": 0.4884623885154724,
+      "time": 796.4157121032476
+    },
+    {
+      "file": "trajectory_0000781.pt",
+      "spacetime": 0.2640843689441681,
+      "step": 781,
+      "terminal": 0.4682905077934265,
+      "time": 798.5480203777552
+    },
+    {
+      "file": "checkpoint_0000783.pt",
+      "spacetime": 0.2750686705112457,
+      "step": 783,
+      "terminal": 0.5032950639724731,
+      "time": 800.7348895855248
+    },
+    {
+      "file": "trajectory_0000785.pt",
+      "spacetime": 0.2572996914386749,
+      "step": 785,
+      "terminal": 0.4694826304912567,
+      "time": 802.7951220013201
+    },
+    {
+      "file": "trajectory_0000787.pt",
+      "spacetime": 0.2650247812271118,
+      "step": 787,
+      "terminal": 0.4870266318321228,
+      "time": 804.7540518678725
+    },
+    {
+      "file": "trajectory_0000789.pt",
+      "spacetime": 0.2700290083885193,
+      "step": 789,
+      "terminal": 0.4966614544391632,
+      "time": 806.8209422081709
+    },
+    {
+      "file": "trajectory_0000791.pt",
+      "spacetime": 0.2564558684825897,
+      "step": 791,
+      "terminal": 0.46907150745391846,
+      "time": 808.963861528784
+    },
+    {
+      "file": "checkpoint_0000793.pt",
+      "spacetime": 0.2808298170566559,
+      "step": 793,
+      "terminal": 0.5219054222106934,
+      "time": 811.0678245201707
+    },
+    {
+      "file": "trajectory_0000794.pt",
+      "spacetime": 0.29320380091667175,
+      "step": 794,
+      "terminal": 0.5446388125419617,
+      "time": 812.1432620547712
+    },
+    {
+      "file": "trajectory_0000796.pt",
+      "spacetime": 0.2607709765434265,
+      "step": 796,
+      "terminal": 0.4681689143180847,
+      "time": 814.2207420915365
+    },
+    {
+      "file": "trajectory_0000798.pt",
+      "spacetime": 0.27579790353775024,
+      "step": 798,
+      "terminal": 0.5154774188995361,
+      "time": 816.2433039546013
+    },
+    {
+      "file": "trajectory_0000800.pt",
+      "spacetime": 0.2627715468406677,
+      "step": 800,
+      "terminal": 0.4888294041156769,
+      "time": 818.3599596954882
+    },
+    {
+      "file": "checkpoint_0000802.pt",
+      "spacetime": 0.26251739263534546,
+      "step": 802,
+      "terminal": 0.4871518015861511,
+      "time": 820.4594083055854
+    },
+    {
+      "file": "trajectory_0000804.pt",
+      "spacetime": 0.2658187448978424,
+      "step": 804,
+      "terminal": 0.5060356855392456,
+      "time": 822.4999956153333
+    },
+    {
+      "file": "trajectory_0000806.pt",
+      "spacetime": 0.25124508142471313,
+      "step": 806,
+      "terminal": 0.4731261730194092,
+      "time": 824.4810316637158
+    },
+    {
+      "file": "trajectory_0000808.pt",
+      "spacetime": 0.26738375425338745,
+      "step": 808,
+      "terminal": 0.5002813339233398,
+      "time": 826.5990425683558
+    },
+    {
+      "file": "trajectory_0000810.pt",
+      "spacetime": 0.25221142172813416,
+      "step": 810,
+      "terminal": 0.4611899256706238,
+      "time": 828.5772954188287
+    },
+    {
+      "file": "checkpoint_0000812.pt",
+      "spacetime": 0.258905291557312,
+      "step": 812,
+      "terminal": 0.48949307203292847,
+      "time": 830.6572473309934
+    },
+    {
+      "file": "trajectory_0000814.pt",
+      "spacetime": 0.25295132398605347,
+      "step": 814,
+      "terminal": 0.4813174903392792,
+      "time": 832.6485808081925
+    },
+    {
+      "file": "trajectory_0000816.pt",
+      "spacetime": 0.24253568053245544,
+      "step": 816,
+      "terminal": 0.4618859589099884,
+      "time": 834.7973956689239
+    },
+    {
+      "file": "trajectory_0000818.pt",
+      "spacetime": 0.2704814076423645,
+      "step": 818,
+      "terminal": 0.5048941373825073,
+      "time": 836.8775848224759
+    },
+    {
+      "file": "trajectory_0000820.pt",
+      "spacetime": 0.2483891248703003,
+      "step": 820,
+      "terminal": 0.42707911133766174,
+      "time": 839.0264198258519
+    },
+    {
+      "file": "checkpoint_0000821.pt",
+      "spacetime": 0.24747389554977417,
+      "step": 821,
+      "terminal": 0.44118624925613403,
+      "time": 840.0457243397832
+    },
+    {
+      "file": "trajectory_0000823.pt",
+      "spacetime": 0.3219064474105835,
+      "step": 823,
+      "terminal": 0.6209262609481812,
+      "time": 842.0930995121598
+    },
+    {
+      "file": "trajectory_0000825.pt",
+      "spacetime": 0.2483755350112915,
+      "step": 825,
+      "terminal": 0.46514376997947693,
+      "time": 844.126268312335
+    },
+    {
+      "file": "trajectory_0000827.pt",
+      "spacetime": 0.2901490330696106,
+      "step": 827,
+      "terminal": 0.5741272568702698,
+      "time": 846.2503445111215
+    },
+    {
+      "file": "trajectory_0000829.pt",
+      "spacetime": 0.28165265917778015,
+      "step": 829,
+      "terminal": 0.5609623789787292,
+      "time": 848.2547401897609
+    },
+    {
+      "file": "checkpoint_0000831.pt",
+      "spacetime": 0.25388696789741516,
+      "step": 831,
+      "terminal": 0.48269787430763245,
+      "time": 850.2835468575358
+    },
+    {
+      "file": "trajectory_0000833.pt",
+      "spacetime": 0.3199574947357178,
+      "step": 833,
+      "terminal": 0.6322551369667053,
+      "time": 852.3444087281823
+    },
+    {
+      "file": "trajectory_0000835.pt",
+      "spacetime": 0.23973017930984497,
+      "step": 835,
+      "terminal": 0.46313753724098206,
+      "time": 854.4445298947394
+    },
+    {
+      "file": "trajectory_0000837.pt",
+      "spacetime": 0.2504371404647827,
+      "step": 837,
+      "terminal": 0.4848318099975586,
+      "time": 856.5099584385753
+    },
+    {
+      "file": "trajectory_0000839.pt",
+      "spacetime": 0.27688756585121155,
+      "step": 839,
+      "terminal": 0.53070068359375,
+      "time": 858.618544857949
+    },
+    {
+      "file": "checkpoint_0000841.pt",
+      "spacetime": 0.23856759071350098,
+      "step": 841,
+      "terminal": 0.44146230816841125,
+      "time": 860.6757417544723
+    },
+    {
+      "file": "trajectory_0000843.pt",
+      "spacetime": 0.2667693495750427,
+      "step": 843,
+      "terminal": 0.5241302251815796,
+      "time": 862.6863721497357
+    },
+    {
+      "file": "trajectory_0000845.pt",
+      "spacetime": 0.2515915632247925,
+      "step": 845,
+      "terminal": 0.49928271770477295,
+      "time": 864.6289236322045
+    },
+    {
+      "file": "trajectory_0000847.pt",
+      "spacetime": 0.24135562777519226,
+      "step": 847,
+      "terminal": 0.4624071419239044,
+      "time": 866.7646630145609
+    },
+    {
+      "file": "trajectory_0000849.pt",
+      "spacetime": 0.2902604043483734,
+      "step": 849,
+      "terminal": 0.5702141523361206,
+      "time": 868.8040510490537
+    },
+    {
+      "file": "checkpoint_0000851.pt",
+      "spacetime": 0.2433459460735321,
+      "step": 851,
+      "terminal": 0.474021852016449,
+      "time": 870.7924091033638
+    },
+    {
+      "file": "trajectory_0000853.pt",
+      "spacetime": 0.29555025696754456,
+      "step": 853,
+      "terminal": 0.5983379483222961,
+      "time": 872.8000561483204
+    },
+    {
+      "file": "trajectory_0000855.pt",
+      "spacetime": 0.2496536672115326,
+      "step": 855,
+      "terminal": 0.49890249967575073,
+      "time": 874.945853471756
+    },
+    {
+      "file": "trajectory_0000856.pt",
+      "spacetime": 0.24459205567836761,
+      "step": 856,
+      "terminal": 0.47146692872047424,
+      "time": 876.0028090886772
+    },
+    {
+      "file": "trajectory_0000858.pt",
+      "spacetime": 0.2941420376300812,
+      "step": 858,
+      "terminal": 0.5749005079269409,
+      "time": 878.1880880966783
+    },
+    {
+      "file": "checkpoint_0000860.pt",
+      "spacetime": 0.24776534736156464,
+      "step": 860,
+      "terminal": 0.4829709827899933,
+      "time": 880.289160553366
+    },
+    {
+      "file": "trajectory_0000862.pt",
+      "spacetime": 0.24870343506336212,
+      "step": 862,
+      "terminal": 0.49627095460891724,
+      "time": 882.3985355347395
+    },
+    {
+      "file": "trajectory_0000864.pt",
+      "spacetime": 0.2673422694206238,
+      "step": 864,
+      "terminal": 0.5314028263092041,
+      "time": 884.4285861998796
+    },
+    {
+      "file": "trajectory_0000866.pt",
+      "spacetime": 0.23609547317028046,
+      "step": 866,
+      "terminal": 0.43696168065071106,
+      "time": 886.4698459394276
+    },
+    {
+      "file": "trajectory_0000868.pt",
+      "spacetime": 0.292160302400589,
+      "step": 868,
+      "terminal": 0.5683699250221252,
+      "time": 888.5856630802155
+    },
+    {
+      "file": "checkpoint_0000870.pt",
+      "spacetime": 0.23148690164089203,
+      "step": 870,
+      "terminal": 0.4461963474750519,
+      "time": 890.6669573076069
+    },
+    {
+      "file": "trajectory_0000872.pt",
+      "spacetime": 0.2575846314430237,
+      "step": 872,
+      "terminal": 0.5001073479652405,
+      "time": 892.6985397040844
+    },
+    {
+      "file": "trajectory_0000874.pt",
+      "spacetime": 0.2467583864927292,
+      "step": 874,
+      "terminal": 0.500120997428894,
+      "time": 894.7768101282418
+    },
+    {
+      "file": "trajectory_0000876.pt",
+      "spacetime": 0.24255508184432983,
+      "step": 876,
+      "terminal": 0.4969182312488556,
+      "time": 896.7615804634988
+    },
+    {
+      "file": "trajectory_0000878.pt",
+      "spacetime": 0.27354466915130615,
+      "step": 878,
+      "terminal": 0.5603893399238586,
+      "time": 898.7516692467034
+    },
+    {
+      "file": "checkpoint_0000880.pt",
+      "spacetime": 0.2351769506931305,
+      "step": 880,
+      "terminal": 0.45374158024787903,
+      "time": 900.7334168627858
+    },
+    {
+      "file": "trajectory_0000882.pt",
+      "spacetime": 0.26685577630996704,
+      "step": 882,
+      "terminal": 0.5423280000686646,
+      "time": 902.8980702236295
+    },
+    {
+      "file": "trajectory_0000884.pt",
+      "spacetime": 0.2413509041070938,
+      "step": 884,
+      "terminal": 0.5015175938606262,
+      "time": 904.89700075984
+    },
+    {
+      "file": "trajectory_0000886.pt",
+      "spacetime": 0.23435690999031067,
+      "step": 886,
+      "terminal": 0.4847191274166107,
+      "time": 906.9201473630965
+    },
+    {
+      "file": "trajectory_0000888.pt",
+      "spacetime": 0.24181994795799255,
+      "step": 888,
+      "terminal": 0.49183031916618347,
+      "time": 909.0241011977196
+    },
+    {
+      "file": "checkpoint_0000889.pt",
+      "spacetime": 0.25356176495552063,
+      "step": 889,
+      "terminal": 0.5179218649864197,
+      "time": 910.0090223327279
+    },
+    {
+      "file": "trajectory_0000891.pt",
+      "spacetime": 0.23695532977581024,
+      "step": 891,
+      "terminal": 0.47552284598350525,
+      "time": 912.0069324560463
+    },
+    {
+      "file": "trajectory_0000893.pt",
+      "spacetime": 0.26057717204093933,
+      "step": 893,
+      "terminal": 0.5290758609771729,
+      "time": 914.0303745642304
+    },
+    {
+      "file": "trajectory_0000895.pt",
+      "spacetime": 0.23197409510612488,
+      "step": 895,
+      "terminal": 0.48957568407058716,
+      "time": 916.0692999139428
+    },
+    {
+      "file": "trajectory_0000897.pt",
+      "spacetime": 0.2521057724952698,
+      "step": 897,
+      "terminal": 0.5194548964500427,
+      "time": 918.0563018620014
+    },
+    {
+      "file": "checkpoint_0000899.pt",
+      "spacetime": 0.24725325405597687,
+      "step": 899,
+      "terminal": 0.4897056818008423,
+      "time": 920.1158648878336
+    },
+    {
+      "file": "trajectory_0000901.pt",
+      "spacetime": 0.23323063552379608,
+      "step": 901,
+      "terminal": 0.4514957070350647,
+      "time": 922.2360907532275
+    },
+    {
+      "file": "trajectory_0000903.pt",
+      "spacetime": 0.24460631608963013,
+      "step": 903,
+      "terminal": 0.4869333505630493,
+      "time": 924.296226888895
+    },
+    {
+      "file": "trajectory_0000905.pt",
+      "spacetime": 0.24879086017608643,
+      "step": 905,
+      "terminal": 0.5129700303077698,
+      "time": 926.3527367003262
+    },
+    {
+      "file": "trajectory_0000907.pt",
+      "spacetime": 0.23232939839363098,
+      "step": 907,
+      "terminal": 0.47241002321243286,
+      "time": 928.4669533707201
+    },
+    {
+      "file": "checkpoint_0000909.pt",
+      "spacetime": 0.2638273239135742,
+      "step": 909,
+      "terminal": 0.5396159291267395,
+      "time": 930.6005190871656
+    },
+    {
+      "file": "trajectory_0000911.pt",
+      "spacetime": 0.2321585714817047,
+      "step": 911,
+      "terminal": 0.44664233922958374,
+      "time": 932.7385171987116
+    },
+    {
+      "file": "trajectory_0000913.pt",
+      "spacetime": 0.24573683738708496,
+      "step": 913,
+      "terminal": 0.4872704744338989,
+      "time": 934.8967353962362
+    },
+    {
+      "file": "trajectory_0000915.pt",
+      "spacetime": 0.23651829361915588,
+      "step": 915,
+      "terminal": 0.4952426254749298,
+      "time": 936.8889492973685
+    },
+    {
+      "file": "trajectory_0000917.pt",
+      "spacetime": 0.22336187958717346,
+      "step": 917,
+      "terminal": 0.4724511504173279,
+      "time": 938.9611824974418
+    },
+    {
+      "file": "checkpoint_0000919.pt",
+      "spacetime": 0.255806028842926,
+      "step": 919,
+      "terminal": 0.5307012796401978,
+      "time": 940.9611905291677
+    },
+    {
+      "file": "trajectory_0000920.pt",
+      "spacetime": 0.22016207873821259,
+      "step": 920,
+      "terminal": 0.4578758478164673,
+      "time": 942.0278169512749
+    },
+    {
+      "file": "trajectory_0000922.pt",
+      "spacetime": 0.22409914433956146,
+      "step": 922,
+      "terminal": 0.4597383141517639,
+      "time": 944.0301231257617
+    },
+    {
+      "file": "trajectory_0000925.pt",
+      "spacetime": 0.22895270586013794,
+      "step": 925,
+      "terminal": 0.45448917150497437,
+      "time": 946.9664590097964
+    },
+    {
+      "file": "trajectory_0000926.pt",
+      "spacetime": 0.22979559004306793,
+      "step": 926,
+      "terminal": 0.4489092230796814,
+      "time": 948.0236810259521
+    },
+    {
+      "file": "checkpoint_0000928.pt",
+      "spacetime": 0.2747328579425812,
+      "step": 928,
+      "terminal": 0.5665703415870667,
+      "time": 950.1318780854344
+    },
+    {
+      "file": "trajectory_0000930.pt",
+      "spacetime": 0.23227547109127045,
+      "step": 930,
+      "terminal": 0.49243947863578796,
+      "time": 952.1477029770613
+    },
+    {
+      "file": "trajectory_0000932.pt",
+      "spacetime": 0.25726673007011414,
+      "step": 932,
+      "terminal": 0.5446028709411621,
+      "time": 954.2674439512193
+    },
+    {
+      "file": "trajectory_0000934.pt",
+      "spacetime": 0.2351934313774109,
+      "step": 934,
+      "terminal": 0.47627314925193787,
+      "time": 956.3495480678976
+    },
+    {
+      "file": "trajectory_0000936.pt",
+      "spacetime": 0.25096774101257324,
+      "step": 936,
+      "terminal": 0.49923422932624817,
+      "time": 958.2960460148752
+    },
+    {
+      "file": "checkpoint_0000938.pt",
+      "spacetime": 0.23194409906864166,
+      "step": 938,
+      "terminal": 0.470645010471344,
+      "time": 960.2781222499907
+    },
+    {
+      "file": "trajectory_0000940.pt",
+      "spacetime": 0.2292950451374054,
+      "step": 940,
+      "terminal": 0.495893657207489,
+      "time": 962.445319391787
+    },
+    {
+      "file": "trajectory_0000942.pt",
+      "spacetime": 0.23830367624759674,
+      "step": 942,
+      "terminal": 0.5088361501693726,
+      "time": 964.5061823353171
+    },
+    {
+      "file": "trajectory_0000944.pt",
+      "spacetime": 0.2245030552148819,
+      "step": 944,
+      "terminal": 0.4620097875595093,
+      "time": 966.6007011570036
+    },
+    {
+      "file": "trajectory_0000946.pt",
+      "spacetime": 0.2372739166021347,
+      "step": 946,
+      "terminal": 0.4883185625076294,
+      "time": 968.6783768571913
+    },
+    {
+      "file": "checkpoint_0000948.pt",
+      "spacetime": 0.22250626981258392,
+      "step": 948,
+      "terminal": 0.4740312695503235,
+      "time": 970.7743008732796
+    },
+    {
+      "file": "trajectory_0000950.pt",
+      "spacetime": 0.2589412033557892,
+      "step": 950,
+      "terminal": 0.5557041168212891,
+      "time": 972.8271736390889
+    },
+    {
+      "file": "trajectory_0000952.pt",
+      "spacetime": 0.22638629376888275,
+      "step": 952,
+      "terminal": 0.49728891253471375,
+      "time": 974.8282980546355
+    },
+    {
+      "file": "trajectory_0000954.pt",
+      "spacetime": 0.23066945374011993,
+      "step": 954,
+      "terminal": 0.5047081708908081,
+      "time": 977.0251839756966
+    },
+    {
+      "file": "trajectory_0000955.pt",
+      "spacetime": 0.27384474873542786,
+      "step": 955,
+      "terminal": 0.5862255692481995,
+      "time": 978.1246279999614
+    },
+    {
+      "file": "checkpoint_0000957.pt",
+      "spacetime": 0.22370624542236328,
+      "step": 957,
+      "terminal": 0.46842727065086365,
+      "time": 980.2671736851335
+    },
+    {
+      "file": "trajectory_0000959.pt",
+      "spacetime": 0.23046167194843292,
+      "step": 959,
+      "terminal": 0.48557358980178833,
+      "time": 982.3004747219384
+    },
+    {
+      "file": "trajectory_0000961.pt",
+      "spacetime": 0.2336445450782776,
+      "step": 961,
+      "terminal": 0.4940919578075409,
+      "time": 984.4379446841776
+    },
+    {
+      "file": "trajectory_0000963.pt",
+      "spacetime": 0.21801596879959106,
+      "step": 963,
+      "terminal": 0.4613080620765686,
+      "time": 986.4499248750508
+    },
+    {
+      "file": "trajectory_0000965.pt",
+      "spacetime": 0.2554273307323456,
+      "step": 965,
+      "terminal": 0.5280038714408875,
+      "time": 988.5173304602504
+    },
+    {
+      "file": "checkpoint_0000967.pt",
+      "spacetime": 0.21148814260959625,
+      "step": 967,
+      "terminal": 0.42412710189819336,
+      "time": 990.59279576689
+    },
+    {
+      "file": "trajectory_0000969.pt",
+      "spacetime": 0.23015445470809937,
+      "step": 969,
+      "terminal": 0.4930511713027954,
+      "time": 992.7282437868416
+    },
+    {
+      "file": "trajectory_0000971.pt",
+      "spacetime": 0.22190707921981812,
+      "step": 971,
+      "terminal": 0.47908666729927063,
+      "time": 994.7603927776217
+    },
+    {
+      "file": "trajectory_0000973.pt",
+      "spacetime": 0.21102413535118103,
+      "step": 973,
+      "terminal": 0.43031561374664307,
+      "time": 996.8358528390527
+    },
+    {
+      "file": "trajectory_0000975.pt",
+      "spacetime": 0.2571895718574524,
+      "step": 975,
+      "terminal": 0.5441038012504578,
+      "time": 998.8793753907084
+    },
+    {
+      "file": "checkpoint_0000977.pt",
+      "spacetime": 0.20652218163013458,
+      "step": 977,
+      "terminal": 0.4566921889781952,
+      "time": 1000.9309184364974
+    },
+    {
+      "file": "trajectory_0000978.pt",
+      "spacetime": 0.2167879194021225,
+      "step": 978,
+      "terminal": 0.4893295466899872,
+      "time": 1002.0003155618906
+    },
+    {
+      "file": "trajectory_0000980.pt",
+      "spacetime": 0.24011455476284027,
+      "step": 980,
+      "terminal": 0.5211319923400879,
+      "time": 1004.0840904451907
+    },
+    {
+      "file": "trajectory_0000982.pt",
+      "spacetime": 0.20509891211986542,
+      "step": 982,
+      "terminal": 0.42028889060020447,
+      "time": 1006.1127473451197
+    },
+    {
+      "file": "trajectory_0000984.pt",
+      "spacetime": 0.24333307147026062,
+      "step": 984,
+      "terminal": 0.5243140459060669,
+      "time": 1008.0849707238376
+    },
+    {
+      "file": "checkpoint_0000986.pt",
+      "spacetime": 0.21868251264095306,
+      "step": 986,
+      "terminal": 0.4940289855003357,
+      "time": 1010.2646348550916
+    },
+    {
+      "file": "trajectory_0000988.pt",
+      "spacetime": 0.20522865653038025,
+      "step": 988,
+      "terminal": 0.4569876492023468,
+      "time": 1012.3920031264424
+    },
+    {
+      "file": "trajectory_0000990.pt",
+      "spacetime": 0.24176302552223206,
+      "step": 990,
+      "terminal": 0.5068086981773376,
+      "time": 1014.4465168900788
+    },
+    {
+      "file": "trajectory_0000992.pt",
+      "spacetime": 0.2051098793745041,
+      "step": 992,
+      "terminal": 0.43089979887008667,
+      "time": 1016.6466143131256
+    },
+    {
+      "file": "trajectory_0000994.pt",
+      "spacetime": 0.22841812670230865,
+      "step": 994,
+      "terminal": 0.4955329895019531,
+      "time": 1018.641149930656
+    },
+    {
+      "file": "checkpoint_0000996.pt",
+      "spacetime": 0.24063923954963684,
+      "step": 996,
+      "terminal": 0.5215536952018738,
+      "time": 1020.7444453127682
+    },
+    {
+      "file": "trajectory_0000998.pt",
+      "spacetime": 0.20182394981384277,
+      "step": 998,
+      "terminal": 0.4163588583469391,
+      "time": 1022.7916990406811
+    },
+    {
+      "file": "trajectory_0001000.pt",
+      "spacetime": 0.27176693081855774,
+      "step": 1000,
+      "terminal": 0.573578417301178,
+      "time": 1024.9262913912535
+    },
+    {
+      "file": "trajectory_0001002.pt",
+      "spacetime": 0.20453010499477386,
+      "step": 1002,
+      "terminal": 0.43838366866111755,
+      "time": 1026.9913172759116
+    },
+    {
+      "file": "trajectory_0001004.pt",
+      "spacetime": 0.24744464457035065,
+      "step": 1004,
+      "terminal": 0.535415530204773,
+      "time": 1029.0097725689411
+    },
+    {
+      "file": "checkpoint_0001005.pt",
+      "spacetime": 0.25727102160453796,
+      "step": 1005,
+      "terminal": 0.5491499900817871,
+      "time": 1030.9818537980318
+    },
+    {
+      "file": "trajectory_0001006.pt",
+      "spacetime": 0.21866373717784882,
+      "step": 1006,
+      "terminal": 0.47153717279434204,
+      "time": 1032.0214448980987
+    },
+    {
+      "file": "trajectory_0001008.pt",
+      "spacetime": 0.21410952508449554,
+      "step": 1008,
+      "terminal": 0.45569494366645813,
+      "time": 1034.0620806403458
+    },
+    {
+      "file": "trajectory_0001010.pt",
+      "spacetime": 0.2441110908985138,
+      "step": 1010,
+      "terminal": 0.5193478465080261,
+      "time": 1036.1249916255474
+    },
+    {
+      "file": "trajectory_0001012.pt",
+      "spacetime": 0.20257557928562164,
+      "step": 1012,
+      "terminal": 0.44297727942466736,
+      "time": 1038.0906868726015
+    },
+    {
+      "file": "checkpoint_0001014.pt",
+      "spacetime": 0.2336726188659668,
+      "step": 1014,
+      "terminal": 0.5143171548843384,
+      "time": 1040.1413486413658
+    },
+    {
+      "file": "trajectory_0001016.pt",
+      "spacetime": 0.21241925656795502,
+      "step": 1016,
+      "terminal": 0.4714867174625397,
+      "time": 1042.2373082898557
+    },
+    {
+      "file": "trajectory_0001018.pt",
+      "spacetime": 0.22193355858325958,
+      "step": 1018,
+      "terminal": 0.48237359523773193,
+      "time": 1044.3036803230643
+    },
+    {
+      "file": "trajectory_0001020.pt",
+      "spacetime": 0.20383615791797638,
+      "step": 1020,
+      "terminal": 0.4424063265323639,
+      "time": 1046.3029933460057
+    },
+    {
+      "file": "trajectory_0001022.pt",
+      "spacetime": 0.221928671002388,
+      "step": 1022,
+      "terminal": 0.47611668705940247,
+      "time": 1048.3624720796943
+    },
+    {
+      "file": "checkpoint_0001024.pt",
+      "spacetime": 0.22568129003047943,
+      "step": 1024,
+      "terminal": 0.49206095933914185,
+      "time": 1050.4386105202138
+    },
+    {
+      "file": "trajectory_0001026.pt",
+      "spacetime": 0.21459630131721497,
+      "step": 1026,
+      "terminal": 0.487112820148468,
+      "time": 1052.5408331118524
+    },
+    {
+      "file": "trajectory_0001028.pt",
+      "spacetime": 0.22908692061901093,
+      "step": 1028,
+      "terminal": 0.5076892971992493,
+      "time": 1054.6958543770015
+    },
+    {
+      "file": "trajectory_0001030.pt",
+      "spacetime": 0.20508308708667755,
+      "step": 1030,
+      "terminal": 0.4444984197616577,
+      "time": 1056.8051391616464
+    },
+    {
+      "file": "trajectory_0001032.pt",
+      "spacetime": 0.22204062342643738,
+      "step": 1032,
+      "terminal": 0.4826350510120392,
+      "time": 1058.9793703518808
+    },
+    {
+      "file": "checkpoint_0001033.pt",
+      "spacetime": 0.22234117984771729,
+      "step": 1033,
+      "terminal": 0.48456934094429016,
+      "time": 1060.0150321908295
+    },
+    {
+      "file": "trajectory_0001035.pt",
+      "spacetime": 0.2038145214319229,
+      "step": 1035,
+      "terminal": 0.4560111165046692,
+      "time": 1062.0331592671573
+    },
+    {
+      "file": "trajectory_0001037.pt",
+      "spacetime": 0.21035119891166687,
+      "step": 1037,
+      "terminal": 0.4690712094306946,
+      "time": 1064.0439089536667
+    },
+    {
+      "file": "trajectory_0001039.pt",
+      "spacetime": 0.20552672445774078,
+      "step": 1039,
+      "terminal": 0.45836830139160156,
+      "time": 1066.1678944192827
+    },
+    {
+      "file": "trajectory_0001041.pt",
+      "spacetime": 0.20486308634281158,
+      "step": 1041,
+      "terminal": 0.465537428855896,
+      "time": 1068.3232535906136
+    },
+    {
+      "file": "checkpoint_0001043.pt",
+      "spacetime": 0.22192013263702393,
+      "step": 1043,
+      "terminal": 0.4987877905368805,
+      "time": 1070.4992223866284
+    },
+    {
+      "file": "trajectory_0001045.pt",
+      "spacetime": 0.19960474967956543,
+      "step": 1045,
+      "terminal": 0.43499094247817993,
+      "time": 1072.6205593124032
+    },
+    {
+      "file": "trajectory_0001047.pt",
+      "spacetime": 0.22335687279701233,
+      "step": 1047,
+      "terminal": 0.47980421781539917,
+      "time": 1074.7269632704556
+    },
+    {
+      "file": "trajectory_0001049.pt",
+      "spacetime": 0.187754288315773,
+      "step": 1049,
+      "terminal": 0.4114404320716858,
+      "time": 1076.8266204968095
+    },
+    {
+      "file": "trajectory_0001051.pt",
+      "spacetime": 0.2147873193025589,
+      "step": 1051,
+      "terminal": 0.48046791553497314,
+      "time": 1079.002858389169
+    },
+    {
+      "file": "checkpoint_0001052.pt",
+      "spacetime": 0.2214984893798828,
+      "step": 1052,
+      "terminal": 0.4937624931335449,
+      "time": 1080.0618985928595
+    },
+    {
+      "file": "trajectory_0001054.pt",
+      "spacetime": 0.18679478764533997,
+      "step": 1054,
+      "terminal": 0.42424967885017395,
+      "time": 1082.2450662516057
+    },
+    {
+      "file": "trajectory_0001056.pt",
+      "spacetime": 0.2417544573545456,
+      "step": 1056,
+      "terminal": 0.5286638140678406,
+      "time": 1084.2773570977151
+    },
+    {
+      "file": "trajectory_0001058.pt",
+      "spacetime": 0.1833566129207611,
+      "step": 1058,
+      "terminal": 0.40656816959381104,
+      "time": 1086.4481946006417
+    },
+    {
+      "file": "trajectory_0001060.pt",
+      "spacetime": 0.2107205092906952,
+      "step": 1060,
+      "terminal": 0.45507824420928955,
+      "time": 1088.5441954098642
+    },
+    {
+      "file": "checkpoint_0001062.pt",
+      "spacetime": 0.19785040616989136,
+      "step": 1062,
+      "terminal": 0.4447261393070221,
+      "time": 1090.6833280473948
+    },
+    {
+      "file": "trajectory_0001064.pt",
+      "spacetime": 0.18440327048301697,
+      "step": 1064,
+      "terminal": 0.42569446563720703,
+      "time": 1092.866116631776
+    },
+    {
+      "file": "trajectory_0001066.pt",
+      "spacetime": 0.22609774768352509,
+      "step": 1066,
+      "terminal": 0.4949119985103607,
+      "time": 1095.0144094750285
+    },
+    {
+      "file": "trajectory_0001067.pt",
+      "spacetime": 0.19788365066051483,
+      "step": 1067,
+      "terminal": 0.43480226397514343,
+      "time": 1096.0671793334186
+    },
+    {
+      "file": "trajectory_0001069.pt",
+      "spacetime": 0.19041253626346588,
+      "step": 1069,
+      "terminal": 0.41406044363975525,
+      "time": 1098.1683975830674
+    },
+    {
+      "file": "checkpoint_0001071.pt",
+      "spacetime": 0.21499882638454437,
+      "step": 1071,
+      "terminal": 0.4769498407840729,
+      "time": 1100.148096870631
+    },
+    {
+      "file": "trajectory_0001073.pt",
+      "spacetime": 0.19178472459316254,
+      "step": 1073,
+      "terminal": 0.4361937940120697,
+      "time": 1102.3285209052265
+    },
+    {
+      "file": "trajectory_0001075.pt",
+      "spacetime": 0.22459344565868378,
+      "step": 1075,
+      "terminal": 0.48605167865753174,
+      "time": 1104.4601017162204
+    },
+    {
+      "file": "trajectory_0001077.pt",
+      "spacetime": 0.18478238582611084,
+      "step": 1077,
+      "terminal": 0.40242451429367065,
+      "time": 1106.545316632837
+    },
+    {
+      "file": "trajectory_0001079.pt",
+      "spacetime": 0.21406956017017365,
+      "step": 1079,
+      "terminal": 0.47567877173423767,
+      "time": 1108.700282484293
+    },
+    {
+      "file": "checkpoint_0001081.pt",
+      "spacetime": 0.1989852488040924,
+      "step": 1081,
+      "terminal": 0.4632759988307953,
+      "time": 1110.7552468180656
+    },
+    {
+      "file": "trajectory_0001083.pt",
+      "spacetime": 0.187459334731102,
+      "step": 1083,
+      "terminal": 0.4254510998725891,
+      "time": 1112.8057471849024
+    },
+    {
+      "file": "trajectory_0001085.pt",
+      "spacetime": 0.1846718192100525,
+      "step": 1085,
+      "terminal": 0.39503416419029236,
+      "time": 1114.9467984475195
+    },
+    {
+      "file": "trajectory_0001086.pt",
+      "spacetime": 0.17639854550361633,
+      "step": 1086,
+      "terminal": 0.37623655796051025,
+      "time": 1116.0273774825037
+    },
+    {
+      "file": "trajectory_0001088.pt",
+      "spacetime": 0.20851120352745056,
+      "step": 1088,
+      "terminal": 0.46481072902679443,
+      "time": 1118.1875542774796
+    },
+    {
+      "file": "checkpoint_0001090.pt",
+      "spacetime": 0.18873292207717896,
+      "step": 1090,
+      "terminal": 0.4534340500831604,
+      "time": 1120.3194663189352
+    },
+    {
+      "file": "trajectory_0001092.pt",
+      "spacetime": 0.1889668107032776,
+      "step": 1092,
+      "terminal": 0.4346963167190552,
+      "time": 1122.3946569599211
+    },
+    {
+      "file": "trajectory_0001094.pt",
+      "spacetime": 0.1930498629808426,
+      "step": 1094,
+      "terminal": 0.4145536422729492,
+      "time": 1124.3824217915535
+    },
+    {
+      "file": "trajectory_0001096.pt",
+      "spacetime": 0.1876469999551773,
+      "step": 1096,
+      "terminal": 0.40465572476387024,
+      "time": 1126.4979000873864
+    },
+    {
+      "file": "trajectory_0001098.pt",
+      "spacetime": 0.19161240756511688,
+      "step": 1098,
+      "terminal": 0.4443329870700836,
+      "time": 1128.6658069752157
+    },
+    {
+      "file": "checkpoint_0001100.pt",
+      "spacetime": 0.18772777915000916,
+      "step": 1100,
+      "terminal": 0.44492214918136597,
+      "time": 1130.7401219271123
+    },
+    {
+      "file": "trajectory_0001102.pt",
+      "spacetime": 0.2015221267938614,
+      "step": 1102,
+      "terminal": 0.46004924178123474,
+      "time": 1132.9083143509924
+    },
+    {
+      "file": "trajectory_0001104.pt",
+      "spacetime": 0.17825283110141754,
+      "step": 1104,
+      "terminal": 0.4008605182170868,
+      "time": 1135.0601027719676
+    },
+    {
+      "file": "trajectory_0001105.pt",
+      "spacetime": 0.1858430653810501,
+      "step": 1105,
+      "terminal": 0.41778671741485596,
+      "time": 1136.1583792977035
+    },
+    {
+      "file": "trajectory_0001107.pt",
+      "spacetime": 0.18247102200984955,
+      "step": 1107,
+      "terminal": 0.4176933765411377,
+      "time": 1138.3069508187473
+    },
+    {
+      "file": "checkpoint_0001109.pt",
+      "spacetime": 0.20003889501094818,
+      "step": 1109,
+      "terminal": 0.4510602355003357,
+      "time": 1140.4745712317526
+    },
+    {
+      "file": "trajectory_0001111.pt",
+      "spacetime": 0.1805916279554367,
+      "step": 1111,
+      "terminal": 0.40845948457717896,
+      "time": 1142.6528658606112
+    },
+    {
+      "file": "trajectory_0001113.pt",
+      "spacetime": 0.19338607788085938,
+      "step": 1113,
+      "terminal": 0.4317021369934082,
+      "time": 1144.6972768455744
+    },
+    {
+      "file": "trajectory_0001115.pt",
+      "spacetime": 0.18721213936805725,
+      "step": 1115,
+      "terminal": 0.42728278040885925,
+      "time": 1146.8493470661342
+    },
+    {
+      "file": "trajectory_0001117.pt",
+      "spacetime": 0.18678876757621765,
+      "step": 1117,
+      "terminal": 0.4289206862449646,
+      "time": 1149.0005759447813
+    },
+    {
+      "file": "checkpoint_0001118.pt",
+      "spacetime": 0.19733752310276031,
+      "step": 1118,
+      "terminal": 0.44906842708587646,
+      "time": 1150.0767977833748
+    },
+    {
+      "file": "trajectory_0001120.pt",
+      "spacetime": 0.19913551211357117,
+      "step": 1120,
+      "terminal": 0.4528810679912567,
+      "time": 1152.2684995420277
+    },
+    {
+      "file": "trajectory_0001122.pt",
+      "spacetime": 0.17641569674015045,
+      "step": 1122,
+      "terminal": 0.3995087146759033,
+      "time": 1154.4190063774586
+    },
+    {
+      "file": "trajectory_0001124.pt",
+      "spacetime": 0.19064009189605713,
+      "step": 1124,
+      "terminal": 0.423393577337265,
+      "time": 1156.4167187139392
+    },
+    {
+      "file": "trajectory_0001126.pt",
+      "spacetime": 0.18182921409606934,
+      "step": 1126,
+      "terminal": 0.4227040708065033,
+      "time": 1158.4011054709554
+    },
+    {
+      "file": "checkpoint_0001128.pt",
+      "spacetime": 0.17663340270519257,
+      "step": 1128,
+      "terminal": 0.41983455419540405,
+      "time": 1160.4044297970831
+    },
+    {
+      "file": "trajectory_0001130.pt",
+      "spacetime": 0.17759661376476288,
+      "step": 1130,
+      "terminal": 0.4117780327796936,
+      "time": 1162.520849429071
+    },
+    {
+      "file": "trajectory_0001132.pt",
+      "spacetime": 0.17646701633930206,
+      "step": 1132,
+      "terminal": 0.396320641040802,
+      "time": 1164.5924636796117
+    },
+    {
+      "file": "trajectory_0001134.pt",
+      "spacetime": 0.17383842170238495,
+      "step": 1134,
+      "terminal": 0.4005839228630066,
+      "time": 1166.7459367141128
+    },
+    {
+      "file": "trajectory_0001136.pt",
+      "spacetime": 0.17589730024337769,
+      "step": 1136,
+      "terminal": 0.4139757454395294,
+      "time": 1168.8641001917422
+    },
+    {
+      "file": "checkpoint_0001138.pt",
+      "spacetime": 0.1862475723028183,
+      "step": 1138,
+      "terminal": 0.43523719906806946,
+      "time": 1170.9157662317157
+    },
+    {
+      "file": "trajectory_0001139.pt",
+      "spacetime": 0.18385082483291626,
+      "step": 1139,
+      "terminal": 0.4304725229740143,
+      "time": 1172.0391300804913
+    },
+    {
+      "file": "trajectory_0001141.pt",
+      "spacetime": 0.18887269496917725,
+      "step": 1141,
+      "terminal": 0.4247359037399292,
+      "time": 1174.2033149674535
+    },
+    {
+      "file": "trajectory_0001143.pt",
+      "spacetime": 0.1673048883676529,
+      "step": 1143,
+      "terminal": 0.37385207414627075,
+      "time": 1176.3682813830674
+    },
+    {
+      "file": "trajectory_0001145.pt",
+      "spacetime": 0.19849209487438202,
+      "step": 1145,
+      "terminal": 0.44918230175971985,
+      "time": 1178.4464865289629
+    },
+    {
+      "file": "checkpoint_0001147.pt",
+      "spacetime": 0.17486292123794556,
+      "step": 1147,
+      "terminal": 0.41566622257232666,
+      "time": 1180.4892586506903
+    },
+    {
+      "file": "trajectory_0001149.pt",
+      "spacetime": 0.19276805222034454,
+      "step": 1149,
+      "terminal": 0.45412954688072205,
+      "time": 1182.473506320268
+    },
+    {
+      "file": "trajectory_0001151.pt",
+      "spacetime": 0.16644072532653809,
+      "step": 1151,
+      "terminal": 0.3778124451637268,
+      "time": 1184.583800598979
+    },
+    {
+      "file": "trajectory_0001153.pt",
+      "spacetime": 0.19200855493545532,
+      "step": 1153,
+      "terminal": 0.4269450008869171,
+      "time": 1186.7099847458303
+    },
+    {
+      "file": "trajectory_0001155.pt",
+      "spacetime": 0.16743424534797668,
+      "step": 1155,
+      "terminal": 0.3892991840839386,
+      "time": 1188.8684147298336
+    },
+    {
+      "file": "checkpoint_0001157.pt",
+      "spacetime": 0.19834960997104645,
+      "step": 1157,
+      "terminal": 0.462844580411911,
+      "time": 1191.0421935245395
+    },
+    {
+      "file": "trajectory_0001158.pt",
+      "spacetime": 0.22197438776493073,
+      "step": 1158,
+      "terminal": 0.502102792263031,
+      "time": 1192.142165567726
+    },
+    {
+      "file": "trajectory_0001160.pt",
+      "spacetime": 0.16668230295181274,
+      "step": 1160,
+      "terminal": 0.39391326904296875,
+      "time": 1194.2547772824764
+    },
+    {
+      "file": "trajectory_0001162.pt",
+      "spacetime": 0.20666056871414185,
+      "step": 1162,
+      "terminal": 0.4549163281917572,
+      "time": 1196.2605667710304
+    },
+    {
+      "file": "trajectory_0001164.pt",
+      "spacetime": 0.1654307246208191,
+      "step": 1164,
+      "terminal": 0.386262983083725,
+      "time": 1198.3263230472803
+    },
+    {
+      "file": "checkpoint_0001166.pt",
+      "spacetime": 0.1890435814857483,
+      "step": 1166,
+      "terminal": 0.4331730008125305,
+      "time": 1200.5014165192842
+    }
+  ],
+  "source_path": "/work/share/acu722p2q8/zenghang-apolarity-resample-20260914-b94fd9c/cells/wall_ch2d_seed20260920_shared_jet_linear"
+}

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apolarity"
+version = "0.4.0"
+description = "Waring decomposition of derivatives and matched PINN training in PyTorch"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.0,<3", "numpy>=1.23.5"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "sympy>=1.12"]
+
+[tool.setuptools]
+packages = ["torch_pinn"]
+
+[tool.setuptools.package-dir]
+torch_pinn = "experiments/torch_benchmarks/torch_pinn"
+
+[tool.pytest.ini_options]
+testpaths = ["experiments/torch_benchmarks/tests"]
+pythonpath = ["experiments/torch_benchmarks"]

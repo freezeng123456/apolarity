@@ -1,0 +1,121 @@
+{
+  "status": "PASS",
+  "pdf_pages": 18,
+  "algebra_checks": 28,
+  "pde_runs": 30,
+  "paired_seeds": 15,
+  "raw_error_observations": 17998,
+  "copied_source_and_record_files_verified": 612,
+  "fixed_update_appendix_removed": true,
+  "paper_data_protocol": "resampled",
+  "pdf_visual_review": "Final pages 3, 4, 8-12, 15, and 16 visually reviewed following the notation audit. No clipping, overlap, or equation-number changes; PDF retains 18 pages.",
+  "latex_checks": {
+    "undefined_references": false,
+    "undefined_citations": false,
+    "overfull_boxes": false,
+    "duplicate_labels": false
+  },
+  "source_sha256": "08db25e5b14f756698b44bc855ff345d563b272bd5a808a15a2ad2fc0468bd3f",
+  "pdf_sha256": "7efb3790b2b6a54e6d9ca02297e4358c7b95dbf7c5caf3d8a58e12d019a37fa4",
+  "boundary_presentation": "All three PDE settings state their boundary sets directly in the displayed systems using partial Omega and coordinate restrictions. The common Section 4 convention restricts spatial boundary conditions to t in I. Sampling counts, pairing, and constraint-loss averaging are consolidated at the start of Section 4; these definitions no longer depend on Appendix B.",
+  "boundary_revision_checks": {
+    "three_complete_initial_boundary_settings": true,
+    "three_aggregate_penalties": true,
+    "concise_identity_to_proposition_to_derivative_links": true,
+    "explicit_direction_lists_removed": true,
+    "reconstruction_formulas_unchanged": true,
+    "ch_polynomial_identity_expanded_equivalently": true,
+    "constraint_surfaces_explicit_in_appendix": false,
+    "normal_derivative_constraints_equivalent": true,
+    "pde_product_rule_rewrite_equivalent": true,
+    "experiment_rerun_required": false,
+    "numbered_displays_changed": [
+      "eq_num_kdv",
+      "eq_num_quartic_identity",
+      "eq_num_kdv2d",
+      "eq_num_kdv2d_time_identity",
+      "eq_num_ch",
+      "eq_num_ch_symbols"
+    ],
+    "constraint_surfaces_explicit_in_main_equations": true,
+    "sampling_details_consolidated_in_section_4_opening": true,
+    "polynomial_variables_simplified_to_x_y_t": true
+  },
+  "current_revision": "manuscript_notation_consistency_audit",
+  "fixed_partial_table_merge": {
+    "status": "PASS",
+    "unique_target_batch_rows": 10,
+    "columns": 7,
+    "serial_column_removed": true,
+    "serial_comparison_prose_removed": true,
+    "retained_timings_and_paired_speedups_preserved": true,
+    "single_table_in_section_4_1": true,
+    "table_speedup_reference": "nested JVP",
+    "pde_tables_unchanged": true,
+    "generator_updated": true,
+    "reported_output_comparisons": 30,
+    "max_absolute_difference": 1.4551915228366852e-09,
+    "max_relative_l2_difference": 2.152451315851067e-06
+  },
+  "nonblocking_warnings": [
+    "algorithm.sty legacy encoding warning",
+    "Underfull hbox in Section 3.4 opening paragraph"
+  ],
+  "previous_revision": "concise_symbols_and_main_text_boundary_sets",
+  "verification_scope": "This revision audits notation across the main text, algorithms, appendices, and included tables; all 46 numbered displays were checked for preservation under the specified renamings, and references and rendered pages were verified. Earlier numerical verification fields are retained from the resampled-results audit; no new training runs were performed.",
+  "current_revision_checks": {
+    "status": "PASS",
+    "numbered_displays_verified": 46,
+    "renamed_displays": [
+      "eq_pinn_loss",
+      "eq_num_kdv",
+      "eq_num_gploss",
+      "eq_num_kdv2d",
+      "eq_num_kdv2d_loss",
+      "eq_num_ch",
+      "eq_num_ch_loss",
+      "eq_sched_pure",
+      "eq_two_point",
+      "eq_sched_22",
+      "eq_sched_24",
+      "eq_num_throughput"
+    ],
+    "labels_and_references": "PASS",
+    "pages": 18,
+    "pages_with_changed_text": [
+      3,
+      8,
+      9,
+      10,
+      11,
+      12,
+      15,
+      16
+    ],
+    "mathematical_coefficients_and_terms_preserved": true,
+    "visual_reviewed_pages": [
+      3,
+      4,
+      8,
+      9,
+      10,
+      11,
+      12,
+      15,
+      16
+    ],
+    "normal_and_multiindex_symbols_distinct": true,
+    "loss_and_operator_symbols_distinct": true,
+    "polynomial_variable_and_taylor_abbreviation_conventions_explicit": true,
+    "taylor_zero_order_defined": true,
+    "specific_appendix_taylor_orders_explicit": true,
+    "experimental_data_unchanged": true
+  },
+  "previous_revision_checks": {
+    "unchanged_reconstruction_loss_solution_displays": 10,
+    "pure_variable_renamings_verified": 3,
+    "all_labels_preserved": true,
+    "pde_training_or_result_files_modified": false,
+    "experiment_rerun_required": false
+  }
+}

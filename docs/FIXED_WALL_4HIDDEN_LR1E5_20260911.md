@@ -1,0 +1,3 @@
+# Four-hidden-layer restart with constant learning rate 1e-5
+
+User requested a fresh restart of the current four-hidden-layer experiment with learning rate 1e-5. Invoke run_fixed_wall_matrix.py --hidden-layers 4 --lr 1e-5 --out <fresh-root>. Both methods and all three PDEs use the new constant Adam learning rate. Start from the original paired initialization seed20260918; do not resume any trained checkpoint. Preserve four hidden layers of width128 (implementation depth5), batch400, six600-second cells, losses, constraints, evaluation coordinates and other settings from FIXED_WALL_4HIDDEN_20260911.md. Preserve the cancelled lr1e-4 attempt and mark its status; no automatic retries or additional seeds.

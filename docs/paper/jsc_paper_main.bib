@@ -1,0 +1,528 @@
+% ---------------------------------------------------------------------------
+% jsc_paper_main.bib -- bibliography database for jsc_paper_main.tex.
+% Journal names are spelled out and given names are complete, as required by
+% the SIAM reference style used by the manuscript (siamfull.bst).  Entries
+% that are not cited are retained here as background sources for the
+% benchmark suite; BibTeX ignores them.
+% ---------------------------------------------------------------------------
+
+% --- Differentiation of parametric models ----------------------------------
+
+@article{Chiu2022CAN,
+  author  = {Chiu, Pao-Hsiung and Wong, Jian Cheng and Ooi, Chinchun and
+             Dao, My Ha and Ong, Yew-Soon},
+  title   = {{CAN-PINN}: A fast physics-informed neural network based on
+             coupled-automatic--numerical differentiation method},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume  = {395},
+  pages   = {114909},
+  year    = {2022},
+  doi     = {10.1016/j.cma.2022.114909}
+}
+
+@article{Hu2024hte,
+  author  = {Hu, Zheyuan and Shi, Zekun and Karniadakis, George Em and
+             Kawaguchi, Kenji},
+  title   = {{H}utchinson trace estimation for high-dimensional and high-order
+             physics-informed neural networks},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume  = {424},
+  pages   = {116883},
+  year    = {2024},
+  doi     = {10.1016/j.cma.2024.116883}
+}
+
+@inproceedings{He2023,
+  author    = {He, Di and Li, Shanda and Shi, Wenlei and Gao, Xiaotian and
+               Zhang, Jia and Bian, Jiang and Wang, Liwei and Liu, Tie-Yan},
+  title     = {Learning physics-informed neural networks without stacked
+               back-propagation},
+  booktitle = {Proceedings of the 26th International Conference on Artificial
+               Intelligence and Statistics},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {206},
+  pages     = {3034--3047},
+  publisher = {PMLR},
+  year      = {2023}
+}
+
+@article{Hu2025bias,
+  author  = {Hu, Zheyuan and Shi, Zekun and Karniadakis, George Em and
+             Kawaguchi, Kenji},
+  title   = {Bias-variance trade-off in physics-informed neural networks with
+             randomized smoothing for high-dimensional {PDE}s},
+  journal = {Journal of Computational Physics},
+  volume  = {521},
+  pages   = {113524},
+  year    = {2025}
+}
+
+@article{Stein1981,
+  author  = {Stein, Charles M.},
+  title   = {Estimation of the mean of a multivariate normal distribution},
+  journal = {The Annals of Statistics},
+  volume  = {9},
+  number  = {6},
+  pages   = {1135--1151},
+  year    = {1981}
+}
+
+% --- Physics-informed learning and high-order differentiation --------------
+
+@article{Karniadakis2021,
+  author  = {Karniadakis, George Em and Kevrekidis, Ioannis G. and Lu, Lu and
+             Perdikaris, Paris and Wang, Sifan and Yang, Liu},
+  title   = {Physics-informed machine learning},
+  journal = {Nature Reviews Physics},
+  volume  = {3},
+  pages   = {422--440},
+  year    = {2021}
+}
+
+@article{Han2018deepbsde,
+  author  = {Han, Jiequn and Jentzen, Arnulf and E, Weinan},
+  title   = {Solving high-dimensional partial differential equations using
+             deep learning},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume  = {115},
+  number  = {34},
+  pages   = {8505--8510},
+  year    = {2018}
+}
+
+@article{Raissi2019,
+  author  = {Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E.},
+  title   = {Physics-informed neural networks: A deep learning framework for
+             solving forward and inverse problems involving nonlinear partial
+             differential equations},
+  journal = {Journal of Computational Physics},
+  volume  = {378},
+  pages   = {686--707},
+  year    = {2019},
+  doi     = {10.1016/j.jcp.2018.10.045}
+}
+
+@inproceedings{Bettencourt2019,
+  author    = {Bettencourt, Jesse and Johnson, Matthew J. and
+               Duvenaud, David},
+  title     = {{T}aylor-mode automatic differentiation for higher-order
+               derivatives in {JAX}},
+  booktitle = {NeurIPS Workshop on Program Transformations for Machine
+               Learning},
+  year      = {2019}
+}
+
+@book{Griewank2008,
+  author    = {Griewank, Andreas and Walther, Andrea},
+  title     = {Evaluating Derivatives: Principles and Techniques of
+               Algorithmic Differentiation},
+  edition   = {2nd},
+  publisher = {Society for Industrial and Applied Mathematics},
+  address   = {Philadelphia, PA},
+  year      = {2008},
+  doi       = {10.1137/1.9780898717761}
+}
+
+@book{LoomisSternberg1990,
+  author    = {Loomis, Lynn H. and Sternberg, Shlomo},
+  title     = {Advanced Calculus},
+  edition   = {Revised},
+  publisher = {Jones and Bartlett},
+  address   = {Boston, MA},
+  year      = {1990}
+}
+
+@article{Hu2023sdgd,
+  author  = {Hu, Zheyuan and Shukla, Khemraj and Karniadakis, George Em and
+             Kawaguchi, Kenji},
+  title   = {Tackling the curse of dimensionality with physics-informed
+             neural networks},
+  journal = {Neural Networks},
+  volume  = {176},
+  pages   = {106369},
+  year    = {2024},
+  doi     = {10.1016/j.neunet.2024.106369}
+}
+
+@article{Shi2024stde,
+  author  = {Shi, Zekun and Hu, Zheyuan and Lin, Min and Kawaguchi, Kenji},
+  title   = {Stochastic {T}aylor derivative estimator: Efficient amortization
+             for arbitrary differential operators},
+  journal = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume  = {37},
+  pages   = {122316--122353},
+  year    = {2024}
+}
+
+@article{Shi2026stdepp,
+  author  = {Shi, Zekun and Hu, Zheyuan and Lin, Min and Kawaguchi, Kenji},
+  title   = {{STDE++}: Polynomial-Time Amortization for Linear Differential
+             Operators},
+  journal = {Journal of Machine Learning Research},
+  volume  = {27},
+  pages   = {1--50},
+  year    = {2026},
+  url     = {https://www.jmlr.org/papers/v27/25-1474.html}
+}
+
+@article{Li2024forwardLaplacian,
+  author  = {Li, Ruichen and Ye, Haotian and Jiang, Du and Wen, Xuelan and
+             Wang, Chuwei and Li, Zhe and Li, Xiang and He, Di and
+             Chen, Ji and Ren, Weiluo and Wang, Liwei},
+  title   = {A computational framework for neural network-based variational
+             {M}onte {C}arlo with {F}orward {L}aplacian},
+  journal = {Nature Machine Intelligence},
+  volume  = {6},
+  pages   = {209--219},
+  year    = {2024},
+  doi     = {10.1038/s42256-024-00794-x}
+}
+
+@misc{Gao2023folx,
+  author = {Gao, Nicholas and K{\"o}hler, Jonas and Foster, Adam},
+  title  = {folx: {F}orward {L}aplacian for {JAX}},
+  year   = {2023},
+  note   = {Software},
+  url    = {https://github.com/microsoft/folx}
+}
+
+% --- Waring rank and apolarity --------------------------------------------
+
+@article{BlekhermanTeitler2015,
+  author  = {Blekherman, Grigoriy and Teitler, Zach},
+  title   = {On maximum, typical and generic ranks},
+  journal = {Mathematische Annalen},
+  volume  = {362},
+  number  = {3--4},
+  pages   = {1021--1031},
+  year    = {2015},
+  doi     = {10.1007/s00208-014-1150-3}
+}
+
+@article{CCG2012,
+  author  = {Carlini, Enrico and Catalisano, Maria Virginia and
+             Geramita, Anthony V.},
+  title   = {The solution to the {W}aring problem for monomials and the sum of
+             coprime monomials},
+  journal = {Journal of Algebra},
+  volume  = {370},
+  pages   = {5--14},
+  year    = {2012},
+  doi     = {10.1016/j.jalgebra.2012.07.028}
+}
+
+@article{BBT2013,
+  author  = {Buczy{\'n}ska, Weronika and Buczy{\'n}ski, Jaros{\l}aw and
+             Teitler, Zach},
+  title   = {Waring decompositions of monomials},
+  journal = {Journal of Algebra},
+  volume  = {378},
+  pages   = {45--57},
+  year    = {2013},
+  doi     = {10.1016/j.jalgebra.2012.12.011}
+}
+
+@misc{Shitov2016,
+  author = {Shitov, Yaroslav},
+  title  = {How hard is the tensor rank?},
+  year   = {2016},
+  note   = {arXiv:1611.01559},
+  url    = {https://arxiv.org/abs/1611.01559}
+}
+
+@book{IK1999,
+  author    = {Iarrobino, Anthony and Kanev, Vassil},
+  title     = {Power Sums, Gorenstein Algebras, and Determinantal Loci},
+  series    = {Lecture Notes in Mathematics},
+  volume    = {1721},
+  publisher = {Springer},
+  address   = {Berlin},
+  year      = {1999},
+  doi       = {10.1007/BFb0093426}
+}
+
+@book{Landsberg2012,
+  author    = {Landsberg, Joseph M.},
+  title     = {Tensors: Geometry and Applications},
+  series    = {Graduate Studies in Mathematics},
+  volume    = {128},
+  publisher = {American Mathematical Society},
+  address   = {Providence, RI},
+  year      = {2012},
+  doi       = {10.1090/gsm/128}
+}
+
+% --- Operators, founding collocation, and tools used in the protocol ------
+
+@article{GriewankUtkeWalther2000,
+  author  = {Griewank, Andreas and Utke, Jean and Walther, Andrea},
+  title   = {Evaluating higher derivative tensors by forward propagation of
+             univariate {T}aylor series},
+  journal = {Mathematics of Computation},
+  volume  = {69},
+  number  = {230},
+  pages   = {1117--1130},
+  year    = {2000},
+  doi     = {10.1090/S0025-5718-00-01120-0}
+}
+
+@article{Lagaris1998,
+  author  = {Lagaris, Isaac E. and Likas, Aristidis and
+             Fotiadis, Dimitrios I.},
+  title   = {Artificial neural networks for solving ordinary and partial
+             differential equations},
+  journal = {IEEE Transactions on Neural Networks},
+  volume  = {9},
+  number  = {5},
+  pages   = {987--1000},
+  year    = {1998},
+  doi     = {10.1109/72.712178}
+}
+
+@book{Gazzola2010,
+  author    = {Gazzola, Filippo and Grunau, Hans-Christoph and
+               Sweers, Guido},
+  title     = {Polyharmonic Boundary Value Problems},
+  series    = {Lecture Notes in Mathematics},
+  volume    = {1991},
+  publisher = {Springer},
+  address   = {Berlin},
+  year      = {2010},
+  doi       = {10.1007/978-3-642-12245-3}
+}
+
+@book{Ciarlet1997,
+  author    = {Ciarlet, Philippe G.},
+  title     = {Mathematical Elasticity, Volume {II}: Theory of Plates},
+  series    = {Studies in Mathematics and its Applications},
+  volume    = {27},
+  publisher = {North-Holland},
+  address   = {Amsterdam},
+  year      = {1997}
+}
+
+@book{Ihlenburg1998,
+  author    = {Ihlenburg, Frank},
+  title     = {Finite Element Analysis of Acoustic Scattering},
+  series    = {Applied Mathematical Sciences},
+  volume    = {132},
+  publisher = {Springer},
+  address   = {New York},
+  year      = {1998},
+  doi       = {10.1007/b98828}
+}
+
+@book{Monk2003,
+  author    = {Monk, Peter},
+  title     = {Finite Element Methods for {M}axwell's Equations},
+  publisher = {Oxford University Press},
+  address   = {Oxford},
+  year      = {2003},
+  doi       = {10.1093/acprof:oso/9780198508885.001.0001}
+}
+
+@article{Hutchinson1989,
+  author  = {Hutchinson, Michael F.},
+  title   = {A stochastic estimator of the trace of the influence matrix for
+             {L}aplacian smoothing splines},
+  journal = {Communications in Statistics: Simulation and Computation},
+  volume  = {18},
+  number  = {3},
+  pages   = {1059--1076},
+  year    = {1989},
+  doi     = {10.1080/03610918908812806}
+}
+
+@article{Fornberg1988,
+  author  = {Fornberg, Bengt},
+  title   = {Generation of finite difference formulas on arbitrarily spaced
+             grids},
+  journal = {Mathematics of Computation},
+  volume  = {51},
+  number  = {184},
+  pages   = {699--706},
+  year    = {1988},
+  doi     = {10.1090/S0025-5718-1988-0935077-0}
+}
+
+@article{Baydin2018,
+  author  = {Baydin, Atilim Gunes and Pearlmutter, Barak A. and
+             Radul, Alexey Andreyevich and Siskind, Jeffrey Mark},
+  title   = {Automatic differentiation in machine learning: a survey},
+  journal = {Journal of Machine Learning Research},
+  volume  = {18},
+  number  = {153},
+  pages   = {1--43},
+  year    = {2018}
+}
+
+@article{Pearlmutter1994,
+  author  = {Pearlmutter, Barak A.},
+  title   = {Fast exact multiplication by the {H}essian},
+  journal = {Neural Computation},
+  volume  = {6},
+  number  = {1},
+  pages   = {147--160},
+  year    = {1994},
+  doi     = {10.1162/neco.1994.6.1.147}
+}
+
+@inproceedings{Kingma2015,
+  author    = {Kingma, Diederik P. and Ba, Jimmy},
+  title     = {{A}dam: A method for stochastic optimization},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2015}
+}
+
+@inproceedings{Loshchilov2017,
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  title     = {{SGDR}: Stochastic gradient descent with warm restarts},
+  booktitle = {International Conference on Learning Representations ({ICLR})},
+  year      = {2017}
+}
+
+@inproceedings{Paszke2019,
+  author    = {Paszke, Adam and Gross, Sam and Massa, Francisco and
+               Lerer, Adam and Bradbury, James and Chanan, Gregory and
+               Killeen, Trevor and Lin, Zeming and Gimelshein, Natalia and
+               Antiga, Luca and Desmaison, Alban and K{\"o}pf, Andreas and
+               Yang, Edward and DeVito, Zachary and Raison, Martin and
+               Tejani, Alykhan and Chilamkurthy, Sasank and Steiner, Benoit and
+               Fang, Lu and Bai, Junjie and Chintala, Soumith},
+  title     = {{P}y{T}orch: An imperative style, high-performance deep
+               learning library},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {32},
+  year      = {2019}
+}
+
+@article{Sirignano2018,
+  author  = {Sirignano, Justin and Spiliopoulos, Konstantinos},
+  title   = {{DGM}: A deep learning algorithm for solving partial differential
+             equations},
+  journal = {Journal of Computational Physics},
+  volume  = {375},
+  pages   = {1339--1364},
+  year    = {2018},
+  doi     = {10.1016/j.jcp.2018.08.029}
+}
+
+@article{Roache2002,
+  author  = {Roache, Patrick J.},
+  title   = {Code verification by the method of manufactured solutions},
+  journal = {Journal of Fluids Engineering},
+  volume  = {124},
+  number  = {1},
+  pages   = {4--10},
+  year    = {2002},
+  doi     = {10.1115/1.1436090}
+}
+
+% --- Real high-frequency baseline architectures ----------------------------
+
+@article{Sitzmann2020SIREN,
+  author  = {Sitzmann, Vincent and Martel, Julien N. P. and
+             Bergman, Alexander W. and Lindell, David B. and
+             Wetzstein, Gordon},
+  title   = {Implicit neural representations with periodic activation
+             functions},
+  journal = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume  = {33},
+  pages   = {7462--7473},
+  year    = {2020}
+}
+
+@article{Tancik2020Fourier,
+  author  = {Tancik, Matthew and Srinivasan, Pratul P. and
+             Mildenhall, Ben and Fridovich-Keil, Sara and
+             Raghavan, Nithin and Singhal, Utkarsh and
+             Ramamoorthi, Ravi and Barron, Jonathan T. and Ng, Ren},
+  title   = {{F}ourier features let networks learn high frequency functions in
+             low dimensional domains},
+  journal = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume  = {33},
+  pages   = {7537--7547},
+  year    = {2020}
+}
+
+@article{Wang2021Pathologies,
+  author  = {Wang, Sifan and Teng, Yujun and Perdikaris, Paris},
+  title   = {Understanding and mitigating gradient flow pathologies in
+             physics-informed neural networks},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {43},
+  number  = {5},
+  pages   = {A3055--A3081},
+  year    = {2021},
+  doi     = {10.1137/20M1318043}
+}
+
+@article{Liu2020MscaleDNN,
+  author  = {Liu, Ziqi and Cai, Wei and Xu, Zhi-Qin John},
+  title   = {Multi-scale deep neural network ({MscaleDNN}) for solving
+             {P}oisson--{B}oltzmann equation in complex domains},
+  journal = {Communications in Computational Physics},
+  volume  = {28},
+  number  = {5},
+  pages   = {1970--2001},
+  year    = {2020},
+  doi     = {10.4208/cicp.OA-2020-0179}
+}
+
+@inproceedings{Trabelsi2018ComplexNN,
+  author    = {Trabelsi, Chiheb and Bilaniuk, Olexa and Zhang, Ying and
+               Serdyuk, Dmitriy and Subramanian, Sandeep and
+               Santos, Jo{\~a}o Felipe and Mehri, Soroush and
+               Rostamzadeh, Negar and Bengio, Yoshua and Pal, Christopher J.},
+  title     = {Deep complex networks},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2018}
+}
+
+% --- Additional background sources for the benchmark suite -----------------
+
+@inproceedings{Hao2024PINNacle,
+  author    = {Hao, Zhongkai and Yao, Jiachen and Su, Chang and Su, Hang and
+               Wang, Ziao and Lu, Fanzhi and Xia, Zeyu and Zhang, Yichi and
+               Liu, Songming and Lu, Lu and Zhu, Jun},
+  title     = {{PINNacle}: A comprehensive benchmark of physics-informed
+               neural networks for solving {PDE}s},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS),
+               Datasets and Benchmarks Track},
+  year      = {2024},
+  note      = {arXiv:2306.08827}
+}
+
+@article{Jagtap2020Adaptive,
+  author  = {Jagtap, Ameya D. and Kawaguchi, Kenji and
+             Karniadakis, George Em},
+  title   = {Adaptive activation functions accelerate convergence in deep and
+             physics-informed neural networks},
+  journal = {Journal of Computational Physics},
+  volume  = {404},
+  pages   = {109136},
+  year    = {2020},
+  doi     = {10.1016/j.jcp.2019.109136}
+}
+
+@article{Vahab2022Biharmonic,
+  author  = {Vahab, Mohammad and Haghighat, Ehsan and Khaleghi, Maryam and
+             Khalili, Nasser},
+  title   = {A physics-informed neural network approach to solution and
+             identification of biharmonic equations of elasticity},
+  journal = {Journal of Engineering Mechanics},
+  volume  = {148},
+  number  = {2},
+  pages   = {04021154},
+  year    = {2022},
+  doi     = {10.1061/(ASCE)EM.1943-7889.0002062}
+}
+
+@article{Jiang2024Maxwell,
+  author  = {Jiang, Qile and Salvadori, Marc and Ota, Dale and
+             Shankar, Vijaya and Shukla, Khemraj},
+  title   = {Complex-valued deep operator network ({DeepONet}) for
+             three-dimensional {M}axwell's equations},
+  journal = {arXiv preprint arXiv:2411.18733},
+  year    = {2024}
+}

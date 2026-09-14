@@ -1,0 +1,28 @@
+---
+description: Enforce the repository Git identity and credential safety
+alwaysApply: true
+---
+
+# Git Upload Identity
+
+This repository's remote expects commits from `freezeng`. Never create commits
+as `root`, and do not modify global or repository Git configuration.
+
+- Supply identity only to the commit command through environment variables:
+
+```bash
+GIT_AUTHOR_NAME=freezeng GIT_AUTHOR_EMAIL=freezeng@tencent.com \
+GIT_COMMITTER_NAME=freezeng GIT_COMMITTER_EMAIL=freezeng@tencent.com \
+git commit -m "message"
+```
+
+- Verify staged files and the resulting author/committer before pushing.
+- Never commit credentials, passwords, access tokens, temporary askpass files,
+  environment files, or authenticated remote URLs.
+- Use a temporary credential mechanism for HTTPS operations and remove it
+  immediately afterward.
+- A user request to commit changes also authorizes pushing that new commit to
+  the current branch's configured remote after the commit succeeds. Verify the
+  commit and working-tree state before pushing.
+- Do not amend or rewrite existing history unless the user explicitly requests
+  it and the repository's Git safety conditions are satisfied.

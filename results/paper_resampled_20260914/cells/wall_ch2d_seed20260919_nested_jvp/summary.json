@@ -1,0 +1,30 @@
+{
+  "case": "ch2d",
+  "method": "nested_jvp",
+  "steps": 635,
+  "wall_seconds": 1200.6621167063713,
+  "steps_per_second": 0.5288748526037594,
+  "optimizer_seconds": 1178.5227249711752,
+  "lr": 0.0001,
+  "initial_hash": "5176e599c3a95c28026102f97b60f2feb9acbbe98df154c3f8730dabefa96719",
+  "final_hash": "1a65856f706f9f0da957343dd877cdaa7aea7d8abe911210f02406b99d9ec18c",
+  "constraint_sampling": "resampled",
+  "errors": {
+    "spacetime": {
+      "relative_l2": 0.3067544996738434,
+      "linf": 0.2838602662086487
+    },
+    "terminal": {
+      "relative_l2": 0.5226491093635559,
+      "linf": 0.16666188836097717
+    },
+    "extra": {
+      "relative_l2": 0.3007528781890869,
+      "linf": 0.2818351984024048
+    },
+    "relative_estimate_change": 0.01956490121950194
+  },
+  "final_fixed_loss": 0.2203555703163147,
+  "timing_scope": "Sampling, differentiation, backward, Adam, finite checks, logs, hashes, periodic full/model-only checkpoint IO included; warmup, initial checkpoint, terminal checkpoint and all diagnostic evaluation excluded.",
+  "terminal": "wall_time_budget"
+}
