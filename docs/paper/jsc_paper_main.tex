@@ -714,31 +714,13 @@ computational conditions.
 
 \subsection{Individual high-order partial derivatives}\label{sec_num_problems}
 
-For the individual-partial tests, the network has 16 inputs and three
-width-128 $\tanh$ hidden layers. Both methods use identical weights and
-input points. For each of three seeds, 10 warm-up calls precede 30
-synchronized timed calls. Times are reported in milliseconds as the mean
-and sample standard deviation of the three per-seed medians; speedups
-average the paired ratios. These timings cover derivative-value evaluation
-without parameter backpropagation.
-
-This experiment examines how derivative order, multi-index pattern,
-and input batch size affect evaluation time.
-We write $u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ and evaluate
-the six targets in Table~\ref{tab_individual_t4}. Here $p$ is the derivative
-order, $R$ the minimum complex direction count, and $B$ the number of
-input points.
-
-The first four targets have order six and exponent patterns $(6)$,
-$(3,3)$, $(2,2,2)$, and $(1,1,1,1,1,1)$, respectively. They compare a pure
-partial with mixed partials involving two, three, and six coordinates at
-the same order; their minimum complex direction counts are $1$, $4$, $9$,
-and $32$. The last two targets, with patterns $(2,2,2,2)$ and $(3,3,3)$,
-test orders eight and nine, with $27$ and $16$ directions. All counts follow
-from the monomial rank formula in Section~\ref{sec_rank_optimal}.
-The paired outputs agree within floating-point
-tolerances, supporting the numerical realization of the exact directional
-formulas.
+We evaluate the evaluation time of individual high-order partial derivatives
+$u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ across derivative
+orders $p$ and multi-index patterns at batch size $B=100$. The test network
+has 16 inputs and three width-128 $\tanh$ hidden layers, evaluated on
+identical weights and inputs for both methods. Table~\ref{tab_individual_t4}
+reports the speedup rate relative to nested JVP of the six individual
+derivatives.
 
 \begin{table}[htbp]
 \centering
@@ -748,20 +730,6 @@ formulas.
 \label{tab_individual_t4}
 \input{tables/t4_individual_partials}
 \end{table}
-
-Table~\ref{tab_individual_t4} reports the evaluation times and speedups.
-The WDD method reduces evaluation time for every target.
-At $B=100$, the sixth-order timings remain close despite the different direction
-counts, indicating that representation length alone does not determine
-batched runtime. In particular, the pure partial already has $R=1$;
-its speedup measures the benefit of Taylor propagation relative to nested
-JVPs, rather than a reduction in the number of directions.
-
-For $u_{123456}$ and $u_{111222333}$, the table also compares input
-batches of 100, 400, and 1600 points. The advantage over nested JVP
-persists at the larger batches.
-The following experiments examine whether this saving carries over to
-complete PINN training.
 
 \FloatBarrier
 

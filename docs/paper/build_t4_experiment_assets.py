@@ -26,9 +26,10 @@ def table(path, columns, header, rows):
 
 def main():
     rows = csv_rows(FIRST / 'summary.csv')
-    assert len(rows) == 10
+    rows = [row for row in rows if int(row['batch']) == 100]
+    assert len(rows) == 6
     keys = {(r['target'], r['batch']) for r in rows}
-    assert len(keys) == 10
+    assert len(keys) == 6
     targets = list(dict.fromkeys(r['target'] for r in rows))
     rows.sort(key=lambda r: (targets.index(r['target']), int(r['batch'])))
     combined = []
@@ -40,13 +41,9 @@ def main():
         ])
     path = PAPER / 'tables/t4_individual_partials.tex'
     table(path, 'lrrrrrr',
-          r'Target & $p$ & $R$ & $B$ & Nested JVP & WDD & Speedup',
+          r'Target & $p$ & $R$ & $B$ & Nested JVP (ms) & WDD (ms) & Speedup',
           combined)
-    note = (r'\par\smallskip\begin{minipage}{\linewidth}\footnotesize '
-            r'\textit{Note.} Speedup is relative to nested JVP.'
-            r'\end{minipage}' + '\n')
-    path.write_text(path.read_text() + note)
-    print('Generated one table: 10 unique configurations, WDD versus nested JVP, paired speedups preserved.')
+    print('Generated one table: six target derivatives at B=100, WDD versus nested JVP, paired speedups preserved.')
 
 
 if __name__ == '__main__':
