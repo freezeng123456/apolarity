@@ -725,7 +725,7 @@ without parameter backpropagation.
 This experiment examines how derivative order, multi-index pattern,
 and input batch size affect evaluation time.
 We write $u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ and evaluate
-the six targets in Table~\ref{tab_fixed_t4}. Here $p$ is the derivative
+the six targets in Table~\ref{tab_individual_t4}. Here $p$ is the derivative
 order, $R$ the minimum complex direction count, and $B$ the number of
 input points.
 
@@ -745,11 +745,11 @@ formulas.
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \caption{Evaluation times and speedups for individual high-order partial derivatives.}
-\label{tab_fixed_t4}
-\input{tables/t4_fixed_partials}
+\label{tab_individual_t4}
+\input{tables/t4_individual_partials}
 \end{table}
 
-Table~\ref{tab_fixed_t4} reports the evaluation times and speedups.
+Table~\ref{tab_individual_t4} reports the evaluation times and speedups.
 The WDD method reduces evaluation time for every target.
 At $B=100$, the sixth-order timings remain close despite the different direction
 counts, indicating that representation length alone does not determine

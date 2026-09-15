@@ -1,4 +1,4 @@
-"""Regenerate the combined fixed-partial table from verified result files."""
+"""Regenerate the combined individual-partial table from verified result files."""
 import csv
 from pathlib import Path
 
@@ -38,7 +38,7 @@ def main():
             timing(row, 'nested'),
             timing(row, 'waring_batched'), f"${float(row['paired_speedup_mean']):.2f}\\times$",
         ])
-    path = PAPER / 'tables/t4_fixed_partials.tex'
+    path = PAPER / 'tables/t4_individual_partials.tex'
     table(path, 'lrrrrrr',
           r'Target & $p$ & $R$ & $B$ & Nested JVP & WDD & Speedup',
           combined)

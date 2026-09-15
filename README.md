@@ -23,7 +23,7 @@ JVPs in both compared methods.
 - [Historical experiment ledger](docs/HISTORICAL_EXPERIMENT_LEDGER.md), recording
   superseded studies whose large raw artifacts were removed during compaction.
 - [PDE figure/table reproduction](docs/paper/build_resampled_assets.py) and
-  [fixed-partial table reproduction](docs/paper/build_t4_experiment_assets.py).
+  [individual-partial table reproduction](docs/paper/build_t4_experiment_assets.py).
 - [Polynomial-identity checks](docs/paper/verify_experiment_identities.py) and
   tests comparing the current implementation with the frozen paper source.
 

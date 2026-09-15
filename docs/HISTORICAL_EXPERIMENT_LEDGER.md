@@ -18,10 +18,10 @@ The repository now retains four examples used in the manuscript.
 
 | Paper section | Example | Comparison | Retained evidence |
 |---|---|---|---|
-| 4.1 | Fixed high-order partial derivatives with several orders, multi-index patterns, and input batch sizes | Minimum-direction complex Waring evaluation versus nested coordinate JVP | Audited summary table, provenance, environment lock, and the current reconstruction script |
-| 4.2 | One-dimensional KdV equation with a gradient-enhanced objective | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
-| 4.3 | Two-dimensional KdV equation with mixed derivatives | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
-| 4.4 | Fourth-order Cahn--Hilliard equation | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
+| 4.1 | Individual high-order partial derivatives with several orders, multi-index patterns, and input batch sizes | Minimum-direction complex Waring evaluation versus nested coordinate JVP | Audited summary table, provenance, environment lock, and the current reconstruction script |
+| 4.2.1 | One-dimensional KdV equation with a gradient-enhanced objective | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
+| 4.2.2 | Two-dimensional KdV equation with mixed derivatives | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
+| 4.2.3 | Fourth-order Cahn--Hilliard equation | Real-direction WDD versus nested coordinate JVP | Five paired seeds, per-run configurations and summaries, and measured error curves |
 
 For the PDE examples, both interior points and initial/boundary training points
 were resampled at every update. The retained dataset contains 30 completed runs
@@ -111,13 +111,13 @@ and a single nested-JVP baseline.
 The project then moved from architecture comparisons to matched derivative
 backends. This transition included:
 
-- a JAX no-outer-JIT fixed-partial protocol and an H20 benchmark;
+- a JAX no-outer-JIT individual-partial protocol and an H20 benchmark;
 - shared real-direction Taylor evaluators for PDE residuals;
 - a migration of the active implementation to eager PyTorch;
 - paired 1000-step PINN pilots;
 - paired 600-second wall-time experiments;
 - a 10,000-step linear-decay protocol;
-- fixed-partial T4 timing matrices over derivative patterns and batch sizes;
+- individual-partial T4 timing matrices over derivative patterns and batch sizes;
 - a two-dimensional KdV prescribed-direction protocol;
 - gradient-enhanced one-dimensional KdV timing and training experiments;
 - three-PDE wall-time runs including Cahn--Hilliard;
@@ -133,8 +133,8 @@ runs with fresh interior and constraint samples at every update.
 
 The final campaign froze the training source, resampled initial and boundary
 points at every update, and ran three problems by two derivative backends by
-five paired seeds. It supplied the data now used in Sections 4.2--4.4. The
-fixed-partial experiment in Section 4.1 uses the retained batched Waring and
+five paired seeds. It supplied the data now used in Sections 4.2.1--4.2.3. The
+individual-partial experiment in Section 4.1 uses the retained batched Waring and
 nested-JVP measurements; the historical serial-Taylor measurements are not
 part of the paper.
 
