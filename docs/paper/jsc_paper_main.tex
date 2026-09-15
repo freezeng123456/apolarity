@@ -108,7 +108,7 @@
   that the minimal number of complex directional evaluations required to recover a
   target partial derivative equals the Waring rank of its corresponding
   monomial, and a classical roots-of-unity Waring decomposition attains this
-  minimum. Experiments on fixed high-order partial derivatives assess the
+  minimum. Experiments on individual high-order partial derivatives assess the
   runtime of the WDD method relative to nested coordinate
   Jacobian--vector products.
   Numerical experiments show that the WDD method reduces
@@ -207,7 +207,7 @@ to obtain a closed-form representation with the minimum number of complex
 directions. A batched Taylor-mode implementation evaluates the resulting
 directional Taylor coefficients independently and in parallel.
 \item We compare the WDD method with nested coordinate Jacobian--vector
-  products (JVPs) on fixed high-order partial derivatives, examining runtime
+  products (JVPs) on individual high-order partial derivatives, examining runtime
   across derivative patterns and input batch sizes without outer whole-function JIT compilation.
   KdV and Cahn--Hilliard PINN comparisons measure the number of complete
   updates and the solution error under a common wall-time budget, with matched
@@ -221,7 +221,7 @@ correspondence, analyzes the computational complexity, specializes the
 correspondence to monomial Waring decompositions, and presents
 the resulting minimum-direction formula with its batched Taylor
 realization. Section~\ref{sec_experiments} evaluates the derivative backend on
-fixed high-order partial derivatives and examines its use in complete
+individual high-order partial derivatives and examines its use in complete
 KdV and Cahn--Hilliard PINN training.
 Section~\ref{sec_concl} concludes. A coefficient verification of the cited
 roots-of-unity decomposition and several representative schedules are
@@ -698,21 +698,23 @@ the roots-of-unity formula in Corollary~\ref{thm_main}.
 
 We evaluate the proposed Waring decomposition of derivatives (WDD) method
 in two complementary settings. First, we measure the evaluation time of
-isolated high-order partial derivatives across various orders and
+individual high-order partial derivatives across various orders and
 multi-index patterns, using the minimum-direction complex Waring
-representation in Corollary~\ref{thm_main}. Second, we assess end-to-end
-PINN training performance on three nonlinear differential equations:
-a one-dimensional KdV equation with a gradient-enhanced objective,
-a two-dimensional KdV equation with mixed derivatives, and a fourth-order
-Cahn--Hilliard equation. For these PDE problems, we apply
-Algorithm~\ref{alg_homogeneous} to real power-sum identities, which also
-allow lower-order Taylor coefficients to be reused across different
-derivative terms. In every paired comparison, the WDD method and the
-nested coordinate Jacobian--vector product (JVP) baseline compute the
-same mathematical derivatives; in the PDE experiments, they also minimize
-identical loss objectives under identical computational settings.
+representation in Corollary~\ref{thm_main}. Second, we assess PINN
+training on three nonlinear differential equations: a one-dimensional KdV
+equation with a gradient-enhanced objective, a two-dimensional KdV
+equation with mixed derivatives, and a fourth-order Cahn--Hilliard
+equation. We apply Algorithm~\ref{alg_homogeneous}, constructing
+directional Taylor representations that facilitate coefficient reuse
+across different derivative terms. In every experimental setting, the
+WDD method and the nested coordinate Jacobian--vector product (JVP)
+baseline compute the same mathematical derivatives; in the PDE
+experiments, they also minimize identical loss objectives under matched
+computational conditions.
 
-For the fixed-partial tests, the network has 16 inputs and three
+\subsection{Individual high-order partial derivatives}\label{sec_num_problems}
+
+For the individual-partial tests, the network has 16 inputs and three
 width-128 $\tanh$ hidden layers. Both methods use identical weights and
 input points. For each of three seeds, 10 warm-up calls precede 30
 synchronized timed calls. Times are reported in milliseconds as the mean
@@ -720,10 +722,50 @@ and sample standard deviation of the three per-seed medians; speedups
 average the paired ratios. These timings cover derivative-value evaluation
 without parameter backpropagation.
 
-In the PDE examples, $x$ and $y$ denote spatial coordinates and $t$
-denotes physical time. Initial data are imposed at $t=0$, and terminal-time
-errors are evaluated at $t=1$. The vector $\bm n$ denotes the outward
-spatial unit normal.
+This experiment examines how derivative order, multi-index pattern,
+and input batch size affect evaluation time.
+We write $u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ and evaluate
+the six targets in Table~\ref{tab_fixed_t4}. Here $p$ is the derivative
+order, $R$ the minimum complex direction count, and $B$ the number of
+input points.
+
+The first four targets have order six and exponent patterns $(6)$,
+$(3,3)$, $(2,2,2)$, and $(1,1,1,1,1,1)$, respectively. They compare a pure
+partial with mixed partials involving two, three, and six coordinates at
+the same order; their minimum complex direction counts are $1$, $4$, $9$,
+and $32$. The last two targets, with patterns $(2,2,2,2)$ and $(3,3,3)$,
+test orders eight and nine, with $27$ and $16$ directions. All counts follow
+from the monomial rank formula in Section~\ref{sec_rank_optimal}.
+The paired outputs agree within floating-point
+tolerances, supporting the numerical realization of the exact directional
+formulas.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Evaluation times and speedups for individual high-order partial derivatives.}
+\label{tab_fixed_t4}
+\input{tables/t4_fixed_partials}
+\end{table}
+
+Table~\ref{tab_fixed_t4} reports the evaluation times and speedups.
+The WDD method reduces evaluation time for every target.
+At $B=100$, the sixth-order timings remain close despite the different direction
+counts, indicating that representation length alone does not determine
+batched runtime. In particular, the pure partial already has $R=1$;
+its speedup measures the benefit of Taylor propagation relative to nested
+JVPs, rather than a reduction in the number of directions.
+
+For $u_{123456}$ and $u_{111222333}$, the table also compares input
+batches of 100, 400, and 1600 points. The advantage over nested JVP
+persists at the larger batches.
+The following experiments examine whether this saving carries over to
+complete PINN training.
+
+\FloatBarrier
+
+\subsection{PINN training on nonlinear differential equations}
 
 For the PDE tests, $u_\theta$ has four fully connected hidden layers of
 width 128, $\tanh$ activations, and a scalar linear output. The inputs are
@@ -770,52 +812,7 @@ interpolated onto a common time grid without smoothing or extrapolation.
 Solid curves show the arithmetic mean across seeds, and shading extends
 one sample standard deviation upward.
 
-\subsection{Fixed high-order partial derivatives}\label{sec_num_problems}
-
-This experiment examines how derivative order, multi-index pattern,
-and input batch size affect evaluation time.
-We write $u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ and evaluate
-the six targets in Table~\ref{tab_fixed_t4}. Here $p$ is the derivative
-order, $R$ the minimum complex direction count, and $B$ the number of
-input points.
-
-The first four targets have order six and exponent patterns $(6)$,
-$(3,3)$, $(2,2,2)$, and $(1,1,1,1,1,1)$, respectively. They compare a pure
-partial with mixed partials involving two, three, and six coordinates at
-the same order; their minimum complex direction counts are $1$, $4$, $9$,
-and $32$. The last two targets, with patterns $(2,2,2,2)$ and $(3,3,3)$,
-test orders eight and nine, with $27$ and $16$ directions. All counts follow
-from the monomial rank formula in Section~\ref{sec_rank_optimal}.
-The paired outputs agree within floating-point
-tolerances, supporting the numerical realization of the exact directional
-formulas.
-
-\begin{table}[htbp]
-\centering
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Evaluation times and speedups for fixed high-order partial derivatives.}
-\label{tab_fixed_t4}
-\input{tables/t4_fixed_partials}
-\end{table}
-
-Table~\ref{tab_fixed_t4} reports the evaluation times and speedups.
-The WDD method reduces evaluation time for every target.
-At $B=100$, the sixth-order timings remain close despite the different direction
-counts, indicating that representation length alone does not determine
-batched runtime. In particular, the pure partial already has $R=1$;
-its speedup measures the benefit of Taylor propagation relative to nested
-JVPs, rather than a reduction in the number of directions.
-
-For $u_{123456}$ and $u_{111222333}$, the table also compares input
-batches of 100, 400, and 1600 points. The advantage over nested JVP
-persists at the larger batches.
-The following experiments examine whether this saving carries over to
-complete PINN training.
-
-\FloatBarrier
-
-\subsection{Gradient-enhanced PINN for the KdV equation}\label{sec_num_pinn}
+\subsubsection{Gradient-enhanced PINN for the KdV equation}\label{sec_num_pinn}
 
 This example tests the evaluation of fourth-order derivatives arising
 from a gradient-enhanced PINN objective.
@@ -905,7 +902,7 @@ KdV equation \eqref{eq_num_kdv}.}
 \end{figure}
 \FloatBarrier
 
-\subsection{Mixed-derivative PINN for a two-dimensional KdV equation}
+\subsubsection{Mixed-derivative PINN for a two-dimensional KdV equation}
 \label{sec_num_kdv2d}
 
 This example combines the spatial mixed derivative $u_{xxxy}$
@@ -1004,7 +1001,7 @@ KdV equation \eqref{eq_num_kdv2d}.}
 \end{figure}
 \FloatBarrier
 
-\subsection{Fourth-order Cahn--Hilliard equation}\label{sec_num_ch}
+\subsubsection{Fourth-order Cahn--Hilliard equation}\label{sec_num_ch}
 
 This example tests Taylor coefficient reuse for the Laplacian and
 biharmonic operators in a nonlinear PDE.
@@ -1022,7 +1019,8 @@ We solve the Cahn--Hilliard problem
         \end{aligned}
  \end{cases}
 \end{equation}
-Here $\nabla$ and $\Delta$ act on the spatial coordinates.
+Here $\nabla$ and $\Delta$ act on the spatial coordinates, and $\bm n$
+is the outward spatial unit normal.
 The exact solution contains three spatial modes,
 \begin{equation}\label{eq_num_ch_exact}
  u_\star(x,y,t)=e^{-t}\left[
@@ -1113,7 +1111,7 @@ derivatives. Waring-rank theory and the roots-of-unity decomposition give
 minimum-length complex formulas for mixed partials. The WDD method evaluates
 these representations by batched Taylor propagation, while real power-sum
 identities allow Taylor coefficients to be reused across PDE derivative terms.
-The experiments show faster fixed-partial evaluation and more PINN updates
+The experiments show faster individual-partial evaluation and more PINN updates
 under the same training-time budget. With interior and constraint points
 resampled at every update, the WDD method attains lower mean errors for the
 tested KdV and Cahn--Hilliard problems.
