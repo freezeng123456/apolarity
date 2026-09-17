@@ -717,8 +717,9 @@ computational conditions.
 We evaluate the evaluation time of individual high-order partial derivatives
 $u_{i_1\cdots i_p}=\partial_{i_1}\cdots\partial_{i_p}u$ across derivative
 orders $p$ and multi-index patterns at batch size $B=100$. The test network
-has 16 inputs and three width-128 $\tanh$ hidden layers, evaluated on
-identical weights and inputs for both methods. Table~\ref{tab_individual_t4}
+has 16 inputs and three hidden layers of width 128 with $\tanh$ activations,
+and both methods are evaluated on identical weights and inputs.
+Table~\ref{tab_individual_t4}
 reports the speedup rate relative to nested JVP of the six individual
 derivatives.
 
@@ -735,50 +736,27 @@ derivatives.
 
 \subsection{PINN training on nonlinear differential equations}
 
-For the PDE tests, $u_\theta$ has four fully connected hidden layers of
-width 128, $\tanh$ activations, and a scalar linear output. The inputs are
-the physical coordinates. Adam~\cite{Kingma2015} uses a constant learning
-rate of $10^{-5}$ for both KdV problems and $10^{-4}$ for Cahn--Hilliard.
-Parameter gradients are computed by reverse-mode differentiation.
-Each update resamples 400 interior space--time points and independently
-resamples points on each prescribed initial and spatial boundary face,
-all uniformly: 128 points per face for the one-dimensional problem and
-256 for the two-dimensional problems. Conditions on the same face use
-the same points. Interior and constraint points use independent random
-streams. Across five random seeds, paired methods share the
-initialization, loss weights, and samples at each common update index.
-
-In the objectives below, $\langle\cdot\rangle_r$ denotes the mean over
-interior points. Each PDE example specifies its initial and boundary
-penalty $\mathcal J_b$.
-
-Each PDE run is trained for 1200 seconds. Timing covers sampling,
-derivative evaluation, parameter backpropagation, optimizer updates,
-finite-value checks of the loss and gradients, logging, and periodic
-checkpoint writes. Before timing, one forward and backward pass is used
-for warm-up without updating parameters. Initial and terminal checkpoint
-writes and post-training diagnostics are excluded; an update
-in progress at the deadline is completed. For each paired seed, the
-completed-update ratio $S_{\mathrm{iter}}$ is the number of completed
-Taylor updates divided by the number of completed nested JVP updates.
-
-For a fixed evaluation set $D$, the relative solution error is
+For all PDE benchmarks, $u_\theta$ is a fully connected network with four
+hidden layers of width 128, $\tanh$ activations, and a scalar linear
+output. We train with Adam~\cite{Kingma2015} using a learning rate of
+$10^{-5}$ for the KdV problems and $10^{-4}$ for Cahn--Hilliard. At each
+iteration we uniformly resample a set $\mathcal T_r$ of 400 interior
+space--time collocation points, together with collocation points on the
+initial face and the spatial boundary (128 in the 1D problem, 256 in the 2D
+problem), denoted by $\mathcal T_0$ and $\mathcal T_b$, respectively. Every
+loss term below is an empirical mean of squared residuals over its indicated
+point set. We test these two methods with the same network initialization,
+loss weights, and resampled training points across five random seeds. Each
+run is trained under a 1200-second wall-time budget.
+We record the relative $L^2$ error
 \begin{equation}\label{eq_num_relative_error}
  \operatorname{RE}:=
  \frac{\bigl(\sum_{\bx\in D}|u_\theta(\bx)-u_\star(\bx)|^2\bigr)^{1/2}}
-      {\bigl(\sum_{\bx\in D}|u_\star(\bx)|^2\bigr)^{1/2}}.
+      {\bigl(\sum_{\bx\in D}|u_\star(\bx)|^2\bigr)^{1/2}},
 \end{equation}
-We evaluate $\operatorname{RE}$ on 10,000 uniform space--time points and,
-separately, on 10,000 uniform spatial points at the terminal time $t=1$.
-These test sets are fixed, independent of training, and shared by
-the paired methods. The PDE tables report the mean and sample standard
-deviation of update counts, final-iterate errors, and paired
-completed-update ratios.
-The figures plot space--time relative error against elapsed training
-time. Saved models are evaluated after training; their log errors are
-interpolated onto a common time grid without smoothing or extrapolation.
-Solid curves show the arithmetic mean across seeds, and shading extends
-one sample standard deviation upward.
+evaluated on 10,000 uniform test points over the full space--time domain
+and, separately, at the terminal time $t=1$. Tables and figures report the
+mean and sample standard deviation across the five seeds.
 
 \subsubsection{Gradient-enhanced PINN for the KdV equation}\label{sec_num_pinn}
 
@@ -812,43 +790,36 @@ residual by
 and the initial and boundary penalty by
 \begin{align*}
  \mathcal J_b(\theta)
-   ={}&\operatorname{MSE}_x\bigl[u_\theta(x,0)-u_\star(x,0)\bigr]\\
-     &+\operatorname{MSE}_t\bigl[u_\theta(-1,t)-u_\star(-1,t)\bigr]\\
-     &+\operatorname{MSE}_t\bigl[u_\theta(1,t)-u_\star(1,t)\bigr]\\
-     &+\operatorname{MSE}_t\bigl[\partial_xu_\theta(1,t)
-                         -\partial_xu_\star(1,t)\bigr],
+   ={}&\frac1{|\mathcal T_0|}\sum_{x\in\mathcal T_0}
+        \bigl[u_\theta(x,0)-u_\star(x,0)\bigr]^2
+        +\frac1{|\mathcal T_b|}\sum_{t\in\mathcal T_b}
+        \bigl[u_\theta(-1,t)-u_\star(-1,t)\bigr]^2\\
+     &+\frac1{|\mathcal T_b|}\sum_{t\in\mathcal T_b}
+        \bigl[u_\theta(1,t)-u_\star(1,t)\bigr]^2
+        +\frac1{|\mathcal T_b|}\sum_{t\in\mathcal T_b}
+        \bigl[\partial_xu_\theta(1,t)-\partial_xu_\star(1,t)\bigr]^2.
 \end{align*}
-where $\operatorname{MSE}_x$ and $\operatorname{MSE}_t$ denote the sample
-mean squared errors over $x\in[-1,1]$ and $t\in(0,1)$, respectively. The
-gradient-enhanced objective is
+The objective is
 \begin{equation}\label{eq_num_gploss}
- \mathcal J_{\rm 1D}(\theta)=\langle r_\theta^2\rangle_r
- +10^{-3}\bigl[\langle(\partial_xr_\theta)^2\rangle_r
-               +\langle(\partial_tr_\theta)^2\rangle_r\bigr]
- +10\mathcal J_b(\theta).
+ \mathcal J(\theta)=\frac1{|\mathcal T_r|}\sum_{(x,t)\in\mathcal T_r}
+   \Bigl[r_\theta^2+\lambda_1\bigl((\partial_xr_\theta)^2+(\partial_tr_\theta)^2\bigr)\Bigr]
+   +\lambda_2\mathcal J_b(\theta),
 \end{equation}
-In the polynomial identities below, $x,y,t$ also serve as the corresponding
-formal variables, and we abbreviate $T_k(\bx;\bv)$ by $T_k(\bv)$.
-The highest-order derivatives in the residual gradients have symbols
-$x^4$ and $x^3t$. The latter satisfies
+where $\lambda_1=10^{-3}$ and $\lambda_2=10$ are the loss weights.
+To compute $u_{xxxt}$, notice that the mixed symbol $x^3t$
+admits the decomposition
 \begin{equation}\label{eq_num_quartic_identity}
- x^3t=
- \frac{(x+t)^4-(x-t)^4}{6}
- -\frac{(x+2t)^4-(x-2t)^4}{48}.
+ x^3t=\tfrac16\bigl[(x+t)^4-(x-t)^4\bigr]
+      -\tfrac1{48}\bigl[(x+2t)^4-(x-2t)^4\bigr].
 \end{equation}
-Applying Proposition~\ref{prop_bridge} to
-\eqref{eq_num_quartic_identity} and $x^4$ gives
-\begin{align}\label{eq_num_gkdv_reconstruction}
- u_{xxxx}&=24T_4(1,0),\\
- u_{xxxt}&=4\bigl[T_4(1,1)-T_4(1,-1)\bigr]
- -\tfrac12\bigl[T_4(1,2)-T_4(1,-2)\bigr].\notag
-\end{align}
-Algorithm~\ref{alg_homogeneous} evaluates Taylor expansions along five
-real directions. Their lower-order coefficients also supply the remaining
-derivatives in \eqref{eq_num_gploss}.
-
+Applying Proposition~\ref{prop_bridge} to \eqref{eq_num_quartic_identity}
+gives
+\begin{equation}\label{eq_num_gkdv_reconstruction}
+ u_{xxxt}=4\bigl[T_4(\bx;(1,1))-T_4(\bx;(1,-1))\bigr]
+          -\tfrac12\bigl[T_4(\bx;(1,2))-T_4(\bx;(1,-2))\bigr].
+\end{equation}
 Table~\ref{tab_wall_kdv1d} and Figure~\ref{fig_wall_kdv1d} show that
-the WDD method completes more updates and attains lower
+the WDD method completes $7.57\times$ as many updates and attains lower
 mean final errors within the same training-time budget.
 
 \begin{table}[htbp]
@@ -885,12 +856,10 @@ in~\cite[Eq.~(20)]{Shi2024stde},
      &(x,y)\in[-1,1]^2,\\
  u(-1,y,t)=u_\star(-1,y,t),
      &y\in[-1,1],\quad t\in(0,1),\\
- u(1,y,t)=u_\star(1,y,t),
-     &y\in[-1,1],\quad t\in(0,1),\\
+ u(1,y,t)=u_\star(1,y,t),\quad
  \partial_xu(1,y,t)=\partial_xu_\star(1,y,t),
      &y\in[-1,1],\quad t\in(0,1),\\
- u(x,-1,t)=u_\star(x,-1,t),
-     &x\in[-1,1],\quad t\in(0,1),\\
+ u(x,-1,t)=u_\star(x,-1,t),\quad
  \partial_yu(x,-1,t)=\partial_yu_\star(x,-1,t),
      &x\in[-1,1],\quad t\in(0,1).
  \end{cases}
@@ -910,24 +879,22 @@ the PDE residual by
 and the initial and boundary penalty by
 \begin{align*}
  \mathcal J_b(\theta)
-   ={}&\operatorname{MSE}_{x,y}
-        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]\\
-     &+\operatorname{MSE}_{y,t}
-        \bigl[u_\theta(-1,y,t)-u_\star(-1,y,t)\bigr]\\
-     &+\operatorname{MSE}_{y,t}
-        \bigl[u_\theta(1,y,t)-u_\star(1,y,t)\bigr]\\
-     &+\operatorname{MSE}_{x,t}
-        \bigl[u_\theta(x,-1,t)-u_\star(x,-1,t)\bigr]\\
-     &+\operatorname{MSE}_{y,t}
-        \bigl[\partial_xu_\theta(1,y,t)-\partial_xu_\star(1,y,t)\bigr]\\
-     &+\operatorname{MSE}_{x,t}
-        \bigl[\partial_yu_\theta(x,-1,t)-\partial_yu_\star(x,-1,t)\bigr],
+   ={}&\frac1{|\mathcal T_0|}\sum_{(x,y)\in\mathcal T_0}
+        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]^2\\
+     &+\frac1{|\mathcal T_{b,x}|}\sum_{(y,t)\in\mathcal T_{b,x}}
+        \bigl\{\,[u_\theta(-1,y,t)-u_\star(-1,y,t)]^2
+        +[u_\theta(1,y,t)-u_\star(1,y,t)]^2
+        +[\partial_xu_\theta(1,y,t)-\partial_xu_\star(1,y,t)]^2\,\bigr\}\\
+     &+\frac1{|\mathcal T_{b,y}|}\sum_{(x,t)\in\mathcal T_{b,y}}
+        \bigl\{\,[u_\theta(x,-1,t)-u_\star(x,-1,t)]^2
+        +[\partial_yu_\theta(x,-1,t)-\partial_yu_\star(x,-1,t)]^2\,\bigr\}.
 \end{align*}
-where the subscripts of $\operatorname{MSE}$ indicate the coordinates
-over which the sample mean squared errors are taken. The objective is
+Here $\mathcal T_{b,x}$ and $\mathcal T_{b,y}$ denote the resampled points
+on the $x=\pm1$ and $y=\pm1$ boundary faces, respectively. The objective is
 \begin{equation}\label{eq_num_kdv2d_loss}
- \mathcal J_{\rm 2D}(\theta)=\langle r_\theta^2\rangle_r
-       +10\mathcal J_b(\theta).
+ \mathcal J_{\rm 2D}(\theta)
+   =\frac1{|\mathcal T_r|}\sum_{(x,y,t)\in\mathcal T_r}r_\theta(x,y,t)^2
+       +\lambda_2\mathcal J_b(\theta).
 \end{equation}
 There is no residual-gradient penalty.
 
@@ -936,19 +903,21 @@ together with
 \begin{equation}\label{eq_num_kdv2d_time_identity}
  yt=\tfrac14\bigl[(y+t)^2-(y-t)^2\bigr],
 \end{equation}
-Proposition~\ref{prop_bridge} gives
+Proposition~\ref{prop_bridge} gives, with $\bx=(x,y,t)$ the network input
+point,
 \begin{align}\label{eq_num_kdv2d_reconstruction}
- u_{xxxy}&=4\bigl[T_4(1,1,0)-T_4(1,-1,0)\bigr]
- -\tfrac12\bigl[T_4(1,2,0)-T_4(1,-2,0)\bigr],\\
- u_{ty}&=\tfrac12\bigl[T_2(0,1,1)-T_2(0,1,-1)\bigr].\notag
+ u_{xxxy}&=4\bigl[T_4(\bx;(1,1,0))-T_4(\bx;(1,-1,0))\bigr]
+ -\tfrac12\bigl[T_4(\bx;(1,2,0))-T_4(\bx;(1,-2,0))\bigr],\\
+ u_{ty}&=\tfrac12\bigl[T_2(\bx;(0,1,1))-T_2(\bx;(0,1,-1))\bigr].\notag
 \end{align}
 Algorithm~\ref{alg_homogeneous} evaluates Taylor expansions along six
 real directions. Their lower-order coefficients also recover
 $u_x,u_y,u_{xx},u_{xy},u_{yy}$.
 
 The results in Table~\ref{tab_wall_kdv2d} and
-Figure~\ref{fig_wall_kdv2d} show that the computational advantage
-of the WDD method persists for this mixed-derivative objective.
+Figure~\ref{fig_wall_kdv2d} show that the WDD method completes
+$5.57\times$ as many updates, so its computational advantage
+persists for this mixed-derivative objective.
 
 \begin{table}[htbp]
 \centering
@@ -1009,18 +978,19 @@ Let $\mathcal F$ denote the four spatial boundary faces. The initial
 and boundary penalty is
 \begin{align*}
  \mathcal J_b(\theta)
-   ={}&\operatorname{MSE}_{x,y}
-        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]\\
-     &+\frac14\sum_{F\in\mathcal F}
-       \left\{\operatorname{MSE}_{F,t}\bigl[\partial_{\bm n}u_\theta\bigr]
-       +\operatorname{MSE}_{F,t}
-          \bigl[\partial_{\bm n}\Delta u_\theta\bigr]\right\},
+   ={}&\frac1{|\mathcal T_0|}\sum_{(x,y)\in\mathcal T_0}
+        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]^2\\
+     &+\frac14\sum_{F\in\mathcal F}\frac1{|\mathcal T_{b,F}|}
+       \sum_{(\bm s,t)\in\mathcal T_{b,F}}
+       \Bigl\{[\partial_{\bm n}u_\theta(\bm s,t)]^2
+       +[\partial_{\bm n}\Delta u_\theta(\bm s,t)]^2\Bigr\}.
 \end{align*}
-where $\operatorname{MSE}_{F,t}$ is evaluated over sampled points on
-$F\times(0,1)$. The objective is
+Here $\mathcal T_{b,F}$ is the set of resampled points on $F\times(0,1)$,
+with spatial coordinate $\bm s\in F$. The objective is
 \begin{equation}\label{eq_num_ch_loss}
- \mathcal J_{\rm CH}(\theta)=\langle r_\theta^2\rangle_r
- +10\mathcal J_b(\theta).
+ \mathcal J_{\rm CH}(\theta)
+   =\frac1{|\mathcal T_r|}\sum_{(x,y,t)\in\mathcal T_r}r_\theta(x,y,t)^2
+ +\lambda_2\mathcal J_b(\theta).
 \end{equation}
 There is no additional mass, energy, or residual-gradient penalty.
 
@@ -1032,21 +1002,22 @@ For the spatial operators, we use the identities
                        +\left(\frac{-x+\sqrt3y}{2}\right)^2\right].\notag
 \end{align}
 Writing $\bv_r$ for the coefficient vectors of these three linear forms
-in $(x,y,t)$, Proposition~\ref{prop_bridge} gives
+in $(x,y,t)$ and $\bx=(x,y,t)$ for the network input point,
+Proposition~\ref{prop_bridge} gives
 \begin{equation}\label{eq_num_ch_reconstruction}
- \Delta^2u_\theta=\tfrac{64}{3}\sum_{r=1}^3T_4(\bv_r),
+ \Delta^2u_\theta=\tfrac{64}{3}\sum_{r=1}^3T_4(\bx;\bv_r),
  \qquad
- \Delta u_\theta=\tfrac43\sum_{r=1}^3T_2(\bv_r).
+ \Delta u_\theta=\tfrac43\sum_{r=1}^3T_2(\bx;\bv_r).
 \end{equation}
 The quadratic identity also yields
-$|\nabla u_\theta|^2=\tfrac23\sum_{r=1}^3[T_1(\bv_r)]^2$.
+$|\nabla u_\theta|^2=\tfrac23\sum_{r=1}^3[T_1(\bx;\bv_r)]^2$.
 Algorithm~\ref{alg_homogeneous} therefore evaluates Taylor expansions
 along three real spatial directions; time and boundary derivatives
 use coordinate JVPs in both methods.
 
 Table~\ref{tab_wall_ch2d} and Figure~\ref{fig_wall_ch2d} show lower
-mean final errors with the WDD method, although
-$S_{\mathrm{iter}}$ is smaller than in the KdV examples.
+mean final errors with the WDD method, although its update speedup of
+$1.91\times$ is smaller than in the KdV examples.
 
 \begin{table}[htbp]
 \centering

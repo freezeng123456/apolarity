@@ -64,8 +64,8 @@ def main():
         aggregate['speedup'] = stats([t['steps'] / n['steps'] for n, t in
                                      zip(records[METHODS[0]], records[METHODS[1]])])
         aggregates.append(aggregate)
-        lines = [r'\begin{tabular}{@{}lcccc@{}}', r'\toprule',
-                 r'Method & Updates & \shortstack{Space--time\\$\operatorname{RE}$} & \shortstack{Terminal\\$\operatorname{RE}$} & $S_{\mathrm{iter}}$ \\',
+        lines = [r'\begin{tabular}{@{}lccc@{}}', r'\toprule',
+                 r'Method & Updates & \shortstack{Space--time\\$\operatorname{RE}$} & \shortstack{Terminal\\$\operatorname{RE}$} \\',
                  r'\midrule']
         for method, label in zip(METHODS, ('Nested JVP', 'WDD')):
             row = aggregate[method]
@@ -73,9 +73,6 @@ def main():
             for metric in ('spacetime', 'terminal'):
                 values.append('$' + scientific(row[metric]['mean']) + r'\pm' +
                               scientific(row[metric]['sample_std']) + '$')
-            speedup = aggregate['speedup']
-            values.append('$1$' if method == 'nested_jvp' else
-                          f"${speedup['mean']:.2f} \\pm {speedup['sample_std']:.2f}$")
             lines.append(' & '.join(values) + r' \\')
         lines.extend((r'\bottomrule', r'\end{tabular}'))
         (PAPER / f'tables/resampled_wall_{case}.tex').write_text('\n'.join(lines) + '\n')
