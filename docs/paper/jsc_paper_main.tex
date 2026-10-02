@@ -208,7 +208,7 @@ directions. A batched Taylor-mode implementation evaluates the resulting
 directional Taylor coefficients independently and in parallel.
 \item We compare the WDD method with nested coordinate Jacobian--vector
   products (JVPs) on individual high-order partial derivatives, examining runtime
-  across derivative patterns and input batch sizes without outer whole-function JIT compilation.
+  across derivative patterns without outer whole-function JIT compilation.
   KdV and Cahn--Hilliard PINN comparisons measure the number of complete
   updates and the solution error under a common wall-time budget, with matched
   initialization and resampled interior and constraint-point sequences.
@@ -568,7 +568,7 @@ Thus, $z_0$ is chosen as a variable with the smallest positive exponent. The
 rank remains unchanged when the linear forms are allowed to involve the
 remaining polynomial variables~\cite[Remark~2.3]{CCG2012}.
 
-For $m\geq1$, let $U_m:=\{\zeta\in\C:\zeta^m=1\}$, and define
+For each integer $m\geq1$, let $U_m:=\{\zeta\in\C:\zeta^m=1\}$, and define
 \begin{equation}\label{eq_root_index_set}
     \mathcal U_{\nu}
     :=
@@ -747,7 +747,7 @@ the paired methods share the initialization, loss weights, and samples at
 each common update index. Each run has a 1200-second wall-time budget.
 In the polynomial identities below, coordinate letters also denote the
 corresponding formal variables.
-We record the relative $L^2$ error
+For a test set $D$, we record the relative $L^2$ error
 \begin{equation}\label{eq_num_relative_error}
  \operatorname{RE}:=
  \frac{\bigl(\sum_{\bx\in D}|u_\theta(\bx)-u_\star(\bx)|^2\bigr)^{1/2}}
@@ -823,7 +823,7 @@ and $x^4$ gives
 These five directions also provide the lower-order coefficients required
 by the objective.
 Table~\ref{tab_wall_kdv1d} and Figure~\ref{fig_wall_kdv1d} show that
-the WDD method completes $7.57\times$ as many updates and attains lower
+the WDD method completes $7.78\times$ as many updates and attains lower
 mean final errors within the same training-time budget.
 
 \begin{table}[htbp]
@@ -922,7 +922,7 @@ $u_x,u_y,u_{xx},u_{xy},u_{yy}$.
 
 The results in Table~\ref{tab_wall_kdv2d} and
 Figure~\ref{fig_wall_kdv2d} show that the WDD method completes
-$5.57\times$ as many updates, so its computational advantage
+$5.56\times$ as many updates, so its computational advantage
 persists for this mixed-derivative objective.
 
 \begin{table}[htbp]
@@ -1020,7 +1020,7 @@ use coordinate JVPs in both methods.
 
 Table~\ref{tab_wall_ch2d} and Figure~\ref{fig_wall_ch2d} show lower
 mean final errors with the WDD method, although its update speedup of
-$1.91\times$ is smaller than in the KdV examples.
+$1.92\times$ is smaller than in the KdV examples.
 
 \begin{table}[htbp]
 \centering
