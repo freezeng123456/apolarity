@@ -547,18 +547,13 @@ determine the exact minimum direction count via the complex Waring rank.
 \subsection{Monomial specialization and complex Waring rank}
 \label{sec_rank_optimal}
 
-Fix a nonzero multi-index $\nu\in\N_0^d$ of order $p:=\abs{\nu}\geq1$, and
-consider the partial derivative operator $\mathcal{L}=\partial^\nu$.
-Applying Proposition~\ref{prop_bridge} gives
+Fix a nonzero multi-index $\nu\in\N_0^d$ of order $p:=\abs{\nu}\geq1$, and set $\mathcal{L}=\partial^\nu$.
+For a positive integer $R$, fix coefficients $c_r\in\C$ and directions $\bv_r\in\C^d$, $r=1,\ldots,R$.
+Proposition~\ref{prop_bridge} gives
 \begin{equation}\label{eq_monomial_schedule}
-    \partial^\nu u(\bx)
-    =
-    \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
-    \quad\Longleftrightarrow\quad
-    p!\,\bz^\nu
-    =
-    \sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p.
+    \partial^\nu u(\bx)=\sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)\quad\Longleftrightarrow\quad p!\,\bz^\nu=\sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p,
 \end{equation}
+where the left-hand identity is required to hold for every evaluation point $\bx$ and every $u$ satisfying the holomorphic-extension assumption at $\bx$, and the right-hand identity holds in $\C[z_1,\ldots,z_d]$.
 To state the rank formula and an attaining decomposition, relabel the variables
 with positive exponents in $\bz^\nu$ after a permutation of the coordinates so
 that
