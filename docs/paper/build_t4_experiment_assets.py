@@ -35,15 +35,15 @@ def main():
     combined = []
     for row in rows:
         combined.append([
-            f"$u_{{{row['target']}}}$", row['order'], row['directions'], row['batch'],
+            f"$u_{{{row['target']}}}$", row['order'], row['directions'],
             timing(row, 'nested'),
             timing(row, 'waring_batched'), f"${float(row['paired_speedup_mean']):.2f}\\times$",
         ])
     path = PAPER / 'tables/t4_individual_partials.tex'
-    table(path, 'lrrrrrr',
-          r'Target & $p$ & $R$ & $B$ & Nested JVP (ms) & WDD (ms) & Speedup',
+    table(path, 'lrrrrr',
+          r'Target & $p$ & $R$ & Nested JVP (ms) & WDD (ms) & Speedup',
           combined)
-    print('Generated one table: six target derivatives at B=100, WDD versus nested JVP, paired speedups preserved.')
+    print('Generated six rows at B=100; T4 timing/speedups preserved.')
 
 
 if __name__ == '__main__':

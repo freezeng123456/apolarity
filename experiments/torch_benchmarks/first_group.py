@@ -56,9 +56,8 @@ def source_files_sha256() -> dict[str, str]:
 
 
 def source_commit() -> str:
-    return subprocess.check_output(
-        ['git', '-C', str(REPO_ROOT), 'rev-parse', 'HEAD'], text=True
-    ).strip()
+    from torch_pinn.records import source_identity
+    return source_identity()[0]
 
 
 def tensor_sha256(value: torch.Tensor) -> str:

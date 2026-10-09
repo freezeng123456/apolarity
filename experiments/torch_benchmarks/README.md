@@ -25,36 +25,40 @@ Independent references are validation utilities, not additional experiment metho
 
 ## Current PDE training entry
 
-Use `train_fixed_wall.py` for all three problems. Its defaults are:
+Use `train_equal_updates.py` for all three problems. The paper protocol uses:
 
 - Four hidden layers of width 128 with tanh activations; `--depth 5` counts
   affine layers including the scalar output layer.
 - Adam with constant learning rate 1e-5 for `kdv1d`/`kdv2d`, or 1e-4 for `ch2d`.
-- A 1200-second training budget and 400 uniformly sampled interior points per update.
+- Exactly 25,000, 20,000, and 1,500 updates for `kdv1d`, `kdv2d`, and `ch2d`,
+  respectively, with 400 uniformly sampled interior points per update.
 - Fresh uniform initial/boundary points at every update: 128 per face in 1D,
   256 per face in 2D. Conditions on the same face use the same points.
 - Independent interior and constraint RNG streams, matched between paired methods.
 - Fixed independent space–time and terminal evaluation sets, with 10,000 points each.
-- Offline diagnostics, full checkpoints and model-only snapshots following the
-  frozen paper protocol. A parameter-preserving warm-up precedes timing.
+- Online numeric error curves and endpoint summaries, with no model or optimizer
+  checkpoints. A parameter-preserving warm-up precedes timing.
 
 ```bash
-python train_fixed_wall.py --case kdv1d --method shared_jet_linear --out /absolute/new/kdv1d
-python train_fixed_wall.py --case kdv2d --method nested_jvp --out /absolute/new/kdv2d
-python train_fixed_wall.py --case ch2d --method shared_jet_linear --out /absolute/new/ch2d
+python train_equal_updates.py --case kdv1d --method shared_jet_linear --updates 25000 --out /absolute/new/kdv1d
+python train_equal_updates.py --case kdv2d --method nested_jvp --updates 20000 --out /absolute/new/kdv2d
+python train_equal_updates.py --case ch2d --method shared_jet_linear --updates 1500 --eval-every 10 --out /absolute/new/ch2d
 ```
 
-`--constraint-sampling` accepts only `resampled`. `--max-steps` is a cap for small
-correctness checks, not a fixed-update paper experiment. A full matrix uses three
-problems, two methods, and five seeds:
+The paired methods share initialization and resampled training points at each
+update. A full PDE matrix uses three problems, two methods, and five seeds.
+The campaign also lists the historical single-partial memory supplement:
 
 ```bash
-python run_fixed_wall_matrix.py --out /absolute/new/matrix --dry-run
-python run_fixed_wall_matrix.py --out /absolute/new/cpu-check --device cpu --seeds 71 --smoke
+python equal_updates_campaign.py plan --out /absolute/new/matrix
+python train_equal_updates.py --case kdv1d --method shared_jet_linear --device cpu \
+  --width 4 --depth 2 --batch 3 --constraint-side 2 --updates 3 --eval-every 1 \
+  --eval-points 16 --out /absolute/new/cpu-check
 ```
 
-The dry run prints commands without launching jobs. The small CPU matrix performs
-three updates per method/problem and checks paired sampling and evaluation points.
+The plan prints commands without launching jobs. The CPU command is a three-update
+correctness check. The old `train_fixed_wall.py` entry and its result snapshots are
+retained as historical evidence, not the current paper protocol.
 
 ## Single-partial timing
 
@@ -75,7 +79,8 @@ The tests compare loss values, parameter gradients and Adam updates with the exa
 frozen source used for the paper. They also verify fresh paired constraint batches,
 evaluation isolation, real-only PDE inputs, and rejection of retired method options.
 The identity script checks both current and frozen KdV reconstruction weights.
-The frozen training source is under
+Current equal-update curves and provenance are under
+`results/paper_equal_updates_v100_20261008/`. The earlier frozen training source is under
 `results/paper_resampled_20260914/source/experiments/torch_benchmarks/` at the
 repository root. The repository retains compact per-run summaries and measured
 error curves for the four paper examples; large model and per-update artifacts

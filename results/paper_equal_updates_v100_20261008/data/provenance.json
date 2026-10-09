@@ -1,0 +1,377 @@
+{
+  "status": "PASS",
+  "protocol": "apolarity_equal_updates_v1",
+  "runs": 30,
+  "observations": 6030,
+  "targets": {
+    "kdv1d": 25000,
+    "kdv2d": 20000,
+    "ch2d": 1500
+  },
+  "seeds": [
+    20260919,
+    20260920,
+    20260921,
+    20260922,
+    20260923
+  ],
+  "methods": [
+    "nested_jvp",
+    "shared_jet_linear"
+  ],
+  "device_kind": "Tesla V100-SXM2-32GB",
+  "source_commit": "f8ba58c8d5a50c0eaba7ecd9d8e67e9288847be4",
+  "working_tree_changes_included": true,
+  "source_archive_sha256": "4f429eae6e31de41ea7faa5bbbd8fb8872f3956959702ba1997fafb1d653954a",
+  "recovered_archive": {
+    "bytes": 289676,
+    "sha256": "f254df3c5829cb94fccec201cf2c40906f6e567309dee9df1d553172da920e02",
+    "runs": 30,
+    "checkpoints": false,
+    "status": "TRANSFER_SHA256_VERIFIED"
+  },
+  "original_file_checks": 150,
+  "paired_comparisons_verified": 15,
+  "checkpoints": false,
+  "jobs": {
+    "preflight": "2354678",
+    "memory": "2354682",
+    "pde": "2354694"
+  },
+  "curves_csv_sha256": "3ace1845d52b632456e0f36755cbe41e075c4fea5c6efd69e18bd85a3b2f10c1",
+  "aggregation": "At each common update index, arithmetic mean of the five training times and five errors; shade from mean error to mean plus sample standard deviation (ddof=1).",
+  "interpolation": "None; plot the recorded update-index means directly without smoothing or extrapolation.",
+  "timing_scope": "Sum of synchronized training updates: sampling, differentiation, backward, Adam, finite checks and sampling digests; warm-up, test evaluation, curve output and setup excluded.",
+  "run_identities": [
+    {
+      "case": "kdv1d",
+      "method": "nested_jvp",
+      "seed": 20260919,
+      "initial_hash": "5bc1633051382076d7696cb4147269a8fe8747e7d286abf0dfb7e86885c8db1b",
+      "final_hash": "1a7d42c8634675f845c163df00d272721fd0b5a5bc83075f2311dff11ecd5d8b",
+      "interior_samples_sha256": "df854b5c7aa2db85480c2c305852269ffd320aba565d79e4d9db31b4b0f77004",
+      "constraint_samples_sha256": "6299fd857ffdcf6ca073b88a7108fe5ac453526dd98da9755442a732c27ee18e",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "shared_jet_linear",
+      "seed": 20260919,
+      "initial_hash": "5bc1633051382076d7696cb4147269a8fe8747e7d286abf0dfb7e86885c8db1b",
+      "final_hash": "6cccca096253e5e08e8e29002fc6f2f349a8167abe20403fef7f807576d3ba87",
+      "interior_samples_sha256": "df854b5c7aa2db85480c2c305852269ffd320aba565d79e4d9db31b4b0f77004",
+      "constraint_samples_sha256": "6299fd857ffdcf6ca073b88a7108fe5ac453526dd98da9755442a732c27ee18e",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "nested_jvp",
+      "seed": 20260920,
+      "initial_hash": "2346965d7602d306e6c420ed6a128f189e0a7a2d08fbb64d9a6d666f1f4e0f27",
+      "final_hash": "d012dad8135027555fe0848d6e87a1a5e275b82d87d9c949dca3c33d5108f4aa",
+      "interior_samples_sha256": "7ce48aec54dddfc983f921a20b1eb236d1c50b014c03ba9bb64638ff452e0235",
+      "constraint_samples_sha256": "497f841f062f6838294a474732e3e289d46180a0054a5b89cd318905430767d2",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "shared_jet_linear",
+      "seed": 20260920,
+      "initial_hash": "2346965d7602d306e6c420ed6a128f189e0a7a2d08fbb64d9a6d666f1f4e0f27",
+      "final_hash": "8e3f23c194b19faebcb11b619e848dd5c39c7af64b4f11c60782864b1ef52004",
+      "interior_samples_sha256": "7ce48aec54dddfc983f921a20b1eb236d1c50b014c03ba9bb64638ff452e0235",
+      "constraint_samples_sha256": "497f841f062f6838294a474732e3e289d46180a0054a5b89cd318905430767d2",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "nested_jvp",
+      "seed": 20260921,
+      "initial_hash": "190b04c13c927bcb5731359344bdbdb479dd699921ad72b211931e6187f07c01",
+      "final_hash": "ee90d77dd3e62184005abbfda3e53375b64d3627319dada40a45e707c7fac81a",
+      "interior_samples_sha256": "cb7ef2044c27fa6019105cce157622e10ea89017c811b7c80a5d53cdfcf8be1f",
+      "constraint_samples_sha256": "2a44f16e127f923e5caab839de80613e42dc526a7c1c74b9d5698e8ccef1d17b",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "shared_jet_linear",
+      "seed": 20260921,
+      "initial_hash": "190b04c13c927bcb5731359344bdbdb479dd699921ad72b211931e6187f07c01",
+      "final_hash": "883eb4e8010e05efce6bf8561c3ec3faf98faa3ff204b83d90d3ad208ffa0bc7",
+      "interior_samples_sha256": "cb7ef2044c27fa6019105cce157622e10ea89017c811b7c80a5d53cdfcf8be1f",
+      "constraint_samples_sha256": "2a44f16e127f923e5caab839de80613e42dc526a7c1c74b9d5698e8ccef1d17b",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "nested_jvp",
+      "seed": 20260922,
+      "initial_hash": "2e0f33116a33a84a470657177f625fcb89614adab13593f6bd0b338e3750d2a2",
+      "final_hash": "eac2b8de873f7270fc2109c6c2fbbd8533f48bb6adcc0e38f78da6e017c4ac2e",
+      "interior_samples_sha256": "dc60e48be0929033bfe4e1149802c3916c8150739af84a4df5ed3b4711818489",
+      "constraint_samples_sha256": "ad2f207693ae23c72ca78ce65b48618de96146c290a0134ae6096f10ff3734b7",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "shared_jet_linear",
+      "seed": 20260922,
+      "initial_hash": "2e0f33116a33a84a470657177f625fcb89614adab13593f6bd0b338e3750d2a2",
+      "final_hash": "fa90de555e65206d1f71a5ee24e78856d4999b573ee2f1d4c0b925d957ebd1f0",
+      "interior_samples_sha256": "dc60e48be0929033bfe4e1149802c3916c8150739af84a4df5ed3b4711818489",
+      "constraint_samples_sha256": "ad2f207693ae23c72ca78ce65b48618de96146c290a0134ae6096f10ff3734b7",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "nested_jvp",
+      "seed": 20260923,
+      "initial_hash": "515aecaa08d2287957687a21a651acca79a0b526fec000d83cf74604b1116026",
+      "final_hash": "c74cf8a309feac50b7b901be6f5a0082b9bdd9ab6786aad71b9869fe24b0c511",
+      "interior_samples_sha256": "fec4b97b868589b55d672905226a2d5d9e76d7c19d2ef6f184ceb8948b790ac4",
+      "constraint_samples_sha256": "fd57edd20b914b529bd6953f3a1cb103ba29af9b314506775707571a7806f6f6",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv1d",
+      "method": "shared_jet_linear",
+      "seed": 20260923,
+      "initial_hash": "515aecaa08d2287957687a21a651acca79a0b526fec000d83cf74604b1116026",
+      "final_hash": "b48e3b73f52c547bf1501a909664ba3c6ba4fe95bfe678621a87ea554dbc7557",
+      "interior_samples_sha256": "fec4b97b868589b55d672905226a2d5d9e76d7c19d2ef6f184ceb8948b790ac4",
+      "constraint_samples_sha256": "fd57edd20b914b529bd6953f3a1cb103ba29af9b314506775707571a7806f6f6",
+      "spacetime_test_sha256": "29aa45821c86d9733a2ee80607eebede58a20e3599c89529e9e2474672b16dc3",
+      "terminal_test_sha256": "549ba2327386ce0549178e15581ffddd2d7a14474eabfabef7c4ffc99f0baa22"
+    },
+    {
+      "case": "kdv2d",
+      "method": "nested_jvp",
+      "seed": 20260919,
+      "initial_hash": "5176e599c3a95c28026102f97b60f2feb9acbbe98df154c3f8730dabefa96719",
+      "final_hash": "8c49310f5b41fa3b095738f8f4c709e7d519618553a801b9682e4ab97530f10b",
+      "interior_samples_sha256": "a6e638ebc84afa1ff8b470adc28f91f482ddd12fd31e4813dc3d68d44f69f4c3",
+      "constraint_samples_sha256": "166a9019650c57c3d83747b9d5985fbae9e09a3c4c8eb2d3ef0f8b6f0591c19f",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "shared_jet_linear",
+      "seed": 20260919,
+      "initial_hash": "5176e599c3a95c28026102f97b60f2feb9acbbe98df154c3f8730dabefa96719",
+      "final_hash": "93634397a8c415a27105dd0c569ad2fb36f54723fe54244a4581cd04cf61ecfa",
+      "interior_samples_sha256": "a6e638ebc84afa1ff8b470adc28f91f482ddd12fd31e4813dc3d68d44f69f4c3",
+      "constraint_samples_sha256": "166a9019650c57c3d83747b9d5985fbae9e09a3c4c8eb2d3ef0f8b6f0591c19f",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "nested_jvp",
+      "seed": 20260920,
+      "initial_hash": "f80978338f1bb9a719c6483756b5b9f1d076eca6fb26b946de14dce6953079ab",
+      "final_hash": "b8e96fcb30d90f85f30c9348d64de8681818f2feac65bb1a9a10c0d4b8709671",
+      "interior_samples_sha256": "283d87301ae95a3da26c5fb9eb3ff53304a912a2c614fc921905718292f5447e",
+      "constraint_samples_sha256": "cf00297a4b21de0322134d0f863e50062d69f5923c7e8bb12fd1f6b51f06b393",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "shared_jet_linear",
+      "seed": 20260920,
+      "initial_hash": "f80978338f1bb9a719c6483756b5b9f1d076eca6fb26b946de14dce6953079ab",
+      "final_hash": "2366ddc9d12b17948267d484ef52795b74971adaf216c698b1049f3e014d0a68",
+      "interior_samples_sha256": "283d87301ae95a3da26c5fb9eb3ff53304a912a2c614fc921905718292f5447e",
+      "constraint_samples_sha256": "cf00297a4b21de0322134d0f863e50062d69f5923c7e8bb12fd1f6b51f06b393",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "nested_jvp",
+      "seed": 20260921,
+      "initial_hash": "ef624725f50959d4e7133ad2738e94bcc9b75cae0c6cf1b341afdce8846f3b56",
+      "final_hash": "76f03273e4f3c29f62cab5e5a9307f6021c9fbb47a84d199a51d70ec8d6426d9",
+      "interior_samples_sha256": "c73eb325fb7ba11cf111667f877a1aad03bc03032d735ddbaff0e012c70002a6",
+      "constraint_samples_sha256": "a42801ed4f125cf40eebee2bc337d08cf6b79ec146b050fb5b34212e9a090e96",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "shared_jet_linear",
+      "seed": 20260921,
+      "initial_hash": "ef624725f50959d4e7133ad2738e94bcc9b75cae0c6cf1b341afdce8846f3b56",
+      "final_hash": "ba9d7b144214bf850b25e92b3a6a4528ec4f23c68f14b309beb178d90e6f0884",
+      "interior_samples_sha256": "c73eb325fb7ba11cf111667f877a1aad03bc03032d735ddbaff0e012c70002a6",
+      "constraint_samples_sha256": "a42801ed4f125cf40eebee2bc337d08cf6b79ec146b050fb5b34212e9a090e96",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "nested_jvp",
+      "seed": 20260922,
+      "initial_hash": "54502d65d07f358180166b607f72b11e53445460e40302735a1454c4c09b9706",
+      "final_hash": "112b6f7aab9b6cdd11352d655fd788d408f9892429c04cb85f91ce8b4005982c",
+      "interior_samples_sha256": "a0f5c555c66893a43064192ab45cf4c8b0e05c81e2668cd19b1e9955dca1996d",
+      "constraint_samples_sha256": "fe6ae084729b987aa43bbfff94ec4f1e1f046aa043403f1ff90962bee9e8513e",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "shared_jet_linear",
+      "seed": 20260922,
+      "initial_hash": "54502d65d07f358180166b607f72b11e53445460e40302735a1454c4c09b9706",
+      "final_hash": "7647711305e3efb61517f6a41c6d1cc81a120bcf43ddae4300830420226f5aeb",
+      "interior_samples_sha256": "a0f5c555c66893a43064192ab45cf4c8b0e05c81e2668cd19b1e9955dca1996d",
+      "constraint_samples_sha256": "fe6ae084729b987aa43bbfff94ec4f1e1f046aa043403f1ff90962bee9e8513e",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "nested_jvp",
+      "seed": 20260923,
+      "initial_hash": "4308c308250fc178ad38a49396fed85ca7915f14ba39b5cbfdfbe4304f99668b",
+      "final_hash": "cade37d0ff5b34ad0eebed9d253cdc08d5fcb7fc649f0abd0680ea037f325d46",
+      "interior_samples_sha256": "405e04dfd76b2c5d9dd3d4940d3ffbe277469fe29425e1394ad046f13be079f8",
+      "constraint_samples_sha256": "e3bb8e3215a909d903be48dbc96b2bfcb3fffd3ef85015f673cd52ca73d4a829",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "kdv2d",
+      "method": "shared_jet_linear",
+      "seed": 20260923,
+      "initial_hash": "4308c308250fc178ad38a49396fed85ca7915f14ba39b5cbfdfbe4304f99668b",
+      "final_hash": "e1faac969b9c76a61ebc82e167090c41162df154fa6db530321585d38e75c848",
+      "interior_samples_sha256": "405e04dfd76b2c5d9dd3d4940d3ffbe277469fe29425e1394ad046f13be079f8",
+      "constraint_samples_sha256": "e3bb8e3215a909d903be48dbc96b2bfcb3fffd3ef85015f673cd52ca73d4a829",
+      "spacetime_test_sha256": "2b9a5ee7bf764eae69161733021a8a4af011bfc5b17dfd72f63e541d62d4c428",
+      "terminal_test_sha256": "811198cdf97ac44067dd7364679e7758618591f1356271461921f1f894379f93"
+    },
+    {
+      "case": "ch2d",
+      "method": "nested_jvp",
+      "seed": 20260919,
+      "initial_hash": "5176e599c3a95c28026102f97b60f2feb9acbbe98df154c3f8730dabefa96719",
+      "final_hash": "fee9c8a692646c2c4290098fa737045f13134ae08d207caa8452f444e1dbc671",
+      "interior_samples_sha256": "ced6ee0832a08d6953e6502e557e968feeb35ae10d935610dccf4b5b75e31b3a",
+      "constraint_samples_sha256": "1c57ad459c1216344773a3da6ebe7a959086c58b107abdcb8dddba475faaba77",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "shared_jet_linear",
+      "seed": 20260919,
+      "initial_hash": "5176e599c3a95c28026102f97b60f2feb9acbbe98df154c3f8730dabefa96719",
+      "final_hash": "04efae21dc8f9c8fd5b1dc415357c9183c51cbd3c45568099d8270994213d0c3",
+      "interior_samples_sha256": "ced6ee0832a08d6953e6502e557e968feeb35ae10d935610dccf4b5b75e31b3a",
+      "constraint_samples_sha256": "1c57ad459c1216344773a3da6ebe7a959086c58b107abdcb8dddba475faaba77",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "nested_jvp",
+      "seed": 20260920,
+      "initial_hash": "f80978338f1bb9a719c6483756b5b9f1d076eca6fb26b946de14dce6953079ab",
+      "final_hash": "57679bba4a8f782e28c9a53265f3681ac9dafdfe9a4cd53e2f49f2b95f422e9a",
+      "interior_samples_sha256": "47deba218f09182dcc123165086b4a03b2e40be5ba5988cac7c168122ae30447",
+      "constraint_samples_sha256": "b340811f92cb2e29852570a93e6fefceb79bfee8f6fc8c7d8de008c92023721e",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "shared_jet_linear",
+      "seed": 20260920,
+      "initial_hash": "f80978338f1bb9a719c6483756b5b9f1d076eca6fb26b946de14dce6953079ab",
+      "final_hash": "2beb6760da7f3b776763d6293a53c6c552e2a005f382a65f29b9cf0e4b1c8fd7",
+      "interior_samples_sha256": "47deba218f09182dcc123165086b4a03b2e40be5ba5988cac7c168122ae30447",
+      "constraint_samples_sha256": "b340811f92cb2e29852570a93e6fefceb79bfee8f6fc8c7d8de008c92023721e",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "nested_jvp",
+      "seed": 20260921,
+      "initial_hash": "ef624725f50959d4e7133ad2738e94bcc9b75cae0c6cf1b341afdce8846f3b56",
+      "final_hash": "fef9590401ef6f75079df3c9055fa343e0ce580b2badd7632df23e8d008090b4",
+      "interior_samples_sha256": "b4fb290ef9472b23c1144422bf406efaf2a66425dd979de78a1ce208c0cfda49",
+      "constraint_samples_sha256": "6006e9d5246aa211dc38fcd6b335b986e79bba0b71c2e174e2ba911fcc09112c",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "shared_jet_linear",
+      "seed": 20260921,
+      "initial_hash": "ef624725f50959d4e7133ad2738e94bcc9b75cae0c6cf1b341afdce8846f3b56",
+      "final_hash": "458b1b5f90fb03064eb48c41210968c12a4d54c2e99c3c0c15e2778a2bc876e6",
+      "interior_samples_sha256": "b4fb290ef9472b23c1144422bf406efaf2a66425dd979de78a1ce208c0cfda49",
+      "constraint_samples_sha256": "6006e9d5246aa211dc38fcd6b335b986e79bba0b71c2e174e2ba911fcc09112c",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "nested_jvp",
+      "seed": 20260922,
+      "initial_hash": "54502d65d07f358180166b607f72b11e53445460e40302735a1454c4c09b9706",
+      "final_hash": "1b8d2783410d26d6b6c427400825d0b2b48d360d11561dc54d22016f36f33e7f",
+      "interior_samples_sha256": "ca2d1427e00ebc28a75ae6321dff6d130e8c34da32b4d55e0299b30274d60d0c",
+      "constraint_samples_sha256": "1c633a87bbc094eb9d65000edb95380930663a1c8a848cfdbe4c34a198ec1e7c",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "shared_jet_linear",
+      "seed": 20260922,
+      "initial_hash": "54502d65d07f358180166b607f72b11e53445460e40302735a1454c4c09b9706",
+      "final_hash": "43de0db795d8013a6f4b3d00b23e7cc2c1cc945162f67adbd27ad004dbb85bd0",
+      "interior_samples_sha256": "ca2d1427e00ebc28a75ae6321dff6d130e8c34da32b4d55e0299b30274d60d0c",
+      "constraint_samples_sha256": "1c633a87bbc094eb9d65000edb95380930663a1c8a848cfdbe4c34a198ec1e7c",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "nested_jvp",
+      "seed": 20260923,
+      "initial_hash": "4308c308250fc178ad38a49396fed85ca7915f14ba39b5cbfdfbe4304f99668b",
+      "final_hash": "5fab0f0c2328a227852cd436a34e91f2c31a9b5ab957edf78a4e25591f1c59fb",
+      "interior_samples_sha256": "6a20d981ede4e3347205291dc3da2a40526064e8d05477c5edc591e3d8122bea",
+      "constraint_samples_sha256": "405301bae174ec275b50f92a0ae717064f945a5539a4107315322cc5aa28b3de",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    },
+    {
+      "case": "ch2d",
+      "method": "shared_jet_linear",
+      "seed": 20260923,
+      "initial_hash": "4308c308250fc178ad38a49396fed85ca7915f14ba39b5cbfdfbe4304f99668b",
+      "final_hash": "6bd79ceff1959580639682e9f8a434f1c03bfa1cba44573473571e96a46caa28",
+      "interior_samples_sha256": "6a20d981ede4e3347205291dc3da2a40526064e8d05477c5edc591e3d8122bea",
+      "constraint_samples_sha256": "405301bae174ec275b50f92a0ae717064f945a5539a4107315322cc5aa28b3de",
+      "spacetime_test_sha256": "b02aefd3b464a5789552cb97c15d7bf65c075bb00e9b2fc0f452be279692920d",
+      "terminal_test_sha256": "83e12a7fc1789f7195ee5eeb953e6407dedda3a7bf189d1517a884f218760dd6"
+    }
+  ]
+}

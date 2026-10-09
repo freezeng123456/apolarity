@@ -1,0 +1,55 @@
+{
+  "runs": 30,
+  "observed_points": 6030,
+  "seeds": [
+    20260919,
+    20260920,
+    20260921,
+    20260922,
+    20260923
+  ],
+  "targets": {
+    "kdv1d": 25000,
+    "kdv2d": 20000,
+    "ch2d": 1500
+  },
+  "x_axis": "mean cumulative training seconds",
+  "aggregation": "Arithmetic means of time and error at common update indices.",
+  "band": "Mean error to mean + sample standard deviation (ddof=1).",
+  "interpolation": "None; no smoothing or extrapolation.",
+  "source_curves_sha256": "3ace1845d52b632456e0f36755cbe41e075c4fea5c6efd69e18bd85a3b2f10c1",
+  "matplotlib": "3.9.4",
+  "numpy": "1.26.4",
+  "endpoints": {
+    "kdv1d": {
+      "nested_jvp": {
+        "time_s": 8779.23879481256,
+        "relative_l2": 0.004955078102648258
+      },
+      "shared_jet_linear": {
+        "time_s": 1123.8361492272466,
+        "relative_l2": 0.0049551110714674
+      }
+    },
+    "kdv2d": {
+      "nested_jvp": {
+        "time_s": 6354.06229034178,
+        "relative_l2": 0.0010198093950748444
+      },
+      "shared_jet_linear": {
+        "time_s": 1217.066794670187,
+        "relative_l2": 0.0010198189644142984
+      }
+    },
+    "ch2d": {
+      "nested_jvp": {
+        "time_s": 2403.9064448114486,
+        "relative_l2": 0.12124160081148147
+      },
+      "shared_jet_linear": {
+        "time_s": 1250.715688953735,
+        "relative_l2": 0.12124157100915908
+      }
+    }
+  }
+}

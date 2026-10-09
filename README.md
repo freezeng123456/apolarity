@@ -19,28 +19,32 @@ JVPs in both compared methods.
 
 - [Manuscript](docs/paper/jsc_paper_main.pdf) and [LaTeX source](docs/paper/jsc_paper_main.tex).
 - [Current code and commands](experiments/torch_benchmarks/README.md).
-- [Compact PDE records and their frozen source](results/paper_resampled_20260914/README.md).
+- [Current equal-update PDE records](results/paper_equal_updates_v100_20261008/README.md).
+- [Paper revision record](docs/paper/REVISION_RECORD_20261009.md).
+- [Historical fixed-time records and their frozen source](results/paper_resampled_20260914/README.md).
 - [Historical experiment ledger](docs/HISTORICAL_EXPERIMENT_LEDGER.md), recording
   superseded studies whose large raw artifacts were removed during compaction.
-- [PDE figure/table reproduction](docs/paper/build_resampled_assets.py) and
+- [PDE figure/table reproduction](docs/paper/build_equal_updates_assets.py) and
   [individual-partial table reproduction](docs/paper/build_t4_experiment_assets.py).
 - [Polynomial-identity checks](docs/paper/verify_experiment_identities.py) and
   tests comparing the current implementation with the frozen paper source.
 
-The current PDE entry is `experiments/torch_benchmarks/train_fixed_wall.py`.
+The current PDE entry is `experiments/torch_benchmarks/train_equal_updates.py`.
 It resamples interior, initial and boundary training points at every update.
 Its defaults match the paper: four hidden layers of width 128, 400 interior
-points, 1200 seconds, and Adam learning rate 1e-5 for KdV or 1e-4 for
-Cahn–Hilliard. Evaluation points remain fixed and independent of training.
+points, and Adam learning rate 1e-5 for KdV or 1e-4 for Cahn–Hilliard.
+Both methods complete 25,000, 20,000, and 1,500 updates for 1D KdV, 2D KdV,
+and Cahn–Hilliard, respectively. Evaluation points remain fixed and independent
+of training. Only numeric curves and summaries are saved, not checkpoints.
 
 ## Install and check
 
 ```bash
 python -m pip install -e '.[test]'
 python -m pytest
-python experiments/torch_benchmarks/train_fixed_wall.py --device cpu \
+python experiments/torch_benchmarks/train_equal_updates.py --device cpu \
   --case kdv1d --method shared_jet_linear --width 4 --depth 2 --batch 3 \
-  --constraint-side 2 --max-steps 3 --eval-points 16 --trajectory-seconds 0 \
+  --constraint-side 2 --updates 3 --eval-every 1 --eval-points 16 \
   --out /absolute/new/paper-smoke
 ```
 
@@ -48,8 +52,8 @@ The CPU command is a small correctness check, not a performance result. To
 inspect the full 30-run PDE plan without launching it:
 
 ```bash
-python experiments/torch_benchmarks/run_fixed_wall_matrix.py \
-  --out /absolute/new/paper-pde --dry-run
+python experiments/torch_benchmarks/equal_updates_campaign.py plan \
+  --out /absolute/new/paper-pde
 ```
 
 The installed package contains only `torch_pinn`. Historical JAX implementations
