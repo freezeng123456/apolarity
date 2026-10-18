@@ -1,0 +1,194 @@
+{
+  "methods": [
+    {
+      "method": "nested_jvp",
+      "training_seconds_mean": 2403.9064448114486,
+      "training_seconds_sd": 113.6219754795465,
+      "re_mean": 0.12124160081148147,
+      "re_sd": 0.019415250833081037,
+      "seeds": [
+        {
+          "case": "ch2d",
+          "method": "nested_jvp",
+          "seed": "20260919",
+          "updates": "1500",
+          "training_seconds": "2389.3190085068345",
+          "spacetime_relative_l2": "0.12801404297351837"
+        },
+        {
+          "case": "ch2d",
+          "method": "nested_jvp",
+          "seed": "20260920",
+          "updates": "1500",
+          "training_seconds": "2591.7032639421523",
+          "spacetime_relative_l2": "0.109644815325737"
+        },
+        {
+          "case": "ch2d",
+          "method": "nested_jvp",
+          "seed": "20260921",
+          "updates": "1500",
+          "training_seconds": "2409.2246826021",
+          "spacetime_relative_l2": "0.13299846649169922"
+        },
+        {
+          "case": "ch2d",
+          "method": "nested_jvp",
+          "seed": "20260922",
+          "updates": "1500",
+          "training_seconds": "2304.767530472949",
+          "spacetime_relative_l2": "0.09363820403814316"
+        },
+        {
+          "case": "ch2d",
+          "method": "nested_jvp",
+          "seed": "20260923",
+          "updates": "1500",
+          "training_seconds": "2324.5177385332063",
+          "spacetime_relative_l2": "0.14191247522830963"
+        }
+      ]
+    },
+    {
+      "method": "shared_jet_linear",
+      "training_seconds_mean": 1250.715688953735,
+      "training_seconds_sd": 74.95049349367201,
+      "re_mean": 0.12124157100915908,
+      "re_sd": 0.01941536554388333,
+      "seeds": [
+        {
+          "case": "ch2d",
+          "method": "shared_jet_linear",
+          "seed": "20260919",
+          "updates": "1500",
+          "training_seconds": "1213.5404841238633",
+          "spacetime_relative_l2": "0.12801386415958405"
+        },
+        {
+          "case": "ch2d",
+          "method": "shared_jet_linear",
+          "seed": "20260920",
+          "updates": "1500",
+          "training_seconds": "1216.366809533909",
+          "spacetime_relative_l2": "0.1096448227763176"
+        },
+        {
+          "case": "ch2d",
+          "method": "shared_jet_linear",
+          "seed": "20260921",
+          "updates": "1500",
+          "training_seconds": "1229.9133730540052",
+          "spacetime_relative_l2": "0.13299870491027832"
+        },
+        {
+          "case": "ch2d",
+          "method": "shared_jet_linear",
+          "seed": "20260922",
+          "updates": "1500",
+          "training_seconds": "1209.6617860635743",
+          "spacetime_relative_l2": "0.09363795816898346"
+        },
+        {
+          "case": "ch2d",
+          "method": "shared_jet_linear",
+          "seed": "20260923",
+          "updates": "1500",
+          "training_seconds": "1384.095991993323",
+          "spacetime_relative_l2": "0.14191250503063202"
+        }
+      ]
+    },
+    {
+      "method": "stdepp",
+      "training_seconds_mean": 1284.188971296698,
+      "training_seconds_sd": 20.610908307427913,
+      "re_mean": 0.12124159932136536,
+      "re_sd": 0.01941527545670956,
+      "seeds": [
+        {
+          "case": "ch2d",
+          "method": "stdepp",
+          "seed": "20260919",
+          "updates": "1500",
+          "training_seconds": "1251.6494296900928",
+          "spacetime_relative_l2": "0.12801378965377808"
+        },
+        {
+          "case": "ch2d",
+          "method": "stdepp",
+          "seed": "20260920",
+          "updates": "1500",
+          "training_seconds": "1291.2813943913206",
+          "spacetime_relative_l2": "0.10964477807283401"
+        },
+        {
+          "case": "ch2d",
+          "method": "stdepp",
+          "seed": "20260921",
+          "updates": "1500",
+          "training_seconds": "1290.028616661206",
+          "spacetime_relative_l2": "0.1329987645149231"
+        },
+        {
+          "case": "ch2d",
+          "method": "stdepp",
+          "seed": "20260922",
+          "updates": "1500",
+          "training_seconds": "1307.479478649795",
+          "spacetime_relative_l2": "0.09363820403814316"
+        },
+        {
+          "case": "ch2d",
+          "method": "stdepp",
+          "seed": "20260923",
+          "updates": "1500",
+          "training_seconds": "1280.5059370910749",
+          "spacetime_relative_l2": "0.14191246032714844"
+        }
+      ]
+    }
+  ],
+  "paired_curves": [
+    {
+      "seed": "20260919",
+      "max_absolute_re_curve_difference_from_nested": {
+        "nested_jvp": 0.0,
+        "shared_jet_linear": 3.5762786865234375e-07,
+        "stdepp": 3.129243850708008e-07
+      }
+    },
+    {
+      "seed": "20260920",
+      "max_absolute_re_curve_difference_from_nested": {
+        "nested_jvp": 0.0,
+        "shared_jet_linear": 2.086162567138672e-07,
+        "stdepp": 2.5331974029541016e-07
+      }
+    },
+    {
+      "seed": "20260921",
+      "max_absolute_re_curve_difference_from_nested": {
+        "nested_jvp": 0.0,
+        "shared_jet_linear": 2.8312206268310547e-07,
+        "stdepp": 2.980232238769531e-07
+      }
+    },
+    {
+      "seed": "20260922",
+      "max_absolute_re_curve_difference_from_nested": {
+        "nested_jvp": 0.0,
+        "shared_jet_linear": 4.172325134277344e-07,
+        "stdepp": 4.6193599700927734e-07
+      }
+    },
+    {
+      "seed": "20260923",
+      "max_absolute_re_curve_difference_from_nested": {
+        "nested_jvp": 0.0,
+        "shared_jet_linear": 2.682209014892578e-07,
+        "stdepp": 2.086162567138672e-07
+      }
+    }
+  ],
+  "interpretation": "Same-seed RE oscillations coincide across methods; one prior WDD seed is slower. New run preserves seeds and resampling, so normal RE oscillations are expected to reproduce."
+}

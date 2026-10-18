@@ -30,3 +30,13 @@ logs/
 !/results/**
 !archive/legacy_results/**
 .DS_Store
+
+# Keep generated caches and model weights out even beneath versioned results.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+checkpoints/

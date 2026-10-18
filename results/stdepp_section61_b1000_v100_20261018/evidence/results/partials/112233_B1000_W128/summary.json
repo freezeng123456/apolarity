@@ -1,0 +1,32 @@
+{
+  "status": "COMPLETE",
+  "target": "112233",
+  "exponents": [
+    2,
+    2,
+    2
+  ],
+  "batch": 1000,
+  "width": 128,
+  "seeds": 3,
+  "valid_seeds": 3,
+  "seed_statuses": {
+    "20260908": "COMPLETE",
+    "20260909": "COMPLETE",
+    "20260910": "COMPLETE"
+  },
+  "common_backend": "torch_pinn.sparse_jets",
+  "checkpoints_saved": false,
+  "aggregate_policy": "Aggregate timing only when every prescribed seed passes numerical validation",
+  "methods": {
+    "wdd": {
+      "mean_ms": 10.594340972602367,
+      "sd_ms": 0.0940483179930046
+    },
+    "stde61": {
+      "mean_ms": 12.490985294183096,
+      "sd_ms": 0.08270641881163489
+    }
+  },
+  "mean_paired_stde61_over_wdd": 1.179039975298538
+}

@@ -1,0 +1,22 @@
+{
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--partition=gpu",
+    "--nodes=1",
+    "--ntasks=1",
+    "--gres=gpu:1",
+    "--cpus-per-task=10",
+    "--export=ALL,CH_ATTEMPT=1",
+    "--dependency=afterany:2385668",
+    "--job-name=apo-ch-audit",
+    "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/audit1-%j.log",
+    "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+    "audit"
+  ],
+  "returncode": 0,
+  "stdout": "2385669\n",
+  "stderr": "",
+  "first_attempt_job": "2385668",
+  "paired_confirmation_on_anomaly": true
+}

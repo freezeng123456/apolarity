@@ -1,0 +1,2489 @@
+[
+  {
+    "target": "11223344",
+    "exponents": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "seed": 20260908,
+    "parameters_sha256": "76a8332ca49ce4607f863b2f0fc8b521b08fc277ed63675b7f921ac8b45bf810",
+    "points_sha256": "82925a8e54be3160b41f760dae7938987526122ef5f39948b8ce3dcd0e28bb09",
+    "outputs": {
+      "values": {
+        "wdd": {
+          "file": "values_20260908_wdd.npy",
+          "sha256": "755d3c840184a1b04215c8a036de4e72bf9d6377a95b0c5caa43db00cb1a410b",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        },
+        "stde61": {
+          "file": "values_20260908_stde61.npy",
+          "sha256": "ba62801dfa2fc33f9d44cddbed43a2ed4a29060db0c01aac67e553495dd8eba7",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        }
+      },
+      "reference64": {
+        "wdd": {
+          "file": "reference64_20260908_wdd.npy",
+          "sha256": "48fc6c344340ecef7f1411a51ca0d74ca49ef9029ea68c4d8cf9791c5dcc3588",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        },
+        "stde61": {
+          "file": "reference64_20260908_stde61.npy",
+          "sha256": "8da080110935b7467d142c6650d65e5010920b0cd668261cc4a903751b49af7b",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        }
+      }
+    },
+    "status": "COMPLETE",
+    "metadata": {
+      "wdd": {
+        "method": "wdd",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 27,
+          "evaluated_count": 14,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "conjugate_reuse": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "a1db438495f48f1ea49b2038e8ae77653f1338bfb5d48ddea3bdcbf33a191979",
+          "conjugate_pairs": 13,
+          "self_conjugate_rows": 1,
+          "retained_indices": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "pair_indices": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              8
+            ],
+            [
+              5,
+              7
+            ],
+            [
+              9,
+              18
+            ],
+            [
+              10,
+              20
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              26
+            ],
+            [
+              14,
+              25
+            ],
+            [
+              15,
+              21
+            ],
+            [
+              16,
+              23
+            ],
+            [
+              17,
+              22
+            ]
+          ],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 1.3322676295501878e-15,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 14,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "d7f1745b21578000d32c5b1bde287ff4055400c59cc2e5b36e2615d41278572f",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      },
+      "stde61": {
+        "method": "stde61",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 40,
+          "evaluated_count": 40,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "conjugate_reuse": false,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "7d44471374347c39594d959918990c22b70b5a49331750a09781016d5f86a2f1",
+          "conjugate_pairs": 0,
+          "self_conjugate_rows": 0,
+          "retained_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39
+          ],
+          "pair_indices": [],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 0.0,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 40,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "8ab71b40e9b06cde02f473e5a8acc7a63c909c93de170d42cbe1d3540a215483",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      }
+    },
+    "preparation_seconds": {
+      "wdd": 0.6726548234000802,
+      "stde61": 0.007256016135215759
+    },
+    "correctness": {
+      "full_batch_validity": {
+        "wdd": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "passed": true,
+      "full_batch_pair": {
+        "max_abs": 9.167706593871117e-10,
+        "reference_max_abs": 0.00033865016303025186,
+        "reference_l2": 0.0026162494643925858,
+        "relative_l2": 3.4370573103295996e-06,
+        "max_abs_over_reference_max_abs": 2.7071319003180753e-06,
+        "tolerance": 0.001,
+        "passed": true
+      },
+      "reference_metadata": {
+        "wdd": {
+          "method": "wdd",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 27,
+            "evaluated_count": 14,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "conjugate_reuse": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "83852f5fd42dc10c994e40d2e7e5242b0a329a8fd1001c3d712b6979ef413c44",
+            "conjugate_pairs": 13,
+            "self_conjugate_rows": 1,
+            "retained_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17
+            ],
+            "pair_indices": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                4,
+                8
+              ],
+              [
+                5,
+                7
+              ],
+              [
+                9,
+                18
+              ],
+              [
+                10,
+                20
+              ],
+              [
+                11,
+                19
+              ],
+              [
+                12,
+                24
+              ],
+              [
+                13,
+                26
+              ],
+              [
+                14,
+                25
+              ],
+              [
+                15,
+                21
+              ],
+              [
+                16,
+                23
+              ],
+              [
+                17,
+                22
+              ]
+            ],
+            "max_pair_direction_error": 7.447602459741819e-16,
+            "max_pair_weight_error": 1.3426356273935429e-15,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 14,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "8948503af2d46856fc6555dcdc43262ae293b7fa3643f0d0437795e557ab8f39",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        },
+        "stde61": {
+          "method": "stde61",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 40,
+            "evaluated_count": 40,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "conjugate_reuse": false,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "f47e8cf7b2b3bd2ae1b848aa3b7ec8670b9f247f3ff4d28502bea424fd90207f",
+            "conjugate_pairs": 0,
+            "self_conjugate_rows": 0,
+            "retained_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39
+            ],
+            "pair_indices": [],
+            "max_pair_direction_error": 0.0,
+            "max_pair_weight_error": 0.0,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 40,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "1f8d97939111ddeac9dd81c6fe8d42dd881609e4726dab822c2f59c02a206918",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        }
+      },
+      "reference_setup_seconds": {
+        "wdd": 0.024608316831290722,
+        "stde61": 0.006661698222160339
+      },
+      "reference_validity": {
+        "wdd": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "reference_points": 8,
+      "reference_source": "same FP32 model and first input points promoted to FP64",
+      "float64_pair": {
+        "max_abs": 5.963111948670274e-19,
+        "reference_max_abs": 0.00017925979610511304,
+        "reference_l2": 0.000272253321408739,
+        "relative_l2": 3.3871746857644414e-15,
+        "max_abs_over_reference_max_abs": 3.326519430588702e-15,
+        "tolerance": 1e-07,
+        "passed": true
+      },
+      "float32_vs_reference": {
+        "wdd": {
+          "max_abs": 9.399945383702091e-11,
+          "reference_max_abs": 0.00017925979610511304,
+          "reference_l2": 0.000272253321408739,
+          "relative_l2": 4.775200961198214e-07,
+          "max_abs_over_reference_max_abs": 5.243755481117596e-07,
+          "tolerance": 0.001,
+          "passed": true
+        },
+        "stde61": {
+          "max_abs": 5.688060495702418e-10,
+          "reference_max_abs": 0.00017925979610511304,
+          "reference_l2": 0.000272253321408739,
+          "relative_l2": 3.2663766960087697e-06,
+          "max_abs_over_reference_max_abs": 3.1730820960920293e-06,
+          "tolerance": 0.001,
+          "passed": true
+        }
+      }
+    },
+    "timed": true,
+    "evaluation_counts": {
+      "wdd": {
+        "warmup": 10,
+        "timed": 30
+      },
+      "stde61": {
+        "warmup": 10,
+        "timed": 30
+      }
+    },
+    "times_ms": {
+      "wdd": [
+        45.487613417208195,
+        45.74543610215187,
+        45.541233383119106,
+        45.52386421710253,
+        45.506238006055355,
+        45.85144389420748,
+        45.739407651126385,
+        45.48322409391403,
+        45.69606762379408,
+        45.431675389409065,
+        45.4273596405983,
+        45.45006714761257,
+        45.45675776898861,
+        45.45297846198082,
+        45.4526599496603,
+        45.45524995774031,
+        45.50803080201149,
+        45.4567177221179,
+        45.46393919736147,
+        45.46260740607977,
+        45.54784670472145,
+        45.42276356369257,
+        45.41614651679993,
+        45.482213608920574,
+        45.483728870749474,
+        45.487528666853905,
+        45.444512739777565,
+        45.735384337604046,
+        45.49985844641924,
+        45.47434113919735
+      ],
+      "stde61": [
+        60.52387412637472,
+        60.51363702863455,
+        60.84153614938259,
+        60.52331253886223,
+        60.53962465375662,
+        60.50058454275131,
+        60.57027168571949,
+        60.54903566837311,
+        60.54482702165842,
+        60.53297780454159,
+        60.50145532935858,
+        60.56361924856901,
+        60.57130545377731,
+        60.8188072219491,
+        60.78927218914032,
+        60.48641540110111,
+        60.86826045066118,
+        60.79796701669693,
+        60.83443854004145,
+        60.55810209363699,
+        60.82089152187109,
+        60.83656568080187,
+        60.59117987751961,
+        60.82220934331417,
+        60.58867368847132,
+        60.4990990832448,
+        60.50253286957741,
+        60.55090110749006,
+        60.803722590208054,
+        60.52571441978216
+      ]
+    },
+    "median_ms": {
+      "wdd": 45.4827188514173,
+      "stde61": 60.560860671103
+    },
+    "round_orders": [
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ]
+    ],
+    "stde61_over_wdd": 1.3315136429935706,
+    "post_timing_vs_gate_values": {
+      "wdd": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.00033865016303025186,
+        "reference_l2": 0.0026162494643925858,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      },
+      "stde61": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.0003386500757187605,
+        "reference_l2": 0.0026162475198341544,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      }
+    },
+    "prepared_storage_stable": true
+  },
+  {
+    "target": "11223344",
+    "exponents": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "seed": 20260909,
+    "parameters_sha256": "4a8912030abcdb635e12b8cec017e5c64636205ec9a0ddcbe1f05065f74c3fbf",
+    "points_sha256": "3cac1a9bb5afe0ca90a95e3fdd147dbd3d64387b66ccf7d537eb9866e04dab17",
+    "outputs": {
+      "values": {
+        "stde61": {
+          "file": "values_20260909_stde61.npy",
+          "sha256": "4626f5ab242b552022bc3fb9f67c47252cc8a1f833a9750766dc720362383f3b",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        },
+        "wdd": {
+          "file": "values_20260909_wdd.npy",
+          "sha256": "fbcf698cac7f90108e449c72aa8d5807d6802049a579d615c4bce3981953c182",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        }
+      },
+      "reference64": {
+        "wdd": {
+          "file": "reference64_20260909_wdd.npy",
+          "sha256": "7c73ff8670e7d04ce9b72e20a051cd70e6b8f6641e06da55cd227dc0767af80f",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        },
+        "stde61": {
+          "file": "reference64_20260909_stde61.npy",
+          "sha256": "8acbd5ced6b3859c5d73a538169da06df5c5f5dfd32333fb33989b78a8aeaa79",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        }
+      }
+    },
+    "status": "COMPLETE",
+    "metadata": {
+      "wdd": {
+        "method": "wdd",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 27,
+          "evaluated_count": 14,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "conjugate_reuse": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "cda83d18c8fe6b1bade5bf09276b34ce55db9bd30a0f0e7ae9f41d4598699753",
+          "conjugate_pairs": 13,
+          "self_conjugate_rows": 1,
+          "retained_indices": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "pair_indices": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              8
+            ],
+            [
+              5,
+              7
+            ],
+            [
+              9,
+              18
+            ],
+            [
+              10,
+              20
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              26
+            ],
+            [
+              14,
+              25
+            ],
+            [
+              15,
+              21
+            ],
+            [
+              16,
+              23
+            ],
+            [
+              17,
+              22
+            ]
+          ],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 1.3322676295501878e-15,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 14,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "8dd8ea915724f047e7f44d6756e67d384aaf98d2dcdeba8ef4ec217262a6ef0f",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      },
+      "stde61": {
+        "method": "stde61",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 40,
+          "evaluated_count": 40,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "conjugate_reuse": false,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "41309dc8b14b90ddc6feb1e6e833cf535e60c38b088903b8b453bad7148a3c4a",
+          "conjugate_pairs": 0,
+          "self_conjugate_rows": 0,
+          "retained_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39
+          ],
+          "pair_indices": [],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 0.0,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 40,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "933b43751866307ec4d3021d467cc83d48b4893c112ef01f2f4dc50c377dd75e",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      }
+    },
+    "preparation_seconds": {
+      "wdd": 0.0329197458922863,
+      "stde61": 0.006411928683519363
+    },
+    "correctness": {
+      "full_batch_validity": {
+        "wdd": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "passed": true,
+      "full_batch_pair": {
+        "max_abs": 1.24236976262182e-09,
+        "reference_max_abs": 0.00043518986785784364,
+        "reference_l2": 0.0040723874508797825,
+        "relative_l2": 2.394414406887792e-06,
+        "max_abs_over_reference_max_abs": 2.854776396190466e-06,
+        "tolerance": 0.001,
+        "passed": true
+      },
+      "reference_metadata": {
+        "wdd": {
+          "method": "wdd",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 27,
+            "evaluated_count": 14,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "conjugate_reuse": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "47953f6fcb22a8881445ff999894faf44afdfe3bd4b7be542b241bb5c523ef45",
+            "conjugate_pairs": 13,
+            "self_conjugate_rows": 1,
+            "retained_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17
+            ],
+            "pair_indices": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                4,
+                8
+              ],
+              [
+                5,
+                7
+              ],
+              [
+                9,
+                18
+              ],
+              [
+                10,
+                20
+              ],
+              [
+                11,
+                19
+              ],
+              [
+                12,
+                24
+              ],
+              [
+                13,
+                26
+              ],
+              [
+                14,
+                25
+              ],
+              [
+                15,
+                21
+              ],
+              [
+                16,
+                23
+              ],
+              [
+                17,
+                22
+              ]
+            ],
+            "max_pair_direction_error": 7.447602459741819e-16,
+            "max_pair_weight_error": 1.3426356273935429e-15,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 14,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "c0806e17dadb81ce7ac11526de72506cc60fbe75d05da9cd1906e09147e99482",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        },
+        "stde61": {
+          "method": "stde61",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 40,
+            "evaluated_count": 40,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "conjugate_reuse": false,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "b48ff036ac178bd4afdf739b8f0e2abe917d7c02be8dbf217b3e2543db3533a9",
+            "conjugate_pairs": 0,
+            "self_conjugate_rows": 0,
+            "retained_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39
+            ],
+            "pair_indices": [],
+            "max_pair_direction_error": 0.0,
+            "max_pair_weight_error": 0.0,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 40,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "9c0ce09e5dc7f0ee8f0afa674d6a7b75f4d48e593684f90ac52bd129f05ee77c",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        }
+      },
+      "reference_setup_seconds": {
+        "wdd": 0.025854842737317085,
+        "stde61": 0.006912124343216419
+      },
+      "reference_validity": {
+        "wdd": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "reference_points": 8,
+      "reference_source": "same FP32 model and first input points promoted to FP64",
+      "float64_pair": {
+        "max_abs": 1.0706496453294356e-18,
+        "reference_max_abs": 0.00022650295911331466,
+        "reference_l2": 0.0003945640825235946,
+        "relative_l2": 3.205445824616166e-15,
+        "max_abs_over_reference_max_abs": 4.7268682471994205e-15,
+        "tolerance": 1e-07,
+        "passed": true
+      },
+      "float32_vs_reference": {
+        "wdd": {
+          "max_abs": 1.366700608208208e-10,
+          "reference_max_abs": 0.00022650295911331466,
+          "reference_l2": 0.0003945640825235946,
+          "relative_l2": 4.747268080682731e-07,
+          "max_abs_over_reference_max_abs": 6.033919439986109e-07,
+          "tolerance": 0.001,
+          "passed": true
+        },
+        "stde61": {
+          "max_abs": 5.406622803811895e-10,
+          "reference_max_abs": 0.00022650295911331466,
+          "reference_l2": 0.0003945640825235946,
+          "relative_l2": 2.3709137052853697e-06,
+          "max_abs_over_reference_max_abs": 2.386998750469779e-06,
+          "tolerance": 0.001,
+          "passed": true
+        }
+      }
+    },
+    "timed": true,
+    "evaluation_counts": {
+      "wdd": {
+        "warmup": 10,
+        "timed": 30
+      },
+      "stde61": {
+        "warmup": 10,
+        "timed": 30
+      }
+    },
+    "times_ms": {
+      "wdd": [
+        45.42407765984535,
+        45.3564478084445,
+        45.43089400976896,
+        45.340429060161114,
+        45.33223249018192,
+        45.29948905110359,
+        45.35253718495369,
+        45.28423212468624,
+        45.29500659555197,
+        45.369802974164486,
+        45.47430947422981,
+        45.46293057501316,
+        45.38262169808149,
+        45.398060232400894,
+        45.561118982732296,
+        45.57682387530804,
+        45.50854116678238,
+        45.416646637022495,
+        45.42803205549717,
+        45.512848533689976,
+        45.56634370237589,
+        45.46796437352896,
+        45.80127727240324,
+        45.36644276231527,
+        45.43786309659481,
+        45.31698487699032,
+        45.537255704402924,
+        45.35242170095444,
+        45.503731817007065,
+        45.47267686575651
+      ],
+      "stde61": [
+        60.49003358930349,
+        60.50548143684864,
+        60.43385621160269,
+        60.41997671127319,
+        60.51253341138363,
+        60.380272567272186,
+        60.35305559635162,
+        60.37635635584593,
+        60.29205210506916,
+        60.58165896683931,
+        60.56536175310612,
+        60.5033989995718,
+        60.52088178694248,
+        60.500758700072765,
+        60.52266061306,
+        60.505710542201996,
+        60.574814677238464,
+        60.59336196631193,
+        60.56822929531336,
+        60.52774377167225,
+        60.67989580333233,
+        60.561997815966606,
+        60.54703705012798,
+        60.39401050657034,
+        60.37359405308962,
+        60.493274591863155,
+        60.52442081272602,
+        60.492963530123234,
+        60.40108669549227,
+        60.63132919371128
+      ]
+    },
+    "median_ms": {
+      "wdd": 45.42605485767126,
+      "stde61": 60.50559598952532
+    },
+    "round_orders": [
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ]
+    ],
+    "stde61_over_wdd": 1.3319579738786742,
+    "post_timing_vs_gate_values": {
+      "wdd": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.00043518986785784364,
+        "reference_l2": 0.0040723874508797825,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      },
+      "stde61": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.0004351898096501827,
+        "reference_l2": 0.004072387445766722,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      }
+    },
+    "prepared_storage_stable": true
+  },
+  {
+    "target": "11223344",
+    "exponents": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "seed": 20260910,
+    "parameters_sha256": "91f949f0c4ec0763b83154b644bdc37097c4b7eb63d3b5151f797262d8c02930",
+    "points_sha256": "5834ff44c108521542245ae74f53606d0643287cadef58dfc4554cdcf605e4a2",
+    "outputs": {
+      "values": {
+        "wdd": {
+          "file": "values_20260910_wdd.npy",
+          "sha256": "7577da9bbe4befc4a87f8db08439cf21f0727385c9e66b4442d1764d5ab3ece3",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        },
+        "stde61": {
+          "file": "values_20260910_stde61.npy",
+          "sha256": "d2e6dfc355c2827dc1d1cc70b6f9f7feccf39bf6d7c17b118ce33dbe4dcc9e99",
+          "dtype": "float32",
+          "shape": [
+            1000
+          ]
+        }
+      },
+      "reference64": {
+        "wdd": {
+          "file": "reference64_20260910_wdd.npy",
+          "sha256": "76bf9d4e6311a9d03bd9068cd251e01d3fd134aea3eb2d874bc1822a3bedf1ff",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        },
+        "stde61": {
+          "file": "reference64_20260910_stde61.npy",
+          "sha256": "4a5ef6f93a1879e3bcd1156c5b2ba3020ebb1a55ee990e98bd54dc0986b6bcc2",
+          "dtype": "float64",
+          "shape": [
+            8
+          ]
+        }
+      }
+    },
+    "status": "COMPLETE",
+    "metadata": {
+      "wdd": {
+        "method": "wdd",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 27,
+          "evaluated_count": 14,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "conjugate_reuse": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "2c886ec4c835482a477153b1ce34851bd7a3551a3915af0844a6e82970d35be6",
+          "conjugate_pairs": 13,
+          "self_conjugate_rows": 1,
+          "retained_indices": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "pair_indices": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              8
+            ],
+            [
+              5,
+              7
+            ],
+            [
+              9,
+              18
+            ],
+            [
+              10,
+              20
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              12,
+              24
+            ],
+            [
+              13,
+              26
+            ],
+            [
+              14,
+              25
+            ],
+            [
+              15,
+              21
+            ],
+            [
+              16,
+              23
+            ],
+            [
+              17,
+              22
+            ]
+          ],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 1.3322676295501878e-15,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 14,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.complex64",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "d68a58e8f8be4c4e41a977cb0138eb7250059e56c96277d0425ee0faa730a8f9",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      },
+      "stde61": {
+        "method": "stde61",
+        "common_backend": "torch_pinn.sparse_jets",
+        "schedule": {
+          "original_count": 40,
+          "evaluated_count": 40,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "conjugate_reuse": false,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "bb8ebf22f830c051d3a47e227f6e994161f8cbcc39d40d7714f7efba1dba48ae",
+          "conjugate_pairs": 0,
+          "self_conjugate_rows": 0,
+          "retained_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39
+          ],
+          "pair_indices": [],
+          "max_pair_direction_error": 0.0,
+          "max_pair_weight_error": 0.0,
+          "pairing_tolerance": 7.105427357601002e-15
+        },
+        "backend": {
+          "backend": "structural_zero_normalized_taylor",
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "active_orders": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "active_order_count": 9,
+          "semigroup_order_count": 9,
+          "first_affine_order_count": 2,
+          "later_affine_order_count": 9,
+          "curves": 40,
+          "first_b_product_count": 8,
+          "later_b_product_count": 36,
+          "q_product_count": 35,
+          "dtype": "torch.float32",
+          "preconverted": true,
+          "parameter_backward": false,
+          "fixed_tensors_detached": true,
+          "prepared_tensors_sha256": "d8845e3448be64f45f6df52dae777e1a28009981e8bf725ac2324e560b4c74ff",
+          "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+          "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+        },
+        "input_orders": [
+          1
+        ],
+        "output_order": 8,
+        "preparation_excluded": true
+      }
+    },
+    "preparation_seconds": {
+      "wdd": 0.031726861372590065,
+      "stde61": 0.00878805760294199
+    },
+    "correctness": {
+      "full_batch_validity": {
+        "wdd": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            1000
+          ],
+          "dtype": "torch.float32",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "passed": true,
+      "full_batch_pair": {
+        "max_abs": 1.0477378964424133e-09,
+        "reference_max_abs": 0.0004112874739803374,
+        "reference_l2": 0.003970466119760647,
+        "relative_l2": 2.306741772898225e-06,
+        "max_abs_over_reference_max_abs": 2.5474588036991934e-06,
+        "tolerance": 0.001,
+        "passed": true
+      },
+      "reference_metadata": {
+        "wdd": {
+          "method": "wdd",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 27,
+            "evaluated_count": 14,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "conjugate_reuse": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "13d6cb00af21c2f0d1b151b3853a2e992fcbec4d74e57ee18c94e9853e7e93e6",
+            "conjugate_pairs": 13,
+            "self_conjugate_rows": 1,
+            "retained_indices": [
+              0,
+              1,
+              3,
+              4,
+              5,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17
+            ],
+            "pair_indices": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                4,
+                8
+              ],
+              [
+                5,
+                7
+              ],
+              [
+                9,
+                18
+              ],
+              [
+                10,
+                20
+              ],
+              [
+                11,
+                19
+              ],
+              [
+                12,
+                24
+              ],
+              [
+                13,
+                26
+              ],
+              [
+                14,
+                25
+              ],
+              [
+                15,
+                21
+              ],
+              [
+                16,
+                23
+              ],
+              [
+                17,
+                22
+              ]
+            ],
+            "max_pair_direction_error": 7.447602459741819e-16,
+            "max_pair_weight_error": 1.3426356273935429e-15,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 14,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.complex128",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "48b3184538d00e2f42db5be3a16525c849348b1b70add4d0883fa23bcde4f1df",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        },
+        "stde61": {
+          "method": "stde61",
+          "common_backend": "torch_pinn.sparse_jets",
+          "schedule": {
+            "original_count": 40,
+            "evaluated_count": 40,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "conjugate_reuse": false,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "c3d96ce08416bbec93a517cae2591e5b6c8e4751b03f578b91a4ea9e752af712",
+            "conjugate_pairs": 0,
+            "self_conjugate_rows": 0,
+            "retained_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39
+            ],
+            "pair_indices": [],
+            "max_pair_direction_error": 0.0,
+            "max_pair_weight_error": 0.0,
+            "pairing_tolerance": 7.105427357601002e-15
+          },
+          "backend": {
+            "backend": "structural_zero_normalized_taylor",
+            "input_orders": [
+              1
+            ],
+            "output_order": 8,
+            "active_orders": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "active_order_count": 9,
+            "semigroup_order_count": 9,
+            "first_affine_order_count": 2,
+            "later_affine_order_count": 9,
+            "curves": 40,
+            "first_b_product_count": 8,
+            "later_b_product_count": 36,
+            "q_product_count": 35,
+            "dtype": "torch.float64",
+            "preconverted": true,
+            "parameter_backward": false,
+            "fixed_tensors_detached": true,
+            "prepared_tensors_sha256": "3a109b89fb25c488a45e4b6afa3d2ddf18e96231085fee7251e47cbd9207ea12",
+            "structural_zero_rule": "S intersect (output_order-S); exact output reachability; no data-based pruning",
+            "recurrence_contraction": "stack paired coefficients, multiply and sum over pairs"
+          },
+          "input_orders": [
+            1
+          ],
+          "output_order": 8,
+          "preparation_excluded": true
+        }
+      },
+      "reference_setup_seconds": {
+        "wdd": 0.03365304879844189,
+        "stde61": 0.009972958825528622
+      },
+      "reference_validity": {
+        "wdd": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        },
+        "stde61": {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float64",
+          "shape_ok": true,
+          "dtype_ok": true,
+          "detached": true,
+          "finite": true
+        }
+      },
+      "reference_points": 8,
+      "reference_source": "same FP32 model and first input points promoted to FP64",
+      "float64_pair": {
+        "max_abs": 5.014435047745458e-19,
+        "reference_max_abs": 0.00022001204874792362,
+        "reference_l2": 0.00030904715637215476,
+        "relative_l2": 2.5030589292662725e-15,
+        "max_abs_over_reference_max_abs": 2.2791638350182774e-15,
+        "tolerance": 1e-07,
+        "passed": true
+      },
+      "float32_vs_reference": {
+        "wdd": {
+          "max_abs": 1.1335224046286202e-10,
+          "reference_max_abs": 0.00022001204874792362,
+          "reference_l2": 0.00030904715637215476,
+          "relative_l2": 6.438176052501124e-07,
+          "max_abs_over_reference_max_abs": 5.152092401663606e-07,
+          "tolerance": 0.001,
+          "passed": true
+        },
+        "stde61": {
+          "max_abs": 4.2058453361736373e-10,
+          "reference_max_abs": 0.00022001204874792362,
+          "reference_l2": 0.00030904715637215476,
+          "relative_l2": 2.012254437213083e-06,
+          "max_abs_over_reference_max_abs": 1.91164318504776e-06,
+          "tolerance": 0.001,
+          "passed": true
+        }
+      }
+    },
+    "timed": true,
+    "evaluation_counts": {
+      "wdd": {
+        "warmup": 10,
+        "timed": 30
+      },
+      "stde61": {
+        "warmup": 10,
+        "timed": 30
+      }
+    },
+    "times_ms": {
+      "wdd": [
+        45.604316517710686,
+        45.52795831114054,
+        45.48302665352821,
+        45.48818618059158,
+        45.491994358599186,
+        45.52313033491373,
+        45.45339569449425,
+        45.52144184708595,
+        45.44392228126526,
+        45.49926333129406,
+        45.43145187199116,
+        45.48020474612713,
+        45.43290287256241,
+        45.54496239870787,
+        45.457854866981506,
+        45.46800535172224,
+        45.436336658895016,
+        45.44127080589533,
+        45.438640750944614,
+        45.499068684875965,
+        45.44658958911896,
+        45.43558228760958,
+        45.407796278595924,
+        45.424808748066425,
+        45.38818076252937,
+        45.46312987804413,
+        45.44197488576174,
+        45.51155958324671,
+        45.43050192296505,
+        45.49304023385048
+      ],
+      "stde61": [
+        60.642058961093426,
+        60.55461149662733,
+        60.59596501290798,
+        60.58450322598219,
+        60.579598881304264,
+        60.57959236204624,
+        60.57662516832352,
+        60.52226573228836,
+        60.563959181308746,
+        60.530662536621094,
+        60.55520474910736,
+        60.55208295583725,
+        60.491833835840225,
+        60.507772490382195,
+        60.51223259419203,
+        60.53409352898598,
+        60.5140496045351,
+        60.566275380551815,
+        60.48405170440674,
+        60.48280745744705,
+        60.51878537982702,
+        60.557229444384575,
+        60.544501058757305,
+        60.501850210130215,
+        60.44854503124952,
+        60.53078081458807,
+        60.49183942377567,
+        60.5699410662055,
+        60.51164399832487,
+        60.51814276725054
+      ]
+    },
+    "median_ms": {
+      "wdd": 45.46049237251282,
+      "stde61": 60.53243717178702
+    },
+    "round_orders": [
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ],
+      [
+        "wdd",
+        "stde61"
+      ],
+      [
+        "stde61",
+        "wdd"
+      ]
+    ],
+    "stde61_over_wdd": 1.331539409555258,
+    "post_timing_vs_gate_values": {
+      "wdd": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.0004112874739803374,
+        "reference_l2": 0.003970466119760647,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      },
+      "stde61": {
+        "max_abs": 0.0,
+        "reference_max_abs": 0.00041128741577267647,
+        "reference_l2": 0.003970465892060947,
+        "relative_l2": 0.0,
+        "max_abs_over_reference_max_abs": 0.0,
+        "tolerance": 0.0,
+        "passed": true
+      }
+    },
+    "prepared_storage_stable": true
+  }
+]

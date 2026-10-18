@@ -1,0 +1,24 @@
+{
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--partition=gpu",
+    "--nodes=1",
+    "--ntasks=1",
+    "--gres=gpu:1",
+    "--cpus-per-task=10",
+    "--export=ALL,CH_ATTEMPT=1",
+    "--array=0-4%5",
+    "--job-name=apo-ch-paired",
+    "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/formal-%A_%a.log",
+    "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+    "formal"
+  ],
+  "returncode": 0,
+  "stdout": "2385668\n",
+  "stderr": "",
+  "seeds": 5,
+  "methods": 3,
+  "cells": 15,
+  "checkpoints": false
+}

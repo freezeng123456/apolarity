@@ -1,0 +1,20 @@
+{
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--partition=gpu",
+    "--nodes=1",
+    "--ntasks=1",
+    "--gres=gpu:1",
+    "--cpus-per-task=10",
+    "--job-name=apo-ch-gate",
+    "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/preflight-%j.log",
+    "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+    "preflight"
+  ],
+  "returncode": 0,
+  "stdout": "2385667\n",
+  "stderr": "",
+  "root": "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1",
+  "source_archive_sha256": "577c70240acaff9667f08d80333fa2748c78f04fa65a58674edb5b0ca0a9e04c"
+}

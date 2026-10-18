@@ -1,0 +1,322 @@
+{
+  "root": "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1",
+  "receipts": {
+    "PREFLIGHT_SUBMISSION.json": {
+      "command": [
+        "sbatch",
+        "--parsable",
+        "--partition=gpu",
+        "--nodes=1",
+        "--ntasks=1",
+        "--gres=gpu:1",
+        "--cpus-per-task=10",
+        "--job-name=apo-ch-gate",
+        "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/preflight-%j.log",
+        "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+        "preflight"
+      ],
+      "returncode": 0,
+      "stdout": "2385667\n",
+      "stderr": "",
+      "root": "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1",
+      "source_archive_sha256": "577c70240acaff9667f08d80333fa2748c78f04fa65a58674edb5b0ca0a9e04c"
+    },
+    "FORMAL_SUBMISSION.json": {
+      "command": [
+        "sbatch",
+        "--parsable",
+        "--partition=gpu",
+        "--nodes=1",
+        "--ntasks=1",
+        "--gres=gpu:1",
+        "--cpus-per-task=10",
+        "--export=ALL,CH_ATTEMPT=1",
+        "--array=0-4%5",
+        "--job-name=apo-ch-paired",
+        "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/formal-%A_%a.log",
+        "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+        "formal"
+      ],
+      "returncode": 0,
+      "stdout": "2385668\n",
+      "stderr": "",
+      "seeds": 5,
+      "methods": 3,
+      "cells": 15,
+      "checkpoints": false
+    },
+    "AUDIT_SUBMISSION.json": {
+      "command": [
+        "sbatch",
+        "--parsable",
+        "--partition=gpu",
+        "--nodes=1",
+        "--ntasks=1",
+        "--gres=gpu:1",
+        "--cpus-per-task=10",
+        "--export=ALL,CH_ATTEMPT=1",
+        "--dependency=afterany:2385668",
+        "--job-name=apo-ch-audit",
+        "--output=/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/results/scheduler/audit1-%j.log",
+        "/data02/run01/scv7tsq/apolarity/20261018-ch2d-paired-r1/worker.sh",
+        "audit"
+      ],
+      "returncode": 0,
+      "stdout": "2385669\n",
+      "stderr": "",
+      "first_attempt_job": "2385668",
+      "paired_confirmation_on_anomaly": true
+    }
+  },
+  "scheduler": "2385667|COMPLETED|0:0|00:00:34|10|g0011|2026-10-18T20:13:23|2026-10-18T20:13:57\n2385667.batch|COMPLETED|0:0|00:00:34|10|g0011|2026-10-18T20:13:23|2026-10-18T20:13:57\n2385667.extern|COMPLETED|0:0|00:00:34|10|g0011|2026-10-18T20:13:23|2026-10-18T20:13:57\n2385669|PENDING|0:0|00:00:00|10|None assigned|Unknown|Unknown\n2385668_0|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_0.batch|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_0.extern|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_1|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_1.batch|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_1.extern|RUNNING|0:0|00:01:13|10|g0011|2026-10-18T20:14:14|Unknown\n2385668_2|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_2.batch|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_2.extern|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_3|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_3.batch|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_3.extern|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_4|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_4.batch|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n2385668_4.extern|RUNNING|0:0|00:01:13|10|g0012|2026-10-18T20:14:14|Unknown\n",
+  "queue": "2385669|apo-ch-audit|PENDING|0:00||(Dependency)\n2385668_0|apo-ch-paired|RUNNING|1:13|g0011|g0011\n2385668_1|apo-ch-paired|RUNNING|1:13|g0011|g0011\n2385668_2|apo-ch-paired|RUNNING|1:13|g0012|g0012\n2385668_3|apo-ch-paired|RUNNING|1:13|g0012|g0012\n2385668_4|apo-ch-paired|RUNNING|1:13|g0012|g0012\n",
+  "runs": [
+    {
+      "path": "results/attempt1/ch2d_seed20260919_shared_jet_linear",
+      "status": "RUNNING",
+      "last_curve_point": {
+        "step": "60",
+        "time_s": "52.39035303797573",
+        "spacetime_relative_l2": "0.6848575472831726",
+        "terminal_relative_l2": "0.5738348364830017",
+        "loss": "1.2531318664550781"
+      }
+    },
+    {
+      "path": "results/attempt1/ch2d_seed20260920_stdepp",
+      "status": "RUNNING",
+      "last_curve_point": {
+        "step": "60",
+        "time_s": "53.00195705704391",
+        "spacetime_relative_l2": "0.763051450252533",
+        "terminal_relative_l2": "0.708172082901001",
+        "loss": "1.2812409400939941"
+      }
+    },
+    {
+      "path": "results/attempt1/ch2d_seed20260921_nested_jvp",
+      "status": "RUNNING",
+      "last_curve_point": {
+        "step": "30",
+        "time_s": "50.76547253224999",
+        "spacetime_relative_l2": "0.9175985455513",
+        "terminal_relative_l2": "0.8924455046653748",
+        "loss": "1.4773008823394775"
+      }
+    },
+    {
+      "path": "results/attempt1/ch2d_seed20260922_nested_jvp",
+      "status": "RUNNING",
+      "last_curve_point": {
+        "step": "30",
+        "time_s": "47.848369888961315",
+        "spacetime_relative_l2": "0.8870705366134644",
+        "terminal_relative_l2": "0.8416550755500793",
+        "loss": "1.5272068977355957"
+      }
+    },
+    {
+      "path": "results/attempt1/ch2d_seed20260923_shared_jet_linear",
+      "status": "RUNNING",
+      "last_curve_point": {
+        "step": "60",
+        "time_s": "48.90136636514217",
+        "spacetime_relative_l2": "0.7224990129470825",
+        "terminal_relative_l2": "0.7727456092834473",
+        "loss": "1.273136854171753"
+      }
+    }
+  ],
+  "preflight": {
+    "status": "PASS",
+    "protocol": "apolarity_ch2d_paired_repeat_v1",
+    "source_fingerprint": "37f684f9caab2142c7620cdebd8dee49e2b862ade229f08ee897e93aeadb9d25",
+    "checks": [
+      {
+        "method": "nested_jvp",
+        "loss": 62.48793371363247,
+        "max_abs_gradient_error": 0,
+        "full_size": false
+      },
+      {
+        "method": "shared_jet_linear",
+        "loss": 62.48793371363247,
+        "max_abs_gradient_error": 3.552713678800501e-15,
+        "full_size": false
+      },
+      {
+        "method": "stdepp",
+        "loss": 62.48793371363247,
+        "max_abs_gradient_error": 3.552713678800501e-15,
+        "full_size": false
+      },
+      {
+        "method": "nested_jvp",
+        "loss": 108.99344635009766,
+        "max_abs_gradient_error": 0,
+        "full_size": true
+      },
+      {
+        "method": "shared_jet_linear",
+        "loss": 108.99344635009766,
+        "max_abs_gradient_error": 1.1920928955078125e-7,
+        "full_size": true
+      },
+      {
+        "method": "stdepp",
+        "loss": 108.99344635009766,
+        "max_abs_gradient_error": 1.1920928955078125e-7,
+        "full_size": true
+      }
+    ],
+    "device": "Tesla V100-SXM2-32GB"
+  },
+  "lanes": {
+    "attempt1-lane0.json": {
+      "status": "RUNNING",
+      "attempt": 1,
+      "lane": 0,
+      "seed": 20260919,
+      "job_id": "2385670",
+      "array_job_id": "2385668",
+      "node": "g0011",
+      "cpu_affinity": [
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "assigned_gpu": "5",
+      "hardware_before": {
+        "returncode": 6,
+        "stdout": "No devices were found\n",
+        "stderr": ""
+      },
+      "commands": [],
+      "checkpoints": false
+    },
+    "attempt1-lane1.json": {
+      "status": "RUNNING",
+      "attempt": 1,
+      "lane": 1,
+      "seed": 20260920,
+      "job_id": "2385671",
+      "array_job_id": "2385668",
+      "node": "g0011",
+      "cpu_affinity": [
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67
+      ],
+      "assigned_gpu": "6",
+      "hardware_before": {
+        "returncode": 6,
+        "stdout": "No devices were found\n",
+        "stderr": ""
+      },
+      "commands": [],
+      "checkpoints": false
+    },
+    "attempt1-lane2.json": {
+      "status": "RUNNING",
+      "attempt": 1,
+      "lane": 2,
+      "seed": 20260921,
+      "job_id": "2385672",
+      "array_job_id": "2385668",
+      "node": "g0012",
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "assigned_gpu": "0",
+      "hardware_before": {
+        "returncode": 0,
+        "stdout": "name, uuid, pci.bus_id, pstate, temperature.gpu, clocks.current.sm [MHz], clocks.current.memory [MHz], utilization.gpu [%], memory.used [MiB], power.draw [W], power.limit [W]\nTesla V100-SXM2-32GB, GPU-c1c37f7d-b6e5-c2f0-91d6-47e10eb27b12, 00000000:41:01.0, P0, 41, 135 MHz, 877 MHz, 0 %, 3 MiB, 44.78 W, 300.00 W\n",
+        "stderr": ""
+      },
+      "commands": [],
+      "checkpoints": false
+    },
+    "attempt1-lane3.json": {
+      "status": "RUNNING",
+      "attempt": 1,
+      "lane": 3,
+      "seed": 20260922,
+      "job_id": "2385673",
+      "array_job_id": "2385668",
+      "node": "g0012",
+      "cpu_affinity": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "assigned_gpu": "1",
+      "hardware_before": {
+        "returncode": 6,
+        "stdout": "No devices were found\n",
+        "stderr": ""
+      },
+      "commands": [],
+      "checkpoints": false
+    },
+    "attempt1-lane4.json": {
+      "status": "RUNNING",
+      "attempt": 1,
+      "lane": 4,
+      "seed": 20260923,
+      "job_id": "2385668",
+      "array_job_id": "2385668",
+      "node": "g0012",
+      "cpu_affinity": [
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "assigned_gpu": "6",
+      "hardware_before": {
+        "returncode": 6,
+        "stdout": "No devices were found\n",
+        "stderr": ""
+      },
+      "commands": [],
+      "checkpoints": false
+    }
+  },
+  "captured_utc": "2026-10-18 12:15:28 UTC"
+}

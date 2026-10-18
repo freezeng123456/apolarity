@@ -108,12 +108,12 @@
   target partial derivative equals the Waring rank of its corresponding
   monomial, and a classical roots-of-unity Waring decomposition attains this
   minimum. Experiments on individual high-order partial derivatives assess the
-  runtime of the WDD method relative to nested coordinate
-  Jacobian--vector products.
+  runtime of the WDD method relative to the deterministic multiple-linear-jet
+  construction of STDE++.
   Numerical experiments show that the WDD method reduces
   derivative-evaluation time. In PINN training for the KdV and
   Cahn--Hilliard equations, it attains comparable mean solution errors
-  in less training time than nested coordinate JVPs at equal update counts,
+  in less training time than nested coordinate Jacobian--vector products at equal update counts,
   with both interior and
   constraint training points resampled at every update.
 
@@ -205,8 +205,8 @@ the established complex Waring-rank and roots-of-unity results for monomials
 to obtain a closed-form representation with the minimum number of complex
 directions. A batched Taylor-mode implementation evaluates the resulting
 directional Taylor coefficients independently and in parallel.
-\item We compare the WDD method with nested coordinate Jacobian--vector
-  products (JVPs) on individual high-order partial derivatives, examining runtime
+\item We compare the WDD method with the multiple-linear-jet construction
+  of STDE++ on individual high-order partial derivatives, examining runtime
   across derivative patterns without outer whole-function JIT compilation.
   KdV and Cahn--Hilliard PINN comparisons measure training time and
   solution error at equal update counts, with matched
@@ -658,35 +658,37 @@ equation with a gradient-enhanced objective, a two-dimensional KdV
 equation with mixed derivatives, and a fourth-order Cahn--Hilliard
 equation. For the PDE problems, we apply Algorithm~\ref{alg_homogeneous}
 to real power-sum identities, allowing Taylor coefficients to be reused
-across different derivative terms. In every experimental setting, the
-WDD method and the nested coordinate Jacobian--vector product (JVP)
-baseline compute the same mathematical derivatives; in the PDE
-experiments, they also minimize identical loss objectives under matched
-computational conditions.
+across different derivative terms. The compared methods compute the same
+mathematical derivatives; the PDE experiments compare WDD with nested
+coordinate Jacobian--vector products (JVPs) under identical loss objectives
+and matched computational conditions.
 
 \subsection{Individual high-order partial derivatives}\label{sec_num_problems}
 
-We measure the evaluation time of individual high-order partial derivatives
-$u_{i_1 i_2\cdots i_p}=\partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}u$ across derivative
-orders $p$ and multi-index patterns at batch size $B=100$. The test network
+We compare WDD with a centered-polarization implementation of the multiple-linear-jet identity in
+STDE++~\cite[Section~6.1, Eq.~(25)]{Shi2026stdepp} for individual partial derivatives
+$\partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}u$
+at batch size $B=1000$. The test network
 has 16 inputs and three hidden layers of width 128 with $\tanh$ activations,
-and both methods are evaluated on identical weights and inputs. Here $R$
-is the minimum complex direction count. Times are the mean and sample
+and both methods use identical weights and inputs and the same Taylor
+propagation routine on a Tesla V100. Here $R$ is the complex Waring rank.
+The order-$p$ coefficient counts in
+Table~\ref{tab_individual_t4} are per input point, after conjugate reuse in WDD
+and merging redundant directions in STDE++. Times are the mean and sample
 standard deviation of three seed medians (30 synchronized calls after
-10 warm-ups per seed), excluding parameter backpropagation.
-Table~\ref{tab_individual_t4} compares the six derivatives.
+10 warm-ups per seed), excluding direction preparation and parameter
+backpropagation.
 
 \begin{table}[htbp]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3pt}
-\caption{Evaluation times and speedups (T4) for individual high-order
-partial derivatives.}
+\caption{Ranks, Taylor coefficient counts, and evaluation times on a Tesla V100
+for WDD and STDE++ (Section~6.1). Speedups are mean paired ratios of
+STDE++ to WDD times.}
 \label{tab_individual_t4}
 \input{tables/t4_individual_partials}
 \end{table}
-The $R=1$ case isolates the speedup from Taylor propagation rather than
-from a reduction in direction count.
 
 \FloatBarrier
 

@@ -1,12 +1,14 @@
 # Waring decomposition of derivatives (WDD)
 
 The WDD method uses two explicit constructions. Section 4.1 evaluates
-individual partial derivatives with the roots-of-unity Waring formula
-(`waring_batched`). Sections 4.2–4.4 evaluate PDE residuals with the prescribed
+individual partial derivatives with the roots-of-unity Waring formula,
+using conjugate reuse and a common Taylor backend for the STDE++ comparison.
+Sections 4.2–4.4 evaluate PDE residuals with the prescribed
 **real** directions and fixed reconstruction coefficients displayed in the
-paper (`shared_jet_linear`). Both are compared with nested coordinate JVPs
-(`nested_jvp`). There is no automatic selection between Waring and polarization
-formulas.
+paper (`shared_jet_linear`). Section 4.1 compares with the deterministic
+multiple-linear-jet construction of STDE++ §6.1; the published PDE figures
+compare with nested coordinate JVPs (`nested_jvp`). There is no automatic
+selection between Waring and polarization formulas.
 
 The single-partial formula uses complex arithmetic when its roots are nonreal;
 pure and square-free derivatives naturally have real roots. PDE directions and
@@ -17,15 +19,23 @@ JVPs in both compared methods.
 
 ## Paper and reproducibility
 
-- [Manuscript](docs/paper/jsc_paper_main.pdf) and [LaTeX source](docs/paper/jsc_paper_main.tex).
+- [Current manuscript source](docs/paper/jsc_paper_main.tex) and
+  [standalone source bundle](docs/paper/WDD_paper_submission.zip).
+  The separately tracked [PDF export](docs/paper/jsc_paper_main.pdf) is dated
+  2026-10-09; compile the current source for the revised §4.1.
 - [Current code and commands](experiments/torch_benchmarks/README.md).
+- [Current B=1000 partial benchmarks](results/stdepp_section61_b1000_v100_20261018/README.md)
+  and [STDE++ implementation details](docs/STDEPP_REPRODUCTION.md).
 - [Current equal-update PDE records](results/paper_equal_updates_v100_20261008/README.md).
-- [Paper revision record](docs/paper/REVISION_RECORD_20261009.md).
+- [Additional STDE++ PDE measurements](results/stdepp_pde_v100_20261016/README.md)
+  and [CH paired-repeat submission](results/ch2d_paired_v100_20261018/README.md).
+- [Latest paper revision record](docs/paper/REVISION_RECORD_20261018.md) and
+  [earlier revisions](docs/paper/REVISION_RECORD_20261009.md).
 - [Historical fixed-time records and their frozen source](results/paper_resampled_20260914/README.md).
 - [Historical experiment ledger](docs/HISTORICAL_EXPERIMENT_LEDGER.md), recording
   superseded studies whose large raw artifacts were removed during compaction.
 - [PDE figure/table reproduction](docs/paper/build_equal_updates_assets.py) and
-  [individual-partial table reproduction](docs/paper/build_t4_experiment_assets.py).
+  [individual-partial table reproduction](docs/paper/build_stdepp_experiment_assets.py).
 - [Polynomial-identity checks](docs/paper/verify_experiment_identities.py) and
   tests comparing the current implementation with the frozen paper source.
 
