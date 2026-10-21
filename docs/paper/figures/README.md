@@ -1,33 +1,38 @@
 # Current paper figures
 
-The two current `resampled_wall_{kdv1d,kdv2d}` figures use the completed
-V100 experiments in `results/paper_equal_updates_v100_20261008/`.
-Their existing filenames and manuscript labels are retained. The historical
-CH figure is retained but is no longer included in the current manuscript. Generate the
-plots with that directory's `plot.py`, then install the figures and build
-the endpoint tables with `docs/paper/build_equal_updates_assets.py`.
+All three manuscript figures compare **WDD (blue)** with **STDE++ (red)**.
+The horizontal axis is training time and the vertical axis is RE on a
+logarithmic scale. At common update indices, each method's five-seed
+arithmetic mean RE is plotted against its arithmetic mean training time.
+Shading extends upward by one sample standard deviation. Every recorded
+point is used without smoothing, interpolation, extrapolation, or a fixed
+time cutoff.
 
-All 30 runs resample interior and initial/boundary training points at every
-update. Both methods complete 25,000 updates for 1D KdV, 20,000 for 2D KdV,
-and 1,500 for Cahn–Hilliard. Each plot shows the arithmetic mean error
-against mean training time across five seeds at common update indices.
-Shading extends from the mean to the mean plus one sample standard
-deviation. Every recorded point is plotted without interpolation,
-smoothing, extrapolation, or a fixed time cutoff. Errors are evaluated
-online on fixed independent test points; no checkpoints are saved.
+| Figure | Updates | Seeds | Data |
+|---|---:|---|---|
+| `resampled_wall_kdv1d` | 25,000 | 20260919–20260923 | WDD: 2026-10-08; STDE++: 2026-10-16 |
+| `resampled_wall_kdv2d` | 20,000 | 20260919–20260923 | WDD: 2026-10-08; STDE++: 2026-10-16 |
+| `equal_updates_kp2d` | 20,000 | 20260936–20260940 | KP-II campaigns recovered on 2026-10-21 |
 
-The corresponding tables use the final recorded iterate and report
-training time and space–time RE; terminal error is not displayed.
-Plots label the same space–time error as RE. Speedups are means of the five
-paired Nested-JVP/WDD training-time ratios. PDF and PNG versions are
-supplied, and `docs/paper/data/equal_updates/asset_manifest.json` records
-the source dataset and asset hashes.
+The two KdV datasets are in `results/paper_equal_updates_v100_20261008/`
+and `results/stdepp_pde_v100_20261016/`. The ten paired comparisons have
+matching initial-parameter, complete sample-sequence, and test-set hashes.
+The hardware/runtime configuration matches, although the two methods were
+measured in separate batches. The KP-II dataset and cohort history are in
+`results/kp_fp32_v100_20261021/`.
 
-The third current figure, `equal_updates_kp2d`, uses
-`results/kp_fp32_v100_20261021/`: WDD (blue) and STDE++ (red), seeds
-20260936–20260940, and 20,000 updates per run. It follows the same
-common-update arithmetic-mean and upper-standard-deviation shading rule
-as the KdV figures. Regenerate it and its table with
-`python docs/paper/build_kp_experiment_assets.py`; add `--check` to verify
-the installed asset hashes. The result README records the cohort selection
-and retains all seven observed seed pairs.
+Regenerate the current figures and tables from the repository root:
+
+```bash
+python docs/paper/build_equal_updates_assets.py
+python docs/paper/build_kp_experiment_assets.py
+```
+
+Both scripts accept `--check` to verify current assets against the numeric
+evidence. Manifests are in `docs/paper/data/equal_updates/` and
+`docs/paper/data/kp/`. Tables display final RE and training time as means
+and sample standard deviations. Speedups are the arithmetic means of the
+five paired STDE++/WDD time ratios.
+
+Earlier Nested JVP and Cahn–Hilliard results remain as historical records;
+they are not part of the current manuscript figures or source bundle.

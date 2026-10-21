@@ -114,8 +114,7 @@
   Numerical experiments show that the WDD method reduces
   derivative-evaluation time for several tested patterns. In PINN training for the
   KdV and KP-II equations, it attains comparable mean solution errors in less
-  training time than nested coordinate Jacobian--vector products and the
-  STDE++ construction, respectively, at equal update counts, with both interior
+  training time than the STDE++ constructions at equal update counts, with both interior
   and constraint training points resampled at every update.
 
 \end{abstract}
@@ -662,10 +661,9 @@ equation with a gradient-enhanced objective, a two-dimensional KdV
 equation with mixed derivatives, and a KP-II equation. For the PDE problems, we apply Algorithm~\ref{alg_homogeneous}
 to real power-sum identities, allowing Taylor coefficients to be reused
 across different derivative terms. The compared methods compute the same
-mathematical derivatives. The KdV experiments compare WDD with nested
-coordinate Jacobian--vector products (JVPs), and the KP-II experiment compares
-WDD with the STDE++ construction, under identical loss objectives and matched
-computational conditions.
+mathematical derivatives. The PDE experiments compare WDD with the STDE++
+Taylor constructions under identical loss objectives and matched computational
+conditions.
 
 \subsection{Individual high-order partial derivatives}\label{sec_num_problems}
 
@@ -710,7 +708,8 @@ Conditions on the same face use the same points. For each of five seeds,
 the paired methods share the initialization, loss weights, and samples at
 each common update index. Both methods are trained for 25,000 updates for
 one-dimensional KdV and 20,000 updates for two-dimensional KdV and KP-II.
-The KP-II averages use seeds 20260936--20260940.
+The KdV averages use seeds 20260919--20260923, and the KP-II averages use
+seeds 20260936--20260940.
 In the polynomial identities below, coordinate letters also denote the
 corresponding formal variables.
 For a test set $D$, we record the relative $L^2$ error
@@ -723,7 +722,7 @@ evaluated on 10,000 uniform space--time test points. The test set is fixed,
 independent of training, and shared by paired methods. Tables report training
 times and $\operatorname{RE}$ as means and sample standard deviations across
 seeds.
-Training speedups are means of paired baseline-to-WDD training-time ratios. Figure curves show mean
+Training speedups are means of paired ratios of STDE++ to WDD training times. Figure curves show mean
 errors against mean training times at common update indices, with shading
 extending one sample standard deviation upward.
 
@@ -788,10 +787,12 @@ and $x^4$ gives
           -\tfrac12\bigl[T_4(\bx;(1,2)^\top)-T_4(\bx;(1,-2)^\top)\bigr].\notag
 \end{align}
 These five directions also provide the lower-order coefficients required
-by the objective.
+by the objective. The STDE++ baseline uses two Taylor expansions through
+order seven and one through order two, following the gradient-enhanced
+construction in~\cite[Appendix~I.4]{Shi2026stdepp}.
 Table~\ref{tab_wall_kdv1d} and Figure~\ref{fig_wall_kdv1d} show that
 the WDD method attains comparable mean final errors with a
-$7.82\times$ training speedup.
+$1.44\times$ training speedup relative to STDE++.
 
 \begin{table}[htbp]
 \centering
@@ -886,9 +887,12 @@ point,
 Algorithm~\ref{alg_homogeneous} evaluates Taylor expansions along six
 real directions. Their lower-order coefficients also recover
 $u_x,u_y,u_{xx},u_{xy},u_{yy}$.
+The STDE++ baseline uses one order-nine and two order-three Taylor
+expansions, following the lower-order alternative
+in~\cite[Appendix~I.4]{Shi2026stdepp}.
 The results in Table~\ref{tab_wall_kdv2d} and
 Figure~\ref{fig_wall_kdv2d} show that the WDD method attains comparable
-mean final errors with a $5.22\times$ training speedup.
+mean final errors with a $1.62\times$ training speedup relative to STDE++.
 
 \begin{table}[htbp]
 \centering
@@ -997,8 +1001,7 @@ The WDD method evaluates
 these representations by batched Taylor propagation, while real power-sum
 identities allow Taylor coefficients to be reused across PDE derivative terms.
 The experiments show faster individual-partial evaluation for several tested
-patterns and shorter PINN training time than nested coordinate JVPs for KdV
-and the STDE++ construction for KP-II at equal update counts. With interior and constraint points
+patterns and shorter PINN training time than STDE++ at equal update counts. With interior and constraint points
 resampled at every update, the WDD method attains comparable mean final errors for the
 tested KdV and KP-II problems.
 

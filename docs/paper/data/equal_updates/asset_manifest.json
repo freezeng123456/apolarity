@@ -1,23 +1,209 @@
 {
-  "source_results": "results/paper_equal_updates_v100_20261008",
-  "protocol": "equal_updates",
+  "protocol": "equal_updates_WDD_vs_STDE++",
   "targets": {
     "kdv1d": 25000,
-    "kdv2d": 20000,
-    "ch2d": 1500
+    "kdv2d": 20000
   },
-  "runs": 30,
-  "error_metric": "Space-time relative L2 error, denoted RE.",
-  "source_curves_sha256": "3ace1845d52b632456e0f36755cbe41e075c4fea5c6efd69e18bd85a3b2f10c1",
+  "methods": [
+    "shared_jet_linear",
+    "stdepp"
+  ],
+  "seeds": [
+    20260919,
+    20260920,
+    20260921,
+    20260922,
+    20260923
+  ],
+  "runs": 20,
+  "source_files": {
+    "results/paper_equal_updates_v100_20261008/data/curves.csv": "3ace1845d52b632456e0f36755cbe41e075c4fea5c6efd69e18bd85a3b2f10c1",
+    "results/paper_equal_updates_v100_20261008/data/pde-results.csv": "d08c262c324832caa95b4707cb9de6fe6daada0bb12dd3caa82b47b64fb04576",
+    "results/paper_equal_updates_v100_20261008/data/provenance.json": "f3af76a390e1e320e93c10190a36fcff96dae9a4a44c2e5e1bf9c17489303c1e",
+    "results/stdepp_pde_v100_20261016/curves.csv": "dccfb56164e6d25a116d4a3b787085b52c551131322af3294dadcedb1aeddf64",
+    "results/stdepp_pde_v100_20261016/summaries.json": "a89b15039d435083b9b338b77238cb38aaf585e8a345512f3cd357ece924ddef",
+    "results/stdepp_pde_v100_20261016/BASELINE_PAIRS.json": "83b00d15046d37f1b9bbe436263531f258fc834cb47ef452064f9d95ecaebf37",
+    "results/stdepp_pde_v100_20261016/SOURCE_MANIFEST.json": "6375f302b1826f03c87d8d53124b3815eb96590c7e1604c9e297a83817dca30c"
+  },
+  "measurement_batches": "WDD: 2026-10-08; STDE++: 2026-10-16. Matched hardware/runtime and paired hashes.",
+  "error_metric": "Space-time relative L2, denoted RE",
+  "aggregation": "Arithmetic means of time and error at common update indices",
+  "band": "Mean to mean plus one sample standard deviation (ddof=1)",
+  "smoothing": false,
+  "interpolation": false,
+  "extrapolation": false,
+  "paired_checks": [
+    {
+      "case": "kdv1d",
+      "seed": 20260919,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv1d",
+      "seed": 20260920,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv1d",
+      "seed": 20260921,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv1d",
+      "seed": 20260922,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv1d",
+      "seed": 20260923,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv2d",
+      "seed": 20260919,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv2d",
+      "seed": 20260920,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv2d",
+      "seed": 20260921,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv2d",
+      "seed": 20260922,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    },
+    {
+      "case": "kdv2d",
+      "seed": 20260923,
+      "matched": {
+        "initial_hash": true,
+        "interior_samples_sha256": true,
+        "constraint_samples_sha256": true,
+        "spacetime_test_sha256": true,
+        "terminal_test_sha256": true
+      }
+    }
+  ],
+  "summary": {
+    "kdv1d": {
+      "shared_jet_linear": {
+        "training_seconds": {
+          "mean": 1123.8361492272466,
+          "sample_sd": 15.720433910345958
+        },
+        "RE": {
+          "mean": 0.0049551110714674,
+          "sample_sd": 0.0012968230498599908
+        }
+      },
+      "stdepp": {
+        "training_seconds": {
+          "mean": 1614.923623947613,
+          "sample_sd": 13.387265438697945
+        },
+        "RE": {
+          "mean": 0.004954258259385824,
+          "sample_sd": 0.0012976621556296097
+        }
+      },
+      "paired_speedup": {
+        "mean": 1.437134610542185,
+        "sample_sd": 0.01777867204031874
+      }
+    },
+    "kdv2d": {
+      "shared_jet_linear": {
+        "training_seconds": {
+          "mean": 1217.066794670187,
+          "sample_sd": 10.860559095866154
+        },
+        "RE": {
+          "mean": 0.0010198189644142984,
+          "sample_sd": 0.0002598016205582097
+        }
+      },
+      "stdepp": {
+        "training_seconds": {
+          "mean": 1972.5695082774387,
+          "sample_sd": 35.483195287155986
+        },
+        "RE": {
+          "mean": 0.0010198045638389885,
+          "sample_sd": 0.00025981321247367956
+        }
+      },
+      "paired_speedup": {
+        "mean": 1.6207897582701543,
+        "sample_sd": 0.027669920986194016
+      }
+    }
+  },
   "assets": {
-    "tables/resampled_wall_kdv1d.tex": "31b05943c8367935e0d3533f95c1aef4529d01edb304c3c6c1ce04bfe6391079",
-    "figures/resampled_wall_kdv1d.pdf": "0ef7f690aa9f42e61dbd290449d310caa35b7839ad49c19f2a7c6d96db04c486",
-    "figures/resampled_wall_kdv1d.png": "b0206a5675cc24fec378aba94caf3ec21c4d7bcee09a07a8e44ad1c7d8b0c9ca",
-    "tables/resampled_wall_kdv2d.tex": "afb186a18b6740469d7b9b49bf2dedf34d8b8a8dd64ac3e0311a27de1d60fa6b",
-    "figures/resampled_wall_kdv2d.pdf": "dd7e9a0d21446df994d34fb34debdbb615c9e9e0258a43aa7bc59614f302ed95",
-    "figures/resampled_wall_kdv2d.png": "c0a0bda493a761e5c21572e3a75d34195ee13ca56965199b063c4db4992c4e56",
-    "tables/resampled_wall_ch2d.tex": "91f1dcc1f2ec8030ad29c861c71e9c95397ea4abef3be34d434cfeff8247347c",
-    "figures/resampled_wall_ch2d.pdf": "c791326fe58781fb8a5f839f284df7ca265486232acd09a65ce56a6d5d891e56",
-    "figures/resampled_wall_ch2d.png": "d46cfae17f5032bb187a2a114e55db09e6c78f85945f7ca2b52f9d44c92b9c90"
+    "tables/resampled_wall_kdv1d.tex": "47fe8279fbfca62c4698b5abdeaa612547bd53416b904358ced079eda0837122",
+    "figures/resampled_wall_kdv1d.pdf": "e560d2d1883d1046ed8e19176148acaa9765336592c2a116549b6865c87cf0a0",
+    "figures/resampled_wall_kdv1d.png": "1332dc53e1cc1f9de35a16f8a8fcbeafd4114700e3862a5cf7199bf754dddb96",
+    "tables/resampled_wall_kdv2d.tex": "4999f4b0750fa5d2fc81168ce95757428a7b16e8ea2aa4815ed1ffdfccc9544e",
+    "figures/resampled_wall_kdv2d.pdf": "348846bdda4abf4939d465d6b80fe3fb307c22cd4cb9db8672bf88835f5e428d",
+    "figures/resampled_wall_kdv2d.png": "50e3ababa265b91bc06c0605c42e02ee07a301dbe5c66b082aeda5ee3af7e848"
   }
 }

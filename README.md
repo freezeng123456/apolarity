@@ -6,9 +6,8 @@ using conjugate reuse and a common Taylor backend for the STDE++ comparison.
 Section 4.2 evaluates PDE residuals with the prescribed
 **real** directions and fixed reconstruction coefficients displayed in the
 paper (`shared_jet_linear`). Section 4.1 compares with the deterministic
-directional Taylor construction reviewed in STDE++; the KdV figures compare
-with nested coordinate JVPs (`nested_jvp`), and the KP-II figure compares
-with the STDE++ implementation's nonlinear-curve construction. There is no automatic
+directional Taylor construction reviewed in STDE++; all three PDE figures
+compare WDD with the corresponding STDE++ Taylor constructions. There is no automatic
 selection between Waring and polarization formulas.
 
 The single-partial formula uses complex arithmetic when its roots are nonreal;
@@ -28,7 +27,7 @@ Common KdV boundary derivatives use coordinate JVPs in both compared methods.
   and [STDE++ implementation details](docs/STDEPP_REPRODUCTION.md).
 - [KdV equal-update records](results/paper_equal_updates_v100_20261008/README.md)
   and [KP-II five-seed records and frozen source](results/kp_fp32_v100_20261021/README.md).
-- [Additional STDE++ PDE measurements](results/stdepp_pde_v100_20261016/README.md)
+- [STDE++ PDE measurements used in the KdV figures](results/stdepp_pde_v100_20261016/README.md)
   and [CH paired-repeat submission](results/ch2d_paired_v100_20261018/README.md).
 - [Latest paper revision record](docs/paper/REVISION_RECORD_20261021.md),
   [previous revision](docs/paper/REVISION_RECORD_20261018.md), and
