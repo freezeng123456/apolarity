@@ -103,19 +103,19 @@
   computationally and memory intensive, primarily due to the large computational
   graphs caused by automatic differentiation. Within the Taylor-mode framework
   used by STDE, we introduce the Waring decomposition of derivatives (WDD)
-  method, which constructs directional Taylor representations from power-sum
-  decompositions of polynomial symbols. We prove that the minimum length of an
-  exact complex directional Taylor representation of a target partial derivative
-  equals the Waring rank of its corresponding
-  monomial, and a classical roots-of-unity Waring decomposition attains this
-  minimum. Experiments on individual high-order partial derivatives assess the
-  runtime of the WDD method relative to the deterministic directional Taylor
-  construction reviewed in STDE++.
-  Numerical experiments show that the WDD method reduces
-  derivative-evaluation time for several tested patterns. In PINN training for the
-  KdV and KP-II equations, it attains comparable mean solution errors in less
-  training time than the STDE++ constructions at equal update counts, with both interior
-  and constraint training points resampled at every update.
+  method, which constructs exact directional Taylor representations of
+  homogeneous constant-coefficient differential operators from power-sum
+  decompositions of their polynomial symbols. Specializing to a single mixed
+  partial, we prove that the minimum length of an exact complex directional
+  Taylor representation at the derivative order equals the Waring rank of the
+  corresponding monomial, and a classical roots-of-unity Waring decomposition
+  attains this minimum. Experiments on individual high-order partial derivatives
+  show that WDD reduces evaluation time for several tested patterns relative to
+  the deterministic directional Taylor construction reviewed in STDE++. In PINN
+  experiments on the one-dimensional KdV equation with gradient enhancement,
+  the two-dimensional KdV equation, and the KP-II equation, WDD attains comparable
+  mean solution errors in less training time than the compared STDE++
+  constructions at equal update counts.
 
 \end{abstract}
 
@@ -194,8 +194,10 @@ decompositions of polynomial symbols to construct directional representations of
 homogeneous constant-coefficient differential operators. We call this
 construction the Waring decomposition of derivatives (WDD) method and specialize
 it to mixed partial derivatives. The resulting power-sum identities can reduce
-the number of Taylor coefficient evaluations and allow lower-order coefficients
-to be shared across derivative terms. Our main contributions are:
+the number of Taylor coefficient evaluations. Compared with the STDE++
+constructions used in our PDE experiments, WDD recovers the required mixed
+partials from directional Taylor coefficients at their derivative orders. Our main
+contributions are:
 \begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
     itemsep=0.35em, topsep=0.45em, parsep=0pt]
 \item We establish an exact correspondence between directional Taylor
@@ -210,10 +212,9 @@ length. A batched Taylor-mode implementation evaluates the resulting
 directional Taylor coefficients independently and in parallel.
 \item We compare the WDD method with the deterministic directional Taylor
   construction reviewed in STDE++ on individual high-order partial derivatives, examining runtime
-  across derivative patterns without outer whole-function JIT compilation.
+  across derivative patterns.
   KdV and KP-II PINN comparisons measure training time and
-  solution error at equal update counts, with matched
-  initialization and resampled interior and constraint-point sequences.
+  solution error at equal update counts.
 \end{itemize}
 
 The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
@@ -547,6 +548,8 @@ Geramita~\cite[Cor.~3.3 and Remark~2.3]{CCG2012}, while the explicit
 roots-of-unity decomposition is given by Buczyńska, Buczyński, and
 Teitler~\cite[Sec.~2, Eq.~(8)]{BBT2013}. The following theorem records these
 results in the normalization required by \eqref{eq_monomial_schedule}.
+The roots-of-unity decomposition is verified directly in
+Appendix~\ref{sec_monomial_verification}.
 
 \begin{theorem}[Complex Waring rank and roots-of-unity decomposition of a monomial]
 \label{thm_monomial_waring}
@@ -573,14 +576,8 @@ results in the normalization required by \eqref{eq_monomial_schedule}.
     the lower bound in \eqref{eq_rank}.
 \end{theorem}
 
-For completeness, Appendix~\ref{sec_monomial_verification} verifies
-\eqref{eq_scaled_waring} directly in the notation used here.
-
 \subsection{Minimum-direction formula and algorithm}
 \label{sec_directional_optimal}
-
-Combining Proposition~\ref{prop_bridge} with Theorem~\ref{thm_monomial_waring}
-gives the corresponding minimum-direction representation of a mixed partial.
 
 \begin{corollary}[Minimum-direction representation of a mixed partial]\label{thm_main}
     Let the coordinates and positive entries of $\nu$ be ordered as in
@@ -650,14 +647,13 @@ directional Taylor coefficients.
 %% ====================================================================
 %%  SECTION 4: NUMERICAL EXPERIMENTS
 %% ====================================================================
-Power-sum identities offer two possible computational savings within the
-Taylor-mode framework used by STDE. For individual mixed partials, the
-minimum-length complex representation in Corollary~\ref{thm_main}, combined
-with conjugate reuse, can reduce the number of Taylor coefficient evaluations
-relative to the deterministic directional construction reviewed in STDE++.
-For PDE residuals, real power-sum identities can recover mixed partials at
-their derivative order and reuse lower-order coefficients across terms,
-avoiding the higher-order expansions used by the compared STDE++ constructions.
+WDD offers computational advantages within the Taylor-mode framework used by
+STDE. For general PDE residuals, WDD uses power-sum identities to recover the
+required mixed partials at their derivative orders, avoiding the higher-order
+expansions used by the compared STDE++ constructions. For an individual mixed
+partial, Corollary~\ref{thm_main} further provides a complex directional Taylor
+representation of minimum length at the derivative order. Conjugate reuse can
+further reduce the number of Taylor coefficient evaluations.
 
 \FloatBarrier
 \section{Numerical experiments}\label{sec_experiments}
@@ -685,6 +681,11 @@ We set the batch size to $B=1000$. The test network
 has 16 inputs and three hidden layers of width 128 with $\tanh$ activations,
 and both methods use identical weights and inputs and the same Taylor
 propagation routine on a Tesla V100. Here $R$ is the complex Waring rank.
+For the real-valued networks used here, the identity
+$T_p(\bx;\overline{\bv})=\overline{T_p(\bx;\bv)}$ holds for every real
+input point $\bx\in\R^d$ and complex direction $\bv\in\C^d$.
+The conjugate directions in Corollary~\ref{thm_main} also have conjugate
+weights, so each pair requires only one coefficient evaluation.
 The order-$p$ coefficient counts in
 Table~\ref{tab_individual_t4} are per input point, after conjugate reuse in WDD
 and merging redundant directions in STDE++. Times are the mean and sample
@@ -739,9 +740,7 @@ extending one sample standard deviation upward.
 
 \subsubsection{Gradient-enhanced PINN for the KdV equation}\label{sec_num_pinn}
 
-This example tests the evaluation of fourth-order derivatives arising
-from a gradient-enhanced PINN objective.
-We solve
+We consider the one-dimensional KdV equation
 \begin{equation}\label{eq_num_kdv}
  \begin{cases}
  u_t+u u_x+0.0025u_{xxx}=0,
@@ -827,8 +826,6 @@ KdV equation \eqref{eq_num_kdv}.}
 \subsubsection{Mixed-derivative PINN for a two-dimensional KdV equation}
 \label{sec_num_kdv2d}
 
-This example combines the spatial mixed derivative $u_{xxxy}$
-with the space--time derivative $u_{ty}$.
 We consider the KdV-type equation
 in~\cite[Eq.~(20)]{Shi2024stde},
 \begin{equation}\label{eq_num_kdv2d}
@@ -926,8 +923,7 @@ KdV equation \eqref{eq_num_kdv2d}.}
 
 \subsubsection{KP-II equation}\label{sec_num_kp}
 
-This example compares WDD with the KP derivative construction used in the
-STDE++ implementation. We consider the line-soliton problem
+We consider the KP-II line-soliton problem
 in~\cite[Eqs.~(3.7)--(3.9)]{PuChen2024}, with $\Omega=(-3,3)^2$,
 \begin{equation}\label{eq_num_kp}
  \begin{cases}
@@ -1024,8 +1020,8 @@ The WDD method evaluates
 these representations by batched Taylor propagation, while real power-sum
 identities allow Taylor coefficients to be reused across PDE derivative terms.
 The experiments show faster individual-partial evaluation for several tested
-patterns and shorter PINN training time than STDE++ at equal update counts. With interior and constraint points
-resampled at every update, the WDD method attains comparable mean final errors for the
+patterns and shorter PINN training time than STDE++ at equal update counts.
+The WDD method attains comparable mean final errors for the
 tested KdV and KP-II problems.
 
 %% ====================================================================
