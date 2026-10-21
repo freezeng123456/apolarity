@@ -101,21 +101,22 @@
 \begin{abstract}
   Computing high-order derivatives in neural network residuals is often
   computationally and memory intensive, primarily due to the large computational
-  graphs caused by automatic differentiation. In this work, we introduce the
-  Waring decomposition of derivatives (WDD) method, which expresses a derivative
-  as a weighted sum of directional Taylor coefficients. We prove
-  that the minimal number of complex directional evaluations required to recover a
-  target partial derivative equals the Waring rank of its corresponding
+  graphs caused by automatic differentiation. Within the Taylor-mode framework
+  used by STDE, we introduce the Waring decomposition of derivatives (WDD)
+  method, which constructs directional Taylor representations from power-sum
+  decompositions of polynomial symbols. We prove that the minimum length of an
+  exact complex directional Taylor representation of a target partial derivative
+  equals the Waring rank of its corresponding
   monomial, and a classical roots-of-unity Waring decomposition attains this
   minimum. Experiments on individual high-order partial derivatives assess the
-  runtime of the WDD method relative to the deterministic multiple-linear-jet
-  construction of STDE++.
+  runtime of the WDD method relative to the deterministic directional Taylor
+  construction reviewed in STDE++.
   Numerical experiments show that the WDD method reduces
-  derivative-evaluation time. In PINN training for the KdV and
-  Cahn--Hilliard equations, it attains comparable mean solution errors
-  in less training time than nested coordinate Jacobian--vector products at equal update counts,
-  with both interior and
-  constraint training points resampled at every update.
+  derivative-evaluation time for several tested patterns. In PINN training for the
+  KdV and KP-II equations, it attains comparable mean solution errors in less
+  training time than nested coordinate Jacobian--vector products and the
+  STDE++ construction, respectively, at equal update counts, with both interior
+  and constraint training points resampled at every update.
 
 \end{abstract}
 
@@ -170,16 +171,7 @@ avoids automatic differentiation entirely when computing derivatives. Finite
 differences approximate derivatives from nearby network
 evaluations~\cite{Fornberg1988,Chiu2022CAN}, whereas randomized smoothing uses
 Stein's identity to express derivatives of a smoothed network as expectations
-of perturbed function values~\cite{Stein1981,He2023}. STDE takes a different
-route by combining randomization with high-order automatic differentiation: it
-constructs randomized input tangents so that general linear differential
-operators can be estimated through univariate Taylor-mode
-propagation~\cite{Shi2024stde}. STDE++ also discusses the exact recovery of
-mixed partial derivatives from linear
-combinations of directional Taylor coefficients. It further develops STDE by
-providing polynomial-time Taylor-mode constructions, improving on earlier
-general schemes whose cost grows exponentially with the derivative
-order~\cite{Shi2026stdepp}. Although these methods reduce computational costs,
+of perturbed function values~\cite{Stein1981,He2023}. Although these methods reduce computational costs,
 their performance depends on the choice of method-specific parameters. Finite
 differences require a step size that balances truncation and round-off errors,
 randomized smoothing depends on both the smoothing bandwidth and the Monte
@@ -190,25 +182,35 @@ residual estimates, while a small smoothing bandwidth can sharply amplify
 variance for high-order derivatives and may destabilize PINN
 training~\cite{He2023,Hu2025bias,Shi2026stdepp}.
 
-In this paper, we introduce the Waring decomposition of derivatives (WDD)
-method for evaluating homogeneous constant-coefficient differential operators
-through directional Taylor coefficients, and specialize it to mixed partial
-derivatives. Our main contributions are:
+STDE evaluates derivative-tensor contractions through univariate Taylor-mode
+automatic differentiation and uses them to construct stochastic estimators of
+linear differential operators~\cite{Shi2024stde}. STDE++ also studies exact
+recovery of mixed partial derivatives, reviewing the directional Taylor
+construction of Griewank, Utke, and Walther~\cite{GriewankUtkeWalther2000} and
+developing constructions based on higher-order Taylor expansions along nonlinear
+curves~\cite{Shi2026stdepp}.
+
+Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, we use Waring
+decompositions of polynomial symbols to construct directional representations of
+homogeneous constant-coefficient differential operators. We call this
+construction the Waring decomposition of derivatives (WDD) method and specialize
+it to mixed partial derivatives. Our main contributions are:
 \begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
     itemsep=0.35em, topsep=0.45em, parsep=0pt]
 \item We establish an exact correspondence between directional Taylor
 representations of homogeneous constant-coefficient differential operators and
 power-sum identities for their polynomial symbols. This correspondence identifies
-the minimum number of complex directions with the Waring rank of the symbol.
+the minimum length of an exact complex directional Taylor representation with
+the Waring rank of the symbol.
 \item For a single mixed partial derivative, we combine the correspondence with
 the established complex Waring-rank and roots-of-unity results for monomials
-to obtain a closed-form representation with the minimum number of complex
-directions. A batched Taylor-mode implementation evaluates the resulting
+to obtain a closed-form complex directional Taylor representation of minimum
+length. A batched Taylor-mode implementation evaluates the resulting
 directional Taylor coefficients independently and in parallel.
-\item We compare the WDD method with the multiple-linear-jet construction
-  of STDE++ on individual high-order partial derivatives, examining runtime
+\item We compare the WDD method with the deterministic directional Taylor
+  construction reviewed in STDE++ on individual high-order partial derivatives, examining runtime
   across derivative patterns without outer whole-function JIT compilation.
-  KdV and Cahn--Hilliard PINN comparisons measure training time and
+  KdV and KP-II PINN comparisons measure training time and
   solution error at equal update counts, with matched
   initialization and resampled interior and constraint-point sequences.
 \end{itemize}
@@ -221,7 +223,7 @@ correspondence to monomial Waring decompositions, and presents
 the resulting minimum-direction formula with its batched Taylor
 realization. Section~\ref{sec_experiments} evaluates the derivative backend on
 individual high-order partial derivatives and examines its use in complete
-KdV and Cahn--Hilliard PINN training.
+KdV and KP-II PINN training.
 Section~\ref{sec_concl} concludes. A coefficient verification of the cited
 roots-of-unity decomposition is given in Appendix~\ref{sec_schedules}.
 
@@ -347,9 +349,11 @@ Let
     \qquad p\geq1,
 \end{equation}
 be a nonzero homogeneous constant-coefficient differential operator. We seek
-to express $\mathcal{L}u$ as a linear combination of directional Taylor
-coefficients, using their efficient evaluation to accelerate the computation.
-We first establish the following proposition.
+an exact linear representation of $\mathcal{L}u$ by order-$p$ directional Taylor
+coefficients within the Taylor-mode framework used by
+STDE~\cite{Shi2024stde}. The following proposition characterizes the required
+coefficients and directions through power-sum identities for the polynomial
+symbol of $\mathcal{L}$.
 
 \nopagebreak[4]
 
@@ -655,20 +659,20 @@ multi-index patterns, using the minimum-direction complex Waring
 representation in Corollary~\ref{thm_main}. Second, we assess PINN
 training on three nonlinear differential equations: a one-dimensional KdV
 equation with a gradient-enhanced objective, a two-dimensional KdV
-equation with mixed derivatives, and a fourth-order Cahn--Hilliard
-equation. For the PDE problems, we apply Algorithm~\ref{alg_homogeneous}
+equation with mixed derivatives, and a KP-II equation. For the PDE problems, we apply Algorithm~\ref{alg_homogeneous}
 to real power-sum identities, allowing Taylor coefficients to be reused
 across different derivative terms. The compared methods compute the same
-mathematical derivatives; the PDE experiments compare WDD with nested
-coordinate Jacobian--vector products (JVPs) under identical loss objectives
-and matched computational conditions.
+mathematical derivatives. The KdV experiments compare WDD with nested
+coordinate Jacobian--vector products (JVPs), and the KP-II experiment compares
+WDD with the STDE++ construction, under identical loss objectives and matched
+computational conditions.
 
 \subsection{Individual high-order partial derivatives}\label{sec_num_problems}
 
-We compare WDD with a centered-polarization implementation of the multiple-linear-jet identity in
+We compare WDD with a centered-polarization implementation of the directional Taylor identity reviewed in
 STDE++~\cite[Section~6.1, Eq.~(25)]{Shi2026stdepp} for individual partial derivatives
-$\partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}u$
-at batch size $B=1000$. The test network
+$\partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}u$.
+We set the batch size to $B=1000$. The test network
 has 16 inputs and three hidden layers of width 128 with $\tanh$ activations,
 and both methods use identical weights and inputs and the same Taylor
 propagation routine on a Tesla V100. Here $R$ is the complex Waring rank.
@@ -697,16 +701,16 @@ STDE++ to WDD times.}
 For all PDE benchmarks, $u_\theta$ is a fully connected network with four
 hidden layers of width 128, $\tanh$ activations, and a scalar linear
 output. We train with Adam~\cite{Kingma2015} using a learning rate of
-$10^{-5}$ for the KdV problems and $10^{-4}$ for Cahn--Hilliard. At each
+$10^{-5}$ for the KdV problems and $10^{-4}$ for KP-II. At each
 update we independently resample 400 interior space--time points and points
 on each initial and spatial boundary face: 128 points per face in 1D and
 256 per face in 2D. Let $\mathcal T_r$, $\mathcal T_0$, and $\mathcal T_b$
 be the interior, initial, and combined spatial boundary point sets.
 Conditions on the same face use the same points. For each of five seeds,
 the paired methods share the initialization, loss weights, and samples at
-each common update index. Both methods are trained for 25,000, 20,000, and
-1,500 updates for one-dimensional KdV, two-dimensional KdV, and
-Cahn--Hilliard, respectively.
+each common update index. Both methods are trained for 25,000 updates for
+one-dimensional KdV and 20,000 updates for two-dimensional KdV and KP-II.
+The KP-II averages use seeds 20260936--20260940.
 In the polynomial identities below, coordinate letters also denote the
 corresponding formal variables.
 For a test set $D$, we record the relative $L^2$ error
@@ -719,8 +723,7 @@ evaluated on 10,000 uniform space--time test points. The test set is fixed,
 independent of training, and shared by paired methods. Tables report training
 times and $\operatorname{RE}$ as means and sample standard deviations across
 seeds.
-Training speedups are means of paired ratios of Nested JVP to WDD training
-times. Figure curves show mean
+Training speedups are means of paired baseline-to-WDD training-time ratios. Figure curves show mean
 errors against mean training times at common update indices, with shading
 extending one sample standard deviation upward.
 
@@ -906,99 +909,76 @@ KdV equation \eqref{eq_num_kdv2d}.}
 \end{figure}
 \FloatBarrier
 
-\subsubsection{Fourth-order Cahn--Hilliard equation}\label{sec_num_ch}
+\subsubsection{KP-II equation}\label{sec_num_kp}
 
-This example tests Taylor coefficient reuse for the Laplacian and
-biharmonic operators in a nonlinear PDE.
-We solve the Cahn--Hilliard problem
-\begin{equation}\label{eq_num_ch}
+This example compares WDD with the KP derivative construction used in the
+STDE++ implementation. We consider the line-soliton problem
+in~\cite[Eqs.~(3.7)--(3.9)]{PuChen2024}, with $\Omega=(-3,3)^2$,
+\begin{equation}\label{eq_num_kp}
  \begin{cases}
- u_t-\Delta(u^3-u)+0.01\Delta^2u=f(x,y,t),
-       &(x,y)\in(0,\pi)^2,\quad t\in(0,1),\\
- u(x,y,0)=u_\star(x,y,0),
-       &(x,y)\in[0,\pi]^2,\\
- \partial_{\bm n} u=0,\quad\partial_{\bm n}\Delta u=0,
-       &\begin{aligned}
-          (x,y)&\in\partial\bigl((0,\pi)^2\bigr),\\
-          t&\in(0,1).
-        \end{aligned}
+ u_{tx}+6(u_x^2+u u_{xx})+u_{xxxx}+3u_{yy}=0,
+       &(x,y)\in\Omega,\quad t\in(-\tfrac12,\tfrac12),\\
+ u(x,y,-\tfrac12)=u_\star(x,y,-\tfrac12),
+       &(x,y)\in\overline\Omega,\\
+ u(x,y,t)=u_\star(x,y,t),
+       &(x,y)\in\partial\Omega,\quad t\in(-\tfrac12,\tfrac12).
  \end{cases}
 \end{equation}
-Here $\nabla$ and $\Delta$ act on the spatial coordinates, and $\bm n$
-is the outward spatial unit normal.
-The exact solution contains three spatial modes,
-\begin{equation}\label{eq_num_ch_exact}
- u_\star(x,y,t)=e^{-t}\left[
- \tfrac12\cos x\cos y+
- \tfrac14\cos(2x)\cos y+
- \tfrac14\cos x\cos(2y)\right].
+The exact solution is
+\begin{equation}\label{eq_num_kp_exact}
+ u_\star(x,y,t)=\frac{18e^{3x+6y-63t}}{(1+e^{3x+6y-63t})^2}.
 \end{equation}
-The source $f$ is obtained by substituting \eqref{eq_num_ch_exact} into
-the PDE in \eqref{eq_num_ch}.
-
-Expanding the nonlinear Laplacian gives the residual
-\begin{equation}\label{eq_num_ch_residual}
- r_\theta(x,y,t):=(u_\theta)_t-(3u_\theta^2-1)\Delta u_\theta
-          -6u_\theta|\nabla u_\theta|^2
-          +0.01\Delta^2u_\theta-f.
-\end{equation}
-Let $\mathcal F$ denote the four spatial boundary faces. The initial
-and boundary penalty is
-\begin{align*}
- \mathcal J_b(\theta)
-   ={}&\frac1{|\mathcal T_0|}\sum_{(x,y,0)\in\mathcal T_0}
-        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]^2\\
-     &+\frac14\sum_{F\in\mathcal F}\frac1{256}
-       \sum_{\substack{(\bm s,t)\in\mathcal T_b\\\bm s\in F}}
-       \Bigl\{[\partial_{\bm n}u_\theta(\bm s,t)]^2
-       +[\partial_{\bm n}\Delta u_\theta(\bm s,t)]^2\Bigr\}.
-\end{align*}
-The objective is
-\begin{equation}\label{eq_num_ch_loss}
- \mathcal J_{\rm CH}(\theta)
-   =\frac1{|\mathcal T_r|}\sum_{(x,y,t)\in\mathcal T_r}r_\theta(x,y,t)^2
- +\lambda_2\mathcal J_b(\theta).
-\end{equation}
-For the spatial operators, we use the identities
-\begin{align}\label{eq_num_ch_symbols}
- (x^2+y^2)^2&=\dfrac{8}{9}\left[x^4+\left(\frac{x+\sqrt3y}{2}\right)^4
-                       +\left(\frac{-x+\sqrt3y}{2}\right)^4\right],\\
- x^2+y^2&=\dfrac{2}{3}\left[x^2+\left(\frac{x+\sqrt3y}{2}\right)^2
-                       +\left(\frac{-x+\sqrt3y}{2}\right)^2\right].\notag
+Define the PDE residual by
+\begin{equation*}
+ r_\theta:=(u_\theta)_{tx}
+       +6\bigl[(u_\theta)_x^2+u_\theta(u_\theta)_{xx}\bigr]
+       +(u_\theta)_{xxxx}+3(u_\theta)_{yy}.
+\end{equation*}
+Let $\mathcal F$ denote the four spatial boundary faces. The objective is
+\begin{align}\label{eq_num_kp_loss}
+ \mathcal J_{\rm KP}(\theta)
+  ={}&\frac1{|\mathcal T_r|}\sum_{\bx\in\mathcal T_r}r_\theta(\bx)^2
+    +\lambda_2\Biggl\{\frac1{|\mathcal T_0|}
+       \sum_{\bx\in\mathcal T_0}|u_\theta(\bx)-u_\star(\bx)|^2\notag\\
+    &\qquad+\sum_{F\in\mathcal F}\frac1{256}
+       \sum_{\substack{\bx\in\mathcal T_b\\(x,y)\in F}}
+       |u_\theta(\bx)-u_\star(\bx)|^2\Biggr\},
+       \qquad \lambda_2=10.
 \end{align}
-Writing $\bv_r$ for the coefficient vectors of these three linear forms
-in $(x,y,t)$ and $\bx=(x,y,t)^\top$ for the network input point,
-Proposition~\ref{prop_bridge} gives
-\begin{equation}\label{eq_num_ch_reconstruction}
- \Delta^2u_\theta=\tfrac{64}{3}\sum_{r=1}^3T_4(\bx;\bv_r),
- \qquad
- \Delta u_\theta=\tfrac43\sum_{r=1}^3T_2(\bx;\bv_r).
-\end{equation}
-The quadratic identity also yields
-$|\nabla u_\theta|^2=\tfrac23\sum_{r=1}^3[T_1(\bx;\bv_r)]^2$.
-Algorithm~\ref{alg_homogeneous} therefore evaluates Taylor expansions
-along three real spatial directions; time and boundary derivatives
-use coordinate JVPs in both methods.
-Table~\ref{tab_wall_ch2d} and Figure~\ref{fig_wall_ch2d} show comparable
-mean final errors with the WDD method, although its training speedup of
-$1.93\times$ is smaller than in the KdV examples.
+
+For $\bx=(x,y,t)^\top$, the power-sum identity
+$xt=\tfrac14[(x+t)^2-(x-t)^2]$ gives
+\begin{align}\label{eq_num_kp_reconstruction}
+ (u_\theta)_{xxxx}&=24T_4(\bx;(1,0,0)^\top),\notag\\
+ (u_\theta)_{tx}&=\tfrac12\bigl[T_2(\bx;(1,0,1)^\top)
+                         -T_2(\bx;(1,0,-1)^\top)\bigr],\\
+ (u_\theta)_{yy}&=2T_2(\bx;(0,1,0)^\top).\notag
+\end{align}
+The order-four expansion also supplies $u_\theta$, $(u_\theta)_x$, and
+$(u_\theta)_{xx}$. The STDE++ baseline recovers $(u_\theta)_{tx}$ from the
+fifth-order expansion along
+$\bx+\tau^2(1,0,0)^\top/2+\tau^3(0,0,1)^\top/6$, together with coordinate
+Taylor expansions for the remaining terms, following its published
+implementation~\cite{Shi2026stdepp}.
+Table~\ref{tab_wall_kp2d} and Figure~\ref{fig_wall_kp2d} show final mean
+errors of $3.726\times10^{-2}$ and $4.052\times10^{-2}$ for WDD and
+STDE++, respectively, with a $1.32\times$ training speedup.
 
 \begin{table}[htbp]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\caption{Numerical results for the Cahn--Hilliard equation
-\eqref{eq_num_ch}.}
-\label{tab_wall_ch2d}
-\input{tables/resampled_wall_ch2d}
+\caption{Numerical results for the KP-II equation~\eqref{eq_num_kp}.}
+\label{tab_wall_kp2d}
+\input{tables/equal_updates_kp2d}
 \end{table}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.78\linewidth]{resampled_wall_ch2d.pdf}
-\caption{$\operatorname{RE}$ during training for the Cahn--Hilliard
-equation \eqref{eq_num_ch}.}
-\label{fig_wall_ch2d}
+\includegraphics[width=.78\linewidth]{equal_updates_kp2d.pdf}
+\caption{$\operatorname{RE}$ during training for the KP-II
+equation~\eqref{eq_num_kp}.}
+\label{fig_wall_kp2d}
 \end{figure}
 
 Across the PDE experiments, the WDD method attains comparable mean final
@@ -1009,15 +989,18 @@ interior and constraint training points resampled at every update.
 
 \section{Conclusion}\label{sec_concl}
 
-Polynomial symbols yield exact directional representations of high-order
-derivatives. Waring-rank theory and the roots-of-unity decomposition give
-minimum-length complex formulas for mixed partials. The WDD method evaluates
+Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, WDD constructs
+exact directional representations of high-order derivatives from polynomial
+symbols. Classical Waring-rank theory and the roots-of-unity decomposition give
+complex directional Taylor representations of minimum length for mixed partials.
+The WDD method evaluates
 these representations by batched Taylor propagation, while real power-sum
 identities allow Taylor coefficients to be reused across PDE derivative terms.
-The experiments show faster individual-partial evaluation and shorter PINN
-training time at equal update counts. With interior and constraint points
+The experiments show faster individual-partial evaluation for several tested
+patterns and shorter PINN training time than nested coordinate JVPs for KdV
+and the STDE++ construction for KP-II at equal update counts. With interior and constraint points
 resampled at every update, the WDD method attains comparable mean final errors for the
-tested KdV and Cahn--Hilliard problems.
+tested KdV and KP-II problems.
 
 %% ====================================================================
 %%  APPENDIX

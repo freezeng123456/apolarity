@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "source_fingerprint": "5363b5b123d0309617d69dc0ff6bae7626a612f3bee7aa64d23818b9076df2e4",
+  "exact_solution_max_abs_residual": 8.526512829121202e-14,
+  "checks": [
+    {
+      "method": "nested_jvp",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 0.0,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 0.0,
+        "u_x": 0.0,
+        "u_xx": 0.0,
+        "u_xxxx": 0.0,
+        "u_tx": 0.0,
+        "u_yy": 0.0
+      }
+    },
+    {
+      "method": "shared_jet_linear",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 8.818833528300585e-17,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 1.1564351324562359e-16,
+        "u_x": 1.643844078616637e-16,
+        "u_xx": 3.286851341615079e-16,
+        "u_xxxx": 2.716461326636547e-16,
+        "u_tx": 5.388596489430709e-16,
+        "u_yy": 6.660408469508339e-16
+      }
+    },
+    {
+      "method": "stdepp",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 8.138849873621824e-17,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 1.1564351324562359e-16,
+        "u_x": 1.643844078616637e-16,
+        "u_xx": 3.286851341615079e-16,
+        "u_xxxx": 2.716461326636547e-16,
+        "u_tx": 5.281419576613284e-16,
+        "u_yy": 6.660408469508339e-16
+      }
+    },
+    {
+      "method": "shared_jet_linear",
+      "full_size": true,
+      "loss": 46.23287582397461,
+      "gradient_relative_error": 0.0,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 0.0,
+        "u_x": 0.0,
+        "u_xx": 0.0,
+        "u_xxxx": 0.0,
+        "u_tx": 0.0,
+        "u_yy": 0.0
+      }
+    },
+    {
+      "method": "stdepp",
+      "full_size": true,
+      "loss": 46.23287582397461,
+      "gradient_relative_error": 4.6948738230412346e-08,
+      "parameter_after_Adam_relative_error": 1.1221175100217806e-09,
+      "components": {
+        "u": 0.0,
+        "u_x": 0.0,
+        "u_xx": 0.0,
+        "u_xxxx": 0.0,
+        "u_tx": 6.207176284078741e-07,
+        "u_yy": 3.2370198255193827e-07
+      }
+    }
+  ],
+  "torch": "2.5.1+cu121",
+  "numpy": "1.26.4",
+  "gpu": "Tesla V100-SXM2-32GB"
+}

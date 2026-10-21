@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "scope": "Independent coordinate AD versus frozen WDD and STDE++ components, loss, gradient and one Adam update on CPU float64; not a GPU timing rerun.",
+  "exact_solution_max_abs_residual": 8.526512829121202e-14,
+  "checks": [
+    {
+      "method": "nested_jvp",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 0.0,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 0.0,
+        "u_x": 0.0,
+        "u_xx": 0.0,
+        "u_xxxx": 0.0,
+        "u_tx": 0.0,
+        "u_yy": 0.0
+      }
+    },
+    {
+      "method": "shared_jet_linear",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 8.818826304343557e-17,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 1.5759554382082872e-16,
+        "u_x": 1.6042275562379906e-16,
+        "u_xx": 2.3576941942708054e-16,
+        "u_xxxx": 3.9300141792644496e-16,
+        "u_tx": 3.836322383960694e-16,
+        "u_yy": 6.110534903755048e-16
+      }
+    },
+    {
+      "method": "stdepp",
+      "full_size": false,
+      "loss": 57.59434849896484,
+      "gradient_relative_error": 8.13915878621419e-17,
+      "parameter_after_Adam_relative_error": 0.0,
+      "components": {
+        "u": 1.5759554382082872e-16,
+        "u_x": 1.6042275562379906e-16,
+        "u_xx": 2.3576941942708054e-16,
+        "u_xxxx": 3.9300141792644496e-16,
+        "u_tx": 3.432759781207907e-16,
+        "u_yy": 6.110534903755048e-16
+      }
+    }
+  ]
+}

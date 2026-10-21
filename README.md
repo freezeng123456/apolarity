@@ -3,38 +3,41 @@
 The WDD method uses two explicit constructions. Section 4.1 evaluates
 individual partial derivatives with the roots-of-unity Waring formula,
 using conjugate reuse and a common Taylor backend for the STDE++ comparison.
-Sections 4.2–4.4 evaluate PDE residuals with the prescribed
+Section 4.2 evaluates PDE residuals with the prescribed
 **real** directions and fixed reconstruction coefficients displayed in the
 paper (`shared_jet_linear`). Section 4.1 compares with the deterministic
-multiple-linear-jet construction of STDE++ §6.1; the published PDE figures
-compare with nested coordinate JVPs (`nested_jvp`). There is no automatic
+directional Taylor construction reviewed in STDE++; the KdV figures compare
+with nested coordinate JVPs (`nested_jvp`), and the KP-II figure compares
+with the STDE++ implementation's nonlinear-curve construction. There is no automatic
 selection between Waring and polarization formulas.
 
 The single-partial formula uses complex arithmetic when its roots are nonreal;
 pure and square-free derivatives naturally have real roots. PDE directions and
 parameters remain real. The two constructions share the same normalized Taylor
 arithmetic, and parameter gradients use ordinary reverse-mode differentiation.
-Common boundary derivatives, and the Cahn–Hilliard time derivative, use coordinate
-JVPs in both compared methods.
+Common KdV boundary derivatives use coordinate JVPs in both compared methods.
 
 ## Paper and reproducibility
 
 - [Current manuscript source](docs/paper/jsc_paper_main.tex) and
   [standalone source bundle](docs/paper/WDD_paper_submission.zip).
-  The separately tracked [PDF export](docs/paper/jsc_paper_main.pdf) is dated
-  2026-10-09; compile the current source for the revised §4.1.
+  The [compiled PDF](docs/paper/jsc_paper_main.pdf) includes the KP-II mean curve
+  and results table updated on 2026-10-21.
 - [Current code and commands](experiments/torch_benchmarks/README.md).
 - [Current B=1000 partial benchmarks](results/stdepp_section61_b1000_v100_20261018/README.md)
   and [STDE++ implementation details](docs/STDEPP_REPRODUCTION.md).
-- [Current equal-update PDE records](results/paper_equal_updates_v100_20261008/README.md).
+- [KdV equal-update records](results/paper_equal_updates_v100_20261008/README.md)
+  and [KP-II five-seed records and frozen source](results/kp_fp32_v100_20261021/README.md).
 - [Additional STDE++ PDE measurements](results/stdepp_pde_v100_20261016/README.md)
   and [CH paired-repeat submission](results/ch2d_paired_v100_20261018/README.md).
-- [Latest paper revision record](docs/paper/REVISION_RECORD_20261018.md) and
+- [Latest paper revision record](docs/paper/REVISION_RECORD_20261021.md),
+  [previous revision](docs/paper/REVISION_RECORD_20261018.md), and
   [earlier revisions](docs/paper/REVISION_RECORD_20261009.md).
 - [Historical fixed-time records and their frozen source](results/paper_resampled_20260914/README.md).
 - [Historical experiment ledger](docs/HISTORICAL_EXPERIMENT_LEDGER.md), recording
   superseded studies whose large raw artifacts were removed during compaction.
-- [PDE figure/table reproduction](docs/paper/build_equal_updates_assets.py) and
+- [KdV figure/table reproduction](docs/paper/build_equal_updates_assets.py),
+  [KP-II figure/table reproduction](docs/paper/build_kp_experiment_assets.py), and
   [individual-partial table reproduction](docs/paper/build_stdepp_experiment_assets.py).
 - [Polynomial-identity checks](docs/paper/verify_experiment_identities.py) and
   tests comparing the current implementation with the frozen paper source.
@@ -42,9 +45,10 @@ JVPs in both compared methods.
 The current PDE entry is `experiments/torch_benchmarks/train_equal_updates.py`.
 It resamples interior, initial and boundary training points at every update.
 Its defaults match the paper: four hidden layers of width 128, 400 interior
-points, and Adam learning rate 1e-5 for KdV or 1e-4 for Cahn–Hilliard.
-Both methods complete 25,000, 20,000, and 1,500 updates for 1D KdV, 2D KdV,
-and Cahn–Hilliard, respectively. Evaluation points remain fixed and independent
+points, and Adam learning rate 1e-5 for KdV.
+Both methods complete 25,000 updates for 1D KdV and 20,000 for 2D KdV.
+The KP-II figure uses the original frozen entry under
+`results/kp_fp32_v100_20261021/`, with learning rate 1e-4 and 20,000 updates. Evaluation points remain fixed and independent
 of training. Only numeric curves and summaries are saved, not checkpoints.
 
 ## Install and check

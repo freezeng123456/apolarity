@@ -1,8 +1,9 @@
 # Current paper figures
 
-The three `resampled_wall_{kdv1d,kdv2d,ch2d}` figures now use the completed
+The two current `resampled_wall_{kdv1d,kdv2d}` figures use the completed
 V100 experiments in `results/paper_equal_updates_v100_20261008/`.
-Their existing filenames and manuscript labels are retained. Generate the
+Their existing filenames and manuscript labels are retained. The historical
+CH figure is retained but is no longer included in the current manuscript. Generate the
 plots with that directory's `plot.py`, then install the figures and build
 the endpoint tables with `docs/paper/build_equal_updates_assets.py`.
 
@@ -21,3 +22,12 @@ Plots label the same space–time error as RE. Speedups are means of the five
 paired Nested-JVP/WDD training-time ratios. PDF and PNG versions are
 supplied, and `docs/paper/data/equal_updates/asset_manifest.json` records
 the source dataset and asset hashes.
+
+The third current figure, `equal_updates_kp2d`, uses
+`results/kp_fp32_v100_20261021/`: WDD (blue) and STDE++ (red), seeds
+20260936–20260940, and 20,000 updates per run. It follows the same
+common-update arithmetic-mean and upper-standard-deviation shading rule
+as the KdV figures. Regenerate it and its table with
+`python docs/paper/build_kp_experiment_assets.py`; add `--check` to verify
+the installed asset hashes. The result README records the cohort selection
+and retains all seven observed seed pairs.
