@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "cells": 60,
+  "paired_checks": 30,
+  "primary_metric": "Peak PyTorch allocated GPU bytes after ten full warm-up calls/updates, reset immediately before a 30-second workload window; includes model tensors, temporaries and (PDE only) gradients/Adam state; excludes CUDA context and unused allocator cache.",
+  "aggregation": "Report every seed; case-level reported peak is the maximum of per-seed 30-second peaks. No averaging or selection by memory.",
+  "summary": [
+    {
+      "case": "123456",
+      "seed_count": 3,
+      "wdd_peak_allocated_mib": 725.2216796875,
+      "wdd_min_seed_peak_mib": 725.2216796875,
+      "wdd_sampled_process_peak_mib": 1864.0,
+      "stdepp_peak_allocated_mib": 725.2216796875,
+      "stdepp_min_seed_peak_mib": 725.2216796875,
+      "stdepp_sampled_process_peak_mib": 1864.0,
+      "wdd_reduction_percent": 0.0
+    },
+    {
+      "case": "11223344",
+      "seed_count": 3,
+      "wdd_peak_allocated_mib": 834.36474609375,
+      "wdd_min_seed_peak_mib": 834.36474609375,
+      "wdd_sampled_process_peak_mib": 2396.0,
+      "stdepp_peak_allocated_mib": 1172.87939453125,
+      "stdepp_min_seed_peak_mib": 1172.87939453125,
+      "stdepp_sampled_process_peak_mib": 3392.0,
+      "wdd_reduction_percent": 28.861846325878194
+    },
+    {
+      "case": "111222333",
+      "seed_count": 3,
+      "wdd_peak_allocated_mib": 671.8154296875,
+      "wdd_min_seed_peak_mib": 671.8154296875,
+      "wdd_sampled_process_peak_mib": 2306.0,
+      "stdepp_peak_allocated_mib": 929.7060546875,
+      "stdepp_min_seed_peak_mib": 929.7060546875,
+      "stdepp_sampled_process_peak_mib": 2808.0,
+      "wdd_reduction_percent": 27.7389421849774
+    },
+    {
+      "case": "111122223333",
+      "seed_count": 3,
+      "wdd_peak_allocated_mib": 1129.498046875,
+      "wdd_min_seed_peak_mib": 1129.498046875,
+      "wdd_sampled_process_peak_mib": 4196.0,
+      "stdepp_peak_allocated_mib": 2095.63623046875,
+      "stdepp_min_seed_peak_mib": 2095.63623046875,
+      "stdepp_sampled_process_peak_mib": 7148.0,
+      "wdd_reduction_percent": 46.102380248390965
+    },
+    {
+      "case": "111112222233333",
+      "seed_count": 3,
+      "wdd_peak_allocated_mib": 2131.68017578125,
+      "wdd_min_seed_peak_mib": 2131.68017578125,
+      "wdd_sampled_process_peak_mib": 8862.0,
+      "stdepp_peak_allocated_mib": 5260.4384765625,
+      "stdepp_min_seed_peak_mib": 5260.4384765625,
+      "stdepp_sampled_process_peak_mib": 20712.0,
+      "wdd_reduction_percent": 59.477138925228466
+    },
+    {
+      "case": "kdv1d",
+      "seed_count": 5,
+      "wdd_peak_allocated_mib": 163.49169921875,
+      "wdd_min_seed_peak_mib": 163.49169921875,
+      "wdd_sampled_process_peak_mib": 618.0,
+      "stdepp_peak_allocated_mib": 153.12841796875,
+      "stdepp_min_seed_peak_mib": 153.12841796875,
+      "stdepp_sampled_process_peak_mib": 594.0,
+      "wdd_reduction_percent": -6.767706077989333
+    },
+    {
+      "case": "kdv2d",
+      "seed_count": 5,
+      "wdd_peak_allocated_mib": 183.67626953125,
+      "wdd_min_seed_peak_mib": 183.67626953125,
+      "wdd_sampled_process_peak_mib": 622.0,
+      "stdepp_peak_allocated_mib": 152.3544921875,
+      "stdepp_min_seed_peak_mib": 152.3544921875,
+      "stdepp_sampled_process_peak_mib": 592.0,
+      "wdd_reduction_percent": -20.558486260584186
+    },
+    {
+      "case": "kp2d",
+      "seed_count": 5,
+      "wdd_peak_allocated_mib": 109.591796875,
+      "wdd_min_seed_peak_mib": 109.591796875,
+      "wdd_sampled_process_peak_mib": 556.0,
+      "stdepp_peak_allocated_mib": 126.013671875,
+      "stdepp_min_seed_peak_mib": 126.013671875,
+      "stdepp_sampled_process_peak_mib": 570.0,
+      "wdd_reduction_percent": 13.031820084006263
+    }
+  ],
+  "elapsed_seconds_range": [
+    30.00069909915328,
+    30.284541718661785
+  ],
+  "weights_saved": false,
+  "checkpoints_saved": false
+}

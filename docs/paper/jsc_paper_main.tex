@@ -193,7 +193,9 @@ Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, we use Waring
 decompositions of polynomial symbols to construct directional representations of
 homogeneous constant-coefficient differential operators. We call this
 construction the Waring decomposition of derivatives (WDD) method and specialize
-it to mixed partial derivatives. Our main contributions are:
+it to mixed partial derivatives. The resulting power-sum identities can reduce
+the number of Taylor coefficient evaluations and allow lower-order coefficients
+to be shared across derivative terms. Our main contributions are:
 \begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
     itemsep=0.35em, topsep=0.45em, parsep=0pt]
 \item We establish an exact correspondence between directional Taylor
@@ -648,6 +650,15 @@ directional Taylor coefficients.
 %% ====================================================================
 %%  SECTION 4: NUMERICAL EXPERIMENTS
 %% ====================================================================
+Power-sum identities offer two possible computational savings within the
+Taylor-mode framework used by STDE. For individual mixed partials, the
+minimum-length complex representation in Corollary~\ref{thm_main}, combined
+with conjugate reuse, can reduce the number of Taylor coefficient evaluations
+relative to the deterministic directional construction reviewed in STDE++.
+For PDE residuals, real power-sum identities can recover mixed partials at
+their derivative order and reuse lower-order coefficients across terms,
+avoiding the higher-order expansions used by the compared STDE++ constructions.
+
 \FloatBarrier
 \section{Numerical experiments}\label{sec_experiments}
 
@@ -988,6 +999,18 @@ equation~\eqref{eq_num_kp}.}
 Across the PDE experiments, the WDD method attains comparable mean final
 errors at equal update counts. It requires less training time, with both
 interior and constraint training points resampled at every update.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Peak allocated GPU memory (MiB) in 30-s measurements after ten
+warm-up calls or updates. Entries are maxima over three seeds for individual
+partials and five seeds for PDE training; the latter includes loss evaluation,
+backpropagation, and Adam updates.}
+\label{tab_peak_memory}
+\renewcommand{\arraystretch}{1.2}
+\input{tables/peak_memory}
+\end{table}
 
 \FloatBarrier
 

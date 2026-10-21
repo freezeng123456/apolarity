@@ -1,0 +1,1005 @@
+{
+  "protocol": "apolarity_peak_allocated_30s_v1",
+  "paper_commit": "64736fc13ddf87b06282d5ef999dd1f455835cd1",
+  "primary_metric": "Peak PyTorch allocated GPU bytes after ten full warm-up calls/updates, reset immediately before a 30-second workload window; includes model tensors, temporaries and (PDE only) gradients/Adam state; excludes CUDA context and unused allocator cache.",
+  "aggregation": "Report every seed; case-level reported peak is the maximum of per-seed 30-second peaks. No averaging or selection by memory.",
+  "secondary_metric": "Maximum nvidia-smi per-process used_gpu_memory samples at approximately 0.1-second intervals, including context and cache; stored separately.",
+  "window_seconds": 30,
+  "warmup_calls": 10,
+  "window_end_rule": "Complete the last call/update whose start precedes the 30-second target; retain actual elapsed time.",
+  "partial_scope": "Prepared derivative-value calls; B=1000, 16 inputs, three tanh hidden layers width128; no parameter backward; WDD conjugate reuse and STDE++ direction merging; frozen 20261018 backend.",
+  "pde_scope": "Complete loss/backward/Adam updates; batch400, four tanh hidden layers width128, resampled constraints; original paper loss and learning rates; no diagnostic evaluation.",
+  "execution": {
+    "gpu": "Tesla V100-SXM2-32GB",
+    "python": "3.11.7",
+    "torch": "2.5.1+cu121",
+    "numpy": "1.26.4",
+    "allocated_cpus": 10,
+    "torch_threads": 1,
+    "precision": "float32; complex64 inside complex WDD partials",
+    "tf32": false,
+    "compile": false
+  },
+  "lanes": [
+    {
+      "index": 0,
+      "case": "123456",
+      "seeds": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "task_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "index": 1,
+      "case": "11223344",
+      "seeds": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "task_indices": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "index": 2,
+      "case": "111222333",
+      "seeds": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "task_indices": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    {
+      "index": 3,
+      "case": "111122223333",
+      "seeds": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "task_indices": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ]
+    },
+    {
+      "index": 4,
+      "case": "111112222233333",
+      "seeds": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "task_indices": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ]
+    },
+    {
+      "index": 5,
+      "case": "kdv1d",
+      "seeds": [
+        20260919,
+        20260920,
+        20260921,
+        20260922,
+        20260923
+      ],
+      "task_indices": [
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+      ]
+    },
+    {
+      "index": 6,
+      "case": "kdv2d",
+      "seeds": [
+        20260919,
+        20260920,
+        20260921,
+        20260922,
+        20260923
+      ],
+      "task_indices": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49
+      ]
+    },
+    {
+      "index": 7,
+      "case": "kp2d",
+      "seeds": [
+        20260936,
+        20260937,
+        20260938,
+        20260939,
+        20260940
+      ],
+      "task_indices": [
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "index": 0,
+      "name": "123456_seed20260908_wdd",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "wdd"
+    },
+    {
+      "index": 1,
+      "name": "123456_seed20260908_stdepp",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "stdepp"
+    },
+    {
+      "index": 2,
+      "name": "123456_seed20260909_stdepp",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "stdepp"
+    },
+    {
+      "index": 3,
+      "name": "123456_seed20260909_wdd",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "wdd"
+    },
+    {
+      "index": 4,
+      "name": "123456_seed20260910_wdd",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "wdd"
+    },
+    {
+      "index": 5,
+      "name": "123456_seed20260910_stdepp",
+      "case": "123456",
+      "exponents": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "stdepp"
+    },
+    {
+      "index": 6,
+      "name": "11223344_seed20260908_wdd",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "wdd"
+    },
+    {
+      "index": 7,
+      "name": "11223344_seed20260908_stdepp",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "stdepp"
+    },
+    {
+      "index": 8,
+      "name": "11223344_seed20260909_stdepp",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "stdepp"
+    },
+    {
+      "index": 9,
+      "name": "11223344_seed20260909_wdd",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "wdd"
+    },
+    {
+      "index": 10,
+      "name": "11223344_seed20260910_wdd",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "wdd"
+    },
+    {
+      "index": 11,
+      "name": "11223344_seed20260910_stdepp",
+      "case": "11223344",
+      "exponents": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "stdepp"
+    },
+    {
+      "index": 12,
+      "name": "111222333_seed20260908_wdd",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "wdd"
+    },
+    {
+      "index": 13,
+      "name": "111222333_seed20260908_stdepp",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "stdepp"
+    },
+    {
+      "index": 14,
+      "name": "111222333_seed20260909_stdepp",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "stdepp"
+    },
+    {
+      "index": 15,
+      "name": "111222333_seed20260909_wdd",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "wdd"
+    },
+    {
+      "index": 16,
+      "name": "111222333_seed20260910_wdd",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "wdd"
+    },
+    {
+      "index": 17,
+      "name": "111222333_seed20260910_stdepp",
+      "case": "111222333",
+      "exponents": [
+        3,
+        3,
+        3
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "stdepp"
+    },
+    {
+      "index": 18,
+      "name": "111122223333_seed20260908_wdd",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "wdd"
+    },
+    {
+      "index": 19,
+      "name": "111122223333_seed20260908_stdepp",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "stdepp"
+    },
+    {
+      "index": 20,
+      "name": "111122223333_seed20260909_stdepp",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "stdepp"
+    },
+    {
+      "index": 21,
+      "name": "111122223333_seed20260909_wdd",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "wdd"
+    },
+    {
+      "index": 22,
+      "name": "111122223333_seed20260910_wdd",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "wdd"
+    },
+    {
+      "index": 23,
+      "name": "111122223333_seed20260910_stdepp",
+      "case": "111122223333",
+      "exponents": [
+        4,
+        4,
+        4
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "stdepp"
+    },
+    {
+      "index": 24,
+      "name": "111112222233333_seed20260908_wdd",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "wdd"
+    },
+    {
+      "index": 25,
+      "name": "111112222233333_seed20260908_stdepp",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260908,
+      "method": "stdepp"
+    },
+    {
+      "index": 26,
+      "name": "111112222233333_seed20260909_stdepp",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "stdepp"
+    },
+    {
+      "index": 27,
+      "name": "111112222233333_seed20260909_wdd",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260909,
+      "method": "wdd"
+    },
+    {
+      "index": 28,
+      "name": "111112222233333_seed20260910_wdd",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "wdd"
+    },
+    {
+      "index": 29,
+      "name": "111112222233333_seed20260910_stdepp",
+      "case": "111112222233333",
+      "exponents": [
+        5,
+        5,
+        5
+      ],
+      "kind": "partial",
+      "seed": 20260910,
+      "method": "stdepp"
+    },
+    {
+      "index": 30,
+      "name": "kdv1d_seed20260919_wdd",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260919,
+      "method": "wdd"
+    },
+    {
+      "index": 31,
+      "name": "kdv1d_seed20260919_stdepp",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260919,
+      "method": "stdepp"
+    },
+    {
+      "index": 32,
+      "name": "kdv1d_seed20260920_stdepp",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260920,
+      "method": "stdepp"
+    },
+    {
+      "index": 33,
+      "name": "kdv1d_seed20260920_wdd",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260920,
+      "method": "wdd"
+    },
+    {
+      "index": 34,
+      "name": "kdv1d_seed20260921_wdd",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260921,
+      "method": "wdd"
+    },
+    {
+      "index": 35,
+      "name": "kdv1d_seed20260921_stdepp",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260921,
+      "method": "stdepp"
+    },
+    {
+      "index": 36,
+      "name": "kdv1d_seed20260922_stdepp",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260922,
+      "method": "stdepp"
+    },
+    {
+      "index": 37,
+      "name": "kdv1d_seed20260922_wdd",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260922,
+      "method": "wdd"
+    },
+    {
+      "index": 38,
+      "name": "kdv1d_seed20260923_wdd",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260923,
+      "method": "wdd"
+    },
+    {
+      "index": 39,
+      "name": "kdv1d_seed20260923_stdepp",
+      "case": "kdv1d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260923,
+      "method": "stdepp"
+    },
+    {
+      "index": 40,
+      "name": "kdv2d_seed20260919_wdd",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260919,
+      "method": "wdd"
+    },
+    {
+      "index": 41,
+      "name": "kdv2d_seed20260919_stdepp",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260919,
+      "method": "stdepp"
+    },
+    {
+      "index": 42,
+      "name": "kdv2d_seed20260920_stdepp",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260920,
+      "method": "stdepp"
+    },
+    {
+      "index": 43,
+      "name": "kdv2d_seed20260920_wdd",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260920,
+      "method": "wdd"
+    },
+    {
+      "index": 44,
+      "name": "kdv2d_seed20260921_wdd",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260921,
+      "method": "wdd"
+    },
+    {
+      "index": 45,
+      "name": "kdv2d_seed20260921_stdepp",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260921,
+      "method": "stdepp"
+    },
+    {
+      "index": 46,
+      "name": "kdv2d_seed20260922_stdepp",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260922,
+      "method": "stdepp"
+    },
+    {
+      "index": 47,
+      "name": "kdv2d_seed20260922_wdd",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260922,
+      "method": "wdd"
+    },
+    {
+      "index": 48,
+      "name": "kdv2d_seed20260923_wdd",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260923,
+      "method": "wdd"
+    },
+    {
+      "index": 49,
+      "name": "kdv2d_seed20260923_stdepp",
+      "case": "kdv2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260923,
+      "method": "stdepp"
+    },
+    {
+      "index": 50,
+      "name": "kp2d_seed20260936_wdd",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260936,
+      "method": "wdd"
+    },
+    {
+      "index": 51,
+      "name": "kp2d_seed20260936_stdepp",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260936,
+      "method": "stdepp"
+    },
+    {
+      "index": 52,
+      "name": "kp2d_seed20260937_stdepp",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260937,
+      "method": "stdepp"
+    },
+    {
+      "index": 53,
+      "name": "kp2d_seed20260937_wdd",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260937,
+      "method": "wdd"
+    },
+    {
+      "index": 54,
+      "name": "kp2d_seed20260938_wdd",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260938,
+      "method": "wdd"
+    },
+    {
+      "index": 55,
+      "name": "kp2d_seed20260938_stdepp",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260938,
+      "method": "stdepp"
+    },
+    {
+      "index": 56,
+      "name": "kp2d_seed20260939_stdepp",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260939,
+      "method": "stdepp"
+    },
+    {
+      "index": 57,
+      "name": "kp2d_seed20260939_wdd",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260939,
+      "method": "wdd"
+    },
+    {
+      "index": 58,
+      "name": "kp2d_seed20260940_wdd",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260940,
+      "method": "wdd"
+    },
+    {
+      "index": 59,
+      "name": "kp2d_seed20260940_stdepp",
+      "case": "kp2d",
+      "exponents": null,
+      "kind": "pde",
+      "seed": 20260940,
+      "method": "stdepp"
+    }
+  ],
+  "source_sha256": {
+    "partials_kdv": {
+      "audit_first_group.py": "5b2f16d4d8b57d0d892816f337074f87675cfde66cb227d387d76025039bd749",
+      "audit_kdv2d.py": "49f2dce37d3472eec2bee01fcf12ea058a20a30a510263baccba6372739fe791",
+      "beijing_v100.py": "f7deb300d9ba6000ad29ccb734f655ac82980579d74a0702dc9becc944b4a631",
+      "benchmark.py": "440cff82806b635cdb57536867c895dd2f67451463be3bf9995cf55d60fc8ffc",
+      "equal_updates_campaign.py": "f2b6ccf2197ed4484c47c011e6d32be66cedde37cd19c7bfdfab78c0d9139ccb",
+      "equal_updates_preflight.py": "25176fabf208d3a350c8e3c023dc5efcb26435ebecd92a494015773ce82c2f05",
+      "first_group.py": "944e176e23dc2d59bbb8cb304972fa145cf8bee97f8be29690e83a5fa9defabf",
+      "first_group_verify.py": "3cae0280158f19ecceede5b14873116cf16c042f85cc70c59eb7b171e13b0f0f",
+      "launch_first_group_t4.py": "041419a0081cddd9acdb3bf9e998aba11372dee74074e8f046ba2e8dcd9a2112",
+      "measure_partial_memory.py": "acd048f77ca3cd4a5a88ab22017be7fb95890d0db73b58b34b95af1504f6a93a",
+      "measure_pde_memory.py": "bae5c3662fdc409553b03cbe15e335ae2fdef3bc390d60ab0708208cb7a7fb07",
+      "run_first_group_matrix.py": "ae10ba78a72db9a48f90999a64efcbb1f5f182a961bc756b0a1282fc9a5a0ec6",
+      "run_fixed_wall_matrix.py": "926daed9b5e180674c1e6a17e61057686507829ae3ffb54040b82fd7f3727367",
+      "stdepp_campaign.py": "09482f3436a06d15aa7335da2ac1d477fa97754a7d70c9f8f75200129a732eb8",
+      "stdepp_fixed_batch_campaign.py": "3992c5d6a3bea98688fa3bba81e218d4dbffe47f1ab21fa0a43b327bd01a7b1b",
+      "stdepp_optimized_partials.py": "0c2d9b1f12c01d8dc77d9e5d715e2956b52345996bee42174f54a0fdb14bf8f8",
+      "stdepp_prepared_partials.py": "b7bfe034e5faa71d2683024aa90b3d5bee5eb81f29cd306821273c8a1792b18b",
+      "stdepp_prime_campaign.py": "1b1a775632e066ad7fb41a1d4daa04f752815d3e5cc2439f67e9a33d58dc0f76",
+      "stdepp_scaling_campaign.py": "419d79a2327e729847d935955011c7ca4b131010b26f51a7eb0e4030d03abab9",
+      "tests/conftest.py": "2b2e72527393dce0100e3f52f5071ea2cfdad3568587bbc2e7d0f85b3eaf3075",
+      "tests/test_beijing_v100.py": "0a62672015bcf12741514b2f52b891e1a8c692d58cc9137545d8484256c5c5ef",
+      "tests/test_ch2d.py": "f3bc4adbe760163f3ed1b331b730cbd52af5aab371ff74e05e08280010c910fd",
+      "tests/test_core.py": "425bcd9e7f3bde3679373927eeb1fe3a49595c9d22baaf71d552cf3b3a12c943",
+      "tests/test_equal_updates.py": "b93626a740cdc9d956d5d07d9eb896a163c90263cf97331a44eb13187be043a8",
+      "tests/test_first_group.py": "fb250726ddf8d0b6ad823bb8042cb46adf17fc2b33bd4a24520f1efe8b9674d8",
+      "tests/test_kdv2d_problem.py": "251409d1089e744a0214e2227eb09f0780acf1aee90a5eb1d72d455ef118c5e2",
+      "tests/test_monomials.py": "8a0a5b8b82fe0ef224d1c23f0205f66eab0225087e745fc9fc958d249944eb1f",
+      "tests/test_paper_protocol.py": "7e512888a50fe32517ff7f82e26cf716fd776dedf7431e01f800788e930b8532",
+      "tests/test_prepared_partials.py": "c26e2a42ffaed703d6d2f7210df25f6c3fe0d121da9692e4d7f99524f213db98",
+      "tests/test_prime_single_jet.py": "de649cde4a8db4e38d5c516445bfa8d882bd29e4e63fe337dc4ada4610185b6f",
+      "tests/test_sparse_jets.py": "bb15345b0d52cc52000c60fb26883a64fc25c7acd2e66f54bfe19371e62e836e",
+      "tests/test_stde_sampling.py": "6db3b1c196f3d379c5f63753fab3178c0821f76c0e9c38b9d54f56c418fdf7d8",
+      "tests/test_stdepp.py": "27c5fb79c8073d1da381f81e5ef6da2437a8891723d06f71138ffd969ec84dad",
+      "tests/test_stdepp_campaign.py": "8e7c9dafc99edbdfaca7525bdd10736518a0484cf7783cd2fee1b8c35faccadd",
+      "tests/test_stdepp_fixed_batch_campaign.py": "c6aef518f571f6a070e607d846b9e674bab48c3bd5abdc15eaa02feaabe13923",
+      "tests/test_stdepp_optimized_partials.py": "308545f678a3867c7afccfacb16b15fe46014a421310b91601ba752809787750",
+      "tests/test_stdepp_prepared_partials.py": "15be679bed71e6b35c1a099be6e6a1e7e0d8efff9425f7e2275fe3e734bcf1e0",
+      "tests/test_stdepp_prime_campaign.py": "27cf5a0b201e45b003b0a8bf821f1e2338fca576a6e6e298a32d14ec2f3fa190",
+      "tests/test_stdepp_scaling_campaign.py": "6e85aa464d50d819715873a76e86007f6b9c97ae70eee6d1b8c553b8c611aa34",
+      "torch_pinn/__init__.py": "1f220e4919abb7eaf7e299b472beafddb8b4d228a5d99597a027ea000aec0e1b",
+      "torch_pinn/constraint_sampling.py": "c9a78b84667cffe0fc97accccecb827c535aaa23437bf2aca12734b5dfb47a88",
+      "torch_pinn/coordinate_jvp.py": "b0794b5ccd311b2f4dc487d96779126d76cc5f6013701d88ad4b9009decd755e",
+      "torch_pinn/jets.py": "a965ccc49856f582360cee7beaea04fc4d0d0105ee0c23293ee76ea5400e5431",
+      "torch_pinn/model.py": "073cdc9492174c6a691430229eca88a0c9eb7b8d54bde466644f094251b289c7",
+      "torch_pinn/monomials.py": "cc2adae3c6fd9a820a8ea6d59f8ef9ec9b63dd02676e3de64016e15bc1f073ca",
+      "torch_pinn/operators.py": "a133482746ffab14289753bc4acdad7a0659306ad011eccfa648d9bc4ceaac1a",
+      "torch_pinn/prepared_partials.py": "2e4e951c09489933f3efdc539b2c064030f278b9a541d33b69576f6760821036",
+      "torch_pinn/prime_single_jet.py": "bbf3f98c1f169f466f67706113b7b9c96f54f4d826c7712e29642c466a516b6e",
+      "torch_pinn/problem.py": "36fa7514915feebbbcd405773e87318b698aa29ebadef3a0c4fbdb3e94bfffec",
+      "torch_pinn/problem_ch2d.py": "361b6081c22648ddd05e9a4b1b67580ea985ad8d084dd7443f43c5116f02dea4",
+      "torch_pinn/problem_kdv2d.py": "70d629baec662b3657384c7e666dd6cb341710931a99fe3623626afbb841e407",
+      "torch_pinn/records.py": "084b977440ee2c1feb0c8767bc5ba90cd0caaeffc7ff599ad11d2ba6a4bd4ff8",
+      "torch_pinn/reference.py": "96803395d94a2663ed85fea45e9908686cf8ce6856eff2591fe91a8066c9bca2",
+      "torch_pinn/sparse_jets.py": "befaee8b5851b156bec960b73290d959a62e5c2c0700a6f9409ec47a3820fb28",
+      "torch_pinn/stde_sampling.py": "898ff99da56cf7248a801280f5d5e465be90ae8c25f30d64e2285eb083c25611",
+      "torch_pinn/stdepp.py": "7104638a12cb0579721536d9046de8fed71c1ad3de8a6c99c113df3e6f4d2fa5",
+      "train_equal_updates.py": "7a72119b5b27860f97560e4f49fd970a5d1bedcba7f6b87ceccd8a97678328b5",
+      "train_fixed_wall.py": "bda99ecc6439baeac0d9e75b7ca01c954493154c91b73478bca558d0063187c2",
+      "verify.py": "54c2d95665676f6bd92fb2036c681c8451ecd5af05ccc0bb8d642b6f862265f7",
+      "verify_kdv2d.py": "d2cc3d7b1ea14796810a0bf91abdebe7b3bb37eafc76af4cdb4d7fda370da9f7"
+    },
+    "kp": {
+      "audit_first_group.py": "5b2f16d4d8b57d0d892816f337074f87675cfde66cb227d387d76025039bd749",
+      "audit_kdv2d.py": "49f2dce37d3472eec2bee01fcf12ea058a20a30a510263baccba6372739fe791",
+      "beijing_v100.py": "f7deb300d9ba6000ad29ccb734f655ac82980579d74a0702dc9becc944b4a631",
+      "benchmark.py": "440cff82806b635cdb57536867c895dd2f67451463be3bf9995cf55d60fc8ffc",
+      "ch2d_paired_campaign.py": "49261644900fb34b395e2c0c76f1016b6b1663b68a730311df4bf3bafeabd401",
+      "equal_updates_campaign.py": "f2b6ccf2197ed4484c47c011e6d32be66cedde37cd19c7bfdfab78c0d9139ccb",
+      "equal_updates_preflight.py": "25176fabf208d3a350c8e3c023dc5efcb26435ebecd92a494015773ce82c2f05",
+      "first_group.py": "944e176e23dc2d59bbb8cb304972fa145cf8bee97f8be29690e83a5fa9defabf",
+      "first_group_verify.py": "3cae0280158f19ecceede5b14873116cf16c042f85cc70c59eb7b171e13b0f0f",
+      "kp_paired_campaign.py": "24a7301c8c31d8d41d565ae66338d33fb73191f5653ca7eb38b04a7cc3183ea8",
+      "launch_first_group_t4.py": "041419a0081cddd9acdb3bf9e998aba11372dee74074e8f046ba2e8dcd9a2112",
+      "measure_partial_memory.py": "acd048f77ca3cd4a5a88ab22017be7fb95890d0db73b58b34b95af1504f6a93a",
+      "measure_pde_memory.py": "bae5c3662fdc409553b03cbe15e335ae2fdef3bc390d60ab0708208cb7a7fb07",
+      "run_first_group_matrix.py": "ae10ba78a72db9a48f90999a64efcbb1f5f182a961bc756b0a1282fc9a5a0ec6",
+      "run_fixed_wall_matrix.py": "926daed9b5e180674c1e6a17e61057686507829ae3ffb54040b82fd7f3727367",
+      "stdepp_campaign.py": "09482f3436a06d15aa7335da2ac1d477fa97754a7d70c9f8f75200129a732eb8",
+      "stdepp_fixed_batch_campaign.py": "3992c5d6a3bea98688fa3bba81e218d4dbffe47f1ab21fa0a43b327bd01a7b1b",
+      "stdepp_optimized_partials.py": "0c2d9b1f12c01d8dc77d9e5d715e2956b52345996bee42174f54a0fdb14bf8f8",
+      "stdepp_prepared_partials.py": "b7bfe034e5faa71d2683024aa90b3d5bee5eb81f29cd306821273c8a1792b18b",
+      "stdepp_prime_campaign.py": "1b1a775632e066ad7fb41a1d4daa04f752815d3e5cc2439f67e9a33d58dc0f76",
+      "stdepp_scaling_campaign.py": "419d79a2327e729847d935955011c7ca4b131010b26f51a7eb0e4030d03abab9",
+      "tests/conftest.py": "2b2e72527393dce0100e3f52f5071ea2cfdad3568587bbc2e7d0f85b3eaf3075",
+      "tests/test_beijing_v100.py": "0a62672015bcf12741514b2f52b891e1a8c692d58cc9137545d8484256c5c5ef",
+      "tests/test_ch2d.py": "f3bc4adbe760163f3ed1b331b730cbd52af5aab371ff74e05e08280010c910fd",
+      "tests/test_ch2d_paired_campaign.py": "bad840d75e903ff66ec536c9c0b0be952ad765566d155f5d09f9fc8f4cdb2719",
+      "tests/test_core.py": "425bcd9e7f3bde3679373927eeb1fe3a49595c9d22baaf71d552cf3b3a12c943",
+      "tests/test_equal_updates.py": "b93626a740cdc9d956d5d07d9eb896a163c90263cf97331a44eb13187be043a8",
+      "tests/test_first_group.py": "fb250726ddf8d0b6ad823bb8042cb46adf17fc2b33bd4a24520f1efe8b9674d8",
+      "tests/test_kdv2d_problem.py": "251409d1089e744a0214e2227eb09f0780acf1aee90a5eb1d72d455ef118c5e2",
+      "tests/test_monomials.py": "8a0a5b8b82fe0ef224d1c23f0205f66eab0225087e745fc9fc958d249944eb1f",
+      "tests/test_paper_protocol.py": "7e512888a50fe32517ff7f82e26cf716fd776dedf7431e01f800788e930b8532",
+      "tests/test_prepared_partials.py": "c26e2a42ffaed703d6d2f7210df25f6c3fe0d121da9692e4d7f99524f213db98",
+      "tests/test_prime_single_jet.py": "de649cde4a8db4e38d5c516445bfa8d882bd29e4e63fe337dc4ada4610185b6f",
+      "tests/test_sparse_jets.py": "bb15345b0d52cc52000c60fb26883a64fc25c7acd2e66f54bfe19371e62e836e",
+      "tests/test_stde_sampling.py": "6db3b1c196f3d379c5f63753fab3178c0821f76c0e9c38b9d54f56c418fdf7d8",
+      "tests/test_stdepp.py": "27c5fb79c8073d1da381f81e5ef6da2437a8891723d06f71138ffd969ec84dad",
+      "tests/test_stdepp_campaign.py": "8e7c9dafc99edbdfaca7525bdd10736518a0484cf7783cd2fee1b8c35faccadd",
+      "tests/test_stdepp_fixed_batch_campaign.py": "c6aef518f571f6a070e607d846b9e674bab48c3bd5abdc15eaa02feaabe13923",
+      "tests/test_stdepp_optimized_partials.py": "308545f678a3867c7afccfacb16b15fe46014a421310b91601ba752809787750",
+      "tests/test_stdepp_prepared_partials.py": "15be679bed71e6b35c1a099be6e6a1e7e0d8efff9425f7e2275fe3e734bcf1e0",
+      "tests/test_stdepp_prime_campaign.py": "27cf5a0b201e45b003b0a8bf821f1e2338fca576a6e6e298a32d14ec2f3fa190",
+      "tests/test_stdepp_scaling_campaign.py": "6e85aa464d50d819715873a76e86007f6b9c97ae70eee6d1b8c553b8c611aa34",
+      "torch_pinn/__init__.py": "1f220e4919abb7eaf7e299b472beafddb8b4d228a5d99597a027ea000aec0e1b",
+      "torch_pinn/constraint_sampling.py": "e7cfc338cb7ed908fa18f1fbba83ec3c673c70d5b2d30aab053917f751912d03",
+      "torch_pinn/coordinate_jvp.py": "b0794b5ccd311b2f4dc487d96779126d76cc5f6013701d88ad4b9009decd755e",
+      "torch_pinn/jets.py": "a965ccc49856f582360cee7beaea04fc4d0d0105ee0c23293ee76ea5400e5431",
+      "torch_pinn/model.py": "073cdc9492174c6a691430229eca88a0c9eb7b8d54bde466644f094251b289c7",
+      "torch_pinn/monomials.py": "cc2adae3c6fd9a820a8ea6d59f8ef9ec9b63dd02676e3de64016e15bc1f073ca",
+      "torch_pinn/operators.py": "a133482746ffab14289753bc4acdad7a0659306ad011eccfa648d9bc4ceaac1a",
+      "torch_pinn/prepared_partials.py": "2e4e951c09489933f3efdc539b2c064030f278b9a541d33b69576f6760821036",
+      "torch_pinn/prime_single_jet.py": "bbf3f98c1f169f466f67706113b7b9c96f54f4d826c7712e29642c466a516b6e",
+      "torch_pinn/problem.py": "36fa7514915feebbbcd405773e87318b698aa29ebadef3a0c4fbdb3e94bfffec",
+      "torch_pinn/problem_ch2d.py": "361b6081c22648ddd05e9a4b1b67580ea985ad8d084dd7443f43c5116f02dea4",
+      "torch_pinn/problem_kdv2d.py": "70d629baec662b3657384c7e666dd6cb341710931a99fe3623626afbb841e407",
+      "torch_pinn/problem_kp2d.py": "be4a8d41344f643170605bd7ef576ccfcd1302ebe3b285a40d7ba31d4b8e3da6",
+      "torch_pinn/records.py": "6901fb46786a33659c170f25ea0baf1ed3fa2af235d28e3ff967a7f5959d72c7",
+      "torch_pinn/reference.py": "96803395d94a2663ed85fea45e9908686cf8ce6856eff2591fe91a8066c9bca2",
+      "torch_pinn/sparse_jets.py": "befaee8b5851b156bec960b73290d959a62e5c2c0700a6f9409ec47a3820fb28",
+      "torch_pinn/stde_sampling.py": "898ff99da56cf7248a801280f5d5e465be90ae8c25f30d64e2285eb083c25611",
+      "torch_pinn/stdepp.py": "5fbb07be69dd61b2d5fee95f8938c9889ad4a77ad082371ca79d39d2fcc5b340",
+      "train_equal_updates.py": "d054773030291a2665581cbff007b715475e835157928270b5fe5ac3c4333664",
+      "train_fixed_wall.py": "c0ab3f9f47bf5a9d53e2961ec9ccd63873c2bdfd6a7ddfd0b21f21496ecc80ac",
+      "verify.py": "54c2d95665676f6bd92fb2036c681c8451ecd5af05ccc0bb8d642b6f862265f7",
+      "verify_kdv2d.py": "d2cc3d7b1ea14796810a0bf91abdebe7b3bb37eafc76af4cdb4d7fda370da9f7"
+    }
+  },
+  "source_origins_remote": {
+    "partials_kdv": "/data02/run01/scv7tsq/apolarity/20261018-stdepp-section61-b1000-r1/source/experiments/torch_benchmarks",
+    "kp": "/data02/run01/scv7tsq/apolarity/20261020-kp-formal-lr1e-4-r1/experiments/torch_benchmarks"
+  },
+  "checkpoints_saved": false,
+  "weights_saved": false,
+  "concurrency": 4,
+  "measurement_revision": 2,
+  "prior_attempt": "/data02/run01/scv7tsq/apolarity/20261021-memory-peak30s-r1",
+  "repair": "KP wrapper uses its original problem.loss dispatcher, not the generic STDE++ PDE loss. Frozen derivative sources unchanged."
+}
