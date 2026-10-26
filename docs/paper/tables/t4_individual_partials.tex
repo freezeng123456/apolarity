@@ -1,15 +1,15 @@
 % Source: stdepp-section61-b1000-20261018/comparison.json; formal job 2385480.
 % Counts are order-p directional Taylor coefficients per input point.
 \begin{tabular}{@{}lrrrrrrr@{}}
-\toprule
-Target & $p$ & $R$ & \multicolumn{2}{c}{Taylor coefficients} & \multicolumn{2}{c}{Time (ms)} & Speedup \\
-\cmidrule(lr){4-5}\cmidrule(lr){6-7}
- & & & STDE++ & WDD & STDE++ & WDD & \\
-\midrule
-$\partial_1\partial_2\partial_3\partial_4\partial_5\partial_6u$ & 6 & 32 & 32 & 32 & $29.605\pm0.186$ & $29.600\pm0.145$ & $1.00\times$ \\
-$\partial_1^{2}\partial_2^{2}\partial_3^{2}\partial_4^{2}u$ & 8 & 27 & 40 & 14 & $60.533\pm0.028$ & $45.456\pm0.029$ & $1.33\times$ \\
-$\partial_1^{3}\partial_2^{3}\partial_3^{3}u$ & 9 & 16 & 28 & 10 & $51.341\pm0.007$ & $39.932\pm0.019$ & $1.29\times$ \\
-$\partial_1^{4}\partial_2^{4}\partial_3^{4}u$ & 12 & 25 & 49 & 13 & $153.037\pm0.025$ & $85.421\pm0.009$ & $1.79\times$ \\
-$\partial_1^{5}\partial_2^{5}\partial_3^{5}u$ & 15 & 36 & 100 & 20 & $479.972\pm0.006$ & $195.631\pm0.026$ & $2.45\times$ \\
-\bottomrule
+    \toprule
+    Target & $p$ & $R$ & \multicolumn{2}{c}{Taylor coefficients} & \multicolumn{2}{c}{Time (ms)} & Speedup \\
+    \cmidrule(lr){4-5}\cmidrule(lr){6-7}
+    & & & STDE++ & WDD & STDE++ & WDD & \\
+    \midrule
+    $\partial_1 \partial_2 \partial_3 \partial_4 \partial_5 \partial_6 u$ & 6 & 32 & 32 & 32 & $29.605 \pm 0.186$ & $29.600 \pm 0.145$ & $1.00 \times$ \\
+    $\partial_1^{2} \partial_2^{2} \partial_3^{2} \partial_4^{2} u$ & 8 & 27 & 40 & 14 & $60.533 \pm 0.028$ & $45.456 \pm 0.029$ & $1.33 \times$ \\
+    $\partial_1^{3} \partial_2^{3} \partial_3^{3} u$ & 9 & 16 & 28 & 10 & $51.341 \pm 0.007$ & $39.932 \pm 0.019$ & $1.29 \times$ \\
+    $\partial_1^{4} \partial_2^{4} \partial_3^{4} u$ & 12 & 25 & 49 & 13 & $153.037 \pm 0.025$ & $85.421 \pm 0.009$ & $1.79 \times$ \\
+    $\partial_1^{5} \partial_2^{5} \partial_3^{5} u$ & 15 & 36 & 100 & 20 & $479.972 \pm 0.006$ & $195.631 \pm 0.026$ & $2.45 \times$ \\
+    \bottomrule
 \end{tabular}

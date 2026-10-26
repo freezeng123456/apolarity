@@ -5,7 +5,10 @@
 %% Document class: siamltex (SIAM)
 %% Build sequence: pdflatex, bibtex, pdflatex, pdflatex.
 
+% Preserve the kernel counter hooks replaced by the legacy class.
+\let\WDDRefStepCounter\refstepcounter
 \documentclass[final,oneeqnum]{siamltex}
+\let\refstepcounter\WDDRefStepCounter
 
 %% ========== Packages ==========
 \usepackage{amsmath,amssymb}
@@ -15,7 +18,6 @@
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{algorithm}
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{cleveref}
@@ -24,10 +26,11 @@
 \usepackage{xcolor}
 \usepackage{multirow}
 \usepackage{placeins}
+\usepackage{needspace}
 
 %% Keep appendix floats ahead of the bibliography without changing its source.
 \let\originalbibliography\bibliography
-\renewcommand{\bibliography}[1]{\FloatBarrier\originalbibliography{#1}}
+\renewcommand{\bibliography}[1]{\FloatBarrier\Needspace{8\baselineskip}{\raggedbottom\interlinepenalty=10000\originalbibliography{#1}}}
 
 \hypersetup{hidelinks}
 \graphicspath{{figures/}}
@@ -83,7 +86,11 @@
 \newcommand{\bv}{\bm{v}}
 \newcommand{\Tp}{T_{p}}
 \newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\email}[1]{\texttt{#1}}
 
+% Reserve space for proof openings and short proof blocks.
+\AddToHook{env/proof/before}{\Needspace{12\baselineskip}}
+\AddToHook{env/definition/before}{\Needspace{14\baselineskip}}
 \emergencystretch=1.5em
 
 \begin{document}
@@ -91,43 +98,34 @@
 %% ========== Title ==========
 \title{Waring Decomposition of Derivatives\\and Its Applications}
 
-%% ========== Authors (to be filled) ==========
-\author{Author One\thanks{Institution One (\tt author1@example.com).}
-        \and Author Two\thanks{Institution Two (\tt author2@example.com).}}
+%% ========== Authors ==========
+\author{Shuixin Fang\textsuperscript{\dag}
+    \and Hang Zeng\textsuperscript{\dag}
+    \and Tao Zhou\textsuperscript{\dag,\,*}}
 
 \maketitle
+\begingroup
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+\footnotetext[2]{SKLMS \& Institute of Computational Mathematics and Scientific/Engineering Computing, Academy of Mathematics and Systems Science, Chinese Academy of Sciences, Beijing 100190, China.}%
+\footnotetext[1]{Corresponding author. (\email{tzhou@lsec.cc.ac.cn}).}%
+\endgroup
 
 %% ========== Abstract ==========
 \begin{abstract}
-  Computing high-order derivatives in neural network residuals is often
-  computationally and memory intensive, primarily due to the large computational
-  graphs caused by automatic differentiation. Within the Taylor-mode framework
-  used by STDE, we introduce the Waring decomposition of derivatives (WDD)
-  method, which constructs exact directional Taylor representations of
-  homogeneous constant-coefficient differential operators from power-sum
-  decompositions of their polynomial symbols. Specializing to a single mixed
-  partial, we prove that the minimum length of an exact complex directional
-  Taylor representation at the derivative order equals the Waring rank of the
-  corresponding monomial, and a classical roots-of-unity Waring decomposition
-  attains this minimum. Experiments on individual high-order partial derivatives
-  show that WDD reduces evaluation time for several tested patterns relative to
-  the deterministic directional Taylor construction reviewed in STDE++. In PINN
-  experiments on the one-dimensional KdV equation with gradient enhancement,
-  the two-dimensional KdV equation, and the KP-II equation, WDD attains comparable
-  mean solution errors in less training time than the compared STDE++
-  constructions at equal update counts.
+    Computing high-order derivatives in neural network residuals is often computationally and memory intensive because automatic differentiation can generate large computational graphs.
+    Within the Taylor-mode framework used by the stochastic Taylor derivative estimator (STDE), we introduce the Waring decomposition of derivatives (WDD) method, which uses power-sum decompositions to represent homogeneous linear combinations of partial derivatives by univariate directional derivatives.
+    For a single mixed partial, a classical roots-of-unity construction gives explicit coefficients and complex directions, and the monomial Waring rank establishes their minimum number within exact linear representations at the derivative order.
+    Experiments on individual high-order partial derivatives show that WDD reduces evaluation time for several tested patterns relative to the deterministic directional Taylor construction reviewed in STDE++.
+    In experiments with physics-informed neural networks (PINNs) for the one-dimensional Korteweg--de Vries (KdV) equation with gradient enhancement, the two-dimensional KdV equation, and the Kadomtsev--Petviashvili II (KP-II) equation, WDD attains comparable mean solution errors in less training time than the compared STDE++ constructions at equal update counts.
 
 \end{abstract}
 
 \begin{keywords}
-high-order derivatives,
-Taylor-mode automatic differentiation,
-Waring decomposition,
-directional Taylor coefficients
+    high-order derivatives, Taylor-mode automatic differentiation, Waring decomposition, directional Taylor coefficients
 \end{keywords}
 
 \begin{AMS}
-65D25, 14N07
+    65D25, 14N07
 \end{AMS}
 
 \pagestyle{myheadings}
@@ -137,892 +135,463 @@ directional Taylor coefficients
 %% ====================================================================
 \section{Introduction}\label{sec_intro}
 
-Physics-informed neural networks approximate solutions of differential
-equations by minimizing loss functions constructed from the corresponding PDE
-residuals. This requires derivatives of the network with respect to its inputs.
-For high-order equations, the repeated evaluation of these derivatives can
-dominate both the runtime and memory cost of residual evaluation.
+Physics-informed neural networks (PINNs) approximate solutions of partial differential equations (PDEs) by minimizing loss functions constructed from the corresponding PDE residuals.
+This requires derivatives of the network with respect to its inputs.
+For high-order equations, the repeated evaluation of these derivatives can dominate both the runtime and memory cost of residual evaluation.
 
-Automatic differentiation is the standard tool for evaluating these
-derivatives~\cite{Griewank2008,Baydin2018,Paszke2019}. Several exact approaches
-reduce its cost by exploiting the structure of the differential operator. For
-example, forward Laplacian methods propagate the Laplacian through the network
-without constructing the full Hessian~\cite{Li2024forwardLaplacian}. Such
-methods can be efficient, but their differentiation rules are designed for
-specific structured operators and do not readily extend to general high-order
-partial derivatives. Taylor-mode automatic differentiation provides a more
-general alternative by propagating a truncated univariate Taylor series through
-the network~\cite{Bettencourt2019,Griewank2008}. Existing general constructions
-recover multivariate high-order derivatives from multiple Taylor expansions,
-often by reconstructing the full derivative tensor~\cite{GriewankUtkeWalther2000}.
-The number of tensor components grows rapidly with both the input dimension and
-the derivative order, resulting in substantial computational and GPU-memory
-costs~\cite{Shi2024stde}.
+Automatic differentiation is the standard tool for evaluating these derivatives~\cite{Griewank2008,Baydin2018,Paszke2019}.
+Several exact approaches reduce its cost by exploiting the structure of the differential operator.
+For example, forward Laplacian methods propagate the Laplacian through the network without constructing the full Hessian~\cite{Li2024forwardLaplacian}.
+Such methods can be efficient, but their differentiation rules are designed for specific structured operators and do not readily extend to general high-order partial derivatives.
+Taylor-mode automatic differentiation provides a more general alternative by propagating a truncated univariate Taylor series through the network~\cite{Bettencourt2019,Griewank2008}.
+Existing general constructions recover multivariate high-order derivatives from multiple Taylor expansions, often by reconstructing the full derivative tensor~\cite{GriewankUtkeWalther2000}.
+The number of tensor components grows rapidly with both the input dimension and the derivative order, resulting in substantial computational and GPU-memory costs~\cite{Shi2024stde}.
 
-Randomization offers another route to reducing derivative costs. Stochastic
-dimension gradient descent uses coordinate sampling to evaluate only a subset
-of derivative terms during each optimization step~\cite{Hu2023sdgd}.
-Hutchinson-type estimators use random projections to approximate trace-type
-differential operators~\cite{Hutchinson1989,Pearlmutter1994,Hu2024hte}.
-However, both approaches still rely on automatic differentiation to compute the
-sampled derivatives or projected vector products. A separate line of work
-avoids automatic differentiation entirely when computing derivatives. Finite
-differences approximate derivatives from nearby network
-evaluations~\cite{Fornberg1988,Chiu2022CAN}, whereas randomized smoothing uses
-Stein's identity to express derivatives of a smoothed network as expectations
-of perturbed function values~\cite{Stein1981,He2023}. Although these methods reduce computational costs,
-their performance depends on the choice of method-specific parameters. Finite
-differences require a step size that balances truncation and round-off errors,
-randomized smoothing depends on both the smoothing bandwidth and the Monte
-Carlo sample size, and the randomized estimators require a sampling distribution
-and budget. For the stochastic methods, these choices directly affect estimator
-variance: insufficient or poorly matched sampling can yield high-variance
-residual estimates, while a small smoothing bandwidth can sharply amplify
-variance for high-order derivatives and may destabilize PINN
-training~\cite{He2023,Hu2025bias,Shi2026stdepp}.
+Randomization offers another route to reducing derivative costs.
+Stochastic dimension gradient descent uses coordinate sampling to evaluate only a subset of derivative terms during each optimization step~\cite{Hu2023sdgd}.
+Hutchinson-type estimators use random projections to approximate trace-type differential operators~\cite{Hutchinson1989,Pearlmutter1994,Hu2024hte}.
+However, both approaches still rely on automatic differentiation to compute the sampled derivatives or projected vector products.
+A separate line of work avoids automatic differentiation entirely when computing derivatives.
+Finite differences approximate derivatives from nearby network evaluations~\cite{Fornberg1988,Chiu2022CAN}, whereas randomized smoothing uses Stein's identity to express derivatives of a smoothed network as expectations of perturbed function values~\cite{Stein1981,He2023}.
+Although these methods reduce computational costs, their performance depends on the choice of method-specific parameters.
+Finite differences require a step size that balances truncation and round-off errors, randomized smoothing depends on both the smoothing bandwidth and the Monte Carlo sample size, and the randomized estimators require a sampling distribution and budget.
+For the stochastic methods, these choices directly affect estimator variance: insufficient or poorly matched sampling can yield high-variance residual estimates, while a small smoothing bandwidth can sharply amplify variance for high-order derivatives and may destabilize PINN training~\cite{He2023,Hu2025bias,Shi2026stdepp}.
 
-STDE evaluates derivative-tensor contractions through univariate Taylor-mode
-automatic differentiation and uses them to construct stochastic estimators of
-linear differential operators~\cite{Shi2024stde}. STDE++ also studies exact
-recovery of mixed partial derivatives, reviewing the directional Taylor
-construction of Griewank, Utke, and Walther~\cite{GriewankUtkeWalther2000} and
-developing constructions based on higher-order Taylor expansions along nonlinear
-curves~\cite{Shi2026stdepp}.
+The stochastic Taylor derivative estimator (STDE) evaluates derivative-tensor contractions through univariate Taylor-mode automatic differentiation and uses them to construct stochastic estimators of linear differential operators~\cite{Shi2024stde}.
+STDE++ also studies exact recovery of mixed partial derivatives, reviewing the directional Taylor construction of Griewank, Utke, and Walther~\cite{GriewankUtkeWalther2000} and developing constructions based on higher-order Taylor expansions along nonlinear curves~\cite{Shi2026stdepp}.
 
-Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, we use Waring
-decompositions of polynomial symbols to construct directional representations of
-homogeneous constant-coefficient differential operators. We call this
-construction the Waring decomposition of derivatives (WDD) method and specialize
-it to mixed partial derivatives. The resulting power-sum identities can reduce
-the number of Taylor coefficient evaluations. Compared with the STDE++
-constructions used in our PDE experiments, WDD recovers the required mixed
-partials from directional Taylor coefficients at their derivative orders. Our main
-contributions are:
+Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, we use Waring decompositions of polynomial symbols to construct directional representations of homogeneous constant-coefficient differential operators.
+We call this construction the Waring decomposition of derivatives (WDD) method and specialize it to mixed partial derivatives.
+The resulting power-sum identities can reduce the number of Taylor coefficient evaluations.
+Compared with the STDE++ constructions used in our PDE experiments, WDD recovers the required mixed partials from directional Taylor coefficients at their derivative orders.
+Our main contributions are:
 \begin{itemize}[leftmargin=1.2em, itemindent=0pt, labelsep=0.5em,
-    itemsep=0.35em, topsep=0.45em, parsep=0pt]
-\item We establish an exact correspondence between directional Taylor
-representations of homogeneous constant-coefficient differential operators and
-power-sum identities for their polynomial symbols. This correspondence identifies
-the minimum length of an exact complex directional Taylor representation with
-the Waring rank of the symbol.
-\item For a single mixed partial derivative, we combine the correspondence with
-the established complex Waring-rank and roots-of-unity results for monomials
-to obtain a closed-form complex directional Taylor representation of minimum
-length. A batched Taylor-mode implementation evaluates the resulting
-directional Taylor coefficients independently and in parallel.
-\item We compare the WDD method with the deterministic directional Taylor
-  construction reviewed in STDE++ on individual high-order partial derivatives, examining runtime
-  across derivative patterns.
-  KdV and KP-II PINN comparisons measure training time and
-  solution error at equal update counts.
+        itemsep=0.35em, topsep=0.45em, parsep=0pt]
+    \item We use power-sum identities to represent homogeneous linear combinations of partial derivatives by directional derivatives of the same order.
+    \item For a single mixed partial, we give explicit coefficients and directions from the classical roots-of-unity decomposition and establish their minimum representation length using the monomial Waring rank.
+        A batched Taylor-mode implementation evaluates the resulting directional Taylor coefficients independently and in parallel.
+    \item We compare the WDD method with the deterministic directional Taylor construction reviewed in STDE++ on individual high-order partial derivatives, examining runtime across derivative patterns.
+        KdV and KP-II PINN comparisons measure training time and solution error at equal update counts.
 \end{itemize}
 
-The remainder of the paper is organized as follows. Section~\ref{sec_prelim}
-introduces the method of PINNs, multi-index notation, and directional Taylor
-coefficients. Section~\ref{sec_formulation} establishes the operator--symbol
-correspondence, analyzes the computational complexity, specializes the
-correspondence to monomial Waring decompositions, and presents
-the resulting minimum-direction formula with its batched Taylor
-realization. Section~\ref{sec_experiments} evaluates the derivative backend on
-individual high-order partial derivatives and examines its use in complete
-KdV and KP-II PINN training.
-Section~\ref{sec_concl} concludes. A coefficient verification of the cited
-roots-of-unity decomposition is given in Appendix~\ref{sec_schedules}.
+The remainder of the paper is organized as follows.
+Section~\ref{sec_prelim} introduces the PINN formulation.
+Section~\ref{sec_formulation} presents the derivative representation, constructs coefficients and directions of minimum length for a mixed partial, and describes their Taylor-mode evaluation.
+Section~\ref{sec_experiments} evaluates the derivative backend on individual high-order partial derivatives and examines its use in complete KdV and KP-II PINN training.
+Section~\ref{sec_concl} concludes.
+Appendix~\ref{sec_schedules} gives the coefficient comparisons underlying the representation and the roots-of-unity construction.
 
 %% ====================================================================
 %%  SECTION 2: PRELIMINARIES
 %% ====================================================================
-\newpage
 \section{Preliminaries}\label{sec_prelim}
 
-\subsection{Method of PINNs}\label{sec_pinn}
-
-Let $\Omega \subset \R^{d}$ be a computational domain and
-$\Gamma\subseteq\partial\Omega$ the part of its boundary on which
-constraints are prescribed. In the numerical examples, $\Omega$ is the
-space--time domain, $d$ includes the time coordinate, and $\Gamma$ includes
-the initial surface and the prescribed spatial boundary surfaces. We consider the problem
+Let $\Omega \subset \R^{d}$ be a computational domain and $\Gamma \subseteq \partial \Omega$ the part of its boundary on which constraints are prescribed.
+In the numerical examples, $\Omega$ is the space--time domain, $d$ includes the time coordinate, and $\Gamma$ includes the initial surface and the prescribed spatial boundary surfaces.
+We consider the scalar problem
 \begin{equation}\label{eq_pde}
-    \mathcal{A} u_{\star} = f \quad\text{in } \Omega,
-    \qquad
-    \mathcal{B} u_{\star} = g \quad\text{on } \Gamma,
+    \mathcal{A} u_{\star} = f \quad \text{in } \Omega, \quad\quad \mathcal{B} u_{\star} = g \quad \text{on } \Gamma,
 \end{equation}
-where $\mathcal{A}$ is a differential operator and $\mathcal{B}$ is a
-boundary operator or a collection of boundary operators. In the PINN
-framework, $u_{\star}$ is approximated by a neural network
-$u_{\theta}$~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021}.
-Let $\{\bx_{r,i}\}_{i=1}^{n_r}\subset\Omega$ and
-$\{\bx_{b,i}\}_{i=1}^{n_b}\subset\Gamma$ denote the residual and constraint
-training points. For weights $\lambda_r,\lambda_b>0$, the network parameters are
-obtained by minimizing
+where $\mathcal{A}$ is a differential operator and $\mathcal{B}$ is a boundary operator or a collection of boundary operators.
+The prescribed data are the forcing $f$ on the computational domain and the constraint values $g$ on the constrained boundary.
+In the PINN framework, the solution $u_{\star}$ is approximated by a scalar-valued neural network $u_{\theta}$~\cite{Lagaris1998,Raissi2019,Sirignano2018,Karniadakis2021}.
+Let $\{\bx_{r, i}\}_{i = 1}^{n_r} \subset \Omega$ and $\{\bx_{b, i}\}_{i = 1}^{n_b} \subset \Gamma$ denote the residual and constraint training point sets.
+Both sample counts are positive integers.
+For weights $\lambda_r, \lambda_b > 0$, the network parameters are obtained by minimizing
 \begin{equation}\label{eq_pinn_loss}
-    \mathcal{J}(\theta)
-    :=
-    \frac{\lambda_r}{n_r}
-    \sum_{i=1}^{n_r}
-    \abs{\mathcal{A}u_{\theta}(\bx_{r,i})-f(\bx_{r,i})}^{2}
-    +
-    \frac{\lambda_b}{n_b}
-    \sum_{i=1}^{n_b}
-    \abs{\mathcal{B}u_{\theta}(\bx_{b,i})-g(\bx_{b,i})}^{2}.
+    \mathcal{J}(\theta) := \frac{\lambda_r}{n_r} \sum_{i = 1}^{n_r} \abs{\mathcal{A} u_{\theta}(\bx_{r, i}) - f(\bx_{r, i})}^{2} + \frac{\lambda_b}{n_b} \sum_{i = 1}^{n_b} \abs{\mathcal{B} u_{\theta}(\bx_{b, i}) - g(\bx_{b, i})}^{2}.
 \end{equation}
-Evaluating the PDE residual in \eqref{eq_pinn_loss} requires derivatives of
-$u_{\theta}$. For high-order equations, nested automatic differentiation can
-dominate the time and memory required for residual evaluation because it
-retains large intermediate computational graphs and repeatedly differentiates
-through the network.
-
-\subsection{Multi-index notation}\label{sec_problem}
-
-Let $\N_{0}$ denote the set of nonnegative integers. For each coordinate
-$x_i$, let $\partial_i$ denote differentiation with respect to $x_i$. For a
-multi-index $\beta=(\beta_1,\beta_2,\ldots,\beta_d)\in\N_0^d$, write
-\begin{equation}\label{eq_multiindex}
-    \abs{\beta}
-    :=
-    \sum_{i=1}^{d}\beta_i,
-    \qquad
-    \beta!
-    :=
-    \prod_{i=1}^{d}\beta_i!,
-    \qquad
-    \partial^{\beta}
-    :=
-    \partial_1^{\beta_1}\partial_2^{\beta_2}\cdots\partial_d^{\beta_d}.
-\end{equation}
-For $\bv=(v_1,v_2,\ldots,v_d)^\top\in\C^d$, we also write
-$\bv^\beta:=v_1^{\beta_1}v_2^{\beta_2}\cdots v_d^{\beta_d}$. The zero multi-index is
-denoted by $\boldsymbol{0}$, so that $\partial^{\boldsymbol{0}}u=u$.
-
-\subsection{Directional Taylor coefficients}\label{sec_taylor}
-
-At each evaluation point $\bx$, assume that $u$ admits a holomorphic extension
-to an open neighborhood of $\bx$ in $\C^d$, again denoted by $u$. For every integer $k\geq1$ and every
-$\bv\in\C^d$, define the order-$k$ directional Taylor coefficient by
-\begin{equation}\label{eq_tp}
-    T_k(\bx;\bv)
-    :=
-    \frac{1}{k!}
-    \frac{d^k}{d\tau^k}
-    u(\bx+\tau\bv)\Big|_{\tau=0}.
-\end{equation}
-Thus, $T_k(\bx;\bv)$ is the coefficient of $\tau^k$ in the Taylor expansion
-of $u(\bx+\tau\bv)$; we set $T_0(\bx;\bv)=u(\bx)$. The chain rule gives
-\begin{equation}\label{eq_tp_frechet}
-    T_k(\bx;\bv)
-    =
-    \frac{1}{k!}D^k u(\bx)[\bv,\bv,\ldots,\bv],
-\end{equation}
-where $D^k u(\bx)$ denotes the symmetric complex $k$-linear derivative of
-$u$ at $\bx$.
-
-Writing $\bv=(v_1,v_2,\ldots,v_d)^\top$, the multivariate Taylor
-formula~\cite[Sec.~3.17]{LoomisSternberg1990} gives
-\begin{equation}\label{eq_directional_expansion}
-    T_k(\bx;\bv)
-    =
-    \sum_{\abs{\beta}=k}
-    \frac{\bv^\beta}{\beta!}\,
-    \partial^\beta u(\bx).
-\end{equation}
+Evaluating the PDE residual in \eqref{eq_pinn_loss} requires derivatives of $u_{\theta}$.
+For high-order equations, nested automatic differentiation can dominate the time and memory required for residual evaluation because it retains large intermediate computational graphs and repeatedly differentiates through the network.
 
 %% ====================================================================
 %%  SECTION 3: POLYNOMIAL SYMBOLS AND DIRECTIONAL REPRESENTATIONS
 %% ====================================================================
-\section{Polynomial symbols and directional representations}\label{sec_formulation}
+\section{Directional representations of derivatives}\label{sec_formulation}
 
-In this section, we first establish an exact correspondence between directional
-Taylor representations of homogeneous constant-coefficient differential operators
-and power-sum identities for their polynomial symbols. We next establish the
-existence of directional representations and analyze their computational cost.
-We then specialize the correspondence to a mixed partial
-derivative, whose monomial symbol permits a
-minimum-direction formula through established Waring-rank results.
-
-\subsection{Exact operator--symbol correspondence}
-\label{sec_expansion}
-
-Let
-\begin{equation}\label{eq_operator_definition}
-    \mathcal{L}
-    =
-    \sum_{\abs{\beta}=p}a_\beta\partial^\beta,
-    \qquad a_\beta\in\C,
-    \qquad p\geq1,
+Let $\N_0$ denote the nonnegative integers and $\partial_j$ denote differentiation with respect to the input coordinate $x_j$.
+For a multi-index $\alpha = (\alpha_1, \alpha_2, \ldots, \alpha_d) \in \N_0^d$, we define its order, factorial, and differential operator as
+\begin{equation}\label{eq_multiindex}
+    \abs{\alpha} := \sum_{j = 1}^{d} \alpha_j, \quad\quad \alpha! := \prod_{j = 1}^{d} \alpha_j!, \quad\quad \partial^{\alpha} := \partial_1^{\alpha_1} \partial_2^{\alpha_2} \cdots \partial_d^{\alpha_d}.
 \end{equation}
-be a nonzero homogeneous constant-coefficient differential operator. We seek
-an exact linear representation of $\mathcal{L}u$ by order-$p$ directional Taylor
-coefficients within the Taylor-mode framework used by
-STDE~\cite{Shi2024stde}. The following proposition characterizes the required
-coefficients and directions through power-sum identities for the polynomial
-symbol of $\mathcal{L}$.
+For a direction $\bv = (v_1, v_2, \ldots, v_d)^\top \in \C^d$, set $\bv^\alpha := v_1^{\alpha_1} v_2^{\alpha_2} \cdots v_d^{\alpha_d}$.
+For the zero multi-index $\boldsymbol{0}$, we write $\partial^{\boldsymbol{0}} u = u$.
+Our method is based on the following proposition, which is a direct consequence of \cite[Sec.~2]{CCG2012}.
 
-\nopagebreak[4]
-
-\begin{proposition}[Exact operator--symbol correspondence]\label{prop_bridge}
-    Let $R$ be a positive integer, and let $c_r\in\C$ and
-    $\bv_r\in\C^d$ for $r=1,2,\ldots,R$.
-    For formal polynomial variables $\bz=(z_1,z_2,\ldots,z_d)^\top$, we denote the
-    standard bilinear pairing by $\bv\cdot\bz:=\sum_{j=1}^d v_jz_j$.
-    Then the identity
-    \begin{equation}\label{eq_schedule}
-        \mathcal{L}u(\bx)
-        =
-        \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
-    \end{equation}
-    holds for every $u$ satisfying the assumption in
-    Section~\ref{sec_taylor} and every evaluation point $\bx$ if
-    and only if
+\begin{proposition}[Directional representation]\label{prop_bridge}
+    Assume that $u : \C^d \to \C$ is holomorphic in a neighborhood of a given point $\bx \in \C^d$.
+    Let $p$ and $R$ be positive integers, and let $A_{\alpha} \in \C$ for $\alpha \in \N_0^d$ with $\abs{\alpha} = p$.
+    If $c_i \in \C$ and $\bv_i \in \C^d$, $i = 1, 2, \ldots, R$, satisfy
     \begin{equation}\label{eq_bridge}
-        \sum_{\abs{\beta}=p}a_\beta\bz^\beta
-        =
-        \frac{1}{p!}\sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p
-        \qquad\text{in }\C[z_1,z_2,\ldots,z_d].
+        \sum_{\abs{\alpha} = p} A_{\alpha} \bz^\alpha = \frac{1}{p!} \sum_{i = 1}^{R} c_i (\bv_i^\top \bz)^p \quad \text{for all } \bz \in \C^d,
+    \end{equation}
+    then the following identity holds:
+    \begin{equation}\label{eq_schedule}
+        \sum_{\abs{\alpha} = p} A_{\alpha} \partial^\alpha u(\bx) = \frac{1}{p!} \sum_{i = 1}^{R} c_i \left.\frac{d^p}{d s^p} u(\bx + s \bv_i)\right|_{s = 0}.
     \end{equation}
 \end{proposition}
 
-\begin{proof}
-    We show that both \eqref{eq_schedule} and \eqref{eq_bridge} are
-    equivalent to
-    \begin{equation}\label{eq_moment}
-        \sum_{r=1}^{R}c_r\bv_r^\beta
-        =
-        \beta!\,a_\beta,
-        \qquad\text{for every }\beta\in\N_0^d\text{ with }\abs{\beta}=p.
-    \end{equation}
+Proposition~\ref{prop_bridge} shows that once we find $c_i \in \C$ and $\bv_i \in \C^d$, $i \in \{1, 2, \ldots, R\}$ satisfying \eqref{eq_bridge}, the $p$-th order derivative $\sum_{\abs{\alpha} = p} A_{\alpha} \partial^\alpha u(\bx)$ can be written as a linear combination of $p$-th order directional derivatives.
+The latter are considerably cheaper to evaluate than the former when computed via Taylor-mode automatic differentiation~\cite{Shi2024stde}.
+The remaining key issue is how to find such $c_i$ and $\bv_i$.
 
-    (i) $\eqref{eq_moment}\iff\eqref{eq_schedule}$
+We give two constructions in case of $\sum_{\abs{\alpha} = p} A_{\alpha} \partial^\alpha = \partial^\nu$.
+The first construction follows from the inclusion--exclusion formula reviewed in \cite[Sec.~6.1, Eq.~(25)]{Shi2026stdepp}:
+\begin{equation*}
+    c_i = (-1)^{p - \abs{\gamma_i}} \prod_{j = 1}^{d} \binom{\nu_j}{\gamma_{i, j}}, \quad \bv_i = (\gamma_{i, 1}, \ldots, \gamma_{i, d})^\top, \quad i = 1, 2, \ldots, R,
+\end{equation*}
+where $\gamma_1, \ldots, \gamma_R$ enumerate the set
+\begin{equation*}
+    \bigl\{\gamma \in \N_0^d : \boldsymbol{0} \ne \gamma \leq \nu\bigr\}, \quad R = \prod_{j = 1}^{d} (\nu_j + 1) - 1.
+\end{equation*}
+Here $\gamma \leq \nu$ means $\gamma_j \leq \nu_j$ for all $j = 1, 2, \ldots, d$.
+The resulting value of $R$ is not minimal for $p \geq 2$; see Corollary~\ref{thm_main}.
 
-    We first prove that \eqref{eq_moment} implies \eqref{eq_schedule}.
-    Substituting \eqref{eq_directional_expansion} into the right-hand
-    side of \eqref{eq_schedule} gives
-    \begin{equation}\label{eq_operator_rearranged}
-        \sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)
-        =
-        \sum_{\abs{\beta}=p}
-        \left(
-            \frac{1}{\beta!}
-            \sum_{r=1}^{R}c_r\bv_r^\beta
-        \right)
-        \partial^\beta u(\bx).
-    \end{equation}
-    Using \eqref{eq_moment} in \eqref{eq_operator_rearranged} yields
-    \eqref{eq_schedule}.
-
-    Conversely, we prove that \eqref{eq_schedule} implies \eqref{eq_moment}.
-    For any $\beta$ with $\abs{\beta}=p$, choose
-    $u_\beta(\bm{y})=(\bm{y}-\bx)^\beta$. Substituting $u_\beta$ into
-    \eqref{eq_schedule} gives
-    \begin{equation*}
-        \beta!\,a_\beta=\sum_{r=1}^{R}c_r\bv_r^\beta.
-    \end{equation*}
-    Therefore, \eqref{eq_schedule} and \eqref{eq_moment} are equivalent.
-
-    (ii) $\eqref{eq_bridge}\iff\eqref{eq_moment}$
-
-    The multinomial theorem gives
-    \begin{equation}\label{eq_symbol_expansion}
-        \frac{1}{p!}\sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p
-        = \sum_{\abs{\beta}=p}
-           \left(\frac{1}{\beta!}\sum_{r=1}^{R}c_r\bv_r^\beta\right)
-           \bz^\beta.
-    \end{equation}
-    We first prove that \eqref{eq_bridge} implies \eqref{eq_moment}.
-    Comparing the coefficients of $\bz^\beta$ in \eqref{eq_bridge} and
-    \eqref{eq_symbol_expansion} yields \eqref{eq_moment}. Conversely, to
-    prove that \eqref{eq_moment} implies \eqref{eq_bridge}, we substitute
-    \eqref{eq_moment} into \eqref{eq_symbol_expansion} and obtain
-    \eqref{eq_bridge}.
-\end{proof}
-
-Proposition~\ref{prop_bridge} shows that evaluating $\mathcal{L}u(\bx)$
-reduces to evaluating a linear combination of directional Taylor coefficients.
-This gives the general WDD procedure in Algorithm~\ref{alg_homogeneous}.
-
-\begin{algorithm}[ht]
-  \caption{WDD evaluation of $\mathcal{L}u(\bx)$ with $\mathcal{L}$ given in \eqref{eq_operator_definition}}
-  \label{alg_homogeneous}
-  \noindent\textbf{Input:} Function $u$ admitting a holomorphic extension to
-  an open neighborhood of $\bx$ in $\C^d$;
-  evaluation point $\bx\in\Omega$;
-  homogeneous operator $\mathcal{L}$ of order $p$ given in
-  \eqref{eq_operator_definition};
-  coefficients $c_1,c_2,\ldots,c_R$ and directions $\bv_1,\bv_2,\ldots,\bv_R$
-  satisfying \eqref{eq_bridge}.\par
-  \noindent\textbf{Output:} The value of $\mathcal{L}u(\bx)$.\par
-  \begin{enumerate}[label=\arabic*.,leftmargin=*,nosep]
-    \item For $r=1,2,\ldots,R$, compute $\Tp(\bx;\bv_r)$ by Taylor-mode
-    automatic differentiation.
-    \item Compute $\mathcal{L}u(\bx)=\sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)$.
-  \end{enumerate}
-\end{algorithm}
-\FloatBarrier
-
-Algorithm~\ref{alg_homogeneous} does not specify how to obtain the power-sum
-representation in \eqref{eq_bridge}. Its existence is discussed in
-Section~\ref{sec_complexity}, while the minimum number of directions is
-related to the following concept of Waring rank.
-
-\begin{definition}[Complex Waring decomposition and rank]\label{def_waring}
-    Let $P\in\C[z_1,z_2,\ldots,z_d]$ be a nonzero homogeneous polynomial of
-    degree $p\geq1$. A complex Waring decomposition of $P$ of length $R$ is
-    an identity
-    \begin{equation*}
-        P(\bz)=\sum_{r=1}^{R}\lambda_r\ell_r(\bz)^p,
-    \end{equation*}
-    where $R$ is a positive integer, $\lambda_r\in\C\setminus\{0\}$, and
-    each $\ell_r$ is a nonzero complex linear form. The complex Waring rank
-    $R_{\C}(P)$ is the smallest possible length of such a
-    decomposition~\cite[Section~1]{CCG2012}.
-\end{definition}
-
-By Proposition~\ref{prop_bridge}, the minimum number of directions in
-\eqref{eq_schedule} is
-$R_{\C}\!\left(\sum_{\abs{\beta}=p}a_\beta\bz^\beta\right)$.
-For a homogeneous polynomial with rational
-coefficients, determining the complex Waring rank is
-NP-hard~\cite{Shitov2016}.
-
-\subsection{Computational complexity}
-\label{sec_complexity}
-
-Proposition~\ref{prop_direction_bound} establishes the existence of a
-directional representation \eqref{eq_schedule} for every operator in
-\eqref{eq_operator_definition}. The statement follows from
-Proposition~\ref{prop_bridge} and the classical dimension bound for complex
-Waring rank~\cite[Sec.~3.1]{BlekhermanTeitler2015}.
-
-\begin{proposition}[Existence of a directional representation]
-\label{prop_direction_bound}
-    For every operator $\mathcal{L}$ in \eqref{eq_operator_definition},
-    there exist a positive integer $R$, coefficients
-    $c_1,c_2,\ldots,c_R\in\C$, and directions
-    $\bv_1,\bv_2,\ldots,\bv_R\in\C^d$ satisfying \eqref{eq_bridge}, with
-    \begin{equation}\label{eq_general_direction_bound}
-        R\leq\binom{d+p-1}{p}.
-    \end{equation}
-\end{proposition}
-
-Algorithm~\ref{alg_homogeneous} evaluates $R$ directional Taylor coefficients
-$\Tp(\bx;\bv_r)$. Taylor-mode automatic differentiation computes each
-coefficient at cost $O(p^2)$~\cite[Sec.~4.2]{Shi2024stde}.
-Evaluating the $R$ coefficients and their weighted sum therefore costs
-\begin{equation}\label{eq_wdd_cost}
-    C_{\mathrm{WDD}}=O(Rp^2).
+The second construction is the Waring decomposition from \cite[Sec.~2, Eq.~(8)]{BBT2013}.
+Without loss of generality, we assume that the $n$ nonzero entries of $\nu$ satisfy $1 \leq \nu_1 \leq \cdots \leq \nu_n$ and that $\nu_j = 0$ for $j = n + 1, \ldots, d$.
+Then \eqref{eq_bridge}, and hence \eqref{eq_schedule}, holds with
+\begin{equation}\label{eq_waring_weights}
+    c_i = \frac{\nu!}{R} \prod_{j = 2}^{n} \zeta_{i, j}, \quad \bv_i = (1, \zeta_{i, 2}, \ldots, \zeta_{i, n}, 0, \ldots, 0)^\top, \quad R = \prod_{j = 2}^{n} (\nu_j + 1)
 \end{equation}
-
-\subsection{Monomial specialization and complex Waring rank}
-\label{sec_rank_optimal}
-
-Fix a nonzero multi-index $\nu\in\N_0^d$ of order $p:=\abs{\nu}\geq1$, and set $\mathcal{L}=\partial^\nu$.
-For a positive integer $R$, fix coefficients $c_r\in\C$ and directions $\bv_r\in\C^d$, $r=1,2,\ldots,R$.
-Proposition~\ref{prop_bridge} gives
-\begin{equation}\label{eq_monomial_schedule}
-    \partial^\nu u(\bx)=\sum_{r=1}^{R}c_r\Tp(\bx;\bv_r)\quad\Longleftrightarrow\quad p!\,\bz^\nu=\sum_{r=1}^{R}c_r(\bv_r\cdot\bz)^p,
-\end{equation}
-where the left-hand identity is required to hold for every evaluation point $\bx$ and every $u$ satisfying the holomorphic-extension assumption at $\bx$, and the right-hand identity holds in $\C[z_1,z_2,\ldots,z_d]$.
-To state the rank formula and an attaining decomposition, relabel the variables
-with positive exponents in $\bz^\nu$ after a permutation of the coordinates so
-that
-\begin{equation}\label{eq_reduced_multiindex}
-    \bz^\nu=z_0^{\nu_0}z_1^{\nu_1}\cdots z_n^{\nu_n},
-    \qquad
-    1\leq\nu_0\leq\nu_1\leq\cdots\leq\nu_n,
-    \qquad
-    p=\sum_{j=0}^{n}\nu_j.
-\end{equation}
-The rank remains unchanged when the linear forms are allowed to involve the
-remaining polynomial variables~\cite[Remark~2.3]{CCG2012}.
-
-For each integer $m\geq1$, let $U_m:=\{\zeta\in\C:\zeta^m=1\}$, and define
+for $i = 1, 2, \ldots, R$, where $(\zeta_{i, 2}, \ldots, \zeta_{i, n})$, $i = 1, \ldots, R$, enumerate $U_{\nu_2 + 1} \times \cdots \times U_{\nu_n + 1}$, with $U_m$ defined by
 \begin{equation}\label{eq_root_index_set}
-    \mathcal U_{\nu}
-    :=
-    U_{\nu_1+1}\times U_{\nu_2+1}\times\cdots\times U_{\nu_n+1}.
+    U_m := \bigl\{\exp(2 \pi \mathrm{i} k / m) : k = 0, 1, \ldots, m - 1\bigr\}, \quad m = 1, 2, \ldots.
 \end{equation}
-When $n=0$, $\mathcal U_{\nu}$ consists of the empty tuple and has cardinality
-one.
 
-The monomial rank formula is due to Carlini, Catalisano, and
-Geramita~\cite[Cor.~3.3 and Remark~2.3]{CCG2012}, while the explicit
-roots-of-unity decomposition is given by Buczyńska, Buczyński, and
-Teitler~\cite[Sec.~2, Eq.~(8)]{BBT2013}. The following theorem records these
-results in the normalization required by \eqref{eq_monomial_schedule}.
-The roots-of-unity decomposition is verified directly in
-Appendix~\ref{sec_monomial_verification}.
-
-\begin{theorem}[Complex Waring rank and roots-of-unity decomposition of a monomial]
-\label{thm_monomial_waring}
-    Let the variables and positive exponents of $\bz^\nu$ be ordered as in
-    \eqref{eq_reduced_multiindex}. Then every $R$-term complex Waring
-    decomposition of $p!\,\bz^\nu$ satisfies
-    \begin{equation}\label{eq_rank}
-        R
-        \geq
-        R_{\C}(\bz^\nu)
-        =
-        \prod_{j=1}^{n}(\nu_j+1).
-    \end{equation}
-    Moreover, the roots-of-unity identity
-    \begin{equation}\label{eq_scaled_waring}
-        p!\,\bz^\nu
-        =
-        \frac{\nu!}{\prod_{j=1}^{n}(\nu_j+1)}
-        \sum_{\zeta\in\mathcal U_{\nu}}
-        \left(\prod_{j=1}^{n}\zeta_j\right)
-        \left(z_0+\sum_{j=1}^{n}\zeta_jz_j\right)^p
-    \end{equation}
-    contains exactly $\prod_{j=1}^{n}(\nu_j+1)$ terms and therefore attains
-    the lower bound in \eqref{eq_rank}.
-\end{theorem}
-
-\subsection{Minimum-direction formula and algorithm}
-\label{sec_directional_optimal}
-
-\begin{corollary}[Minimum-direction representation of a mixed partial]\label{thm_main}
-    Let the coordinates and positive entries of $\nu$ be ordered as in
-    \eqref{eq_reduced_multiindex}. Then
-    \begin{equation}\label{eq_optimal_representation}
-        \partial^\nu u(\bx)
-        =
-        \frac{\nu!}{\prod_{j=1}^{n}(\nu_j+1)}
-        \sum_{\zeta\in\mathcal U_{\nu}}
-        \left(\prod_{j=1}^{n}\zeta_j\right)
-        \Tp\!\left(
-            \bx;
-            (1,\zeta_1,\zeta_2,\ldots,\zeta_n,0,0,\ldots,0)^\top
-        \right).
-    \end{equation}
-    Moreover, among all coefficients $c_1,c_2,\ldots,c_R\in\C$ and directions
-    $\bv_1,\bv_2,\ldots,\bv_R\in\C^d$ for which the left-hand identity in
-    \eqref{eq_monomial_schedule} holds for every $u$ satisfying the
-    assumption in Section~\ref{sec_taylor}, the minimum possible value of
-    $R$ is
+\begin{corollary}[Minimum representation length]\phantomsection\label{thm_main}
+    Let $\nu \in \N_0^d$ satisfy $\abs{\nu} = p \geq 1$ and have $n$ nonzero entries, ordered as $1 \leq \nu_1 \leq \cdots \leq \nu_n$ after a coordinate permutation.
+    In \eqref{eq_bridge}, set $A_{\nu} = 1$ and $A_{\alpha} = 0$ for $\alpha \ne \nu$.
+    Among all choices of a positive integer $R$, coefficients $c_i \in \C$ and directions $\bv_i \in \C^d$, $i = 1, \ldots, R$, satisfying \eqref{eq_bridge}, the minimum value of $R$ is
     \begin{equation}\label{eq_directional_rank}
-        \prod_{j=1}^{n}(\nu_j+1).
+        R_\nu := \prod_{j = 2}^{n} (\nu_j + 1).
     \end{equation}
+    The construction \eqref{eq_waring_weights}--\eqref{eq_root_index_set} attains this minimum.
 \end{corollary}
 
 \begin{proof}
-    Applying Proposition~\ref{prop_bridge} to \eqref{eq_scaled_waring} gives
-    \eqref{eq_optimal_representation}. Conversely, the equivalence in
-    \eqref{eq_monomial_schedule} maps every such $R$-term representation,
-    after omitting zero terms, to a Waring decomposition of $p!\,\bz^\nu$
-    with at most $R$ terms. The lower bound
-    \eqref{eq_rank} gives the stated minimum, which is attained by
-    \eqref{eq_optimal_representation}.
+    In this case, \eqref{eq_bridge} is a Waring decomposition of $\bz^\nu$ with coefficients $c_i / p!$ and at most $R$ nonzero terms.
+    The classical monomial rank formula~\cite[Cor.~3.3 and Remark~2.3]{CCG2012} gives $R \geq R_\nu$.
+    The construction \eqref{eq_waring_weights}--\eqref{eq_root_index_set} realizes $R = R_\nu$ by \eqref{eq_scaled_waring}, so the bound is attained.
 \end{proof}
 
-The rank formula also describes when the directional reduction is most
-effective. A pure derivative requires one direction, whereas a square-free
-derivative of order $p$ requires $2^{p-1}$ directions; repeated indices can
-reduce this number. The minimum in Corollary~\ref{thm_main} concerns one fixed
-monomial derivative and exact linear representations by complex order-$p$
-directional Taylor coefficients.
+Testing \eqref{eq_schedule} on degree-$p$ monomials gives \eqref{eq_bridge}, so $R_\nu$ is also the minimum length of representations of $\partial^\nu u$ with fixed coefficients and directions, valid for every holomorphic $u$.
 
-\begin{algorithm}[ht]
-  \caption{WDD evaluation of $\partial^\nu u(\bx)$ using the roots-of-unity formula~\eqref{eq_optimal_representation}}
-  \label{alg_waring}
-  \noindent\textbf{Input:} Function $u$ satisfying the assumption in Section~\ref{sec_taylor};
-  evaluation point $\bx\in\Omega$;
-  multi-index $\nu\in\N_0^d$ with $p=\abs{\nu}\geq1$.\par
-  \noindent\textbf{Output:} The value of $\partial^\nu u(\bx)$.\par
-  \begin{enumerate}[label=\arabic*.,leftmargin=*,nosep]
-    \item Order the coordinates associated with the positive entries of
-    $\nu$ as in \eqref{eq_reduced_multiindex}, retaining their positions
-    in the original coordinate system.
-    \item Form the roots-of-unity index set $\mathcal U_{\nu}$ defined in
-    \eqref{eq_root_index_set}.
-    \item For each $\zeta=(\zeta_1,\zeta_2,\ldots,\zeta_n)\in\mathcal U_{\nu}$,
-    construct $\bv_{\zeta}\in\C^d$ with entries
-    $(1,\zeta_1,\zeta_2,\ldots,\zeta_n)$ in these ordered coordinate positions
-    and zero entries in all remaining positions.
-    \item Compute $\Tp(\bx;\bv_{\zeta})$ for each $\zeta\in\mathcal U_{\nu}$
-    by Taylor-mode automatic differentiation.
-    \item Evaluate the weighted sum in \eqref{eq_optimal_representation}
-    to obtain $\partial^\nu u(\bx)$.
-  \end{enumerate}
-\end{algorithm}
+Taylor-mode automatic differentiation~\cite{Shi2024stde} computes the coefficient of $s^p$ in each $u(\bx + s \bv_i)$, and \eqref{eq_schedule} gives $\partial^\nu u(\bx)$ by summing these coefficients with weights $c_i$.
+We restore the original coordinate positions in each $\bv_i$, precompute the weights and directions, and batch the Taylor propagations.
+For a fixed network architecture and evaluation batch size, an $R$-term representation costs $O(R p^2)$ before coefficient reuse, excluding decomposition preparation~\cite[Sec.~4.2]{Shi2024stde}.
+
+{
+\color{blue}
+\bigskip
+Open question: for a general differential operator, how can one find coefficients $c_i$ and directions $\bv_i$ satisfying
+\begin{equation*}
+    \sum_{\abs{\alpha} \leq p} A_{\alpha} \partial^\alpha u(\bx) = \frac{1}{p!} \sum_{i = 1}^{R} c_i \left.\frac{d^p}{d s^p} u(\bx + s \bv_i)\right|_{s = 0}
+\end{equation*}
+with the minimum possible $R$?
+
+Related reference: V.~Beorchia and F.~Galuppi, \emph{Generic identifiability of pairs of ternary forms}, Collectanea Mathematica, 74 (2023), pp.~529--545~\cite{BeorchiaGaluppi2023}.
+}
+
+% If $u$ is holomorphic near a real point $\bx$ and real-valued on a real neighborhood of $\bx$, then, for every $\bv \in \C^d$,
+% \begin{equation}\label{eq_conjugate_reuse}
+%     \left.\frac{d^p}{d s^p} u(\bx + s \overline{\bv})\right|_{s = 0} = \overline{\left.\frac{d^p}{d s^p} u(\bx + s \bv)\right|_{s = 0}}.
+% \end{equation}
+% The coefficient--direction pairs in \eqref{eq_waring_weights}--\eqref{eq_root_index_set} are closed under conjugation, so each pair of distinct conjugate directions requires one evaluation, using twice the real part of its weighted contribution in \eqref{eq_schedule}.
+% $R_\nu$ counts terms before conjugate reuse.
 
 %% ====================================================================
 %%  SECTION 4: NUMERICAL EXPERIMENTS
 %% ====================================================================
-WDD offers computational advantages within the Taylor-mode framework used by
-STDE. For general PDE residuals, WDD uses power-sum identities to recover the
-required mixed partials at their derivative orders, avoiding the higher-order
-expansions used by the compared STDE++ constructions. For an individual mixed
-partial, Corollary~\ref{thm_main} further provides a complex directional Taylor
-representation of minimum length at the derivative order. Conjugate reuse can
-further reduce the number of Taylor coefficient evaluations.
-
 \FloatBarrier
 \section{Numerical experiments}\label{sec_experiments}
 
-We evaluate the proposed Waring decomposition of derivatives (WDD) method
-in two complementary settings. First, we measure the evaluation time of
-individual high-order partial derivatives across various orders and
-multi-index patterns, using the minimum-direction complex Waring
-representation in Corollary~\ref{thm_main}. Second, we assess PINN
-training on three nonlinear differential equations: a one-dimensional KdV
-equation with a gradient-enhanced objective, a two-dimensional KdV
-equation with mixed derivatives, and a KP-II equation. For the PDE problems, we apply Algorithm~\ref{alg_homogeneous}
-to real power-sum identities, allowing Taylor coefficients to be reused
-across different derivative terms. The compared methods compute the same
-mathematical derivatives. The PDE experiments compare WDD with the STDE++
-Taylor constructions under identical loss objectives and matched computational
-conditions.
+We evaluate WDD in two complementary settings.
+First, we measure the evaluation time of individual high-order partial derivatives across various orders and multi-index patterns, using the construction \eqref{eq_waring_weights}--\eqref{eq_root_index_set}, whose minimum length is established in Corollary~\ref{thm_main}.
+Second, we assess PINN training on three nonlinear differential equations: a one-dimensional KdV equation with a gradient-enhanced objective, a two-dimensional KdV equation with mixed derivatives, and a KP-II equation.
+For the PDE problems, we evaluate real power-sum representations by \eqref{eq_schedule}, reusing Taylor coefficients across derivative terms.
+The compared methods compute the same mathematical derivatives.
+The PDE experiments compare WDD with the STDE++ Taylor constructions under identical loss objectives and matched computational conditions.
+
+For PDE residuals, WDD uses power-sum identities to recover the required mixed partials at their derivative orders, avoiding the higher-order expansions used by the compared STDE++ constructions.
+For an individual mixed partial, the roots-of-unity construction attains the minimum representation length in Corollary~\ref{thm_main}.
+Conjugate reuse can further reduce the number of Taylor coefficient evaluations.
 
 \subsection{Individual high-order partial derivatives}\label{sec_num_problems}
 
-We compare WDD with a centered-polarization implementation of the directional Taylor identity reviewed in
-STDE++~\cite[Section~6.1, Eq.~(25)]{Shi2026stdepp} for individual partial derivatives
-$\partial_{i_1}\partial_{i_2}\cdots\partial_{i_p}u$.
-We set the batch size to $B=1000$. The test network
-has 16 inputs and three hidden layers of width 128 with $\tanh$ activations,
-and both methods use identical weights and inputs and the same Taylor
-propagation routine on a Tesla V100. Here $R$ is the complex Waring rank.
-For the real-valued networks used here, the identity
-$T_p(\bx;\overline{\bv})=\overline{T_p(\bx;\bv)}$ holds for every real
-input point $\bx\in\R^d$ and complex direction $\bv\in\C^d$.
-The conjugate directions in Corollary~\ref{thm_main} also have conjugate
-weights, so each pair requires only one coefficient evaluation.
-The order-$p$ coefficient counts in
-Table~\ref{tab_individual_t4} are per input point, after conjugate reuse in WDD
-and merging redundant directions in STDE++. Times are the mean and sample
-standard deviation of three seed medians (30 synchronized calls after
-10 warm-ups per seed), excluding direction preparation and parameter
-backpropagation.
+We compare WDD with a centered-polarization implementation of the directional Taylor identity reviewed in STDE++~\cite[Section~6.1, Eq.~(25)]{Shi2026stdepp} for individual partial derivatives $\partial_{i_1} \partial_{i_2} \cdots \partial_{i_p} u$.
+We set the batch size to $B = 1000$.
+The test network has 16 inputs and three hidden layers of width 128 with $\tanh$ activations, and both methods use identical weights and inputs and the same Taylor propagation routine on a Tesla V100.
+Here $R = R_\nu$ is given by \eqref{eq_directional_rank}.
+For the real-valued networks and real inputs used here, we reuse Taylor coefficients at conjugate directions.
+
+The order-$p$ coefficient counts in Table~\ref{tab_individual_t4} are per input point, after conjugate reuse in WDD and merging redundant directions in STDE++.
+Times are the mean and sample standard deviation of three seed medians (30 synchronized calls after 10 warm-ups per seed), excluding direction preparation and parameter backpropagation.
 
 \begin{table}[htbp]
-\centering
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Ranks, Taylor coefficient counts, and evaluation times on a Tesla V100
-for WDD and STDE++ (Section~6.1). Speedups are mean paired ratios of
-STDE++ to WDD times.}
-\label{tab_individual_t4}
-\input{tables/t4_individual_partials}
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Ranks, Taylor coefficient counts, and evaluation times on a Tesla V100 for WDD and STDE++~\cite[Section~6.1]{Shi2026stdepp}.
+        Times are means and sample standard deviations of three seed medians, and speedups are means of paired ratios of STDE++ to WDD times.}
+    \label{tab_individual_t4}
+    \input{tables/t4_individual_partials}
 \end{table}
 
 \FloatBarrier
 
 \subsection{PINN training on nonlinear differential equations}
 
-For all PDE benchmarks, $u_\theta$ is a fully connected network with four
-hidden layers of width 128, $\tanh$ activations, and a scalar linear
-output. We train with Adam~\cite{Kingma2015} using a learning rate of
-$10^{-5}$ for the KdV problems and $10^{-4}$ for KP-II. At each
-update we independently resample 400 interior space--time points and points
-on each initial and spatial boundary face: 128 points per face in 1D and
-256 per face in 2D. Let $\mathcal T_r$, $\mathcal T_0$, and $\mathcal T_b$
-be the interior, initial, and combined spatial boundary point sets.
-Conditions on the same face use the same points. For each of five seeds,
-the paired methods share the initialization, loss weights, and samples at
-each common update index. Both methods are trained for 25,000 updates for
-one-dimensional KdV and 20,000 updates for two-dimensional KdV and KP-II.
-The KdV averages use seeds 20260919--20260923, and the KP-II averages use
-seeds 20260936--20260940.
-In the polynomial identities below, coordinate letters also denote the
-corresponding formal variables.
-For a test set $D$, we record the relative $L^2$ error
+For all PDE benchmarks, $u_\theta$ is a fully connected network with four hidden layers of width 128, $\tanh$ activations, and a scalar linear output.
+We train with Adam~\cite{Kingma2015} using a learning rate of $10^{-5}$ for the KdV problems and $10^{-4}$ for KP-II.
+
+At each update we independently resample 400 interior space--time points and points on each initial and spatial boundary face: 128 points per face in 1D and 256 per face in 2D.
+Let $\mathcal T_r$, $\mathcal T_0$, and $\mathcal T_b$ be the interior, initial, and combined spatial boundary point sets.
+Conditions on the same face use the same points.
+The residual and initial--boundary penalty are defined separately for each benchmark below.
+
+For each of five seeds, the paired methods share the initialization, loss weights, and samples at each common update index.
+Both methods are trained for 25,000 updates for one-dimensional KdV and 20,000 updates for two-dimensional KdV and KP-II.
+The KdV averages use seeds 20260919--20260923, and the KP-II averages use seeds 20260936--20260940.
+
+For a test set $D$ of space--time points with nonzero reference norm, we define the relative $L^2$ error by
 \begin{equation}\label{eq_num_relative_error}
- \operatorname{RE}:=
- \frac{\bigl(\sum_{\bx\in D}|u_\theta(\bx)-u_\star(\bx)|^2\bigr)^{1/2}}
-      {\bigl(\sum_{\bx\in D}|u_\star(\bx)|^2\bigr)^{1/2}},
+    \operatorname{RE} := \frac{\bigl(\sum_{\bx \in D} |u_\theta(\bx) - u_\star(\bx)|^2\bigr)^{1 / 2}} {\bigl(\sum_{\bx \in D} |u_\star(\bx)|^2\bigr)^{1 / 2}},
 \end{equation}
-evaluated on 10,000 uniform space--time test points. The test set is fixed,
-independent of training, and shared by paired methods. Tables report training
-times and $\operatorname{RE}$ as means and sample standard deviations across
-seeds.
-Training speedups are means of paired ratios of STDE++ to WDD training times. Figure curves show mean
-errors against mean training times at common update indices, with shading
-extending one sample standard deviation upward.
+evaluated on 10,000 uniform space--time test points.
+The test set is chosen once, independently of training, and shared by paired methods.
+
+Tables report training times and $\operatorname{RE}$ as means and sample standard deviations across seeds.
+Training speedups are means of paired ratios of STDE++ to WDD training times.
+Figure curves show mean errors against mean training times at common update indices, with shading extending one sample standard deviation upward.
+
+\emph{Polynomial identities.}
+In the polynomial identities below, coordinate letters also denote the corresponding formal variables.
 
 \subsubsection{Gradient-enhanced PINN for the KdV equation}\label{sec_num_pinn}
 
 We consider the one-dimensional KdV equation
 \begin{equation}\label{eq_num_kdv}
- \begin{cases}
- u_t+u u_x+0.0025u_{xxx}=0,
-     &x\in(-1,1),\quad t\in(0,1),\\
- u(x,0)=u_\star(x,0),
-     &x\in[-1,1],\\
- u(-1,t)=u_\star(-1,t),
-     &t\in(0,1),\\
- u(1,t)=u_\star(1,t),\quad
- \partial_xu(1,t)=\partial_xu_\star(1,t),
-     &t\in(0,1).
- \end{cases}
+    \begin{cases}
+        u_t + u u_x + 0.0025 u_{xxx} = 0,                                            & x \in (-1, 1), \quad t \in (0, 1), \\
+        u(x, 0) = u_\star(x, 0),                                                    & x \in [-1, 1],                     \\
+        u(-1, t) = u_\star(-1, t),                                                  & t \in (0, 1),                      \\
+        u(1, t) = u_\star(1, t), \quad \partial_x u(1, t) = \partial_x u_\star(1, t), & t \in (0, 1).
+    \end{cases}
 \end{equation}
-The exact solution is the traveling solitary wave
+We use the traveling solitary-wave reference solution
 \begin{equation}\label{eq_num_soliton}
- u_\star(x,t)=0.75\,\operatorname{sech}^{2}
-             \bigl(5(x+0.5-0.25t)\bigr).
+    u_\star(x, t) = 0.75 \, \operatorname{sech}^{2} \bigl(5 (x + 0.5 - 0.25 t)\bigr).
 \end{equation}
-Define the PDE residual by
+
+We define the PDE residual by
 \begin{equation*}
- r_\theta(x,t):=(u_\theta)_t+u_\theta(u_\theta)_x
-                 +0.0025(u_\theta)_{xxx},
+    r_\theta(x, t) := (u_\theta)_t + u_\theta (u_\theta)_x + 0.0025 (u_\theta)_{xxx},
 \end{equation*}
-and the initial and boundary penalty by
+and define the initial and boundary penalty by
 \begin{align*}
- \mathcal J_b(\theta)
-   ={}&\frac1{|\mathcal T_0|}\sum_{(x,0)\in\mathcal T_0}
-        \bigl[u_\theta(x,0)-u_\star(x,0)\bigr]^2
-        +\frac1{128}\sum_{(-1,t)\in\mathcal T_b}
-        \bigl[u_\theta(-1,t)-u_\star(-1,t)\bigr]^2\\
-     &+\frac1{128}\sum_{(1,t)\in\mathcal T_b}
-        \Bigl\{\bigl[u_\theta(1,t)-u_\star(1,t)\bigr]^2
-        +\bigl[\partial_xu_\theta(1,t)
-               -\partial_xu_\star(1,t)\bigr]^2\Bigr\}.
+    \mathcal J_b(\theta) = {} & \frac{1}{|\mathcal T_0|} \sum_{(x, 0) \in \mathcal T_0} \bigl[u_\theta(x, 0) - u_\star(x, 0)\bigr]^2 + \frac{1}{128} \sum_{(-1, t) \in \mathcal T_b} \bigl[u_\theta(-1, t) - u_\star(-1, t)\bigr]^2 \\
+                              & + \frac{1}{128} \sum_{(1, t) \in \mathcal T_b} \Bigl\{\bigl[u_\theta(1, t) - u_\star(1, t)\bigr]^2 + \bigl[\partial_x u_\theta(1, t) - \partial_x u_\star(1, t)\bigr]^2\Bigr\}.
 \end{align*}
 The objective is
 \begin{equation}\label{eq_num_gploss}
- \mathcal J(\theta)=\frac1{|\mathcal T_r|}\sum_{(x,t)\in\mathcal T_r}
-   \Bigl[r_\theta^2+\lambda_1\bigl((\partial_xr_\theta)^2+(\partial_tr_\theta)^2\bigr)\Bigr]
-   +\lambda_2\mathcal J_b(\theta),
+    \mathcal J(\theta) = \frac{1}{|\mathcal T_r|} \sum_{(x, t) \in \mathcal T_r} \Bigl[r_\theta^2 + \lambda_1 \bigl((\partial_x r_\theta)^2 + (\partial_t r_\theta)^2\bigr)\Bigr] + \lambda_2 \mathcal J_b(\theta),
 \end{equation}
-where $\lambda_1=10^{-3}$ and $\lambda_2=10$ are the loss weights.
-To compute $u_{xxxt}$, notice that the mixed symbol $x^3t$
-admits the decomposition
+where $\lambda_1 = 10^{-3}$ and $\lambda_2 = 10$ are the loss weights.
+Every residual and residual derivative in the interior sum is evaluated at the sampled point.
+
+Let $\bx = (x, t)^\top$ be a network input point.
+We express the mixed symbol used to evaluate $u_{xxxt}$, namely $x^3 t$, as
 \begin{equation}\label{eq_num_quartic_identity}
- x^3t=\tfrac16\bigl[(x+t)^4-(x-t)^4\bigr]
-      -\tfrac1{48}\bigl[(x+2t)^4-(x-2t)^4\bigr].
+    x^3 t = \tfrac{1}{6} \bigl[(x + t)^4 - (x - t)^4\bigr] - \tfrac{1}{48} \bigl[(x + 2 t)^4 - (x - 2 t)^4\bigr].
 \end{equation}
-Applying Proposition~\ref{prop_bridge} to \eqref{eq_num_quartic_identity}
-and $x^4$ gives
-\begin{align}\label{eq_num_gkdv_reconstruction}
- u_{xxxx}&=24T_4(\bx;(1,0)^\top),\\
- u_{xxxt}&=4\bigl[T_4(\bx;(1,1)^\top)-T_4(\bx;(1,-1)^\top)\bigr]
-          -\tfrac12\bigl[T_4(\bx;(1,2)^\top)-T_4(\bx;(1,-2)^\top)\bigr].\notag
+By Proposition~\ref{prop_bridge} with \eqref{eq_num_quartic_identity} and the pure symbol $x^4$, we have
+\begin{align}
+    u_{xxxx} & = \left.\frac{d^4}{d s^4} u(x + s, t)\right|_{s = 0}, \label{eq_num_gkdv_reconstruction}                          \\
+    u_{xxxt} & = \frac{1}{6} \left.\frac{d^4}{d s^4} \bigl[u(x + s, t + s) - u(x + s, t - s)\bigr]\right|_{s = 0} \notag           \\
+             & \quad - \frac{1}{48} \left.\frac{d^4}{d s^4} \bigl[u(x + s, t + 2 s) - u(x + s, t - 2 s)\bigr]\right|_{s = 0}. \notag
 \end{align}
-These five directions also provide the lower-order coefficients required
-by the objective. The STDE++ baseline uses two Taylor expansions through
-order seven and one through order two, following the gradient-enhanced
-construction in~\cite[Appendix~I.4]{Shi2026stdepp}.
-Table~\ref{tab_wall_kdv1d} and Figure~\ref{fig_wall_kdv1d} show that
-the WDD method attains comparable mean final errors with a
-$1.44\times$ training speedup relative to STDE++.
+These five directions also provide the lower-order coefficients required by the objective.
+The STDE++ baseline uses two Taylor expansions through order seven and one through order two, following the gradient-enhanced construction in~\cite[Appendix~I.4]{Shi2026stdepp}.
+Table~\ref{tab_wall_kdv1d} and Figure~\ref{fig_wall_kdv1d} show that the WDD method attains comparable mean final errors with a $1.44 \times$ training speedup relative to STDE++.
 
 \begin{table}[htbp]
-\centering
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\caption{Numerical results for the one-dimensional KdV equation
-\eqref{eq_num_kdv}.}
-\label{tab_wall_kdv1d}
-\input{tables/resampled_wall_kdv1d}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \caption{Numerical results for the one-dimensional KdV equation \eqref{eq_num_kdv} after 25,000 updates, reported as means and sample standard deviations over five seeds.}
+    \label{tab_wall_kdv1d}
+    \input{tables/resampled_wall_kdv1d}
 \end{table}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=.78\linewidth]{resampled_wall_kdv1d.pdf}
-\caption{$\operatorname{RE}$ during training for the one-dimensional
-KdV equation \eqref{eq_num_kdv}.}
-\label{fig_wall_kdv1d}
+    \centering
+    \includegraphics[width=.78\linewidth]{resampled_wall_kdv1d.pdf}
+    \caption{$\operatorname{RE}$ during training for the one-dimensional KdV equation \eqref{eq_num_kdv}.
+        Curves show mean errors against mean training times over five seeds at common update indices; shading extends one sample standard deviation upward.}
+    \label{fig_wall_kdv1d}
 \end{figure}
 \FloatBarrier
 
 \subsubsection{Mixed-derivative PINN for a two-dimensional KdV equation}
 \label{sec_num_kdv2d}
 
-We consider the KdV-type equation
-in~\cite[Eq.~(20)]{Shi2024stde},
+We consider the KdV-type equation in~\cite[Eq.~(20)]{Shi2024stde},
 \begin{equation}\label{eq_num_kdv2d}
- \begin{cases}
- u_{ty}+u_{xxxy}+3(u_xu_y)_x-u_{xx}+2u_{yy}=0,
-     &(x,y)\in(-1,1)^2,\quad t\in(0,1),\\
- u(x,y,0)=u_\star(x,y,0),
-     &(x,y)\in[-1,1]^2,\\
- u(-1,y,t)=u_\star(-1,y,t),
-     &y\in[-1,1],\quad t\in(0,1),\\
- \begin{aligned}
- u(1,y,t)&=u_\star(1,y,t),\\
- \partial_xu(1,y,t)&=\partial_xu_\star(1,y,t),
- \end{aligned}
-     &y\in[-1,1],\quad t\in(0,1),\\
- \begin{aligned}
- u(x,-1,t)&=u_\star(x,-1,t),\\
- \partial_yu(x,-1,t)&=\partial_yu_\star(x,-1,t),
- \end{aligned}
-     &x\in[-1,1],\quad t\in(0,1).
- \end{cases}
+    \begin{cases}
+        u_{ty} + u_{xxxy} + 3 (u_x u_y)_x - u_{xx} + 2 u_{yy} = 0, & (x, y) \in (-1, 1)^2, \quad t \in (0, 1), \\
+        u(x, y, 0) = u_\star(x, y, 0),                          & (x, y) \in [-1, 1]^2,                     \\
+        u(-1, y, t) = u_\star(-1, y, t),                        & y \in [-1, 1], \quad t \in (0, 1),        \\
+        \begin{aligned}
+            u(1, y, t)           & = u_\star(1, y, t),           \\
+            \partial_x u(1, y, t) & = \partial_x u_\star(1, y, t),
+        \end{aligned}
+                                                                & y \in [-1, 1], \quad t \in (0, 1),        \\
+        \begin{aligned}
+            u(x, -1, t)           & = u_\star(x, -1, t),           \\
+            \partial_y u(x, -1, t) & = \partial_y u_\star(x, -1, t),
+        \end{aligned}
+                                                                & x \in [-1, 1], \quad t \in (0, 1).
+    \end{cases}
 \end{equation}
-The exact oblique-kink solution is
+We use the oblique-kink reference solution
 \begin{equation}\label{eq_num_kdv2d_exact}
- u_\star(x,y,t)=\tanh\bigl((x+y)/2-t\bigr).
+    u_\star(x, y, t) = \tanh \bigl((x + y) / 2 - t\bigr).
 \end{equation}
-Only the PDE is taken from the cited work; the domain, exact solution,
-and initial--boundary conditions specify the present benchmark. Define
-the PDE residual by
+Only the PDE is taken from the cited work; the domain, exact solution, and initial--boundary conditions specify the present benchmark.
+
+We define the PDE residual by
 \begin{equation*}
- r_\theta(x,y,t):=(u_\theta)_{ty}+(u_\theta)_{xxxy}
- +3\partial_x\bigl[(u_\theta)_x(u_\theta)_y\bigr]
- -(u_\theta)_{xx}+2(u_\theta)_{yy},
+    r_\theta(x, y, t) := (u_\theta)_{ty} + (u_\theta)_{xxxy} + 3 \partial_x \bigl[(u_\theta)_x (u_\theta)_y\bigr] - (u_\theta)_{xx} + 2 (u_\theta)_{yy},
 \end{equation*}
-and the initial and boundary penalty by
+and define the initial and boundary penalty by
 \begin{align*}
- \mathcal J_b(\theta)
-   ={}&\frac1{|\mathcal T_0|}\sum_{(x,y,0)\in\mathcal T_0}
-        \bigl[u_\theta(x,y,0)-u_\star(x,y,0)\bigr]^2\\
-     &+\frac1{256}\sum_{(-1,y,t)\in\mathcal T_b}
-        \bigl[u_\theta(-1,y,t)-u_\star(-1,y,t)\bigr]^2\\
-     &+\frac1{256}\sum_{(1,y,t)\in\mathcal T_b}
-        \Bigl\{\bigl|(u_\theta-u_\star)(1,y,t)\bigr|^2
-        +\bigl|\partial_x(u_\theta-u_\star)(1,y,t)\bigr|^2\Bigr\}\\
-     &+\frac1{256}\sum_{(x,-1,t)\in\mathcal T_b}
-        \Bigl\{\bigl|(u_\theta-u_\star)(x,-1,t)\bigr|^2
-        +\bigl|\partial_y(u_\theta-u_\star)(x,-1,t)\bigr|^2\Bigr\}.
+    \mathcal J_b(\theta) = {} & \frac{1}{|\mathcal T_0|} \sum_{(x, y, 0) \in \mathcal T_0} \bigl[u_\theta(x, y, 0) - u_\star(x, y, 0)\bigr]^2                                                          \\
+                              & + \frac{1}{256} \sum_{(-1, y, t) \in \mathcal T_b} \bigl[u_\theta(-1, y, t) - u_\star(-1, y, t)\bigr]^2                                                                 \\
+                              & + \frac{1}{256} \sum_{(1, y, t) \in \mathcal T_b} \Bigl\{\bigl|(u_\theta - u_\star)(1, y, t)\bigr|^2 + \bigl|\partial_x (u_\theta - u_\star)(1, y, t)\bigr|^2\Bigr\}     \\
+                              & + \frac{1}{256} \sum_{(x, -1, t) \in \mathcal T_b} \Bigl\{\bigl|(u_\theta - u_\star)(x, -1, t)\bigr|^2 + \bigl|\partial_y (u_\theta - u_\star)(x, -1, t)\bigr|^2\Bigr\}.
 \end{align*}
 The objective is
 \begin{equation}\label{eq_num_kdv2d_loss}
- \mathcal J_{\rm 2D}(\theta)
-   =\frac1{|\mathcal T_r|}\sum_{(x,y,t)\in\mathcal T_r}r_\theta(x,y,t)^2
-       +\lambda_2\mathcal J_b(\theta).
+    \mathcal J_{\rm 2D}(\theta) = \frac{1}{|\mathcal T_r|} \sum_{(x, y, t) \in \mathcal T_r} r_\theta(x, y, t)^2 + \lambda_2 \mathcal J_b(\theta).
 \end{equation}
-Using \eqref{eq_num_quartic_identity} with $t$ replaced by $y$,
-together with
+The boundary weight is the value specified in Section~\ref{sec_num_pinn}.
+
+We express the additional time--space identity used with \eqref{eq_num_quartic_identity} after replacing $t$ by $y$ as
 \begin{equation}\label{eq_num_kdv2d_time_identity}
- yt=\tfrac14\bigl[(y+t)^2-(y-t)^2\bigr],
+    y t = \tfrac{1}{4} \bigl[(y + t)^2 - (y - t)^2\bigr],
 \end{equation}
-Proposition~\ref{prop_bridge} gives, with $\bx=(x,y,t)^\top$ the network input
-point,
-\begin{align}\label{eq_num_kdv2d_reconstruction}
- u_{xxxy}&=4\bigl[T_4(\bx;(1,1,0)^\top)-T_4(\bx;(1,-1,0)^\top)\bigr]\notag\\
- &\quad-\tfrac12\bigl[T_4(\bx;(1,2,0)^\top)-T_4(\bx;(1,-2,0)^\top)\bigr],\\
- u_{ty}&=\tfrac12\bigl[T_2(\bx;(0,1,1)^\top)-T_2(\bx;(0,1,-1)^\top)\bigr].\notag
+where the coordinate letters are the formal variables introduced in the common protocol.
+Let $\bx = (x, y, t)^\top$ be the network input point.
+By Proposition~\ref{prop_bridge} with \eqref{eq_num_quartic_identity} and \eqref{eq_num_kdv2d_time_identity}, we have
+\begin{align}
+    u_{xxxy} & = \frac{1}{6} \left.\frac{d^4}{d s^4} \bigl[u(x + s, y + s, t) - u(x + s, y - s, t)\bigr]\right|_{s = 0} \notag                                         \\
+             & \quad - \frac{1}{48} \left.\frac{d^4}{d s^4} \bigl[u(x + s, y + 2 s, t) - u(x + s, y - 2 s, t)\bigr]\right|_{s = 0}, \label{eq_num_kdv2d_reconstruction} \\
+    u_{ty}   & = \frac{1}{4} \left.\frac{d^2}{d s^2} \bigl[u(x, y + s, t + s) - u(x, y + s, t - s)\bigr]\right|_{s = 0}. \notag
 \end{align}
-Algorithm~\ref{alg_homogeneous} evaluates Taylor expansions along six
-real directions. Their lower-order coefficients also recover
-$u_x,u_y,u_{xx},u_{xy},u_{yy}$.
-The STDE++ baseline uses one order-nine and two order-three Taylor
-expansions, following the lower-order alternative
-in~\cite[Appendix~I.4]{Shi2026stdepp}.
-The results in Table~\ref{tab_wall_kdv2d} and
-Figure~\ref{fig_wall_kdv2d} show that the WDD method attains comparable
-mean final errors with a $1.62\times$ training speedup relative to STDE++.
+The reconstruction \eqref{eq_num_kdv2d_reconstruction} requires Taylor expansions along six real directions.
+The lower-order Taylor coefficients also recover $u_x, u_y, u_{xx}, u_{xy}, u_{yy}$.
+
+The STDE++ baseline uses one order-nine and two order-three Taylor expansions, following the lower-order alternative in~\cite[Appendix~I.4]{Shi2026stdepp}.
+The results in Table~\ref{tab_wall_kdv2d} and Figure~\ref{fig_wall_kdv2d} show that the WDD method attains comparable mean final errors with a $1.62 \times$ training speedup relative to STDE++.
 
 \begin{table}[htbp]
-\centering
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\caption{Numerical results for the two-dimensional KdV equation
-\eqref{eq_num_kdv2d}.}
-\label{tab_wall_kdv2d}
-\input{tables/resampled_wall_kdv2d}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \caption{Numerical results for the two-dimensional KdV equation \eqref{eq_num_kdv2d} after 20,000 updates, reported as means and sample standard deviations over five seeds.}
+    \label{tab_wall_kdv2d}
+    \input{tables/resampled_wall_kdv2d}
 \end{table}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=.78\linewidth]{resampled_wall_kdv2d.pdf}
-\caption{$\operatorname{RE}$ during training for the two-dimensional
-KdV equation \eqref{eq_num_kdv2d}.}
-\label{fig_wall_kdv2d}
+    \centering
+    \includegraphics[width=.78\linewidth]{resampled_wall_kdv2d.pdf}
+    \caption{$\operatorname{RE}$ during training for the two-dimensional KdV equation \eqref{eq_num_kdv2d}.
+        Curves show mean errors against mean training times over five seeds at common update indices; shading extends one sample standard deviation upward.}
+    \label{fig_wall_kdv2d}
 \end{figure}
 \FloatBarrier
 
 \subsubsection{KP-II equation}\label{sec_num_kp}
 
-We consider the KP-II line-soliton problem
-in~\cite[Eqs.~(3.7)--(3.9)]{PuChen2024}, with $\Omega=(-3,3)^2$,
+We consider the KP-II line-soliton problem in~\cite[Eqs.~(3.7)--(3.9)]{PuChen2024}.
+With a slight abuse of notation in this subsection, $\Omega = (-3, 3)^2$ denotes the spatial part of the computational domain.
+The initial--boundary value problem is
 \begin{equation}\label{eq_num_kp}
- \begin{cases}
- u_{tx}+6(u_x^2+u u_{xx})+u_{xxxx}+3u_{yy}=0,
-       &(x,y)\in\Omega,\quad t\in(-\tfrac12,\tfrac12),\\
- u(x,y,-\tfrac12)=u_\star(x,y,-\tfrac12),
-       &(x,y)\in\overline\Omega,\\
- u(x,y,t)=u_\star(x,y,t),
-       &(x,y)\in\partial\Omega,\quad t\in(-\tfrac12,\tfrac12).
- \end{cases}
+    \begin{cases}
+        u_{tx} + 6 (u_x^2 + u u_{xx}) + u_{xxxx} + 3 u_{yy} = 0, & (x, y) \in \Omega, \quad t \in (-\tfrac{1}{2}, \tfrac{1}{2}),         \\
+        u(x, y, -\tfrac{1}{2}) = u_\star(x, y, -\tfrac{1}{2}), & (x, y) \in \overline{\Omega},                                         \\
+        u(x, y, t) = u_\star(x, y, t),                         & (x, y) \in \partial \Omega, \quad t \in (-\tfrac{1}{2}, \tfrac{1}{2}).
+    \end{cases}
 \end{equation}
-The exact solution is
+We use the reference solution
 \begin{equation}\label{eq_num_kp_exact}
- u_\star(x,y,t)=\frac{18e^{3x+6y-63t}}{(1+e^{3x+6y-63t})^2}.
+    u_\star(x, y, t) = \frac{18 e^{3 x + 6 y - 63 t}}{(1 + e^{3 x + 6 y - 63 t})^2}.
 \end{equation}
-Define the PDE residual by
+
+We define the PDE residual by
 \begin{equation*}
- r_\theta:=(u_\theta)_{tx}
-       +6\bigl[(u_\theta)_x^2+u_\theta(u_\theta)_{xx}\bigr]
-       +(u_\theta)_{xxxx}+3(u_\theta)_{yy}.
+    r_\theta := (u_\theta)_{tx} + 6 \bigl[(u_\theta)_x^2 + u_\theta (u_\theta)_{xx}\bigr] + (u_\theta)_{xxxx} + 3 (u_\theta)_{yy}.
 \end{equation*}
-Let $\mathcal F$ denote the four spatial boundary faces. The objective is
-\begin{align}\label{eq_num_kp_loss}
- \mathcal J_{\rm KP}(\theta)
-  ={}&\frac1{|\mathcal T_r|}\sum_{\bx\in\mathcal T_r}r_\theta(\bx)^2
-    +\lambda_2\Biggl\{\frac1{|\mathcal T_0|}
-       \sum_{\bx\in\mathcal T_0}|u_\theta(\bx)-u_\star(\bx)|^2\notag\\
-    &\qquad+\sum_{F\in\mathcal F}\frac1{256}
-       \sum_{\substack{\bx\in\mathcal T_b\\(x,y)\in F}}
-       |u_\theta(\bx)-u_\star(\bx)|^2\Biggr\},
-       \qquad \lambda_2=10.
+Let $\mathcal F$ be the set of four spatial boundary faces.
+The objective is
+\begin{align}
+    \mathcal J_{\rm KP}(\theta) = {} & \frac{1}{|\mathcal T_r|} \sum_{\bx \in \mathcal T_r} r_\theta(\bx)^2 + \lambda_2 \Biggl\{\frac{1}{|\mathcal T_0|} \sum_{\bx \in \mathcal T_0} |u_\theta(\bx) - u_\star(\bx)|^2 \notag                  \\
+                                     & \quad\quad + \sum_{F \in \mathcal F} \frac{1}{256} \sum_{\substack{\bx \in \mathcal T_b\\(x, y) \in F}} |u_\theta(\bx) - u_\star(\bx)|^2\Biggr\}, \quad\quad \lambda_2 = 10.\label{eq_num_kp_loss}
 \end{align}
 
-For $\bx=(x,y,t)^\top$, the power-sum identity
-$xt=\tfrac14[(x+t)^2-(x-t)^2]$ gives
-\begin{align}\label{eq_num_kp_reconstruction}
- (u_\theta)_{xxxx}&=24T_4(\bx;(1,0,0)^\top),\notag\\
- (u_\theta)_{tx}&=\tfrac12\bigl[T_2(\bx;(1,0,1)^\top)
-                         -T_2(\bx;(1,0,-1)^\top)\bigr],\\
- (u_\theta)_{yy}&=2T_2(\bx;(0,1,0)^\top).\notag
+Let $\bx = (x, y, t)^\top$ be the network input point.
+By Proposition~\ref{prop_bridge} with the power-sum identity $x t = (1 / 4) [(x + t)^2 - (x - t)^2]$, we have
+\begin{align}
+    (u_\theta)_{xxxx} & = \left.\frac{d^4}{d s^4} u_\theta(x + s, y, t)\right|_{s = 0}, \notag                                                                                  \\
+    (u_\theta)_{tx}   & = \frac{1}{4} \left.\frac{d^2}{d s^2} \bigl[u_\theta(x + s, y, t + s) - u_\theta(x + s, y, t - s)\bigr]\right|_{s = 0}, \label{eq_num_kp_reconstruction} \\
+    (u_\theta)_{yy}   & = \left.\frac{d^2}{d s^2} u_\theta(x, y + s, t)\right|_{s = 0}. \notag
 \end{align}
-The order-four expansion also supplies $u_\theta$, $(u_\theta)_x$, and
-$(u_\theta)_{xx}$. The STDE++ baseline recovers $(u_\theta)_{tx}$ from the
-fifth-order expansion along
-$\bx+\tau^2(1,0,0)^\top/2+\tau^3(0,0,1)^\top/6$, together with coordinate
-Taylor expansions for the remaining terms, following its published
-implementation~\cite{Shi2026stdepp}.
-Table~\ref{tab_wall_kp2d} and Figure~\ref{fig_wall_kp2d} show final mean
-errors of $3.726\times10^{-2}$ and $4.052\times10^{-2}$ for WDD and
-STDE++, respectively, with a $1.32\times$ training speedup.
+The order-four expansion also supplies $u_\theta$, $(u_\theta)_x$, and $(u_\theta)_{xx}$.
+The STDE++ baseline recovers $(u_\theta)_{tx}$ from the fifth-order expansion along $\bx + s^2 (1, 0, 0)^\top / 2 + s^3 (0, 0, 1)^\top / 6$, together with coordinate Taylor expansions for the remaining terms, following its published implementation~\cite{Shi2026stdepp}.
+Table~\ref{tab_wall_kp2d} and Figure~\ref{fig_wall_kp2d} show final mean errors of $3.726 \times 10^{-2}$ and $4.052 \times 10^{-2}$ for WDD and STDE++, respectively, with a $1.32 \times$ training speedup.
 
 \begin{table}[htbp]
-\centering
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\caption{Numerical results for the KP-II equation~\eqref{eq_num_kp}.}
-\label{tab_wall_kp2d}
-\input{tables/equal_updates_kp2d}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \caption{Numerical results for the KP-II equation~\eqref{eq_num_kp} after 20,000 updates, reported as means and sample standard deviations over five seeds.}
+    \label{tab_wall_kp2d}
+    \input{tables/equal_updates_kp2d}
 \end{table}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=.78\linewidth]{equal_updates_kp2d.pdf}
-\caption{$\operatorname{RE}$ during training for the KP-II
-equation~\eqref{eq_num_kp}.}
-\label{fig_wall_kp2d}
+    \centering
+    \includegraphics[width=.78\linewidth]{equal_updates_kp2d.pdf}
+    \caption{$\operatorname{RE}$ during training for the KP-II equation~\eqref{eq_num_kp}.
+        Curves show mean errors against mean training times over five seeds at common update indices; shading extends one sample standard deviation upward.}
+    \label{fig_wall_kp2d}
 \end{figure}
 
-Across the PDE experiments, the WDD method attains comparable mean final
-errors at equal update counts. It requires less training time, with both
-interior and constraint training points resampled at every update.
+Across the PDE experiments, the WDD method attains comparable mean final errors at equal update counts.
+It requires less training time, with both interior and constraint training points resampled at every update.
+Table~\ref{tab_peak_memory} reports the peak allocated GPU memory under the measurement protocol stated in its caption.
 
 \begin{table}[htbp]
-\centering
-\small
-\caption{Peak allocated GPU memory (MiB) in 30-s measurements after ten
-warm-up calls or updates. Entries are maxima over three seeds for individual
-partials and five seeds for PDE training; the latter includes loss evaluation,
-backpropagation, and Adam updates.}
-\label{tab_peak_memory}
-\renewcommand{\arraystretch}{1.2}
-\input{tables/peak_memory}
+    \centering
+    \small
+    \caption{Peak allocated GPU memory (MiB) in 30-s measurements after ten warm-up calls or updates.
+        Entries are maxima over three seeds for individual partials and five seeds for PDE training; the latter includes loss evaluation, backpropagation, and Adam updates.}
+    \label{tab_peak_memory}
+    \renewcommand{\arraystretch}{1.2}
+    \input{tables/peak_memory}
 \end{table}
 
 \FloatBarrier
 
 \section{Conclusion}\label{sec_concl}
 
-Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, WDD constructs
-exact directional representations of high-order derivatives from polynomial
-symbols. Classical Waring-rank theory and the roots-of-unity decomposition give
-complex directional Taylor representations of minimum length for mixed partials.
-The WDD method evaluates
-these representations by batched Taylor propagation, while real power-sum
-identities allow Taylor coefficients to be reused across PDE derivative terms.
-The experiments show faster individual-partial evaluation for several tested
-patterns and shorter PINN training time than STDE++ at equal update counts.
-The WDD method attains comparable mean final errors for the
-tested KdV and KP-II problems.
+Within the Taylor-mode framework used by STDE~\cite{Shi2024stde}, WDD constructs exact directional representations of high-order derivatives from polynomial symbols.
+The roots-of-unity construction supplies explicit coefficients and complex directions for a mixed partial, and classical monomial Waring-rank theory establishes the minimum representation length.
+The WDD method evaluates these representations by batched Taylor propagation, while real power-sum identities allow Taylor coefficients to be reused across PDE derivative terms.
+The experiments show faster individual-partial evaluation for several tested patterns and shorter PINN training time than STDE++ at equal update counts.
+The WDD method attains comparable mean final errors for the tested KdV and KP-II problems.
 
 %% ====================================================================
 %%  APPENDIX
@@ -1031,76 +600,100 @@ tested KdV and KP-II problems.
 
 \section{Algebraic verification}\label{sec_schedules}
 
-\subsection{Roots-of-unity filter}\label{sec_filter}
+This appendix proves Proposition~\ref{prop_bridge} by coefficient comparison and verifies the explicit decomposition in \eqref{eq_scaled_waring}.
 
-\begin{lemma}\label{lem_filter}
-    For every integer $m \ge 1$ and every integer $k$,
+\begin{proof}[Proof of Proposition~\ref{prop_bridge}]
+    For $\bv \in \C^d$, the multivariate Taylor formula~\cite[Sec.~3.17]{LoomisSternberg1990} gives
+    \begin{equation}\label{eq_directional_expansion}
+        \left.\frac{d^p}{d s^p} u(\bx + s \bv)\right|_{s = 0} = \sum_{\abs{\alpha} = p} \frac{p!}{\alpha!} \bv^\alpha \partial^\alpha u(\bx).
+    \end{equation}
+    In this proof, write the normalized directional coefficient as
+    \begin{equation}\label{eq_tp}
+        \Tp(\bx; \bv) := \frac{1}{p!} \left.\frac{d^p}{d s^p} u(\bx + s \bv)\right|_{s = 0}.
+    \end{equation}
+    Combining \eqref{eq_directional_expansion} and \eqref{eq_tp}, we obtain
+    \begin{equation}\label{eq_operator_rearranged}
+        \sum_{i = 1}^{R} c_i \Tp(\bx; \bv_i) = \sum_{\abs{\alpha} = p} \left(\frac{1}{\alpha!} \sum_{i = 1}^{R} c_i \bv_i^\alpha\right) \partial^\alpha u(\bx).
+    \end{equation}
+    Thus, \eqref{eq_schedule} holds whenever
+    \begin{equation}\label{eq_moment}
+        \sum_{i = 1}^{R} c_i \bv_i^\alpha = \alpha! \, A_{\alpha}, \quad\quad \alpha \in \N_0^d, \quad \abs{\alpha} = p.
+    \end{equation}
+    By the multinomial theorem,
+    \begin{equation}\label{eq_symbol_expansion}
+        \frac{1}{p!} \sum_{i = 1}^{R} c_i (\bv_i^\top \bz)^p = \sum_{\abs{\alpha} = p} \left(\frac{1}{\alpha!} \sum_{i = 1}^{R} c_i \bv_i^\alpha\right) \bz^\alpha.
+    \end{equation}
+    Comparing coefficients in \eqref{eq_bridge} using \eqref{eq_symbol_expansion} gives \eqref{eq_moment}, and hence \eqref{eq_schedule}.
+\end{proof}
+
+\begin{lemma}[Roots-of-unity filter]\label{lem_filter}
+    For every integer $m \ge 1$ and every integer $k$, the following identity holds:
     \begin{equation}\label{eq_filter}
-        \sum_{\zeta \in U_m}\zeta^k
+        \sum_{\zeta \in U_m} \zeta^k
         =
         \begin{cases}
-            m, & m\mid k,\\
-            0, & m\nmid k.
+            m, & m \mid k,  \\
+            0, & m \nmid k.
         \end{cases}
     \end{equation}
 \end{lemma}
 
+\Needspace{18\baselineskip}
 \begin{proof}
-    Let $\omega := \exp(2\pi\mathrm{i}/m)$, so that every element of $U_{m}$ is
-    $\omega^{\ell}$ for exactly one $\ell \in \{0, 1, \ldots, m-1\}$ and
+    Set $\omega := \exp(2 \pi \mathrm{i} / m)$.
+    By the definition of $U_m$, every element of $U_m$ has the form $\omega^{\ell}$ for exactly one $\ell \in \{0, 1, \ldots, m - 1\}$.
+    We express the root sum in \eqref{eq_filter} as
     \begin{equation*}
-        \sum_{\zeta \in U_{m}} \zeta^{k} = \sum_{\ell=0}^{m-1}\bigl(\omega^{k}\bigr)^{\ell}.
+        \sum_{\zeta \in U_{m}} \zeta^{k} = \sum_{\ell = 0}^{m - 1} \bigl(\omega^{k}\bigr)^{\ell}.
     \end{equation*}
-    If $m \mid k$, then $\omega^{k} = 1$ and the sum equals $m$. If $m \nmid k$,
-    then $\omega^{k} \ne 1$, and the finite geometric series gives
+    The divisibility condition $m \mid k$ implies that $\omega^{k} = 1$ and the root sum in \eqref{eq_filter} equals $m$.
+
+    The nondivisibility condition $m \nmid k$ implies that $\omega^{k} \ne 1$.
+    By the finite geometric-series formula, we have
     \begin{equation*}
-        \sum_{\ell=0}^{m-1}\bigl(\omega^{k}\bigr)^{\ell} = \frac{1-\omega^{km}}{1-\omega^{k}} = 0,
+        \sum_{\ell = 0}^{m - 1} \bigl(\omega^{k}\bigr)^{\ell} = \frac{1 - \omega^{k m}}{1 - \omega^{k}} = 0,
     \end{equation*}
-    since $\omega^{m} = 1$.
+    where the equality to zero follows from $\omega^{m} = 1$.
 \end{proof}
 
-\subsection{Verification of the explicit monomial decomposition}
-\label{sec_monomial_verification}
-
-For completeness, we verify the decomposition \eqref{eq_scaled_waring} of
-Buczyńska, Buczyński, and Teitler~\cite[Sec.~2, Eq.~(8)]{BBT2013} in the
-notation used here. For
-$\beta=(\beta_0,\beta_1,\ldots,\beta_n)\in\N_0^{n+1}$ with $\abs{\beta}=p$, the
-coefficient of $\bz^\beta$ on the right-hand side of
-\eqref{eq_scaled_waring} is
-\begin{equation}\label{eq_monomial_coefficient}
-    \frac{\nu!}{\prod_{j=1}^{n}(\nu_j+1)}
-    \binom{p}{\beta}
-    \prod_{j=1}^{n}
-    \left(
-        \sum_{\zeta_j\in U_{\nu_j+1}}
-        \zeta_j^{\beta_j+1}
-    \right).
+Using \eqref{eq_waring_weights}--\eqref{eq_root_index_set}, the decomposition of Buczyńska, Buczyński, and Teitler~\cite[Sec.~2, Eq.~(8)]{BBT2013} takes the form
+\begin{equation}\label{eq_scaled_waring}
+    p! \, \bz^\nu = \sum_{i = 1}^{R_\nu} c_i \left(z_1 + \sum_{j = 2}^{n} \zeta_{i, j} z_j\right)^p.
 \end{equation}
-By Lemma~\ref{lem_filter}, the product of sums in
-\eqref{eq_monomial_coefficient} can be nonzero only if $\beta_j+1$ is a
-positive integer multiple of $\nu_j+1$ for every $j=1,2,\ldots,n$.
-Hence each $\beta_j$ is either $\nu_j$ or at least $2\nu_j+1$. If
-$\beta_j\geq2\nu_j+1$ for some $j\geq1$, then $\beta_k\geq\nu_k$ for
-every $k=1,2,\ldots,n$, and therefore
-\begin{equation*}
-    \beta_0
-    =p-\sum_{k=1}^{n}\beta_k
-    \leq \nu_0-\nu_j-1
-    <0,
-\end{equation*}
-which contradicts $\beta_0\geq0$. Thus $\beta_j=\nu_j$ for
-$j=1,2,\ldots,n$, and $\abs{\beta}=p$ gives $\beta_0=\nu_0$.
-Consequently, the coefficient in \eqref{eq_monomial_coefficient} vanishes
-unless $\beta_j=\nu_j$ for every $j=0,1,\ldots,n$. In that case, the
-coefficient equals
-\begin{equation*}
-    \frac{\nu!}{\prod_{j=1}^{n}(\nu_j+1)}
-    \frac{p!}{\nu!}
-    \prod_{j=1}^{n}(\nu_j+1)
-    =p!.
-\end{equation*}
-This proves \eqref{eq_scaled_waring}.
+
+\begingroup
+\interlinepenalty=10000
+\postdisplaypenalty=10000
+\begin{proof}[Verification of \eqref{eq_scaled_waring}]
+    We now prove \eqref{eq_scaled_waring} by coefficient comparison.
+    Let $\alpha = (\alpha_1, \ldots, \alpha_n) \in \N_0^n$ be an arbitrary multi-index with $\abs{\alpha} = p$.
+    By \eqref{eq_waring_weights} and the enumeration of root tuples, the coefficient of $\bz^\alpha$ on the right-hand side of \eqref{eq_scaled_waring} is
+    \begin{equation}\label{eq_monomial_coefficient}
+        \frac{\nu!}{\prod_{j = 2}^{n} (\nu_j + 1)} \binom{p}{\alpha} \prod_{j = 2}^{n} \left( \sum_{\zeta_j \in U_{\nu_j + 1}} \zeta_j^{\alpha_j + 1} \right).
+    \end{equation}
+
+    We now show that a nonzero product of root sums in \eqref{eq_monomial_coefficient} forces $\alpha = \nu$.
+    Lemma~\ref{lem_filter} implies that the product of root sums in \eqref{eq_monomial_coefficient} can be nonzero only if $\alpha_j + 1$ is a positive integer multiple of $\nu_j + 1$ for every $j = 2, \ldots, n$.
+    By the root-filter divisibility conditions from Lemma~\ref{lem_filter}, we know that each $\alpha_j$ is either $\nu_j$ or at least $2 \nu_j + 1$.
+    We now prove the exclusion of the case $\alpha_j \geq 2 \nu_j + 1$ for some $j \geq 2$ in the root-sum index range of \eqref{eq_monomial_coefficient}.
+    By the divisibility conditions for the root sums in \eqref{eq_monomial_coefficient}, we know that $\alpha_k \geq \nu_k$ for every $k = 2, \ldots, n$.
+    By the total-degree identities and the ordering of the active exponents, we have
+    \begin{equation*}
+        \alpha_1 = p - \sum_{k = 2}^{n} \alpha_k \leq \nu_1 - \nu_j - 1 < 0,
+    \end{equation*}
+    where the contradiction with the negative upper bound follows from $\alpha_1 \geq 0$.
+    By the contradiction with a negative first exponent and the divisibility alternatives from Lemma~\ref{lem_filter}, we know that $\alpha_j = \nu_j$ for $j = 2, \ldots, n$.
+    By the degree condition $\abs{\alpha} = p$, we have $\alpha_1 = \nu_1$.
+
+    The coefficient formula \eqref{eq_monomial_coefficient} implies that the coefficient vanishes when the product of root sums is zero.
+    By the zero-product case and the exponent equalities in the nonzero-product case of \eqref{eq_monomial_coefficient}, we know that the coefficient in \eqref{eq_monomial_coefficient} vanishes unless $\alpha_j = \nu_j$ for every $j = 1, \ldots, n$.
+    By \eqref{eq_monomial_coefficient} with $\alpha = \nu$, we have
+    \begin{equation*}
+        \frac{\nu!}{\prod_{j = 2}^{n} (\nu_j + 1)} \frac{p!}{\nu!} \prod_{j = 2}^{n} (\nu_j + 1) = p!.
+    \end{equation*}
+    The vanishing coefficients and the coefficient value for $\bz^\nu$ imply that \eqref{eq_scaled_waring} holds.
+\end{proof}
+\endgroup
 
 %% ====================================================================
 %%  REFERENCES
